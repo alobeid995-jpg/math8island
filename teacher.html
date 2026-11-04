@@ -987,7 +987,8 @@ header.book .acct{position:relative;z-index:1;display:flex;gap:6px;flex-wrap:wra
       <div class="formula" aria-label="Guardians of knowledge">حُرّاس المعرفة</div>
     </div>
     <div class="sync"><span class="dot" id="syncDot"></span><span id="syncText">Connecting…</span></div>
-    <div class="acct"><button class="ghost small" id="loginsBtn" type="button">Student logins</button><button class="ghost small" id="outBtn" type="button">Log out</button></div>
+    <div class="acct"><button class="ghost small" id="loginsBtn" type="button">Student logins</button><button class="ghost small" id="impBtn" type="button">Import old data</button><input type="file" id="impFile" accept=".json,application/json" hidden><button class="ghost small" id="outBtn" type="button">Log out</button></div>
+    
     <div class="deco" aria-hidden="true">
       <span class="d1">a² + b² = c²</span>
       <span class="d2">√144 = 12</span>
@@ -3542,6 +3543,26 @@ render();
     if (sotwFirst) { sotwFirst = false; setTimeout(() => { if (view === "students") showSotw(cls, false); }, 700); }
   }, () => {});
 })();
+
+/* ---------- export everything (for moving to the website) ---------- */
+document.getElementById("expBtn")?.addEventListener("click", async () => {
+  const b = document.getElementById("expBtn");
+  if (!db) { toast("Not connected yet. Wait for the green dot."); return; }
+  b.disabled = true; b.textContent = "Exporting…";
+  try {
+    const out = { app: "math8island-export", version: 1, at: new Date().toISOString(), data: {} };
+    for (const c of ["students", "cup", "seats", "parents", "meta", "att", "hw", "tests", "sotw"]) {
+      const snap = await db.collection(c).get(); out.data[c] = {};
+      snap.docs.forEach(d => { out.data[c][d.id] = d.data() || {}; });
+    }
+    const blob = new Blob([JSON.stringify(out)], { type: "application/json" });
+    const dl = window.claude && window.claude.use ? await window.claude.use("downloads") : null;
+    if (!dl) { toast("Saving files is blocked here."); return; }
+    await dl.save({ filename: "math8island-data.json", data: blob });
+    toast("Saved. " + Object.keys(out.data.students).length + " students exported.");
+  } catch (e) { if (!(e && e.code === "declined")) toast("Export failed: " + (e && (e.code || e.message))); }
+  finally { b.disabled = false; b.textContent = "Export all data"; }
+});
 </script>
 
 
