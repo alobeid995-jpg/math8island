@@ -1,4 +1,4 @@
-import { auth, fs, firebaseConfig, doc, setDoc, getDocs, collection, writeBatch, signOut, whenUser, profileOf, emailFor,
+import { auth, fs, firebaseConfig, doc, setDoc, updateDoc, getDocs, collection, writeBatch, signOut, whenUser, profileOf, emailFor,
   initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js";
 import { db } from "./fbdb.js";
 
@@ -21,7 +21,31 @@ $("outBtn").onclick = async () => { await signOut(auth); location.href = "index.
 const msg = t => { $("lgMsg").textContent = t; };
 const pinOf = () => String(100000 + (crypto.getRandomValues(new Uint32Array(1))[0] % 900000));
 
+async function listMissing() {
+  const cl = $("lgCls").value, box = $("lgMissing");
+  const all = (await getDocs(collection(fs, "students"))).docs.filter(d => d.data().cls === cl);
+  const no = all.filter(d => !String(d.data().enrollment || "").trim()).sort((a, b) => String(a.data().name).localeCompare(String(b.data().name)));
+  box.innerHTML = no.length
+    ? `<h4 style="margin:6px 0 2px">${no.length} student${no.length === 1 ? "" : "s"} in ${esc2(cl)} without a student ID</h4>` + no.map(d => `<div class="lg-bar" style="margin:4px 0"><span style="min-width:180px">${esc2(d.data().name)}</span><input data-idfor="${esc2(d.id)}" placeholder="e.g. 19-00047" style="width:140px"><button class="ghost small" data-saveid="${esc2(d.id)}" type="button">Save ID</button></div>`).join("")
+    : "";
+}
+document.addEventListener("click", async ev => {
+  const b = ev.target.closest("[data-saveid]"); if (!b) return;
+  const id = b.dataset.saveid, inp = document.querySelector(`[data-idfor="${CSS.escape(id)}"]`), val = inp.value.trim();
+  if (!val) { msg("Type the student ID first."); return; }
+  b.disabled = true;
+  try {
+    const all = (await getDocs(collection(fs, "students"))).docs;
+    const clash = all.find(d => d.id !== id && String(d.data().enrollment || "").trim().toLowerCase() === val.toLowerCase());
+    if (clash) { msg(`The ID ${val} already belongs to ${clash.data().name}.`); return; }
+    await updateDoc(doc(fs, "students", id), { enrollment: val });
+    msg("ID saved."); await listMissing();
+  } catch (e) { msg("Could not save: " + (e.code || e.message)); }
+  finally { b.disabled = false; }
+});
+
 async function listLogins() {
+  listMissing().catch(() => {});
   const cl = $("lgCls").value;
   const snap = await getDocs(collection(fs, "logins"));
   const rows = snap.docs.map(d => d.data()).filter(r => r.cls === cl).sort((a, b) => String(a.name).localeCompare(String(b.name)));
