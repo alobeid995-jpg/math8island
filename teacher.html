@@ -970,6 +970,8 @@ header.book .acct{position:relative;z-index:1;display:flex;gap:6px;flex-wrap:wra
 .lg-tbl td{padding:7px 8px;border-bottom:1px solid var(--line)}
 .lg-tbl td.pin{font-family:var(--f-num);font-weight:700;font-size:16px;letter-spacing:.08em}
 .lg-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.tab.addcls{border-style:dashed;font-weight:700}
+.cl-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)}
 .lg-msg{font-size:13px;color:var(--muted);white-space:pre-line}
 @media print{
   body > #loginsModal:not(#a):not(#b){display:block !important;position:static !important;background:#fff !important;padding:0 !important}
@@ -1067,7 +1069,7 @@ header.book .acct{position:relative;z-index:1;display:flex;gap:6px;flex-wrap:wra
   <section id="hubView" hidden></section>
   <section id="dashView" hidden></section>
 
-  <footer class="endnote"><span class="formula">∴ every point counts</span><span>Mathkn · XP for the maths classroom · 8B · 8Y · 8M · 8S</span></footer>
+  <footer class="endnote"><span class="formula">∴ every point counts</span><span>Mathkn · XP for the maths classroom</span></footer>
 </div>
 
 <div class="modal" id="wcModal" hidden>
@@ -1262,6 +1264,24 @@ const ENEMY = {
   "e-cosmic": () => svgWrap("#0b1026", `<g fill="#fff"><circle cx="10" cy="14" r="1.4"/><circle cx="84" cy="10" r="1.6"/><circle cx="78" cy="52" r="1.2"/><circle cx="8" cy="60" r="1.2"/><circle cx="90" cy="84" r="1.4"/></g><circle cx="80" cy="30" r="7" fill="#ff7043"/><ellipse cx="80" cy="30" rx="11" ry="2.6" fill="none" stroke="#ffd54f" stroke-width="1.6"/>` + torso("#eceff1") + `<path d="M18 92 H72" stroke="#ff7043" stroke-width="5"/><rect x="36" y="76" width="18" height="10" rx="2" fill="#1a237e" stroke="${DKC}" stroke-width="1.2"/><circle cx="41" cy="81" r="2" fill="#26c6da"/><circle cx="48" cy="81" r="2" fill="#ff7043"/>` + neckOf("#b0bec5") + cubeHead("#eceff1") + sr(27, 30, 36, 30, "#1a237e") + `<path d="M31 34 L38 34 L31 41Z" fill="rgba(255,255,255,.35)"/><circle cx="36" cy="46" r="3.4" fill="#4fc3f7"/><circle cx="54" cy="46" r="3.4" fill="#4fc3f7"/><path d="M39 53 Q45 57 51 53" stroke="#4fc3f7" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M45 16 V6" stroke="${DKC}" stroke-width="2"/><circle cx="45" cy="5" r="3" fill="#ff5252" stroke="${DKC}" stroke-width="1"/>`),
   "e-golem": () => svgWrap("#3e2723", torso("#4e342e") + `<path d="M26 80 L34 86 L30 94 M58 78 L52 88 L60 96" stroke="#ff9100" stroke-width="2.4" fill="none" stroke-linejoin="round"/>` + neckOf("#5d4037") + `<path d="M30 20 Q26 6 36 0 Q36 10 42 12 Q44 2 52 0 Q52 12 62 14 Q62 22 56 22Z" fill="#ff9100" stroke="#ffeb3b" stroke-width="1.6" stroke-linejoin="round"/>` + cubeHead("#5d4037") + `<path d="M30 28 L38 36 L34 44 M60 30 L54 40 M40 62 L46 56 L52 62" stroke="#ff9100" stroke-width="2.2" fill="none" stroke-linejoin="round"/>` + fr_(30, 40, 9, 8, "#ffea00") + fr_(52, 40, 9, 8, "#ffea00") + `<path d="M34 56 L39 60 L44 55 L49 60 L54 56" stroke="#ff9100" stroke-width="2.6" fill="none" stroke-linejoin="round"/>`)
 };
+const LEGEND = {
+  "g-seraph": { bg: "#fffbe8", pal: {"a":"#150f24","b":"#2b4fa8","c":"#7d858e","d":"#87674c","e":"#8b6714","f":"#8d8b87","g":"#9fd0ff","h":"#b5584a","i":"#d9e6f5","j":"#e9b384","k":"#eaf1f9","l":"#f0b323","m":"#f19a8e","n":"#f2d5bb","o":"#f4f1ea","p":"#f6d586","q":"#f8f7f3","r":"#fff0b5","s":"#fff7c2"}, rows: ["................................","............aaaaaaaaa...........","..........aappppppppeaa.........",".........aeelsssssssleea........",".........raaeeeeeeeeeaar........","........rrraaapppeaaarrrr.......","..a....rrrapppllllppearrrr...a..",".afa..rrrrapllllllllearrrrr.afa.","aqofarrrrapleeeeeeeeearrrrraqofa","aqofarrrrapejjjjjjjjpearrrraqofa","aqoofarrrapejjjjjjjjpearrraqoofa","aqooofarrapejjjjjjjjpearraqooofa","qoooofarrapejgbjjgbjpearraqoooof","qooocofarapejbbjjbbjpearaqocooof","foookcfaraeemjjjjjjmeearaqkcooof","aqookicfaranjjjjjjjjdaraqkicoofa","afokiicofaanjjjhhjjjdaaqokiicofa",".aqkiiicfaanjjjjjjjjdaaqkiiicfa.",".afciiiicfaddddddddddaqkiiiicfa.","..aqciiiicqqqqqpeqqqfqkiiiicfa..","..aqociiicqoooopeooofqkiiicofa..",".aqooociicqoooopeooofqkiicooofa.",".aqoooociqooooopeoooofkicoooofa.",".aqooooocqooooopeoooofkcooooofa.","afoooooooqooooopeoooofcooooooofa",".afffooooqpppppppppppeooooofffa.","..aaaffffqeeeeeeeeeeeeoffffaaa..",".....aaaaqooooopeooooffaaaa.....",".......aqoooooopeooooofa........",".......aqoooooopeooooofa........",".......afffffffpeffffffa........","........aaaaaaaeeaaaaaa........."] },
+  "g-sun": { bg: "#fff0c4", pal: {"a":"#150f24","b":"#2a1408","c":"#744d0f","d":"#7d2118","e":"#8b6714","f":"#937a2c","g":"#c9861a","h":"#d93a2b","i":"#e1bc81","j":"#ea928a","k":"#f0b323","l":"#f6d586","m":"#ff9a1a","n":"#ffc93c","o":"#ffe08a","p":"#ffe69d","q":"#fff4a0"}, rows: ["........n......nn......n........",".........n..a..nn..a..n.........",".........nnafa.aa.afann.........",".........nnafaapfaafann.........","..........apfaapfaapfao.........","...n.....oafffaffafffaoo....n...","....nnn.ooallllllllleaooonnn....",".....nnnooalkkkickkkeaoonnn.....","......noooalkkkickkkeaooon......","......ooooalkkkickkkeaooooo.....","......ooooalkkkickkkeaooooo.....","......ooooalbbbicbbbeaooooo.....","..nnnnooooalbqqicqqbeaoooonnnn..","..nnnnooooalbmmicmmbeaoooonnnn..","......ooooalbbbicbbbeaooooo.....","......ooooaliiiiiiiceaooooo.....","......ooooalibbbbbbceaooooo.....","......aoooaecccccccceaoooao.....","....aaeaaaaaaaaaaaaaaaaaaeaa....","...allklelllllllllllllellklea...","..alkkkkkekkkkkkkkkkkklkkkkkea..",".aekkkkkkkekkkkkkkkkkekkkkkkkea.","..aekkkkkekiiiijdiiickekkkkkea..","...aeekeelkiggjhhdggckeeekeea...","....aaeaalkigjhhhhdgckeaaeaa....","......a.alkigdhhhhdgckea.a......","........alkiggdhhdggckea........","........alkigggddgggckea........","........alkiggggggggckea........","........alkcccccccccckea........","........aeeeeeeeeeeeeeea........",".........aaaaaaaaaaaaaa........."] },
+  "g-storm": { bg: "#d9ecff", pal: {"a":"#0e1a3a","b":"#142146","c":"#150f24","d":"#233a7a","e":"#2d3f5e","f":"#4f6da3","g":"#515d6a","h":"#8692b5","i":"#878a8e","j":"#8da2b8","k":"#937d21","l":"#9eaecc","m":"#b8d8ff","n":"#c0cbd7","o":"#e9eef5","p":"#f2f5f9","q":"#ffd83a","r":"#ffe992","s":"#fff27a"}, rows: ["................................","..............c..c..............",".............ckcckc.............","...........cmckcckcmmm..........",".........mckcrkccrkcmmmm........","...c....mmcrrqqrrqqkcmmmm...c...","..cicc.mmmcrqqqqqqqkcmmmmmccic..","..cppicmmmckkkkkkkkkcmmmmcppic..","..ciooiccmcnnnnnnnnngcmccpooic..","...cpoopiccnjjjjjjjjgccppooic...","...cpooooicnjjjjjjjjgcpooooic...","...ciooooicnjjjjjjjjgcpooooicm..","...mciiioicnaaaaaaaagcpoiiicmm..","...mmccciicnassaassagciicccmmm..","...mmqmmcccnaaaaaaaagcccmqmmmm..","...mmmqmmmcnjjjjjjjjgcmmmqmmmm..","..mmmmqmmmcnjaaaaaajgcmmqmmmmmm.","...mmmmqcmcnjaaaaaajgcmcmmmmmm..","...mmmccgccggggggggggccgccmmmm..","...mmcnnjngnnnnnnnnnnnnjngcmmm..","...mmcnjjjgjjjjjjjjjjnjjjgcmmm..","...mcgjjjjjgjlllllejgjjjjjgcmm..","....chnjjjgjjlffffejjnjjjgcmm...","....chggjggjjlfrkfejjggjggcmm...","...chdddgdnjjlkqqkejjgdgddbc....","...chdddddnjjlfkkfejjgddddbc....","...chdddddnjjlffkkejjgddddbc....","..chddddddnjjlfffkejjgdddddbc...","..chddddddnjjlffffkjjgdddddbc...","..chddddddnjjeeeeeejjgdddddbc...",".cbbbbbbbbggggggggggggbbbbbbbc..","..ccccccccccccccccccccccccccc..."] },
+  "g-crystal": { bg: "#e4f7ff", pal: {"a":"#0d2a4a","b":"#115074","c":"#150f24","d":"#1e6280","e":"#1f8bc9","f":"#35a9de","g":"#377c93","h":"#498193","i":"#593d8b","j":"#5fd6ff","k":"#746193","l":"#7a8f93","m":"#7fe0ff","n":"#83bfe1","o":"#8fcfec","p":"#9a6af0","q":"#a7e8ff","r":"#b8edff","s":"#c4ecfb","t":"#c7adf6","u":"#d3f8ff","v":"#e1cfff","w":"#e6fbff","x":"#f0e4ff","y":"#ffffff"}, rows: ["................................",".............c....c.............","............clc..clc............","............clcccclc............","............clcwlcwlc...........","...........cwullllulc......y....",".....yc....cwlrmodllcs...c......",".....cic.ssclrmmofdlcssscic.....","....ctpicsscrmmmoffdcssctpic....","....ctpicscrmmmmofffdcsctpic....","...ctppicscrayyaoayyacsctppic...","..ctppppkccraaaaoaaaacckppppic..","..ctpppvkccraaaaoaaaaccvkpppic..","..cipppkkcchmmmmofffdccvkpppic..","...ctpppkkcchmaaaaadcckkpppicy..","...ytppppicqqhhmoddnbctppppic...","...ctppppiqjjjjhdeeeebtppppic...","...ctppppijjjjjgneeeeetppppics..","...cippppijjjjjgneeeeeippppic...","....ctppijjjjjjgneeeeeetppics...","....ciipijjjjjjtieeeeeetpiics...","....scqiijjjjjjtxeeeeeeiibcss...",".....cgjjjjjjjtxpieeeeeeebcs....",".....scqjjjjjtppppieeeeebcss....","......cqjjjjjippppieeeeebcs.....","......cgjjjjjjtppieeeeeebc......",".......cqjjjjjippieeeeebc.......",".......cqjjjjjjtieeeeeebc.......","......ycgjjjjjjiieeeeeebc.......","........cqjjjjjgneeeeebc..y.....","........cgggggggbbbbbbbc........",".........cccccccccccccc........."] },
+  "g-kraken": { bg: "#d6f3f4", pal: {"a":"#0b4e52","b":"#0d5c61","c":"#13878f","d":"#14122e","e":"#150f24","f":"#17a0a8","g":"#321a5c","h":"#472d78","i":"#62518b","j":"#7c4fd0","k":"#7dbdc1","l":"#7fcacf","m":"#a8e4e6","n":"#a98cf0","o":"#b69ee5","p":"#bff4f4","q":"#cfbff6","r":"#d8c6ff","s":"#e8ffff","t":"#fffbe8","u":"#ffffff"}, rows: ["...............ee...............","....e.........eqie.........e....","...eiee.....eeiiiieee....eeie...","....eqiee.eeoooojoooheeeeqie....","....einqieoojjjjjjjjjohqqnie....",".....einiojjjjjjjjjjjjjinie.....","....s.eiojjjjjjjrjjjjjjjie......","......eorjjjjjjjjjjjjjjrjhe.....",".....eojjjjjjjjjjjjjjjjjjjhs....","....meojjrttttjjjjttttrjjjhem...","....meojjtttttjjjjtttttjjjhem...","...mmeojtttdtttjjtttdtttjjhemm..","...mehjjttdudttjjttdudttjjjhem..","...mmeojttdddttjjttdddttjjhemm..","...mmeojjtdddtjjjjtdddtjjjhemm..","...mmeojjttdttjjjjttdttjjjhemm..","..mmmehjjjjjjjjjjjjjjjjjjjhemmm.","...mellhjjjjjjggggjjjjjjjhkaem..","...sbfffhjjjjjjjjjjjjjjjhcccae..","...melffbhjpjjjpjjjpjjjhkcccae..","...mebfffbhhjjjjjjjjjhhekccasm..","...mmelffblfhhhhjhhhhcakccaemm..","....melfflpfflpfhbeapcakccaem...","....melfflffbbffbemeaccaccaem...",".....elflffbeelfbemmekcaccae....",".....elflpfbeelpbemmeapcacae....","....elsflfbemebffbemmekcaccae...","...elffblfbemmebffbemekcasccae..","..elffbebpbemmmelpbemekpaeaccae.","..elfbe.elfbemmebffbekcae.eacae.","..ebbe..ebffbe..elfbekcae..eaae.","...ee....ebpe...ebpbeape....ee.."] },
+  "g-demon": { bg: "#f3d9e6", pal: {"a":"#150f24","b":"#181821","c":"#1d0812","d":"#211b2c","e":"#2b2a3a","f":"#3a2f4d","g":"#46112c","h":"#7a1f4d","i":"#7d2118","j":"#8a8992","k":"#8b836a","l":"#8e1d16","m":"#928c9d","n":"#932a18","o":"#b5839d","p":"#d93a2b","q":"#e3a9c4","r":"#ea928a","s":"#f1e2b8","t":"#f7efd7","u":"#ff4a2a","v":"#ff9b89","w":"#ffe14a","x":"#fff"}, rows: ["................................","....a......................a....","...aka....................aka...","....akaa........q.......aaka....","....attka..qqqqqqqqqqq.attka....","....aksskaqqqqqqqqqqqqatsska....",".....aksskaqqqqqqqqqqatsska.....","......akkskaaaaaaaaaatskkaq.....",".....qqaakkrrrrrrrrrrkkaaqqq....","....qqqqqarppplpplpppiaqqqqqq...","...aqqqqqarppppppppppiaqqqqqa...","..agaqqqqarppppppppppiaqqqqaga..",".aohgaqqqarcwwcppcwwciaqqqaohga.",".aohhgaqqarccccppcccciaqqaohhga.",".aohhhgaqarppppppppppiaqaohhhga.","aohhhhgaqarppppppppppiaqaohhhhga","aggghhhgaarpcxcxcxcxpiaaohhhggga",".aaaohhhgarpccccccccpiaohhhgaaa.","...aohhhhgiiiiiiiiiiiiohhhhgaq..","...aohhhhhjjjjjjjjjjjbhhhhhgaq..","...aohhhhhjeeeeeeeeeebhhhhhga...","..aohhhhhhjemmmmmmmdebhhhhhhga..","..aohhgghhjemfffnffdebhhgghhga..","..agggaaohjemffvunfdebhgaaggga..","...aaa.aghjemfvuuundebhgaqaaa...","........agjemfvuuundebga........","........agjemfnuuundebga........","........agjemffnunfdebga........",".........ajeddddndddeba.........",".........ajeeeeeeeeeeba.........",".........abbbbbbbbbbbba.........","..........aaaaaaaaaaaa.........."] },
+  "g-jade": { bg: "#e2f8e9", pal: {"a":"#0f3a22","b":"#150f24","c":"#1b643e","d":"#2fae6b","e":"#337450","f":"#3d7d93","g":"#58c98a","h":"#6ad8ff","i":"#863110","j":"#8b6714","k":"#8cd2ad","l":"#938b79","m":"#a3e1be","n":"#ade9ff","o":"#bdeccb","p":"#e8561c","q":"#f0b323","r":"#f2a282","s":"#f6d586","t":"#ffe14a","u":"#fff6e6","v":"#ffffff"}, rows: ["................................","................................","......b.........o........b......",".....bjb...ooooooooooo..bjb.....",".....bjjboooooooooooooobsjb.....","......bsjbooooobbooooobsjb......","......bsjbooobbkcbbooobsjb......",".b....bsjbbbbkkddkcbbbbsjbo...b.","bibb.bjjjjkkkddddddkkcjjjjbobbib","biribbbbbkddddddddddddcbbbbbrrib",".brpribbbkddddddddddddcbbbrrpib.",".brpppribkttattddttattcbrrpppib.",".bipppppikttattddttattcrpppppib.","..brppppiktttttddtttttcrppppib..","..brppppkddddddddddddddcppppib..",".brpppppkddddddddddddddcpppppib.","brppppppkdddmmmmmmmedddcppppppib","iippppppkdddmggggggedddcppppppii","bbiiipppcdddmaaggaaedddcpppiiibb","..bbbrpppkddmaaggaaeddcpppibbb..","...brppppcddmggggggeddcppppibo..","...brppiisjduvuvuvuvdcsjippibo..","...biiissqjdlllllllldcjqsjiib...","..bibssqjjbceeeeeeeecbbjjqsjib..","..bssqjjbbobbbbbbbbbboobbjjqsjb.",".bsqjjbbooooooobbbooooooobbjjqjb",".bjjbb.ooooooobnnfbooooooo.bbjjb","..bb....ooooobnvhhfbooooo....bb.",".........oooobnhhhfboooo........","...........oobfhhhfboo..........","..............bfffb.............","...............bbb.............."] },
+  "g-samurai": { bg: "#f9d8d4", pal: {"a":"#150f24","b":"#161220","c":"#181821","d":"#2a2837","e":"#2b2a3a","f":"#4a4560","g":"#7d2118","h":"#8a8992","i":"#8b6714","j":"#9b98a7","k":"#d93a2b","l":"#e8e2d4","m":"#ea928a","n":"#f0a9a1","o":"#f4b323","p":"#f6d586","q":"#fff7d6","r":"#ffffff"}, rows: ["................................","................................","................n...............","...........nnnnnnnnnnn..........","......a..nnnnnnaannnnnnna..q....","....qaiannnnnnapiannnnnaia......","......aiannnnnapiannnnaiann.....",".....nnaiannnnapiannnaiannnn....",".....nnnaiaaaaiiiiaaaiannnnn....","....nnnnnammmmmmmmmmmgannnnnn...","....nnnnnamkkkkookkkkgannnnnn...","...nnnnnnamkkkkkkkkkkgannnnnnn..","...nnnaaagmkkkkkkkkkkggaaannqn..","...nnammmgmbbbbbbbbbbgmmmgannn..","...qamkkkgmbrrbbbbrrbgmkkkgann..","..nnamkkkgmbbbbbbbbbbgmkkkgannn.","...namkkkgmhhhhhhhhhcgmkkkgann..","...namkkkgmhleleelelcgmkkkgann..","...namkkggmheeeeeeeecgggkkgann..","...amgggmmgccccccccccgmmggggan..","...amkkkkkghhhhhhhhhhmkkkkkga...","...amkkkkkgeejjjjjdeemkkkkkga...","...amooookgeejffffdeemkooooga...","...amkkkkkgeeoffffoeemkkkkkga...","...amooookgeejffffdeemkooooga...","...amkqkkkgeejffffdeemkkkkkga...","...agggggggeeoffffoeegggggqga...","....aaaaheeeejffffdeeeecaaaa....",".......aheeeejffffdeeeeca.......",".......aheeeeddddddeeeeca.......",".......acccccccccccccccca.......","........aaaaaaaaaaaaaaaa........"] }
+};
+/* Legendary avatars: 32x32 pixel art. Each row is a string; every letter is a colour from pal, "." is empty. One <path> per colour keeps it light. */
+function legendSVG(id) {
+  const d = LEGEND[id]; if (!d) return "";
+  const by = {};
+  d.rows.forEach((row, y) => { let x = 0; while (x < row.length) { const c = row[x]; let e = x; while (e < row.length && row[e] === c) e++; if (c !== ".") (by[c] = by[c] || []).push(`M${x} ${y}h${e - x}v1h-${e - x}z`); x = e; } });
+  const paths = Object.keys(by).map(c => `<path fill="${d.pal[c]}" d="${by[c].join("")}"/>`).join("");
+  return `<svg viewBox="0 0 100 100" aria-hidden="true" focusable="false"><circle cx="50" cy="50" r="50" fill="${d.bg}"/><g transform="translate(5 5) scale(2.8125)" shape-rendering="crispEdges">${paths}</g></svg>`;
+}
 const enemyCache = new Map();
 function enemySVG(id) { if (!enemyCache.has(id) && ENEMY[id]) enemyCache.set(id, ENEMY[id]()); return enemyCache.get(id) || ""; }
 /* ---------- 3D figures: head, body, arms and hands; a weapon can be held ---------- */
@@ -1325,6 +1345,7 @@ const ENEMY_BODY = {
 const enemyFigCache = new Map();
 function enemyFig(id, wid) {
   const k = id + "|" + (wid || ""); if (enemyFigCache.has(k)) return enemyFigCache.get(k);
+  if (LEGEND[id]) { const o = legendSVG(id); enemyFigCache.set(k, o); return o; }   // pixel sprites carry no drawn arms, so no weapon is overlaid
   const raw = enemySVG(id); if (!raw) return ""; const b = ENEMY_BODY[id] || ["#607d8b", "#ffcc80"];
   const out = composeFig(raw, b[0], b[1], wid); enemyFigCache.set(k, out); return out;
 }
@@ -1440,6 +1461,8 @@ const SHOP_CATS = [
   { key: "frame", label: "Frames" }, { key: "skin", label: "Enemy avatars" }, { key: "color", label: "Name colours" }, { key: "title", label: "Titles" },
   { key: "top", label: "Legendary weapons" }
 ];
+// Which equipment slot an item goes into. Legendary avatars share the avatar slot ("skin") with the enemy avatars, so a boy wears one or the other.
+const slotOf = it => it.slot || it.cat;
 // Edit prices here. Frames: 200 basic, 500 premium.
 const SHOP = [
   { id: "f-chalk", cat: "frame", name: "✦ Silver Knight", price: 200 },
@@ -1520,7 +1543,7 @@ function avatar3D(id) {
 function shopPreview(it, st) {
   switch (it.cat) {
     case "frame": return avatarHTML(st, "md", { frame: it.id });
-    case "skin": return avatar3D(it.id);
+    case "skin": case "legend": return avatar3D(it.id);
     case "color": return nameHTML(st, { color: it.id });
     case "title": return `<span class="ttag">${esc(it.name)}</span>`;
     case "top": return avatarHTML(st, "md", { top: it.id });
@@ -1529,7 +1552,7 @@ function shopPreview(it, st) {
 }
 function shopCard(st, it) {
   const perk = it.cat === "perk", have = !perk && st.owned.includes(it.id);
-  const on = have && eqOf(st)[it.cat] === it.id, wallet = walletOf(st);
+  const on = have && eqOf(st)[slotOf(it)] === it.id, wallet = walletOf(st);
   let act;
   if (readOnly) act = "";
   else if (have) act = on ? `<button class="ghost small" data-act="shopEq" data-item="${it.id}" data-off="1">Equipped ✓ Remove</button>` : `<button class="primary small" data-act="shopEq" data-item="${it.id}">Equip</button>`;
@@ -1583,7 +1606,7 @@ function buyItem(id, itemId) {
   if (walletOf(st) < it.price) { toast("Not enough XP yet"); return; }
   st.spent = (st.spent || 0) + it.price;
   if (perk) st.reqs = [...(st.reqs || []), { k: it.id, at: Date.now() }];
-  else { st.owned = [...(st.owned || []), it.id]; st.eq = { ...eqOf(st), [it.cat]: it.id }; }
+  else { st.owned = [...(st.owned || []), it.id]; st.eq = { ...eqOf(st), [slotOf(it)]: it.id }; }
   st.sp = [...(st.sp || []), { t: perk ? "request" : "buy", k: it.id, price: it.price, at: Date.now() }];
   st.buys = (st.buys || 0) + 1; st.lastBuy = it.id;
   localBuys.set(st.id, st.buys);
@@ -1594,7 +1617,7 @@ function buyItem(id, itemId) {
 function equipItem(id, itemId, off) {
   const st = students.find(s => s.id === id), it = shopItem(itemId);
   if (!st || !it || readOnly || it.cat === "perk" || !st.owned.includes(it.id)) return;
-  st.eq = { ...eqOf(st), [it.cat]: off ? "" : it.id };
+  st.eq = { ...eqOf(st), [slotOf(it)]: off ? "" : it.id };
   render(); save(st);
 }
 function resolveReq(id, k, at, refund) {
@@ -1821,6 +1844,7 @@ function handleWriteError(e) {
 
 /* ---------- actions ---------- */
 function addStudent(name) {
+  if (!cls) { toast("Add a class first, then add students to it."); return; }
   const st = { id: "s" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name, cls, xp: WEEKLY_BONUS, bonusWeek: weekKey(), log: [], createdAt: Date.now() };
   students.push(st); render(); save(st);
   toast(name + " added to " + cls);
@@ -3050,7 +3074,7 @@ function render() {
     const n = students.filter(s => s.cls === c).length;
     const crown = champ && champ.list.includes(c) ? `<span class="tcrown" title="Class of the Month" aria-label="Class of the Month">★</span>` : "";
     return `<button class="tab" role="tab" aria-selected="${c === cls}" data-act="cls" data-cls="${c}">${c}${crown}<small>${n}</small></button>`;
-  }).join("");
+  }).join("") + (window.mathknClasses ? `<button class="tab addcls" type="button" data-act="addCls">+ ${CLASSES.length ? "Class" : "Add your first class"}</button>` : "");
   const all = students;
   const students_ = all.filter(s => s.cls === cls);
   renderClass(students_);
@@ -3271,6 +3295,7 @@ document.addEventListener("click", e => {
         if (el) el.scrollIntoView({ block: "nearest", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
       }
       break;
+    case "addCls": if (window.mathknClasses) window.mathknClasses.open(); break;
     case "cls":
       cls = b.dataset.cls; pendingDelete = null; confirmWeek = false; openId = null;
       try { localStorage.setItem("xp_class", cls); } catch {}
@@ -3483,7 +3508,7 @@ render();
     firstSnap = false;
     students = snap.docs.map(d => {
       const v = d.data() || {};
-      return { id: d.id, name: String(v.name || "Unnamed"), cls: CLASSES.includes(v.cls) ? v.cls : "8B", enrollment: v.enrollment, xp: Number(v.xp) || 0, log: Array.isArray(v.log) ? v.log : [], createdAt: v.createdAt, bonusWeek: v.bonusWeek || "", avatar: typeof v.avatar === "number" ? v.avatar : undefined, counts: readCounts(v, Array.isArray(v.log) ? v.log : []), ...readShop(v) };
+      return { id: d.id, name: String(v.name || "Unnamed"), cls: CLASSES.includes(v.cls) ? v.cls : (v.cls || CLASSES[0] || ""), enrollment: v.enrollment, xp: Number(v.xp) || 0, log: Array.isArray(v.log) ? v.log : [], createdAt: v.createdAt, bonusWeek: v.bonusWeek || "", avatar: typeof v.avatar === "number" ? v.avatar : undefined, counts: readCounts(v, Array.isArray(v.log) ? v.log : []), ...readShop(v) };
     });
     if (pendingDelete && !students.some(s => s.id === pendingDelete)) pendingDelete = null;
     setSync("ok", snap.metadata.hasPendingWrites ? "Saving…" : "Saved");
@@ -3810,12 +3835,22 @@ header.book { padding-bottom: 70px; }
 
 </style>
 
+<div class="modal" id="classModal" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="clTitle">
+    <h3 id="clTitle">Your classes</h3>
+    <p>Add each class you teach, like 7A, 9-B or 10C. Letters, numbers and a dash only, up to 8 characters.</p>
+    <div class="lg-bar"><input id="clName" maxlength="8" placeholder="e.g. 7A" autocomplete="off" style="width:140px"><button class="primary" id="clAdd" type="button">Add class</button></div>
+    <div class="lg-msg" id="clMsg"></div>
+    <div id="clList"></div>
+    <div class="acts"><button class="ghost" id="clClose" type="button">Close</button></div>
+  </div>
+</div>
 <div class="modal" id="loginsModal" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="lgTitle">
     <h3 id="lgTitle">Student logins</h3>
     <p class="noprint">Each student logs in with his ID and a 6-digit PIN. Make the logins once, then print the list and hand each boy his PIN.</p>
     <div class="lg-bar noprint">
-      <label class="fld" style="grid-auto-flow:column;align-items:center;gap:8px"><span>Class</span><select id="lgCls"><option>8B</option><option>8Y</option><option>8M</option><option selected>8S</option></select></label>
+      <label class="fld" style="grid-auto-flow:column;align-items:center;gap:8px"><span>Class</span><select id="lgCls"></select></label>
       <button class="primary" id="lgMake" type="button">Create logins for this class</button>
       <button class="ghost" id="lgDemo" type="button">Add 8 demo students</button>
     </div>

@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Mathkn · Developer</title>
+<style>
+:root{--bg:#f6f4ee;--card:#fff;--ink:#1d1b16;--muted:#6b665a;--line:#e3ded0;--accent:#1f4fd8;--bad:#b3261e;--ok:#1e7a46}
+@media(prefers-color-scheme:dark){:root{--bg:#15140f;--card:#201e17;--ink:#f2efe6;--muted:#a49f90;--line:#37342a;--accent:#7da2ff;--bad:#ff8a80;--ok:#6fd49a}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:1000px;margin:0 auto;padding:16px}
+header{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+h1{margin:0;font-size:24px}h2{margin:0;font-size:18px}
+button{font:inherit;font-weight:600;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:8px 12px;cursor:pointer}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+button.warn{color:var(--bad)}button:disabled{opacity:.5}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px}
+.stat{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:12px}
+.stat b{display:block;font-size:26px}.stat span{color:var(--muted);font-size:13px}
+.box{background:var(--card);border:1.5px solid var(--line);border-radius:12px;margin-bottom:12px;overflow:hidden}
+.head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 14px;cursor:pointer}
+.head small{color:var(--muted);display:block;font-weight:400}
+.tag{font-size:12px;font-weight:700;padding:2px 8px;border-radius:99px;border:1.5px solid var(--line);margin-left:6px}
+.tag.ok{color:var(--ok)}.tag.bad{color:var(--bad)}
+.body{padding:0 14px 14px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:560px}
+th{text-align:left;font-size:12px;color:var(--muted);padding:6px 8px;border-bottom:2px solid var(--line);cursor:pointer;white-space:nowrap}
+td{padding:6px 8px;border-bottom:1px solid var(--line)}td.n{text-align:right;font-variant-numeric:tabular-nums}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+input[type=search]{font:inherit;padding:8px 10px;border:1.5px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);flex:1;min-width:160px}
+.msg{color:var(--muted);padding:20px;text-align:center}.msg.bad{color:var(--bad)}
+</style></head><body>
+<div class="wrap">
+  <header><div><h1>Developer dashboard</h1><div style="color:var(--muted)">Everything on the site: every teacher, class and student. Only you can open this.</div></div>
+    <div class="bar" style="margin:0"><button id="back" type="button">Back to my classes</button><button id="reload" type="button">Refresh</button></div></header>
+  <div id="out" class="msg">Loading…</div>
+</div>
+<script type="module">
+import { fs, doc, updateDoc, collection, getDocs, whenUser, profileOf } from "./fb.js";
+const $ = id => document.getElementById(id), out = $("out");
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+$("back").onclick = () => { location.href = "teacher.html"; };
+$("reload").onclick = () => load();
+
+const u = await whenUser();
+const p = u && await profileOf(u.uid);
+if (!p || p.role !== "teacher" || p.admin !== true) { location.href = "index.html"; throw new Error("owner only"); }
+
+const rowOf = (id, d) => ({ id, name: d.name || id, cls: d.cls || "", enr: d.enrollment || "", xp: +d.xp || 0, wallet: (+d.xp || 0) + (+d.carry || 0) - (+d.spent || 0), spent: +d.spent || 0, owned: (d.owned || []).length, certs: (d.certs || []).length });
+let groups = [], sort = { k: "cls", dir: 1 }, q = "";
+
+async function load() {
+  out.className = "msg"; out.textContent = "Loading…";
+  try {
+    const users = (await getDocs(collection(fs, "users"))).docs.map(d => ({ uid: d.id, ...d.data() }));
+    const teachers = users.filter(x => x.role === "teacher");
+    const students = users.filter(x => x.role === "student");
+    groups = [];
+    const mine = (await getDocs(collection(fs, "students"))).docs.map(d => rowOf(d.id, d.data()));
+    groups.push({ uid: u.uid, title: (p.name || "You") + " (owner)", me: true, role: "teacher", rows: mine });
+    for (const t of teachers) {
+      if (t.uid === u.uid) continue;
+      let rows = [], err = "";
+      try { rows = (await getDocs(collection(fs, "teachers", t.uid, "students"))).docs.map(d => rowOf(d.id, d.data())); } catch (e) { err = e.code || e.message; }
+      groups.push({ uid: t.uid, title: t.name || "Teacher " + t.uid.slice(0, 6), role: "teacher", status: t.role, rows, err, logins: students.filter(s => s.tid === t.uid).length });
+    }
+    // teacher profiles that were paused
+    users.filter(x => x.role === "paused").forEach(t => groups.push({ uid: t.uid, title: (t.name || "Teacher " + t.uid.slice(0, 6)), paused: true, rows: [] }));
+    for (const g of groups) if (g.paused) { try { g.rows = (await getDocs(collection(fs, "teachers", g.uid, "students"))).docs.map(d => rowOf(d.id, d.data())); } catch {} }
+    render(users);
+  } catch (e) { out.className = "msg bad"; out.textContent = "Could not load: " + (e.code || e.message) + ". Check that the new rules are published."; }
+}
+
+function render(users) {
+  const all = groups.flatMap(g => g.rows);
+  const teachersN = groups.filter(g => !g.me).length;
+  const xp = all.reduce((a, r) => a + r.xp, 0);
+  out.className = "";
+  out.innerHTML = `<div class="stats">
+    <div class="stat"><b>${teachersN + 1}</b><span>teachers (including you)</span></div>
+    <div class="stat"><b>${all.length}</b><span>students in the trackers</span></div>
+    <div class="stat"><b>${users.filter(x => x.role === "student").length}</b><span>student logins</span></div>
+    <div class="stat"><b>${xp.toLocaleString()}</b><span>total XP, everyone</span></div></div>
+    <div class="bar"><input type="search" id="q" placeholder="Search a student name, ID or class across everyone" value="${esc(q)}"></div>
+    <div id="groups"></div>`;
+  $("q").oninput = e => { q = e.target.value; draw(); };
+  draw();
+}
+
+function draw() {
+  const needle = q.trim().toLowerCase();
+  $("groups").innerHTML = groups.map((g, i) => {
+    let rows = g.rows.filter(r => !needle || (r.name + " " + r.enr + " " + r.cls).toLowerCase().includes(needle));
+    if (needle && !rows.length) return "";
+    rows = rows.slice().sort((a, b) => (typeof a[sort.k] === "number" ? a[sort.k] - b[sort.k] : String(a[sort.k]).localeCompare(String(b[sort.k]))) * sort.dir || a.name.localeCompare(b.name));
+    const clsList = [...new Set(g.rows.map(r => r.cls))].sort().join(", ") || "no classes yet";
+    const tag = g.paused ? '<span class="tag bad">paused</span>' : g.me ? '<span class="tag ok">owner</span>' : '<span class="tag ok">active</span>';
+    const act = g.me ? "" : g.paused ? `<button data-uid="${esc(g.uid)}" data-to="teacher" type="button">Restore access</button>` : `<button class="warn" data-uid="${esc(g.uid)}" data-to="paused" type="button">Pause access</button>`;
+    return `<div class="box"><div class="head" data-open="${i}"><div><h2>${esc(g.title)} ${tag}</h2><small>${g.rows.length} students · ${esc(clsList)}${g.logins != null ? " · " + g.logins + " logins" : ""} · ${esc(g.uid.slice(0, 8))}…</small></div>${act}</div>
+      <div class="body" id="b${i}" ${needle ? "" : "hidden"}>${g.err ? `<div class="msg bad">${esc(g.err)}</div>` : rows.length ? `<table><thead><tr>${[["name", "Name"], ["cls", "Class"], ["enr", "ID"], ["xp", "XP"], ["wallet", "Wallet"], ["spent", "Spent"], ["owned", "Items"], ["certs", "Certs"]].map(([k, l]) => `<th data-sort="${k}">${l}${sort.k === k ? (sort.dir > 0 ? " ▲" : " ▼") : ""}</th>`).join("")}</tr></thead><tbody>${rows.map(r => `<tr><td>${esc(r.name)}</td><td>${esc(r.cls)}</td><td>${esc(r.enr)}</td><td class="n">${r.xp}</td><td class="n">${r.wallet}</td><td class="n">${r.spent}</td><td class="n">${r.owned}</td><td class="n">${r.certs}</td></tr>`).join("")}</tbody></table>` : '<div class="msg">No students yet.</div>'}</div></div>`;
+  }).join("") || '<div class="msg">Nothing matches.</div>';
+}
+
+document.addEventListener("click", async ev => {
+  const b = ev.target.closest("button[data-uid]");
+  if (b) {
+    ev.stopPropagation();
+    const to = b.dataset.to;
+    if (!confirm(to === "paused" ? "Pause this teacher? He will not be able to open his classes until you restore him." : "Restore this teacher's access?")) return;
+    b.disabled = true;
+    try { await updateDoc(doc(fs, "users", b.dataset.uid), { role: to }); await load(); } catch (e) { alert("Could not change: " + (e.code || e.message)); b.disabled = false; }
+    return;
+  }
+  const th = ev.target.closest("th[data-sort]");
+  if (th) { const k = th.dataset.sort; sort = { k, dir: sort.k === k ? -sort.dir : 1 }; const open = [...document.querySelectorAll(".body:not([hidden])")].map(x => x.id); draw(); open.forEach(id => { const e = $(id); if (e) e.hidden = false; }); return; }
+  const h = ev.target.closest(".head[data-open]");
+  if (h) { const e = $("b" + h.dataset.open); e.hidden = !e.hidden; }
+});
+load();
+</script></body></html>

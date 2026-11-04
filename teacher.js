@@ -1,4 +1,4 @@
-import { auth, fs, firebaseConfig, doc, setDoc, updateDoc, getDocs, writeBatch, setBase, bcol, bdoc, signOut, whenUser, profileOf, emailFor,
+import { auth, fs, firebaseConfig, doc, getDoc, setDoc, updateDoc, getDocs, writeBatch, setBase, bcol, bdoc, signOut, whenUser, profileOf, emailFor,
   initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js";
 import { db } from "./fbdb.js";
 
@@ -13,12 +13,57 @@ if (!p || p.role !== "teacher") { location.href = "index.html"; throw new Error(
 const ADMIN = p.admin === true;
 setBase(ADMIN ? [] : ["teachers", u.uid]);
 
+/* ---------- this teacher's classes ---------- */
+// The owner starts with his four Grade 8 classes. Every other teacher starts empty and adds his own.
+const DEFAULT_CLASSES = ["8B", "8Y", "8M", "8S"];
+{
+  let list = [];
+  try { const s = await getDoc(bdoc("meta", "classes")); if (s.exists()) list = (s.data().list || []).slice(); else if (ADMIN) list = DEFAULT_CLASSES.slice(); } catch {}
+  try { (await getDocs(bcol("students"))).docs.forEach(d => { const c = d.data().cls; if (c && !list.includes(c)) list.push(c); }); } catch {}   // never hide a class that has students
+  CLASSES.splice(0, CLASSES.length, ...list);
+  cls = CLASSES.includes(cls) ? cls : (CLASSES[0] || "");
+}
+const saveClasses = () => setDoc(bdoc("meta", "classes"), { list: CLASSES.slice() });
+const clMsg = t => { $("clMsg").textContent = t; };
+function clDraw() {
+  $("clList").innerHTML = CLASSES.length ? CLASSES.map(c => { const n = students.filter(s => s.cls === c).length;
+    return `<div class="cl-row"><span><b>${esc2(c)}</b> · ${n} student${n === 1 ? "" : "s"}</span>${n ? "" : `<button class="ghost small" data-rmcls="${esc2(c)}" type="button">Remove</button>`}</div>`; }).join("")
+    : '<p class="none">No classes yet. Add your first one above.</p>';
+}
+window.mathknClasses = { open() { $("classModal").hidden = false; clMsg(""); $("clName").value = ""; clDraw(); setTimeout(() => $("clName").focus(), 50); } };
+$("clClose").onclick = () => { $("classModal").hidden = true; };
+$("clAdd").onclick = async () => {
+  const name = $("clName").value.trim().toUpperCase();
+  if (!/^[A-Z0-9][A-Z0-9-]{0,7}$/.test(name)) { clMsg("Use letters, numbers and a dash only, up to 8 characters."); return; }
+  if (CLASSES.includes(name)) { clMsg(name + " is already in your list."); return; }
+  CLASSES.push(name); cls = name;
+  try { localStorage.setItem("xp_class", cls); } catch {}
+  try { await saveClasses(); } catch (e) { CLASSES.pop(); clMsg("Could not save: " + (e.code || e.message)); return; }
+  $("clName").value = ""; clMsg(name + " added."); clDraw(); render();
+};
+$("clName").onkeydown = e => { if (e.key === "Enter") $("clAdd").click(); };
+document.addEventListener("click", async ev => {
+  const b = ev.target.closest("[data-rmcls]"); if (!b) return;
+  const c = b.dataset.rmcls;
+  if (students.some(s => s.cls === c)) { clMsg(c + " still has students."); return; }
+  if (!confirm("Remove the empty class " + c + "?")) return;
+  const i = CLASSES.indexOf(c); CLASSES.splice(i, 1);
+  if (cls === c) cls = CLASSES[0] || "";
+  try { await saveClasses(); } catch (e) { CLASSES.splice(i, 0, c); clMsg("Could not save: " + (e.code || e.message)); return; }
+  clDraw(); render();
+});
+
 // Hand the tracker its database. From here on the tracker page works as before.
 window.__resolveClaude({ use: async n => n === "db" ? db : n === "user" ? { can: async () => true, isOwner: () => true, canEdit: () => true } : null });
 
 // Students may only spend what the shop price list allows, so the list lives in the database.
 setDoc(doc(fs, "shop", "prices"), { prices: Object.fromEntries(SHOP.map(i => [i.id, i.price])) }).catch(() => {});
 
+if (ADMIN) { // the button is only created for the owner; other teachers' pages never contain it
+  const dv = document.createElement("button"); dv.className = "ghost small"; dv.id = "devBtn"; dv.type = "button"; dv.textContent = "Developer";
+  dv.onclick = () => { location.href = "developer.html"; };
+  $("outBtn").before(dv);
+}
 $("outBtn").onclick = async () => { await signOut(auth); location.href = "index.html"; };
 
 /* ---------- student logins ---------- */
@@ -98,7 +143,8 @@ async function addDemo() {
   catch (e) { msg("Could not add: " + (e.code || e.message)); }
 }
 
-$("loginsBtn").onclick = () => { $("loginsModal").hidden = false; msg(""); listLogins(); };
+const fillLg = () => { const sel = $("lgCls"), keep = sel.value; sel.innerHTML = CLASSES.map(c => `<option>${esc2(c)}</option>`).join(""); if (CLASSES.includes(keep)) sel.value = keep; else if (CLASSES.includes(cls)) sel.value = cls; };
+$("loginsBtn").onclick = () => { fillLg(); $("loginsModal").hidden = false; msg(CLASSES.length ? "" : "Add a class first (the + Class button)."); if (CLASSES.length) listLogins(); };
 $("lgClose").onclick = () => { $("loginsModal").hidden = true; };
 $("lgCls").onchange = () => { msg(""); listLogins(); };
 $("lgMake").onclick = makeLogins;
