@@ -1,39 +1,65 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Math 8 Island · Log in</title>
+<title>Mathkn · Log in</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Lexend:wght@400;500;600&family=Caveat:wght@600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Instrument+Serif:ital@0;1&display=swap">
 <style>
-:root{--paper:#f5f7fb;--grid:#dfe6f2;--major:#c9d4ea;--card:#fff;--ink:#17233b;--muted:#5d6a82;--line:#d7deea;--accent:#2f4fd6;--bad:#c43a31;--bad-soft:#fbe7e5;--margin:#e8838a;--gold:#b7791f}
-@media (prefers-color-scheme:dark){:root{--paper:#0f1522;--grid:#182236;--major:#22304b;--card:#161f31;--ink:#e8edf7;--muted:#9aa7bf;--line:#26324a;--accent:#8ea4ff;--bad:#ff8a80;--bad-soft:#3e1d1c;--gold:#f0b75a;color-scheme:dark}}
+:root{--red:#d8392b;--yellow:#f3b31b;--blue:#1d58b8;--edge:#151412;--paper:#f4eee2;--card:#fffcf5;--ink:#151412;--muted:#5f5848;--bad-soft:#f9e0dc}
+@media (prefers-color-scheme:dark){:root{--red:#ff5b49;--yellow:#ffc23a;--blue:#5b8dff;--edge:#f4eee2;--paper:#121214;--card:#1c1c20;--ink:#f4eee2;--muted:#b0a896;--bad-soft:#3f1d19;color-scheme:dark}}
 *{box-sizing:border-box}
-body{margin:0;min-height:100vh;display:grid;place-items:center;padding:20px;font:16px/1.5 Lexend,system-ui,sans-serif;color:var(--ink);background-color:var(--paper);
- background-image:linear-gradient(var(--major) 1px,transparent 1px),linear-gradient(90deg,var(--major) 1px,transparent 1px),linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:120px 120px,120px 120px,24px 24px,24px 24px}
-main{width:min(420px,100%);background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:0 8px 30px rgba(23,35,59,.12);padding:26px 24px 24px 56px;position:relative;
- background-image:linear-gradient(90deg,transparent 40px,var(--margin) 40px,var(--margin) 42px,transparent 42px)}
-.pi{position:absolute;left:10px;top:22px;width:26px;height:26px;border-radius:8px;background:var(--ink);color:var(--card);display:grid;place-items:center;font:italic 700 18px Georgia,serif}
-h1{font:800 32px/1.05 "Bricolage Grotesque",sans-serif;margin:0 0 2px}
-.sub{font:600 20px Caveat,cursive;color:var(--accent);margin:0 0 18px}
-.seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border:1px solid var(--line);border-radius:12px;margin-bottom:16px}
-.seg button{border:0;border-radius:9px;padding:9px;font:600 15px Lexend,sans-serif;background:transparent;color:var(--muted);cursor:pointer}
-.seg button[aria-pressed=true]{background:var(--ink);color:var(--card)}
-label{display:block;font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:12px 0 4px}
-input{width:100%;font:inherit;font-size:17px;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink)}
-input:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.go{width:100%;margin-top:18px;border:0;border-radius:10px;padding:13px;font:700 17px Lexend,sans-serif;background:var(--accent);color:var(--card);cursor:pointer}
+body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px 18px 36px;font:16px/1.5 Archivo,system-ui,sans-serif;color:var(--ink);background-color:var(--paper);
+ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='520' viewBox='0 0 520 520'%3E%3Cg fill='none' stroke='%23857a62' stroke-opacity='.16' stroke-width='1.2'%3E%3Ccircle cx='130' cy='130' r='110'/%3E%3Ccircle cx='240' cy='130' r='110'/%3E%3Cpath d='M20 130H350M185 34 130 225 240 225Z' /%3E%3Cpath d='M300 470 470 300' stroke-dasharray='4 6'/%3E%3Ccircle cx='400' cy='400' r='70' stroke-dasharray='2 5'/%3E%3C/g%3E%3C/svg%3E");background-size:520px 520px}
+main{width:min(460px,100%);background:var(--card);border:3px solid var(--edge);border-radius:6px;box-shadow:10px 10px 0 var(--edge);overflow:hidden}
+.plate{position:relative;padding:24px 24px 22px;min-height:290px;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-start;border-bottom:3px solid var(--edge);overflow:hidden}
+.geo{position:absolute;right:8px;top:18px;width:74%;height:60%;pointer-events:none;color:var(--edge)}
+.geo-svg{width:100%;height:100%;display:block;overflow:visible}
+.geo .g-con{fill:none;stroke:currentColor;stroke-width:1.2;stroke-dasharray:3 6;opacity:.5}
+.geo .g1{fill:var(--blue)}.geo .g2{fill:var(--red);mix-blend-mode:multiply}.geo .g3{fill:var(--yellow);stroke:var(--edge);stroke-width:3}
+.geo .g4{fill:none;stroke:currentColor;stroke-width:3.5;stroke-linecap:round;stroke-dasharray:2400}
+.geo .g5{fill:currentColor}.geo .g5 text{font-family:"Instrument Serif",serif;font-style:italic;font-size:30px}
+@media (prefers-color-scheme:dark){.geo .g2{mix-blend-mode:screen}}
+@media (prefers-reduced-motion:no-preference){
+ .geo .g1,.geo .g2,.geo .g3{transform-box:fill-box;transform-origin:center;animation:geoIn .9s cubic-bezier(.2,1.4,.35,1) both}
+ .geo .g2{animation-delay:.12s}.geo .g3{animation-delay:.24s}
+ .geo .g4{animation:geoDraw 2.2s .35s cubic-bezier(.6,0,.2,1) both}.geo .g5{animation:geoFade .6s 1.2s both}
+ @keyframes geoIn{from{transform:scale(0) rotate(-40deg)}}@keyframes geoDraw{from{stroke-dashoffset:2400}}@keyframes geoFade{from{opacity:0}}}
+.mk{position:relative;z-index:1;width:56px;height:56px;border-radius:4px;display:grid;place-items:center;background:var(--yellow);border:3px solid var(--edge);box-shadow:3px 3px 0 var(--edge);transform:rotate(-6deg);
+ font:italic 400 40px/1 "Instrument Serif",serif;color:#151412;position:absolute;left:24px;top:24px}
+h1{position:relative;z-index:1;font-family:Archivo,"Arial Black",sans-serif;font-weight:900;font-stretch:125%;font-variation-settings:"wdth" 125;font-size:clamp(48px,13vw,64px);line-height:.86;letter-spacing:-.035em;margin:0}
+.sub{position:relative;z-index:1;font:italic 400 24px "Instrument Serif",serif;color:var(--red);margin:8px 0 0}
+.body{padding:22px 24px 24px}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:5px;border:2.5px solid var(--edge);border-radius:6px;margin-bottom:4px}
+.seg button{border:2px solid transparent;border-radius:4px;padding:10px;font:800 15px Archivo,sans-serif;font-stretch:112%;background:transparent;color:var(--muted);cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--yellow);color:#151412;border-color:var(--edge)}
+label{display:block;font:italic 400 19px "Instrument Serif",serif;color:var(--muted);margin:14px 0 4px}
+input{width:100%;font:inherit;font-size:17px;padding:12px 13px;border:2.5px solid var(--edge);border-radius:6px;background:var(--card);color:var(--ink)}
+input:focus-visible,button:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+.go{width:100%;margin-top:20px;border:2.5px solid var(--edge);border-radius:6px;padding:14px;font:900 18px Archivo,sans-serif;font-stretch:118%;background:var(--blue);color:#fff;cursor:pointer;box-shadow:4px 4px 0 var(--edge)}
+.go:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--edge)}
 .go:disabled{opacity:.55;cursor:wait}
-.err{margin-top:12px;padding:9px 12px;border-radius:10px;background:var(--bad-soft);color:var(--bad);font-size:14px}
-.link{background:none;border:0;color:var(--accent);font:inherit;font-size:14px;cursor:pointer;padding:0;margin-top:14px;text-decoration:underline}
-.foot{margin-top:18px;font-size:12px;color:var(--muted)}
+.err{margin-top:14px;padding:10px 12px;border:2px solid var(--edge);border-radius:6px;background:var(--bad-soft);color:var(--red);font-size:14px;font-weight:600}
+.link{background:none;border:0;color:var(--ink);font:inherit;font-size:14px;font-weight:600;cursor:pointer;padding:0;margin-top:14px;text-decoration:underline;text-decoration-color:var(--red);text-decoration-thickness:2px;text-underline-offset:3px}
+.foot{margin-top:18px;font-size:13px;color:var(--muted)}
 [hidden]{display:none!important}
 </style></head>
 <body>
 <main>
-  <div class="pi" aria-hidden="true">π</div>
-  <h1>Grade 8 Maths XP</h1>
-  <p class="sub">Hawar International School</p>
-
+  <div class="plate">
+    <div class="geo" aria-hidden="true"><svg class="geo-svg" viewBox="0 0 600 300" preserveAspectRatio="xMaxYMid meet" aria-hidden="true" focusable="false">
+<g class="g-con"><circle cx="330" cy="172" r="124"/><path d="M96 286L586 26M190 268H596M432 18V292"/></g>
+<circle class="g1" cx="432" cy="150" r="98"/>
+<path class="g2" d="M244 268H420L332 92Z"/>
+<rect class="g3" x="470" y="30" width="96" height="96" transform="rotate(14 518 78)"/>
+<path class="g4" d="M429.7 153.1 L429.8 153.3 L430.0 153.4 L430.1 153.6 L430.3 153.7 L430.4 153.9 L430.6 154.0 L430.8 154.1 L431.0 154.3 L431.2 154.4 L431.4 154.5 L431.6 154.6 L431.8 154.6 L432.1 154.7 L432.3 154.8 L432.6 154.8 L432.8 154.9 L433.1 154.9 L433.3 154.9 L433.6 154.9 L433.9 154.9 L434.2 154.9 L434.4 154.8 L434.7 154.8 L435.0 154.7 L435.3 154.6 L435.5 154.5 L435.8 154.4 L436.1 154.3 L436.4 154.1 L436.6 154.0 L436.9 153.8 L437.2 153.6 L437.4 153.4 L437.7 153.2 L437.9 152.9 L438.1 152.7 L438.4 152.4 L438.6 152.1 L438.8 151.8 L439.0 151.5 L439.1 151.2 L439.3 150.8 L439.4 150.5 L439.6 150.1 L439.7 149.7 L439.8 149.3 L439.8 148.9 L439.9 148.5 L439.9 148.1 L440.0 147.7 L439.9 147.2 L439.9 146.8 L439.9 146.3 L439.8 145.9 L439.7 145.4 L439.6 145.0 L439.4 144.5 L439.3 144.1 L439.1 143.6 L438.8 143.2 L438.6 142.7 L438.3 142.3 L438.0 141.9 L437.7 141.5 L437.3 141.0 L437.0 140.7 L436.6 140.3 L436.1 139.9 L435.7 139.6 L435.2 139.2 L434.7 138.9 L434.2 138.6 L433.6 138.3 L433.1 138.1 L432.5 137.9 L431.9 137.7 L431.3 137.5 L430.6 137.4 L430.0 137.3 L429.3 137.2 L428.6 137.1 L427.9 137.1 L427.2 137.2 L426.5 137.2 L425.8 137.3 L425.0 137.5 L424.3 137.6 L423.6 137.8 L422.8 138.1 L422.1 138.4 L421.4 138.7 L420.7 139.1 L419.9 139.5 L419.3 140.0 L418.6 140.5 L417.9 141.0 L417.2 141.6 L416.6 142.2 L416.0 142.9 L415.4 143.6 L414.9 144.4 L414.3 145.2 L413.8 146.0 L413.4 146.8 L413.0 147.7 L412.6 148.7 L412.2 149.6 L411.9 150.6 L411.7 151.6 L411.5 152.7 L411.3 153.8 L411.2 154.9 L411.2 156.0 L411.2 157.1 L411.3 158.3 L411.4 159.4 L411.6 160.6 L411.8 161.8 L412.1 163.0 L412.5 164.1 L412.9 165.3 L413.4 166.5 L414.0 167.7 L414.6 168.8 L415.4 170.0 L416.1 171.1 L417.0 172.2 L417.9 173.3 L418.9 174.3 L419.9 175.3 L421.0 176.3 L422.2 177.2 L423.4 178.1 L424.7 178.9 L426.1 179.7 L427.5 180.4 L429.0 181.1 L430.5 181.7 L432.1 182.2 L433.7 182.6 L435.4 183.0 L437.1 183.3 L438.8 183.5 L440.6 183.7 L442.4 183.7 L444.3 183.6 L446.1 183.5 L448.0 183.3 L449.9 182.9 L451.9 182.5 L453.8 181.9 L455.7 181.3 L457.6 180.5 L459.5 179.7 L461.4 178.7 L463.3 177.6 L465.1 176.4 L466.9 175.1 L468.7 173.7 L470.4 172.2 L472.0 170.6 L473.6 168.8 L475.2 167.0 L476.6 165.1 L478.0 163.0 L479.3 160.9 L480.6 158.6 L481.7 156.3 L482.7 153.9 L483.6 151.4 L484.4 148.8 L485.1 146.1 L485.6 143.4 L486.1 140.6 L486.3 137.8 L486.5 134.8 L486.5 131.9 L486.4 128.9 L486.0 125.8 L485.6 122.8 L485.0 119.7 L484.2 116.6 L483.2 113.5 L482.1 110.4 L480.8 107.3 L479.3 104.2 L477.7 101.2 L475.9 98.2 L473.9 95.2 L471.7 92.3 L469.4 89.5 L466.8 86.8 L464.1 84.1 L461.3 81.6 L458.2 79.1 L455.0 76.8 L451.6 74.6 L448.1 72.6 L444.4 70.7 L440.6 68.9 L436.6 67.3 L432.5 65.9 L428.3 64.7 L423.9 63.7 L419.5 62.9 L414.9 62.3 L410.2 61.9 L405.5 61.8 L400.6 61.9 L395.7 62.2 L390.8 62.8 L385.8 63.7 L380.8 64.8 L375.8 66.2 L370.8 67.8 L365.7 69.8 L360.8 72.0 L355.8 74.5 L350.9 77.3 L346.1 80.3 L341.4 83.7 L336.8 87.3 L332.3 91.2 L327.9 95.4 L323.7 99.9 L319.6 104.7 L315.7 109.7 L312.1 115.0 L308.6 120.6 L305.4 126.4 L302.4 132.5 L299.7 138.8 L297.3 145.3 L295.1 152.0 L293.3 159.0 L291.8 166.1 L290.6 173.4 L289.8 180.9 L289.4 188.5 L289.3 196.2"/>
+<g class="g5"><circle cx="332" cy="92" r="5"/><circle cx="432" cy="150" r="5"/><circle cx="244" cy="268" r="5"/>
+<text x="314" y="80">A</text><text x="444" y="144">B</text><text x="222" y="262">C</text></g>
+</svg></div>
+    <div class="mk" aria-hidden="true">π</div>
+    <h1>Mathkn</h1>
+    <p class="sub">Earn XP. Level up.</p>
+  </div>
+  <div class="body">
   <div class="seg" role="tablist">
     <button type="button" id="tabS" aria-pressed="true">Student</button>
     <button type="button" id="tabT" aria-pressed="false">Teacher</button>
@@ -61,7 +87,8 @@ input:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline
   </form>
 
   <div class="err" id="err" role="alert" hidden></div>
-  <div class="foot">Forgot your PIN? Ask Mr. Khalid.</div>
+  <div class="foot">Forgot your PIN? Ask your teacher.</div>
+  </div>
 </main>
 
 <script type="module">
