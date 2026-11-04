@@ -1,5 +1,5 @@
 // Gives the teacher page the same "db" calls the Claude version used, but backed by Firebase.
-import { fs, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, getDocs, onSnapshot, runTransaction } from "./fb.js";
+import { fs, bdoc, bcol, getDoc, setDoc, updateDoc, deleteDoc, getDocs, onSnapshot, runTransaction } from "./fb.js";
 
 const mapErr = e => { const err = new Error(e && e.message || "db error"); err.code = e && e.code === "permission-denied" ? "invalid_argument" : (e && e.code) || "unknown"; return err; };
 const guard = p => p.catch(e => { throw mapErr(e); });
@@ -23,12 +23,12 @@ function wrapDoc(ref) {
 }
 
 export const db = {
-  doc: path => wrapDoc(doc(fs, ...path.split("/"))),
+  doc: path => wrapDoc(bdoc(...path.split("/"))),
   collection: name => {
-    const col = collection(fs, name);
+    const col = bcol(name);
     return {
       path: name,
-      doc: id => wrapDoc(doc(col, id)),
+      doc: id => wrapDoc(bdoc(name, id)),
       get: () => guard(getDocs(col)),
       onSnapshot: (ok, bad) => onSnapshot(col, { includeMetadataChanges: true }, ok, e => bad && bad(mapErr(e)))
     };

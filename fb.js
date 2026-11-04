@@ -20,6 +20,13 @@ export const fs = getFirestore(app);
 export { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut,
   doc, getDoc, setDoc, updateDoc, deleteDoc, collection, getDocs, onSnapshot, runTransaction, writeBatch, initializeApp, getAuth };
 
+// Each teacher works inside his own folder of the database: teachers/<his uid>/students, .../cup, and so on.
+// The owner (admin) keeps the original top-level folders, so his existing data needs no moving.
+let BASE = [];
+export const setBase = parts => { BASE = parts; };
+export const bcol = (...seg) => collection(fs, ...BASE, ...seg);
+export const bdoc = (...seg) => doc(fs, ...BASE, ...seg);
+
 // Students log in with their ID + PIN. Firebase wants an email, so we build one from the ID.
 export const emailFor = u => String(u).trim().toLowerCase().replace(/\s+/g, "") + "@math8island.app";
 

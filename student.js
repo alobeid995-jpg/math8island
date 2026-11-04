@@ -16,7 +16,7 @@ async function start() {
   const p = await profileOf(u.uid);
   if (!p) { await signOut(auth); location.href = "index.html"; return; }
   if (p.role === "teacher") { location.href = "teacher.html"; return; }
-  ref = doc(fs, "students", p.sid);
+  ref = p.tid ? doc(fs, "teachers", p.tid, "students", p.sid) : doc(fs, "students", p.sid);
   onSnapshot(ref, snap => { loaded = true; me = snap.exists() ? fromDoc(snap) : null; render(); },
     () => { loaded = true; me = null; render(); });
 }

@@ -1,4 +1,4 @@
-import { auth, fs, firebaseConfig, doc, setDoc, updateDoc, getDocs, collection, writeBatch, signOut, whenUser, profileOf, emailFor,
+import { auth, fs, firebaseConfig, doc, setDoc, updateDoc, getDocs, writeBatch, setBase, bcol, bdoc, signOut, whenUser, profileOf, emailFor,
   initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js";
 import { db } from "./fbdb.js";
 
@@ -8,6 +8,10 @@ const esc2 = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;
 const u = await whenUser();
 const p = u && await profileOf(u.uid);
 if (!p || p.role !== "teacher") { location.href = "index.html"; throw new Error("not a teacher"); }
+
+// The owner sees the original top-level data. Every other teacher gets a private folder of his own.
+const ADMIN = p.admin === true;
+setBase(ADMIN ? [] : ["teachers", u.uid]);
 
 // Hand the tracker its database. From here on the tracker page works as before.
 window.__resolveClaude({ use: async n => n === "db" ? db : n === "user" ? { can: async () => true, isOwner: () => true, canEdit: () => true } : null });
@@ -23,7 +27,7 @@ const pinOf = () => String(100000 + (crypto.getRandomValues(new Uint32Array(1))[
 
 async function listMissing() {
   const cl = $("lgCls").value, box = $("lgMissing");
-  const all = (await getDocs(collection(fs, "students"))).docs.filter(d => d.data().cls === cl);
+  const all = (await getDocs(bcol("students"))).docs.filter(d => d.data().cls === cl);
   const no = all.filter(d => !String(d.data().enrollment || "").trim()).sort((a, b) => String(a.data().name).localeCompare(String(b.data().name)));
   box.innerHTML = no.length
     ? `<h4 style="margin:6px 0 2px">${no.length} student${no.length === 1 ? "" : "s"} in ${esc2(cl)} without a student ID</h4>` + no.map(d => `<div class="lg-bar" style="margin:4px 0"><span style="min-width:180px">${esc2(d.data().name)}</span><input data-idfor="${esc2(d.id)}" placeholder="e.g. 19-00047" style="width:140px"><button class="ghost small" data-saveid="${esc2(d.id)}" type="button">Save ID</button></div>`).join("")
@@ -35,10 +39,10 @@ document.addEventListener("click", async ev => {
   if (!val) { msg("Type the student ID first."); return; }
   b.disabled = true;
   try {
-    const all = (await getDocs(collection(fs, "students"))).docs;
+    const all = (await getDocs(bcol("students"))).docs;
     const clash = all.find(d => d.id !== id && String(d.data().enrollment || "").trim().toLowerCase() === val.toLowerCase());
     if (clash) { msg(`The ID ${val} already belongs to ${clash.data().name}.`); return; }
-    await updateDoc(doc(fs, "students", id), { enrollment: val });
+    await updateDoc(bdoc("students", id), { enrollment: val });
     msg("ID saved."); await listMissing();
   } catch (e) { msg("Could not save: " + (e.code || e.message)); }
   finally { b.disabled = false; }
@@ -47,7 +51,7 @@ document.addEventListener("click", async ev => {
 async function listLogins() {
   listMissing().catch(() => {});
   const cl = $("lgCls").value;
-  const snap = await getDocs(collection(fs, "logins"));
+  const snap = await getDocs(bcol("logins"));
   const rows = snap.docs.map(d => d.data()).filter(r => r.cls === cl).sort((a, b) => String(a.name).localeCompare(String(b.name)));
   $("lgList").innerHTML = rows.length
     ? `<h4 style="margin:6px 0 2px">Class ${esc2(cl)} · ${rows.length} logins</h4><table class="lg-tbl"><thead><tr><th>Name</th><th>ID</th><th>PIN</th></tr></thead><tbody>${rows.map(r => `<tr><td>${esc2(r.name)}</td><td>${esc2(r.username)}</td><td class="pin">${esc2(r.pin)}</td></tr>`).join("")}</tbody></table>`
@@ -57,9 +61,9 @@ async function listLogins() {
 async function makeLogins() {
   const cl = $("lgCls").value, btn = $("lgMake"); btn.disabled = true;
   try {
-    const sSnap = await getDocs(collection(fs, "students"));
+    const sSnap = await getDocs(bcol("students"));
     const mine = sSnap.docs.filter(d => d.data().cls === cl);
-    const have = new Set((await getDocs(collection(fs, "logins"))).docs.map(d => d.id));
+    const have = new Set((await getDocs(bcol("logins"))).docs.map(d => d.id));
     const todo = mine.filter(d => !have.has(d.id));
     if (!mine.length) { msg(`No students in ${cl} yet. Add them in the Students tab first.`); return; }
     if (!todo.length) { msg("Everyone in this class already has a login."); await listLogins(); return; }
@@ -71,10 +75,10 @@ async function makeLogins() {
       msg(`Creating ${ok + bad.length + 1} of ${todo.length}…`);
       try {
         const c = await createUserWithEmailAndPassword(sauth, emailFor(username), pin);
-        await setDoc(doc(fs, "users", c.user.uid), { role: "student", sid: d.id });
-        await setDoc(doc(fs, "logins", d.id), { username, pin, name: String(v.name || ""), cls: cl });
+        await setDoc(doc(fs, "users", c.user.uid), ADMIN ? { role: "student", sid: d.id } : { role: "student", sid: d.id, tid: u.uid });
+        await setDoc(bdoc("logins", d.id), { username, pin, name: String(v.name || ""), cls: cl });
         await signOut(sauth); ok++;
-      } catch (e) { bad.push(`${v.name || d.id}: ${e.code || e.message}`); }
+      } catch (e) { bad.push(`${v.name || d.id}: ` + (e.code === "auth/email-already-in-use" ? `the ID ${username} already has a login (maybe from another teacher). Check the ID.` : (e.code || e.message))); }
     }
     msg(`Created ${ok} login${ok === 1 ? "" : "s"}.` + (bad.length ? `\nProblems:\n${bad.join("\n")}` : ""));
     await listLogins();
@@ -87,7 +91,7 @@ async function addDemo() {
   const b = writeBatch(fs), wk = weekKey();
   names.forEach((n, i) => {
     const id = "demo-" + String(i + 1).padStart(3, "0");
-    b.set(doc(fs, "students", id), { name: n, cls: $("lgCls").value, enrollment: id.toUpperCase(), xp: 200, carry: 300 + i * 100, spent: 0, log: [], createdAt: Date.now(), bonusWeek: wk,
+    b.set(bdoc("students", id), { name: n, cls: $("lgCls").value, enrollment: id.toUpperCase() + (ADMIN ? "" : "-" + u.uid.slice(0, 3).toUpperCase()), xp: 200, carry: 300 + i * 100, spent: 0, log: [], createdAt: Date.now(), bonusWeek: wk,
       counts: {}, owned: [], eq: { frame: "", color: "", title: "", top: "", skin: "" }, reqs: [], buys: 0, lastBuy: "", hist: [], sp: [], avatar: (Math.random() * 4294967295) >>> 0 });
   });
   try { await b.commit(); msg(`Added 8 demo students to ${$("lgCls").value}. Now press "Create logins".`); }
@@ -114,7 +118,7 @@ $("impFile").onchange = async ev => {
     const n = Object.keys(j.data.students).length;
     if (!confirm(`Import ${n} students and their classroom data? Demo students will be removed. Existing students with the same ID are replaced.`)) return;
     // remove demo students and their login rows
-    const dsnap = await getDocs(collection(fs, "students"));
+    const dsnap = await getDocs(bcol("students"));
     const demo = dsnap.docs.filter(d => d.id.startsWith("demo-")).map(d => d.id);
     let ops = [];
     demo.forEach(id => { ops.push(["del", "students", id]); ops.push(["del", "logins", id]); });
@@ -122,7 +126,7 @@ $("impFile").onchange = async ev => {
     let done = 0;
     for (let i = 0; i < ops.length; i += 400) {
       const b = writeBatch(fs);
-      ops.slice(i, i + 400).forEach(([k, c, id, data]) => k === "set" ? b.set(doc(fs, c, id), data) : b.delete(doc(fs, c, id)));
+      ops.slice(i, i + 400).forEach(([k, c, id, data]) => k === "set" ? b.set(bdoc(c, id), data) : b.delete(bdoc(c, id)));
       await b.commit(); done = Math.min(ops.length, i + 400); say(`Importing… ${done}/${ops.length}`);
     }
     alert(`Done. ${n} students imported. Now open Student logins, choose each class and tap "Create logins for this class".`);
