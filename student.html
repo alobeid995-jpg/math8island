@@ -1239,8 +1239,8 @@ function shade(hex, f) {
   const n = parseInt(hex.slice(1), 16), c = [n >> 16, (n >> 8) & 255, n & 255];
   return "#" + c.map(v => Math.max(0, Math.min(255, Math.round(f > 1 ? v + (255 - v) * (f - 1) : v * f))).toString(16).padStart(2, "0")).join("");
 }
-const sp = (d, fill, extra = "") => `<path d="${d}" fill="${fill}" stroke="${DKC}" stroke-width="1.6" stroke-linejoin="round" ${extra}/>`;
-const sr = (x, y, w, h, fill, extra = "") => `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${fill}" stroke="${DKC}" stroke-width="1.6" stroke-linejoin="round" ${extra}/>`;
+const sp = (d, fill, extra = "") => `<path d="${d}" fill="${fill}" stroke="${DKC}" ${/stroke-width/.test(extra) ? "" : 'stroke-width="1.6" '}stroke-linejoin="round" ${extra}/>`;
+const sr = (x, y, w, h, fill, extra = "") => `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${fill}" stroke="${DKC}" ${/stroke-width/.test(extra) ? "" : 'stroke-width="1.6" '}stroke-linejoin="round" ${extra}/>`;
 const fr_ = (x, y, w, h, fill) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${fill}"/>`;
 function cubeHead(c, x = 24, y = 24, w = 42, h = 42, d = 8) {
   return sp(`M${x} ${y} L${x + d} ${y - d} L${x + w + d} ${y - d} L${x + w} ${y}Z`, shade(c, 1.25))
@@ -1386,7 +1386,7 @@ const HERO_DEF = [
 ];
 function heroSVG(i) {
   const h = HERO_DEF[i], D = "#2a1d0e", id = "h" + i, G = `url(#${id}g)`, W = "#fbf7ec";
-  const st = (extra = "") => `stroke="${D}" stroke-width="1.5" stroke-linejoin="round" ${extra}`;
+  const st = (extra = "") => `stroke="${D}" ${extra || 'stroke-width="1.5"'} stroke-linejoin="round"`;   // one stroke-width only: a doubled attribute makes the certificate picture fail
   const dark = shade(h.robe, .72);
   const staff = h.kind === "staff";
   const hx = 100, hy = staff ? 148 : 128;
