@@ -76,3 +76,33 @@ $("lgCls").onchange = () => { msg(""); listLogins(); };
 $("lgMake").onclick = makeLogins;
 $("lgDemo").onclick = addDemo;
 $("lgPrint").onclick = () => window.print();
+
+/* ---------- import the old tracker's data (from "Export all data") ---------- */
+$("impBtn").onclick = () => $("impFile").click();
+$("impFile").onchange = async ev => {
+  const f = ev.target.files[0]; ev.target.value = "";
+  if (!f) return;
+  const btn = $("impBtn"), old = btn.textContent; btn.disabled = true;
+  const say = t => { btn.textContent = t; };
+  try {
+    const j = JSON.parse(await f.text());
+    if (j.app !== "math8island-export" || !j.data || !j.data.students) throw new Error("This is not an export file from the old tracker.");
+    const n = Object.keys(j.data.students).length;
+    if (!confirm(`Import ${n} students and their classroom data? Demo students will be removed. Existing students with the same ID are replaced.`)) return;
+    // remove demo students and their login rows
+    const dsnap = await getDocs(collection(fs, "students"));
+    const demo = dsnap.docs.filter(d => d.id.startsWith("demo-")).map(d => d.id);
+    let ops = [];
+    demo.forEach(id => { ops.push(["del", "students", id]); ops.push(["del", "logins", id]); });
+    for (const [c, docs] of Object.entries(j.data)) for (const [id, data] of Object.entries(docs)) ops.push(["set", c, id, data]);
+    let done = 0;
+    for (let i = 0; i < ops.length; i += 400) {
+      const b = writeBatch(fs);
+      ops.slice(i, i + 400).forEach(([k, c, id, data]) => k === "set" ? b.set(doc(fs, c, id), data) : b.delete(doc(fs, c, id)));
+      await b.commit(); done = Math.min(ops.length, i + 400); say(`Importing… ${done}/${ops.length}`);
+    }
+    alert(`Done. ${n} students imported. Now open Student logins, choose each class and tap "Create logins for this class".`);
+    location.reload();
+  } catch (e) { alert("Import failed: " + (e.code || e.message)); }
+  finally { btn.disabled = false; btn.textContent = old; }
+};
