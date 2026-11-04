@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Math 8 Island · Log in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Lexend:wght@400;500;600&family=Caveat:wght@600&display=swap">
+<style>
+:root{--paper:#f5f7fb;--grid:#dfe6f2;--major:#c9d4ea;--card:#fff;--ink:#17233b;--muted:#5d6a82;--line:#d7deea;--accent:#2f4fd6;--bad:#c43a31;--bad-soft:#fbe7e5;--margin:#e8838a;--gold:#b7791f}
+@media (prefers-color-scheme:dark){:root{--paper:#0f1522;--grid:#182236;--major:#22304b;--card:#161f31;--ink:#e8edf7;--muted:#9aa7bf;--line:#26324a;--accent:#8ea4ff;--bad:#ff8a80;--bad-soft:#3e1d1c;--gold:#f0b75a;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;padding:20px;font:16px/1.5 Lexend,system-ui,sans-serif;color:var(--ink);background-color:var(--paper);
+ background-image:linear-gradient(var(--major) 1px,transparent 1px),linear-gradient(90deg,var(--major) 1px,transparent 1px),linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:120px 120px,120px 120px,24px 24px,24px 24px}
+main{width:min(420px,100%);background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:0 8px 30px rgba(23,35,59,.12);padding:26px 24px 24px 56px;position:relative;
+ background-image:linear-gradient(90deg,transparent 40px,var(--margin) 40px,var(--margin) 42px,transparent 42px)}
+.pi{position:absolute;left:10px;top:22px;width:26px;height:26px;border-radius:8px;background:var(--ink);color:var(--card);display:grid;place-items:center;font:italic 700 18px Georgia,serif}
+h1{font:800 32px/1.05 "Bricolage Grotesque",sans-serif;margin:0 0 2px}
+.sub{font:600 20px Caveat,cursive;color:var(--accent);margin:0 0 18px}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border:1px solid var(--line);border-radius:12px;margin-bottom:16px}
+.seg button{border:0;border-radius:9px;padding:9px;font:600 15px Lexend,sans-serif;background:transparent;color:var(--muted);cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--card)}
+label{display:block;font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:12px 0 4px}
+input{width:100%;font:inherit;font-size:17px;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink)}
+input:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.go{width:100%;margin-top:18px;border:0;border-radius:10px;padding:13px;font:700 17px Lexend,sans-serif;background:var(--accent);color:var(--card);cursor:pointer}
+.go:disabled{opacity:.55;cursor:wait}
+.err{margin-top:12px;padding:9px 12px;border-radius:10px;background:var(--bad-soft);color:var(--bad);font-size:14px}
+.link{background:none;border:0;color:var(--accent);font:inherit;font-size:14px;cursor:pointer;padding:0;margin-top:14px;text-decoration:underline}
+.foot{margin-top:18px;font-size:12px;color:var(--muted)}
+[hidden]{display:none!important}
+</style></head>
+<body>
+<main>
+  <div class="pi" aria-hidden="true">π</div>
+  <h1>Grade 8 Maths XP</h1>
+  <p class="sub">Hawar International School</p>
+
+  <div class="seg" role="tablist">
+    <button type="button" id="tabS" aria-pressed="true">Student</button>
+    <button type="button" id="tabT" aria-pressed="false">Teacher</button>
+  </div>
+
+  <form id="fS" autocomplete="on">
+    <label for="sid">Your ID</label>
+    <input id="sid" name="username" inputmode="text" autocapitalize="off" autocomplete="username" placeholder="for example 16-00014" required>
+    <label for="pin">Your PIN</label>
+    <input id="pin" name="password" type="password" inputmode="numeric" autocomplete="current-password" placeholder="6 digits from your teacher" required>
+    <button class="go" type="submit">Log in</button>
+  </form>
+
+  <form id="fT" hidden>
+    <label for="em">Email</label>
+    <input id="em" type="email" autocomplete="email" required>
+    <label for="pw">Password</label>
+    <input id="pw" type="password" autocomplete="current-password" required minlength="6">
+    <div id="inviteWrap" hidden>
+      <label for="inv">Teacher invite code</label>
+      <input id="inv" autocomplete="off">
+    </div>
+    <button class="go" type="submit" id="goT">Log in</button>
+    <button class="link" type="button" id="toggleNew">I am new: create a teacher account</button>
+  </form>
+
+  <div class="err" id="err" role="alert" hidden></div>
+  <div class="foot">Forgot your PIN? Ask Mr. Khalid.</div>
+</main>
+
+<script type="module">
+import { auth, fs, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, doc, setDoc, emailFor, profileOf, whenUser, friendlyError } from "./fb.js";
+const $ = id => document.getElementById(id);
+let creating = false;
+const showErr = m => { $("err").textContent = m; $("err").hidden = !m; };
+const tab = t => { $("fS").hidden = t !== "S"; $("fT").hidden = t !== "T"; $("tabS").setAttribute("aria-pressed", t === "S"); $("tabT").setAttribute("aria-pressed", t === "T"); showErr(""); };
+$("tabS").onclick = () => tab("S"); $("tabT").onclick = () => tab("T");
+$("toggleNew").onclick = () => {
+  creating = !creating; $("inviteWrap").hidden = !creating; $("inv").required = creating;
+  $("goT").textContent = creating ? "Create teacher account" : "Log in";
+  $("toggleNew").textContent = creating ? "I already have an account: log in" : "I am new: create a teacher account";
+  showErr("");
+};
+async function go(uid) {
+  const p = await profileOf(uid);
+  if (!p) { await signOut(auth); throw { code: "no-profile" }; }
+  location.href = p.role === "teacher" ? "teacher.html" : "student.html";
+}
+$("fS").onsubmit = async e => {
+  e.preventDefault(); showErr(""); const b = e.target.querySelector("button"); b.disabled = true;
+  try { const c = await signInWithEmailAndPassword(auth, emailFor($("sid").value), $("pin").value.trim()); await go(c.user.uid); }
+  catch (er) { showErr(er.code === "no-profile" ? "This login is not set up yet. Ask your teacher." : friendlyError(er)); b.disabled = false; }
+};
+$("fT").onsubmit = async e => {
+  e.preventDefault(); showErr(""); const b = $("goT"); b.disabled = true;
+  try {
+    if (creating) {
+      const c = await createUserWithEmailAndPassword(auth, $("em").value.trim(), $("pw").value);
+      await setDoc(doc(fs, "users", c.user.uid), { role: "teacher", code: $("inv").value.trim(), name: $("em").value.trim() });
+      await go(c.user.uid);
+    } else {
+      const c = await signInWithEmailAndPassword(auth, $("em").value.trim(), $("pw").value); await go(c.user.uid);
+    }
+  } catch (er) {
+    if (creating && auth.currentUser) { try { await auth.currentUser.delete(); } catch {} }   // do not leave a half-made account
+    showErr(er.code === "no-profile" ? "This account is not a teacher account." : friendlyError(er)); b.disabled = false;
+  }
+};
+// Already signed in? Go straight to the right page.
+whenUser().then(u => { if (u) go(u.uid).catch(() => {}); });
+</script>
+</body></html>
