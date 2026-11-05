@@ -1527,7 +1527,7 @@ function readShop(v) {
     sp: Array.isArray(v.sp) ? v.sp.filter(e => e && shopItem(e.k)) : []
   };
 }
-let shopFor = null, shopCat = "frame", shopConfirm = "";
+let shopFor = null, shopCat = "frame", shopConfirm = "", shopViewCat = "frame";
 /* 3D shop avatars: the flat drawing is stacked in layers (extruded) and sways in perspective */
 const a3dCache = new Map();
 function avatar3D(id) {
@@ -1584,7 +1584,8 @@ function renderShopView() {
   const pendHTML = pend.length ? `<ul class="plist">${pend.map(p => `<li>${avatarHTML(p.s, "sm")}<div><div class="nm2" style="font-size:15px">${nameHTML(p.s)} <small style="font-weight:500;color:var(--muted)">${p.s.cls}</small></div><div>${p.it.icon} ${esc(p.it.name)} · ${p.it.price} XP</div></div><div class="sbtns"><button class="plus small" data-act="reqDone" data-id="${p.s.id}" data-item="${p.r.k}" data-at="${p.r.at}" ${readOnly ? "disabled" : ""}>Done</button><button class="ghost small" data-act="reqRefund" data-id="${p.s.id}" data-item="${p.r.k}" data-at="${p.r.at}" ${readOnly ? "disabled" : ""}>Refund</button></div></li>`).join("")}</ul>` : `<div class="none">No class perks waiting. When a student requests one it appears here.</div>`;
   $("shopView").innerHTML = `<div class="shop-intro"><h2>XP Shop</h2><p>Students spend XP here. Open a student in the list and press Shop. Spending never lowers their level or badges.</p></div>
     ${pend.length ? `<section class="card"><h3>Old perk requests (${pend.length})</h3>${pendHTML}</section>` : ""}
-    ${SHOP_CATS.map(c => `<section class="card"><h3>${c.label}</h3><div class="shop-grid">${SHOP.filter(x => x.cat === c.key).map(it => `<div class="sitem"><div class="prev">${shopPreview(it, demo)}</div><b>${esc(it.name)}</b><span class="pr">${it.price} XP</span>${it.desc ? `<small>${esc(it.desc)}</small>` : ""}</div>`).join("")}</div></section>`).join("")}`;
+    <div class="shop-tabs" role="tablist" aria-label="Shop categories">${SHOP_CATS.map(c => `<button class="shop-tab" role="tab" data-act="shopViewCat" data-cat="${c.key}" aria-pressed="${c.key === shopViewCat}" aria-selected="${c.key === shopViewCat}">${c.label} <small>${SHOP.filter(x => x.cat === c.key).length}</small></button>`).join("")}</div>
+    ${SHOP_CATS.filter(c => c.key === shopViewCat).map(c => `<section class="card"><h3>${c.label}</h3><div class="shop-grid">${SHOP.filter(x => x.cat === c.key).map(it => `<div class="sitem"><div class="prev">${shopPreview(it, demo)}</div><b>${esc(it.name)}</b><span class="pr">${it.price} XP</span>${it.desc ? `<small>${esc(it.desc)}</small>` : ""}</div>`).join("")}</div></section>`).join("")}`;
 }
 function announceBuy(name, it) {
   if (sndMode === "off") return;
@@ -3309,6 +3310,7 @@ document.addEventListener("click", e => {
     case "shopOpen": shopFor = id; shopCat = "frame"; shopConfirm = ""; renderShop(); break;
     case "shopClose": shopFor = null; shopConfirm = ""; $("shopModal").hidden = true; break;
     case "shopCat": shopCat = b.dataset.cat; shopConfirm = ""; renderShop(); break;
+    case "shopViewCat": shopViewCat = b.dataset.cat; renderShopView(); break;
     case "shopAsk": shopConfirm = b.dataset.item; renderShop(); break;
     case "shopNo": shopConfirm = ""; renderShop(); break;
     case "shopBuy": buyItem(shopFor, b.dataset.item); break;

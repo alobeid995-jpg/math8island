@@ -1563,7 +1563,7 @@ function readShop(v) {
     sp: Array.isArray(v.sp) ? v.sp.filter(e => e && shopItem(e.k)) : []
   };
 }
-let shopFor = null, shopCat = "frame", shopConfirm = "";
+let shopFor = null, shopCat = "frame", shopConfirm = "", shopViewCat = "frame";
 /* 3D shop avatars: the flat drawing is stacked in layers (extruded) and sways in perspective */
 const a3dCache = new Map();
 function avatar3D(id) {
