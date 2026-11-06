@@ -3852,9 +3852,10 @@ header.book { padding-bottom: 70px; }
 <div class="modal" id="loginsModal" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="lgTitle">
     <h3 id="lgTitle">Student logins</h3>
-    <p class="noprint">Each student logs in with his ID and a 6-digit PIN. Make the logins once, then print the list and hand each boy his PIN.</p>
+    <p class="noprint">Choose one starting PIN for the class. Every boy logs in with his ID and this PIN once, then he must choose his own PIN. You can always see his current PIN here.</p>
     <div class="lg-bar noprint">
       <label class="fld" style="grid-auto-flow:column;align-items:center;gap:8px"><span>Class</span><select id="lgCls"></select></label>
+      <label class="fld" style="grid-auto-flow:column;align-items:center;gap:8px"><span>Starting PIN</span><input id="lgStart" inputmode="numeric" maxlength="6" placeholder="6 digits" autocomplete="off" style="width:110px"></label>
       <button class="primary" id="lgMake" type="button">Create logins for this class</button>
       <button class="ghost" id="lgDemo" type="button">Add 8 demo students</button>
     </div>

@@ -99,12 +99,14 @@ async function listLogins() {
   const snap = await getDocs(bcol("logins"));
   const rows = snap.docs.map(d => d.data()).filter(r => r.cls === cl).sort((a, b) => String(a.name).localeCompare(String(b.name)));
   $("lgList").innerHTML = rows.length
-    ? `<h4 style="margin:6px 0 2px">Class ${esc2(cl)} · ${rows.length} logins</h4><table class="lg-tbl"><thead><tr><th>Name</th><th>ID</th><th>PIN</th></tr></thead><tbody>${rows.map(r => `<tr><td>${esc2(r.name)}</td><td>${esc2(r.username)}</td><td class="pin">${esc2(r.pin)}</td></tr>`).join("")}</tbody></table>`
+    ? `<h4 style="margin:6px 0 2px">Class ${esc2(cl)} · ${rows.length} logins · ${rows.filter(r => r.first === true).length} still on the starting PIN</h4><table class="lg-tbl"><thead><tr><th>Name</th><th>ID</th><th>PIN</th><th>Status</th></tr></thead><tbody>${rows.map(r => `<tr><td>${esc2(r.name)}</td><td>${esc2(r.username)}</td><td class="pin">${esc2(r.pin)}</td><td>${r.first === true ? "Starting PIN · must change at first login" : "Own PIN"}</td></tr>`).join("")}</tbody></table>`
     : `<p class="none">No logins for ${esc2(cl)} yet.</p>`;
 }
 
 async function makeLogins() {
-  const cl = $("lgCls").value, btn = $("lgMake"); btn.disabled = true;
+  const cl = $("lgCls").value, btn = $("lgMake"), start = $("lgStart").value.trim();
+  if (!/^\d{6}$/.test(start)) { msg("Type a 6-digit starting PIN for this class first."); $("lgStart").focus(); return; }
+  btn.disabled = true;
   try {
     const sSnap = await getDocs(bcol("students"));
     const mine = sSnap.docs.filter(d => d.data().cls === cl);
@@ -116,12 +118,12 @@ async function makeLogins() {
     const sapp = initializeApp(firebaseConfig, "creator" + Date.now()), sauth = getAuth(sapp);
     let ok = 0; const bad = [];
     for (const d of todo) {
-      const v = d.data(), username = String(v.enrollment || d.id), pin = pinOf();
+      const v = d.data(), username = String(v.enrollment || d.id), pin = start;
       msg(`Creating ${ok + bad.length + 1} of ${todo.length}…`);
       try {
         const c = await createUserWithEmailAndPassword(sauth, emailFor(username), pin);
         await setDoc(doc(fs, "users", c.user.uid), ADMIN ? { role: "student", sid: d.id } : { role: "student", sid: d.id, tid: u.uid });
-        await setDoc(bdoc("logins", d.id), { username, pin, name: String(v.name || ""), cls: cl });
+        await setDoc(bdoc("logins", d.id), { username, pin, name: String(v.name || ""), cls: cl, first: true });
         await signOut(sauth); ok++;
       } catch (e) { bad.push(`${v.name || d.id}: ` + (e.code === "auth/email-already-in-use" ? `the ID ${username} already has a login (maybe from another teacher). Check the ID.` : (e.code || e.message))); }
     }

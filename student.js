@@ -1,4 +1,4 @@
-import { auth, fs, doc, onSnapshot, updateDoc, signOut, whenUser, profileOf } from "./fb.js";
+import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js";
 
 const sub = (t, n) => t.split("{n}").join(n);
 let me = null, ref = null, shopCat = "frame", confirmId = "", pickerOpen = false, seeds = [], loaded = false;
@@ -17,8 +17,42 @@ async function start() {
   if (!p) { await signOut(auth); location.href = "index.html"; return; }
   if (p.role === "teacher") { location.href = "teacher.html"; return; }
   ref = p.tid ? doc(fs, "teachers", p.tid, "students", p.sid) : doc(fs, "students", p.sid);
+  // First login with the class starting PIN: the student must choose his own PIN before anything else.
+  const lref = p.tid ? doc(fs, "teachers", p.tid, "logins", p.sid) : doc(fs, "logins", p.sid);
+  let lg = null; try { const s = await getDoc(lref); lg = s.exists() ? s.data() : null; } catch {}
+  if (lg && lg.first === true) { await choosePin(u, lref, String(lg.pin || "")); }
   onSnapshot(ref, snap => { loaded = true; me = snap.exists() ? fromDoc(snap) : null; render(); },
     () => { loaded = true; me = null; render(); });
+}
+
+function choosePin(u, lref, startPin) {
+  return new Promise(done => {
+    $("outBtn").hidden = true;
+    $("app").innerHTML = `<section class="card pinset"><h3>Choose your own PIN</h3>
+      <p>This is your first login. Pick a new 6-digit PIN that only you know. You will use it every time you log in.</p>
+      <label for="np1">New PIN</label><input id="np1" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password" placeholder="6 digits">
+      <label for="np2">Type it again</label><input id="np2" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password" placeholder="6 digits">
+      <p class="pinmsg" id="npMsg" role="alert"></p>
+      <button class="primary" id="npGo" type="button">Save my PIN</button></section>`;
+    const say = t => { $("npMsg").textContent = t; };
+    $("np2").onkeydown = e => { if (e.key === "Enter") $("npGo").click(); };
+    $("npGo").onclick = async () => {
+      const a = $("np1").value.trim(), b = $("np2").value.trim();
+      if (!/^\d{6}$/.test(a)) return say("The PIN must be exactly 6 digits.");
+      if (a !== b) return say("The two PINs are not the same. Try again.");
+      if (a === startPin) return say("Choose a PIN that is different from the class PIN.");
+      if (/^(\d)\1{5}$/.test(a) || "0123456789".includes(a) || "9876543210".includes(a)) return say("That PIN is too easy to guess. Choose another one.");
+      $("npGo").disabled = true; say("Saving…");
+      try {
+        await updatePassword(u, a);
+        try { await updateDoc(lref, { pin: a, first: false }); } catch {}
+        $("outBtn").hidden = false; toast("Your new PIN is saved. Remember it!"); done();
+      } catch (e) {
+        $("npGo").disabled = false;
+        say(e && e.code === "auth/requires-recent-login" ? "Please log out and log in again, then choose your PIN." : "Could not save. Check your internet and try again.");
+      }
+    };
+  });
 }
 
 async function save(patch, okMsg) {
