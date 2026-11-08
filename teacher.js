@@ -88,7 +88,7 @@ document.addEventListener("click", async ev => {
     const clash = all.find(d => d.id !== id && String(d.data().enrollment || "").trim().toLowerCase() === val.toLowerCase());
     if (clash) { msg(`The ID ${val} already belongs to ${clash.data().name}.`); return; }
     await updateDoc(bdoc("students", id), { enrollment: val });
-    msg("ID saved."); await listMissing();
+    msg("ID saved."); await listLogins();
   } catch (e) { msg("Could not save: " + (e.code || e.message)); }
   finally { b.disabled = false; }
 });
@@ -97,10 +97,14 @@ async function listLogins() {
   listMissing().catch(() => {});
   const cl = $("lgCls").value;
   const snap = await getDocs(bcol("logins"));
-  const rows = snap.docs.map(d => d.data()).filter(r => r.cls === cl).sort((a, b) => String(a.name).localeCompare(String(b.name)));
+  const ids = new Map((await getDocs(bcol("students"))).docs.map(d => [d.id, String(d.data().enrollment || "").trim()]));
+  const rows = snap.docs.map(d => ({ ...d.data(), sid: d.id, want: ids.get(d.id) || "" })).filter(r => r.cls === cl).sort((a, b) => String(a.name).localeCompare(String(b.name)));
+  const stale = rows.filter(r => r.want && r.want.toLowerCase() !== String(r.username || "").toLowerCase());
   $("lgList").innerHTML = rows.length
-    ? `<h4 style="margin:6px 0 2px">Class ${esc2(cl)} · ${rows.length} logins · ${rows.filter(r => r.first === true).length} still on the starting PIN</h4><table class="lg-tbl"><thead><tr><th>Name</th><th>ID</th><th>PIN</th><th>Status</th></tr></thead><tbody>${rows.map(r => `<tr><td>${esc2(r.name)}</td><td>${esc2(r.username)}</td><td class="pin">${esc2(r.pin)}</td><td>${r.first === true ? "Starting PIN · must change at first login" : "Own PIN"}</td></tr>`).join("")}</tbody></table>`
+    ? (stale.length ? `<div class="lg-stale"><b>${stale.length} login${stale.length === 1 ? " uses" : "s use"} an old ID.</b> These students now have a student ID, but their login still uses the old code. <button class="primary small" id="lgFixIds" type="button">Update login ID${stale.length === 1 ? "" : "s"}</button></div>` : "") +
+      `<h4 style="margin:6px 0 2px">Class ${esc2(cl)} · ${rows.length} logins · ${rows.filter(r => r.first === true).length} still on the starting PIN</h4><table class="lg-tbl"><thead><tr><th>Name</th><th>ID</th><th>PIN</th><th>Status</th></tr></thead><tbody>${rows.map(r => `<tr><td>${esc2(r.name)}</td><td>${esc2(r.username)}${stale.includes(r) ? ` <small class="lg-old">→ ${esc2(r.want)}</small>` : ""}</td><td class="pin">${esc2(r.pin)}</td><td>${r.first === true ? "Starting PIN · must change at first login" : "Own PIN"}</td></tr>`).join("")}</tbody></table>`
     : `<p class="none">No logins for ${esc2(cl)} yet.</p>`;
+  if (stale.length) $("lgFixIds").onclick = () => fixIds(stale);
 }
 
 async function makeLogins() {
@@ -149,6 +153,44 @@ const fillLg = () => { const sel = $("lgCls"), keep = sel.value; sel.innerHTML =
 /* ---------- reset PINs: every student gets a fresh login with the new starting PIN ----------
    A web page cannot change another person's password, so each student gets a new login (version +1).
    The old login is switched off by removing its profile, so the old PIN stops working. */
+/* A student who got his login before he had a student ID logs in with a code like "s1ab2c".
+   Once his real ID is saved, this gives him a login with that ID (same PIN) and switches the old one off. */
+async function fixIds(stale) {
+  if (resetting) return;
+  const btn = $("lgFixIds"); if (btn) btn.disabled = true; resetting = true;
+  try {
+    const us = (ADMIN ? (await getDocs(query(collection(fs, "users"), where("role", "==", "student")))).docs.filter(d => !d.data().tid || d.data().tid === u.uid)
+                      : (await getDocs(query(collection(fs, "users"), where("tid", "==", u.uid)))).docs).map(d => ({ id: d.id, sid: d.data().sid }));
+    const sapp = initializeApp(firebaseConfig, "fixid" + Date.now()), sauth = getAuth(sapp);
+    let ok = 0; const bad = [];
+    for (const r of stale) {
+      msg(`Updating ${ok + bad.length + 1} of ${stale.length}…`);
+      try {
+        const pin = String(r.pin || ""); if (!/^\d{6}$/.test(pin)) throw new Error("no 6-digit PIN on file");
+        let ver = 0, c = null;
+        for (let k = 0; k < 4 && !c; k++) {
+          try { c = await createUserWithEmailAndPassword(sauth, emailFor(r.want, ver), pin); }
+          catch (e) { if (e.code === "auth/email-already-in-use") ver++; else throw e; }
+        }
+        if (!c) throw new Error(`the ID ${r.want} already has a login (maybe from another teacher). Check the ID.`);
+        const nu = c.user.uid;
+        await setDoc(doc(fs, "users", nu), ADMIN ? { role: "student", sid: r.sid } : { role: "student", sid: r.sid, tid: u.uid });
+        if (ver) await setDoc(doc(fs, "pinver", pinKey(r.want)), { v: ver, tid: u.uid });
+        for (const o of us.filter(x => x.sid === r.sid && x.id !== nu)) await deleteDoc(doc(fs, "users", o.id));
+        const { sid, want, ...keep } = r;
+        await setDoc(bdoc("logins", r.sid), { ...keep, username: r.want, ver, uid: nu });
+        await signOut(sauth); ok++;
+      } catch (e) {
+        bad.push(`${r.name}: ` + (e.code === "auth/too-many-requests" ? "Firebase asks to wait. Try again in an hour." : (e.code || e.message)));
+        if (e.code === "auth/too-many-requests") break;
+      }
+    }
+    msg(`Updated ${ok} login ID${ok === 1 ? "" : "s"}. They log in with their student ID and the same PIN as before.` + (bad.length ? `\nProblems:\n${bad.join("\n")}` : ""));
+  } catch (e) { msg("Could not finish: " + (e.code || e.message)); }
+  finally { resetting = false; }
+  await listLogins();
+}
+
 let resetting = false;
 async function resetLogins(classes) {
   if (resetting) return;
