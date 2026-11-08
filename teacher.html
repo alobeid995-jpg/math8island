@@ -1047,7 +1047,7 @@ header.book .acct{position:relative;z-index:1;display:flex;gap:6px;flex-wrap:wra
 
   <section class="toolbar">
     <form class="add" id="addForm">
-      <input type="text" id="studentName" placeholder="Student name" autocomplete="off" aria-label="Student name">
+      <input type="text" id="studentName" placeholder="Student name, or ID and name: 15-00003 Ali Ahmed" autocomplete="off" aria-label="Student name">
       <button class="primary" type="submit" id="addBtn">Add student</button>
     </form>
     <div class="tools">
@@ -1863,7 +1863,12 @@ function handleWriteError(e) {
 /* ---------- actions ---------- */
 function addStudent(name) {
   if (!cls) { toast("Add a class first, then add students to it."); return; }
-  const st = { id: "s" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name, cls, xp: WEEKLY_BONUS, bonusWeek: weekKey(), log: [], createdAt: Date.now() };
+  // "15-00003 ABDULLA KHALED" (ID first, as in the school system) also saves the student ID
+  const m = String(name).match(/^\s*(\d{2}-\d{4,6})\s+(.+)$/), enrollment = m ? m[1] : "";
+  if (m) name = m[2].trim();
+  if (name === name.toUpperCase()) name = name.toLowerCase().replace(/(^|[\s\-'.])(\p{L})/gu, (x, a, c) => a + c.toUpperCase());
+  if (enrollment && students.some(s => String(s.enrollment || "").trim() === enrollment)) { toast("The ID " + enrollment + " is already in your list."); return; }
+  const st = { id: "s" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name, cls, enrollment, xp: WEEKLY_BONUS, bonusWeek: weekKey(), log: [], createdAt: Date.now() };
   students.push(st); render(); save(st);
   toast(name + " added to " + cls);
 }
@@ -3457,7 +3462,10 @@ $("addForm").addEventListener("submit", e => {
   e.preventDefault();
   const v = $("studentName").value.trim();
   if (!v || readOnly) return;
-  $("studentName").value = ""; addStudent(v);
+  $("studentName").value = "";
+  // several "ID Name" pairs pasted in one go are added one by one
+  const parts = v.split(/(?=\b\d{2}-\d{4,6}\s)/).map(x => x.trim()).filter(Boolean);
+  if (parts.length > 1 && parts.every(x => /^\d{2}-\d{4,6}\s+\S/.test(x))) parts.forEach(addStudent); else addStudent(v);
 });
 $("sortBy").addEventListener("change", () => {
   try { localStorage.setItem("xp_sort", $("sortBy").value); } catch {}
