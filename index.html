@@ -92,7 +92,7 @@ input:focus-visible,button:focus-visible{outline:3px solid var(--yellow);outline
 </main>
 
 <script type="module">
-import { auth, fs, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, doc, setDoc, emailFor, profileOf, whenUser, friendlyError } from "./fb.js";
+import { auth, fs, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, doc, setDoc, emailFor, loginVersion, profileOf, whenUser, friendlyError } from "./fb.js";
 const $ = id => document.getElementById(id);
 let creating = false;
 const showErr = m => { $("err").textContent = m; $("err").hidden = !m; };
@@ -111,7 +111,7 @@ async function go(uid) {
 }
 $("fS").onsubmit = async e => {
   e.preventDefault(); showErr(""); const b = e.target.querySelector("button"); b.disabled = true;
-  try { const c = await signInWithEmailAndPassword(auth, emailFor($("sid").value), $("pin").value.trim()); await go(c.user.uid); }
+  try { const id = $("sid").value, v = await loginVersion(id); const c = await signInWithEmailAndPassword(auth, emailFor(id, v), $("pin").value.trim()); await go(c.user.uid); }
   catch (er) { showErr(er.code === "no-profile" ? "This login is not set up yet. Ask your teacher." : friendlyError(er)); b.disabled = false; }
 };
 $("fT").onsubmit = async e => {

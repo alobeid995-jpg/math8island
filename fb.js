@@ -2,7 +2,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updatePassword }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, getDocs, onSnapshot, runTransaction, writeBatch }
+import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, getDocs, onSnapshot, runTransaction, writeBatch, query, where }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 export const firebaseConfig = {
@@ -18,7 +18,7 @@ export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const fs = getFirestore(app);
 export { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updatePassword,
-  doc, getDoc, setDoc, updateDoc, deleteDoc, collection, getDocs, onSnapshot, runTransaction, writeBatch, initializeApp, getAuth };
+  doc, getDoc, setDoc, updateDoc, deleteDoc, collection, getDocs, onSnapshot, runTransaction, writeBatch, query, where, initializeApp, getAuth };
 
 // Each teacher works inside his own folder of the database: teachers/<his uid>/students, .../cup, and so on.
 // The owner (admin) keeps the original top-level folders, so his existing data needs no moving.
@@ -28,7 +28,13 @@ export const bcol = (...seg) => collection(fs, ...BASE, ...seg);
 export const bdoc = (...seg) => doc(fs, ...BASE, ...seg);
 
 // Students log in with their ID + PIN. Firebase wants an email, so we build one from the ID.
-export const emailFor = u => String(u).trim().toLowerCase().replace(/\s+/g, "") + "@math8island.app";
+// When a teacher resets a student's PIN, the student gets a fresh login (version v): <id>.r<v>@math8island.app.
+// The public "pinver" list says which version an ID is on (it holds only that number).
+export const pinKey = u => String(u).trim().toLowerCase().replace(/\s+/g, "").replace(/\//g, "_");
+export const emailFor = (u, v = 0) => String(u).trim().toLowerCase().replace(/\s+/g, "") + (v ? ".r" + v : "") + "@math8island.app";
+export async function loginVersion(u) {
+  try { const s = await getDoc(doc(fs, "pinver", pinKey(u))); return s.exists() ? Number(s.data().v) || 0 : 0; } catch { return 0; }
+}
 
 export async function profileOf(uid) {
   const s = await getDoc(doc(fs, "users", uid));

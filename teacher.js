@@ -1,4 +1,4 @@
-import { auth, fs, firebaseConfig, doc, getDoc, setDoc, updateDoc, getDocs, writeBatch, setBase, bcol, bdoc, signOut, whenUser, profileOf, emailFor,
+import { auth, fs, firebaseConfig, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, collection, query, where, writeBatch, setBase, bcol, bdoc, signOut, whenUser, profileOf, emailFor, pinKey,
   initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js";
 import { db } from "./fbdb.js";
 
@@ -146,6 +146,53 @@ async function addDemo() {
 }
 
 const fillLg = () => { const sel = $("lgCls"), keep = sel.value; sel.innerHTML = CLASSES.map(c => `<option>${esc2(c)}</option>`).join(""); if (CLASSES.includes(keep)) sel.value = keep; else if (CLASSES.includes(cls)) sel.value = cls; };
+/* ---------- reset PINs: every student gets a fresh login with the new starting PIN ----------
+   A web page cannot change another person's password, so each student gets a new login (version +1).
+   The old login is switched off by removing its profile, so the old PIN stops working. */
+let resetting = false;
+async function resetLogins(classes) {
+  if (resetting) return;
+  const start = $("lgStart").value.trim(), btns = [$("lgReset"), $("lgResetAll"), $("lgMake")];
+  if (!/^\d{6}$/.test(start)) { msg("Type the new 6-digit starting PIN first."); $("lgStart").focus(); return; }
+  const rows = (await getDocs(bcol("logins"))).docs.filter(d => classes.includes(d.data().cls));
+  if (!rows.length) { msg("No logins to reset" + (classes.length === 1 ? " in " + classes[0] : "") + "."); return; }
+  if (!confirm(`Reset the PIN of ${rows.length} student${rows.length === 1 ? "" : "s"} in ${classes.join(", ")}?\n\nTheir old PINs stop working. Everyone logs in once with ${start} and then chooses his own PIN.`)) return;
+  btns.forEach(b => b.disabled = true); resetting = true;
+  try {
+  // the profiles of my students (to switch off their old logins)
+  const us = (ADMIN ? (await getDocs(query(collection(fs, "users"), where("role", "==", "student")))).docs.filter(d => !d.data().tid || d.data().tid === u.uid)
+                    : (await getDocs(query(collection(fs, "users"), where("tid", "==", u.uid)))).docs).map(d => ({ id: d.id, sid: d.data().sid }));
+  const sapp = initializeApp(firebaseConfig, "reset" + Date.now()), sauth = getAuth(sapp);
+  let ok = 0; const bad = [];
+  for (const d of rows) {
+    const r = d.data(), sid = d.id, username = String(r.username || sid);
+    msg(`Resetting ${ok + bad.length + 1} of ${rows.length}…`);
+    try {
+      let ver = (Number(r.ver) || 0) + 1, c = null;
+      for (let k = 0; k < 4 && !c; k++) {
+        try { c = await createUserWithEmailAndPassword(sauth, emailFor(username, ver), start); }
+        catch (e) { if (e.code === "auth/email-already-in-use") ver++; else throw e; }
+      }
+      if (!c) throw new Error("could not make a new login");
+      const nu = c.user.uid;
+      await setDoc(doc(fs, "users", nu), ADMIN ? { role: "student", sid } : { role: "student", sid, tid: u.uid });
+      await setDoc(doc(fs, "pinver", pinKey(username)), { v: ver, tid: u.uid });
+      for (const o of us.filter(x => x.sid === sid && x.id !== nu)) await deleteDoc(doc(fs, "users", o.id));
+      await setDoc(bdoc("logins", sid), { ...r, pin: start, first: true, ver, uid: nu });
+      await signOut(sauth); ok++;
+    } catch (e) {
+      bad.push(`${r.name || sid}: ` + (e.code === "auth/too-many-requests" ? "Firebase asks to wait (too many new logins in a short time). Try the rest in an hour." : (e.code || e.message)));
+      if (e.code === "auth/too-many-requests") break;
+    }
+  }
+  msg(`Reset ${ok} PIN${ok === 1 ? "" : "s"}. New starting PIN: ${start}.` + (bad.length ? `\nProblems:\n${bad.join("\n")}` : ""));
+  } catch (e) { msg("Could not finish: " + (e.code || e.message)); }
+  finally { btns.forEach(b => b.disabled = false); resetting = false; }
+  await listLogins();
+}
+$("lgReset").onclick = () => resetLogins([$("lgCls").value]);
+$("lgResetAll").onclick = () => resetLogins(CLASSES.slice());
+
 $("loginsBtn").onclick = () => { fillLg(); $("loginsModal").hidden = false; msg(CLASSES.length ? "" : "Add a class first (the + Class button)."); if (CLASSES.length) listLogins(); };
 $("lgClose").onclick = () => { $("loginsModal").hidden = true; };
 $("lgCls").onchange = () => { msg(""); listLogins(); };
