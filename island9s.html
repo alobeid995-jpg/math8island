@@ -1,0 +1,2881 @@
+<!doctype html>
+<html lang="en">
+<head>
+<script>window.MI = true; window.__islandDb = new Promise(r => { window.__resolveIsland = r; }); window.claude = { use: async n => (await window.__islandDb)(n) };</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>9S Island</title>
+<style>body{margin:0}:root{padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}img{max-width:100%}[hidden]{display:none!important}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;800&display=swap">
+<style>
+/* Layout: one centered column on a dotted sky ground. Home lists two sections of five game rows; each game opens a ten-level grid. */
+:root{
+  --bg:#E4F5FF; --dot:rgba(18,48,63,.07);
+  --surface:#FFFFFF; --ink:#12303F; --muted:#4F6B79; --edge:#C7E1EE; --line:#12303F;
+  --coral:#E5432D; --coral-deep:#A92B19; --on-coral:#FFFFFF; --c1:#B3281A;
+  --blue:#2F6FED; --c2:#1E4FB8;
+  --teal:#0E9AA7; --teal-deep:#086872;
+  --sun:#FFC83D; --empty:#FFF2C2;
+  --good:#16A05F; --good-ink:#0C6A40; --good-bg:#DDF6E8;
+  --bad:#D6362B; --hint-bg:#ECE8FF; --grape:#7A4DD8;
+  --b0:#FFD9D2; --b1:#CFE0FF; --b2:#FFEFA8; --b3:#C5F0EE;
+  --f-display:'Lilita One','Baloo 2','Trebuchet MS',system-ui,sans-serif;
+  --f-body:'Nunito','Segoe UI',system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E2230; --dot:rgba(234,246,252,.07);
+    --surface:#17364A; --ink:#EAF6FC; --muted:#A9C4D2; --edge:#2C5670; --line:#EAF6FC;
+    --coral:#FF7B66; --coral-deep:#C4452F; --on-coral:#2B0C07; --c1:#FF9A88;
+    --blue:#7FA8FF; --c2:#A9C2FF;
+    --teal:#43D0DC; --teal-deep:#6FE0EA;
+    --sun:#FFD25A; --empty:#2A5068;
+    --good:#3DD68C; --good-ink:#6EE6AA; --good-bg:#12402D;
+    --bad:#FF8478; --hint-bg:#2B2A55; --grape:#A98BFF;
+    --b0:#5A2E2A; --b1:#2A3F73; --b2:#5B4B1A; --b3:#1B5558;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E2230; --dot:rgba(234,246,252,.07);
+  --surface:#17364A; --ink:#EAF6FC; --muted:#A9C4D2; --edge:#2C5670; --line:#EAF6FC;
+  --coral:#FF7B66; --coral-deep:#C4452F; --on-coral:#2B0C07; --c1:#FF9A88;
+  --blue:#7FA8FF; --c2:#A9C2FF;
+  --teal:#43D0DC; --teal-deep:#6FE0EA;
+  --sun:#FFD25A; --empty:#2A5068;
+  --good:#3DD68C; --good-ink:#6EE6AA; --good-bg:#12402D;
+  --bad:#FF8478; --hint-bg:#2B2A55; --grape:#A98BFF;
+  --b0:#5A2E2A; --b1:#2A3F73; --b2:#5B4B1A; --b3:#1B5558;
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{
+  background-color:var(--bg);
+  background-image:radial-gradient(var(--dot) 2.2px,transparent 2.6px);
+  background-size:28px 28px;
+  color:var(--ink);
+  font-family:var(--f-body);
+  font-size:18px;
+  line-height:1.35;
+  padding-block:12px 40px;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+  -webkit-tap-highlight-color:transparent;
+}
+button{font:inherit;color:inherit}
+:focus-visible{outline:4px solid var(--grape);outline-offset:3px}
+.wrap{max-width:720px;margin:0 auto}
+h1,h2,h3{margin:0;font-family:var(--f-display);font-weight:400;text-wrap:balance}
+
+/* top bar */
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;min-height:46px}
+.brand{display:flex;align-items:center;gap:8px;font-family:var(--f-display);font-size:24px;min-width:0}
+.brand svg{width:34px;height:34px;flex:none}
+.brand span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.icon-btn{width:46px;height:46px;flex:none;border-radius:50%;border:3px solid var(--edge);background:var(--surface);color:var(--ink);display:grid;place-items:center;cursor:pointer}
+.icon-btn svg{width:22px;height:22px}
+.icon-btn[hidden]{display:none}
+.icon-btn .off{display:none}
+.icon-btn[aria-pressed="false"] .on{display:none}
+.icon-btn[aria-pressed="false"] .off{display:block}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:999px;background:var(--coral);color:var(--on-coral);font-family:var(--f-display);font-size:25px;padding:11px 30px;cursor:pointer;box-shadow:0 6px 0 var(--coral-deep);transition:transform .1s,box-shadow .1s}
+.btn:active{transform:translateY(4px);box-shadow:0 2px 0 var(--coral-deep)}
+.btn:disabled{opacity:.45;pointer-events:none}
+.btn.alt{background:var(--surface);color:var(--ink);border:3px solid var(--edge);box-shadow:0 6px 0 var(--edge);padding:8px 24px;font-size:21px}
+.btn.alt:active{box-shadow:0 2px 0 var(--edge)}
+.chip{display:inline-flex;align-items:center;gap:6px;flex:none;border:3px solid var(--edge);background:var(--surface);color:var(--ink);border-radius:999px;padding:5px 14px 5px 10px;font-weight:800;font-size:16px;cursor:pointer}
+.chip svg{width:20px;height:20px}
+.actions{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin-top:18px;min-height:64px}
+
+/* home */
+.eyebrow{margin:6px 0 0;font-weight:800;font-size:14px;letter-spacing:.12em;text-transform:uppercase;color:var(--teal-deep)}
+.eyebrow.add{color:var(--c1)}
+h1{font-size:clamp(36px,10vw,56px);line-height:1.02;margin:2px 0 8px}
+.lead{margin:0 0 18px;color:var(--muted);font-weight:700;text-wrap:balance}
+.sechead{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:26px 0 10px;padding-bottom:8px;border-bottom:4px solid var(--teal)}
+.sechead.add{border-bottom-color:var(--coral)}
+.sechead h2{font-size:clamp(26px,7vw,34px)}
+.sechead p{margin:0;color:var(--muted);font-weight:700;font-size:16px}
+.glist{display:grid;gap:12px}
+.gcard{display:grid;grid-template-columns:92px 1fr;gap:14px;align-items:center;text-align:left;width:100%;background:var(--surface);border:3px solid var(--ink);border-radius:24px;box-shadow:0 6px 0 var(--ink);padding:10px 14px 10px 10px;cursor:pointer;min-width:0}
+.gcard:active{transform:translateY(4px);box-shadow:0 2px 0 var(--ink)}
+.gthumb{height:72px;border-radius:16px;background:var(--bg);display:flex;align-items:center;justify-content:center;gap:4px;overflow:hidden;color:var(--ink)}
+.gthumb .pic{width:60px;height:60px}
+.gthumb .bar-svg{width:76px}
+.gtext{min-width:0}
+.gtext h3{font-size:24px;line-height:1.1}
+.gtext p{margin:2px 0 4px;color:var(--muted);font-weight:700;font-size:15px;line-height:1.25}
+.gsum{display:inline-flex;align-items:center;gap:4px;font-weight:800;font-size:14px;color:var(--muted)}
+.gsum svg{width:16px;height:16px;fill:var(--sun);stroke:var(--line);stroke-width:1.5;stroke-linejoin:round}
+.foot{margin:24px 0 0;text-align:center;color:var(--muted);font-weight:700;font-size:16px;text-wrap:balance}
+
+/* level select */
+.levels{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.lvbtn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 0 8px;background:var(--surface);border:3px solid var(--ink);border-radius:20px;box-shadow:0 5px 0 var(--ink);cursor:pointer;min-width:0}
+.lvbtn:active{transform:translateY(3px);box-shadow:0 2px 0 var(--ink)}
+.lvbtn b{font-family:var(--f-display);font-weight:400;font-size:30px;line-height:1}
+.lvbtn .ms{display:flex;gap:1px}
+.lvbtn .ms svg{width:14px;height:14px;fill:var(--edge);stroke:none}
+.lvbtn .ms .on svg{fill:var(--sun);stroke:var(--line);stroke-width:1.6;stroke-linejoin:round}
+.lvbtn.hard{background:var(--b2)}
+
+/* stars */
+.stars{display:inline-flex;gap:4px}
+.stars span{display:block;line-height:0}
+.stars svg{width:30px;height:30px;fill:var(--edge)}
+.stars .on svg{fill:var(--sun);stroke:var(--line);stroke-width:1.4;stroke-linejoin:round}
+
+/* game frame */
+.game{user-select:none;-webkit-user-select:none}
+.gamehead{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:26px}
+.lvl{font-family:var(--f-display);font-size:22px;color:var(--teal-deep)}
+.add-game .lvl{color:var(--c1)}
+.dots{display:flex;gap:8px}
+.dot{width:14px;height:14px;border-radius:50%;background:var(--edge)}
+.dot.done{background:var(--good)}
+.dot.now{background:var(--coral);transform:scale(1.3)}
+.promptrow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0 14px}
+.prompt{margin:0;font-size:clamp(25px,6.4vw,33px);line-height:1.18;text-wrap:balance}
+.prompt .fr{font-size:1.15em;vertical-align:middle;margin:0 .1em}
+.board{background:var(--surface);border:3px solid var(--edge);border-radius:28px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:16px}
+.msg{min-height:3.4em;margin:14px 0 0;padding:10px 14px;border-radius:18px;font-weight:800;text-align:center;display:flex;align-items:center;justify-content:center;text-wrap:balance}
+.msg.good{background:var(--good-bg)}
+.msg.hint{background:var(--hint-bg)}
+
+/* pictures */
+.figbox{width:min(58vw,240px);aspect-ratio:1;max-width:100%}
+.pic{width:100%;height:100%;display:block;overflow:visible}
+.part{fill:var(--empty);stroke:var(--surface);stroke-width:3;stroke-linejoin:round;transition:fill .12s}
+.part.on{fill:var(--coral)}
+.part.on2{fill:var(--blue)}
+.outline{fill:none;stroke:var(--line);stroke-width:4;stroke-linejoin:round;pointer-events:none}
+.tappable .part{cursor:pointer}
+.tappable .part:focus-visible{outline:none;stroke:var(--grape);stroke-width:6}
+.locked .part{pointer-events:none}
+.counter{margin:0;font-family:var(--f-display);font-size:22px}
+.counter b{color:var(--c1);font-weight:400}
+.bar-svg{width:100%;max-width:340px;height:auto;display:block;overflow:visible}
+.seg{fill:var(--empty);stroke:var(--surface);stroke-width:3}
+.seg.on{fill:var(--coral)}
+.seg.on2{fill:var(--blue)}
+.seg.fill{animation:fillin .4s both}
+@keyframes fillin{from{opacity:0;transform:scaleY(.2)}to{opacity:1;transform:none}}
+.seg{transform-box:fill-box;transform-origin:50% 100%}
+
+/* written fractions */
+.fr{display:inline-flex;flex-direction:column;align-items:center;font-family:var(--f-display);line-height:1;font-size:36px}
+.fr .b{display:block;width:100%;min-width:30px;height:4px;border-radius:2px;background:currentColor;margin:4px 0}
+.fr.c1{color:var(--c1)}
+.fr.c2{color:var(--c2)}
+.eqrow{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;font-family:var(--f-display);font-size:36px}
+.eqrow .op{color:var(--muted)}
+.qm{display:inline-grid;place-items:center;min-width:56px;height:68px;border:4px dashed var(--muted);border-radius:16px;color:var(--muted)}
+
+/* shared card buttons */
+.ans{min-width:62px;padding:10px 6px;border:3px solid var(--ink);border-radius:20px;background:var(--surface);box-shadow:0 6px 0 var(--ink);cursor:pointer;display:grid;place-items:center}
+.ans:active{transform:translateY(4px);box-shadow:0 2px 0 var(--ink)}
+.ans.wrong{opacity:.4;pointer-events:none}
+.ans.right{background:var(--good-bg);border-color:var(--good);box-shadow:0 6px 0 var(--good)}
+.opts{display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+
+/* balloon pop */
+.sky{display:flex;justify-content:center;flex-wrap:wrap;gap:14px 12px;width:100%;padding-top:6px}
+.balloon{position:relative;width:96px;height:132px;border:0;background:none;padding:0;cursor:pointer;animation:bob 3s ease-in-out infinite;animation-delay:var(--dl,0s)}
+@keyframes bob{50%{transform:translateY(-10px)}}
+.bal-body{position:absolute;inset:0 0 28px 0;display:grid;place-items:center;border:4px solid var(--ink);border-radius:50% 50% 48% 48%/56% 56% 44% 44%;background:var(--b0);color:var(--ink)}
+.balloon:nth-child(4n+2) .bal-body{background:var(--b1)}
+.balloon:nth-child(4n+3) .bal-body{background:var(--b2)}
+.balloon:nth-child(4n+4) .bal-body{background:var(--b3)}
+.bal-body .fr{font-size:34px}
+.bal-string{position:absolute;left:50%;bottom:0;width:3px;height:30px;background:var(--ink);transform:translateX(-50%);border-radius:2px}
+.balloon.popped{animation:pop .35s forwards}
+@keyframes pop{to{transform:scale(1.5);opacity:0}}
+.balloon.away{animation:away .8s forwards}
+@keyframes away{to{transform:translateY(-70px);opacity:0}}
+.balloon.wrong{animation:shake .4s;opacity:.55;pointer-events:none}
+
+/* memory */
+.memgrid{display:grid;grid-template-columns:repeat(var(--cols,4),1fr);gap:8px;width:100%;max-width:440px}
+.mem{aspect-ratio:1;padding:0;border:0;background:none;perspective:600px;cursor:pointer;min-width:0}
+.mem .in{position:relative;display:block;width:100%;height:100%;transform-style:preserve-3d;transition:transform .35s}
+.mem.up .in,.mem.done .in{transform:rotateY(180deg)}
+.mem .front,.mem .back{position:absolute;inset:0;display:grid;place-items:center;border:3px solid var(--ink);border-radius:16px;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden}
+.mem .front{background:var(--teal);color:var(--surface);font-family:var(--f-display);font-size:32px;box-shadow:0 4px 0 var(--ink)}
+.mem .back{background:var(--surface);transform:rotateY(180deg);padding:4px}
+.mem.done .back{background:var(--good-bg);border-color:var(--good)}
+.mem .back .pic{width:100%;height:100%}
+.mem .back .fr{font-size:clamp(20px,6vw,30px)}
+.mem .back .fr .b{min-width:20px;height:3px;margin:3px 0}
+
+/* fraction maker */
+.maker{display:flex;flex-direction:column;align-items:center;gap:6px}
+.mrow{display:flex;align-items:center;gap:12px}
+.stp{width:54px;height:54px;border-radius:50%;border:3px solid var(--ink);background:var(--surface);box-shadow:0 4px 0 var(--ink);font-family:var(--f-display);font-size:32px;line-height:1;cursor:pointer;display:grid;place-items:center}
+.stp:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.mnum{min-width:84px;height:68px;display:grid;place-items:center;border:4px solid var(--edge);border-radius:18px;font-family:var(--f-display);font-size:46px;background:var(--bg)}
+.mbar{width:150px;height:6px;border-radius:3px;background:var(--ink)}
+
+/* detective */
+.picks{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;width:100%;max-width:420px}
+.pick{padding:10px;border:3px solid var(--ink);border-radius:22px;background:var(--surface);box-shadow:0 6px 0 var(--ink);cursor:pointer;aspect-ratio:1;display:grid;place-items:center;min-width:0}
+.pick:active{transform:translateY(4px);box-shadow:0 2px 0 var(--ink)}
+.pick .pic{width:100%;height:100%}
+.pick.wrong{opacity:.4;pointer-events:none}
+.pick.right{background:var(--good-bg);border-color:var(--good);box-shadow:0 6px 0 var(--good)}
+.picks.three{grid-template-columns:repeat(3,1fr);max-width:480px}
+
+/* number pad */
+.afr{display:inline-flex;flex-direction:column;align-items:center;gap:4px}
+.afr .b{display:block;width:100%;height:5px;border-radius:3px;background:var(--ink)}
+.fld{min-width:72px;height:62px;padding:0 10px;border:4px solid var(--edge);border-radius:16px;background:var(--surface);font-family:var(--f-display);font-size:38px;color:var(--ink);cursor:pointer;display:grid;place-items:center}
+.fld.active{border-color:var(--grape);box-shadow:0 0 0 4px var(--hint-bg)}
+.fld.fixed{border-style:dashed;color:var(--muted);cursor:default}
+.fld.ok{border-color:var(--good);background:var(--good-bg);color:var(--ink)}
+.keypad{display:grid;grid-template-columns:repeat(3,78px);gap:10px;justify-content:center;margin-top:4px}
+.key{height:56px;border:3px solid var(--ink);border-radius:18px;background:var(--surface);box-shadow:0 5px 0 var(--ink);font-family:var(--f-display);font-size:28px;cursor:pointer;display:grid;place-items:center}
+.key:active{transform:translateY(3px);box-shadow:0 2px 0 var(--ink)}
+.key.go{background:var(--coral);color:var(--on-coral);box-shadow:0 5px 0 var(--coral-deep)}
+.keypad:has(.key:disabled){opacity:.5}
+
+/* join + frog + verdict + pairs */
+.stack{display:grid;gap:6px;width:100%;max-width:340px;justify-items:center}
+.stack .plus{font-family:var(--f-display);font-size:28px;color:var(--muted);line-height:1}
+.joined{width:100%;max-width:340px;display:grid;justify-items:center;gap:2px;padding-top:10px;border-top:3px dashed var(--edge)}
+.joined small{font-weight:800;color:var(--muted);font-size:14px;letter-spacing:.08em;text-transform:uppercase}
+.nline{width:100%;max-width:420px;height:auto;display:block;overflow:visible}
+.nline .ax{stroke:var(--line);stroke-width:4;stroke-linecap:round}
+.nline .tick{stroke:var(--line);stroke-width:3}
+.nline .tk{fill:transparent;cursor:pointer}
+.nline .tk:hover,.nline .tk:focus-visible{fill:var(--hint-bg);outline:none}
+.nline .tk.right{fill:var(--good);opacity:.6}
+.nline .tk.wrong{fill:var(--bad);opacity:.35}
+.nline text{fill:var(--ink);font-family:var(--f-display);font-size:17px;text-anchor:middle}
+.counter .fr{font-size:28px;vertical-align:middle}
+.nline .lb{stroke:var(--ink);stroke-width:1.6}
+.nline .hop{fill:none;stroke:var(--grape);stroke-width:4;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;animation:draw .45s forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+#frog{transition:transform .6s cubic-bezier(.3,1.4,.5,1)}
+.verdict{display:inline-flex;align-items:center;gap:10px;border:3px solid var(--ink);border-radius:999px;padding:10px 26px 10px 18px;font-family:var(--f-display);font-size:26px;background:var(--surface);box-shadow:0 6px 0 var(--ink);cursor:pointer}
+.verdict svg{width:30px;height:30px}
+.verdict.yes{background:var(--good-bg)}
+.verdict.no{background:var(--b0)}
+.verdict:active{transform:translateY(4px);box-shadow:0 2px 0 var(--ink)}
+.verdict:disabled{opacity:.4;pointer-events:none}
+.claim{display:flex;flex-direction:column;align-items:center;gap:10px;width:100%}
+.pairs{display:flex;flex-wrap:wrap;justify-content:center;gap:10px 8px;width:100%}
+.tile{width:64px;min-height:92px;border:3px solid var(--ink);border-radius:18px;background:var(--surface);box-shadow:0 5px 0 var(--ink);cursor:pointer;display:grid;place-items:center;padding:8px 2px}
+.tile:active{transform:translateY(3px);box-shadow:0 2px 0 var(--ink)}
+.tile.sel{background:var(--hint-bg);border-color:var(--grape);box-shadow:0 5px 0 var(--grape)}
+.tile.good{background:var(--good-bg);border-color:var(--good);box-shadow:0 5px 0 var(--good);pointer-events:none}
+.target{display:flex;align-items:center;gap:10px;font-family:var(--f-display);font-size:24px;color:var(--muted)}
+
+/* results */
+.result{display:grid;justify-items:center;gap:14px;text-align:center;padding:26px 0 8px}
+.result .stars svg{width:68px;height:68px}
+.result .stars span{animation:starin .5s cubic-bezier(.3,1.6,.5,1) both}
+.result .stars span:nth-child(2){animation-delay:.18s}
+.result .stars span:nth-child(3){animation-delay:.36s}
+@keyframes starin{from{transform:scale(0) rotate(-40deg)}to{transform:none}}
+.result p{margin:0;font-weight:700;color:var(--muted);text-wrap:balance}
+.confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:80}
+.confetti i{position:absolute;top:-24px;width:10px;height:16px;border-radius:2px;animation:fall 2.4s linear forwards}
+@keyframes fall{to{translate:0 115vh;rotate:540deg}}
+
+/* mini thumbs */
+.mini-balloon{display:grid;place-items:center;width:46px;height:56px;border:3px solid var(--ink);border-radius:50% 50% 48% 48%/56% 56% 44% 44%;background:var(--b0)}
+.mini-balloon .fr{font-size:18px}.mini-balloon .fr .b{height:2px;margin:2px 0;min-width:14px}
+.mini-card{display:grid;place-items:center;width:34px;height:44px;border:3px solid var(--ink);border-radius:9px;background:var(--teal);color:var(--surface);font-family:var(--f-display);font-size:20px}
+.mini-card.up{background:var(--surface);color:var(--ink)}
+.mini-card .pic{width:26px;height:26px}
+.mini-card .fr{font-size:15px}.mini-card .fr .b{height:2px;margin:1px 0;min-width:10px}
+.mini-pad{display:grid;grid-template-columns:repeat(3,16px);gap:3px;font-family:var(--f-display);font-size:11px}
+.mini-pad i{display:grid;place-items:center;height:15px;border:2px solid var(--ink);border-radius:4px;font-style:normal;background:var(--surface)}
+.gthumb .fr{font-size:22px}.gthumb .fr .b{height:3px;margin:2px 0}
+.gthumb .op{font-family:var(--f-display);font-size:20px;color:var(--muted)}
+.gthumb svg.ico{width:34px;height:34px}
+
+/* 9S additions */
+.eyebrow.blue{color:var(--c2)}
+.sechead.blue{border-bottom-color:var(--blue)}
+.blue-game .lvl{color:var(--c2)}
+.today{display:inline-block;margin-left:10px;padding:2px 10px;border-radius:999px;background:var(--sun);color:#12303F;font-family:var(--f-body);font-weight:800;font-size:13px;letter-spacing:.05em;text-transform:uppercase;vertical-align:middle}
+.tabs{display:flex;gap:10px;margin:4px 0 4px}
+.tab{flex:1;padding:12px 10px 10px;border:3px solid var(--ink);border-radius:20px;background:var(--surface);box-shadow:0 5px 0 var(--ink);cursor:pointer;text-align:center;min-width:0}
+.tab b{display:block;font-family:var(--f-display);font-weight:400;font-size:26px;line-height:1.05}
+.tab small{display:block;font-weight:800;color:var(--muted);font-size:14px}
+.tab:active{transform:translateY(3px);box-shadow:0 2px 0 var(--ink)}
+.tab[aria-selected="true"]{background:var(--sun);color:#12303F}
+.tab[aria-selected="true"] small{color:#12303F}
+.numrow{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.nbox{min-width:56px;height:62px;padding:0 8px;display:grid;place-items:center;border:3px solid var(--ink);border-radius:16px;background:var(--surface);color:var(--ink);font-family:var(--f-display);font-size:32px;cursor:default}
+.nbox.q{border-style:dashed;border-color:var(--muted);color:var(--muted)}
+button.nbox{cursor:pointer}
+.nbox.sel{border-color:var(--grape);border-style:solid;box-shadow:0 0 0 4px var(--hint-bg)}
+.nbox.ok{background:var(--good-bg);border-color:var(--good);border-style:solid;color:var(--ink)}
+.ans.num{font-family:var(--f-display);font-size:38px;min-width:84px;padding:8px 10px}
+.cgrid{display:grid;grid-template-columns:repeat(var(--cols,4),1fr);gap:6px;width:100%}
+.cell{aspect-ratio:1;display:grid;place-items:center;border:2px solid var(--edge);border-radius:8px;background:var(--surface);font-family:var(--f-display);color:var(--ink);padding:0;min-width:0;cursor:pointer}
+span.cell{cursor:default}
+.cell.blank{border:2px dashed var(--muted);color:var(--muted)}
+.cell.sel{border-color:var(--grape);background:var(--hint-bg);border-style:solid}
+.cell.on{background:var(--coral);color:var(--on-coral);border-color:var(--coral-deep)}
+.cell.new{background:var(--good-bg);border-color:var(--good);border-style:solid;color:var(--ink)}
+.cell.wrong{opacity:.4;pointer-events:none}
+.cell.big{border:3px solid var(--ink);border-radius:18px;box-shadow:0 5px 0 var(--ink);font-size:36px;aspect-ratio:1.15}
+.cell.big.new{box-shadow:0 5px 0 var(--good);pointer-events:none}
+.cell.big:active{transform:translateY(3px);box-shadow:0 2px 0 var(--ink)}
+.locked .cell{pointer-events:none}
+.stargrid{display:grid;grid-template-columns:repeat(var(--cols),1fr);gap:4px;width:100%;max-width:300px}
+.st{position:relative;aspect-ratio:1;border:0;background:none;padding:0;cursor:pointer;min-width:0}
+.st svg{width:100%;height:100%;fill:var(--empty);stroke:var(--line);stroke-width:1.5;stroke-linejoin:round}
+.st.on svg{fill:var(--coral)}
+.st.on::after{content:attr(data-n);position:absolute;inset:0;display:grid;place-items:center;padding-top:8%;font-family:var(--f-display);font-size:calc(var(--sz) * .42);color:var(--on-coral)}
+.stargrid .st:nth-child(10n+5){margin-right:5px}
+.chartbar{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%}
+.btn.small{font-size:20px;padding:6px 22px;box-shadow:0 4px 0 var(--edge)}
+.grps{display:flex;flex-wrap:wrap;justify-content:center;gap:12px 10px;width:100%;padding-top:8px}
+.grp{position:relative;display:grid;grid-template-columns:repeat(5,14px);gap:3px;padding:6px;border:3px solid var(--ink);border-radius:12px;background:var(--surface);cursor:pointer}
+.grp i{width:14px;height:14px;border-radius:50%;background:var(--blue)}
+.grp.alt i{background:var(--coral)}
+.grp.on{background:var(--hint-bg);border-color:var(--grape)}
+.grp.on::after{content:attr(data-t);position:absolute;top:-13px;right:-8px;background:var(--grape);color:#fff;border-radius:999px;padding:0 8px;font-family:var(--f-display);font-size:15px;line-height:22px}
+.mini-seq{display:flex;gap:3px}
+.mini-seq i{font-style:normal;display:grid;place-items:center;min-width:22px;height:26px;padding:0 3px;border:2px solid var(--ink);border-radius:6px;background:var(--surface);font-family:var(--f-display);font-size:14px}
+.mini-seq i.q{border-style:dashed;color:var(--muted)}
+.mini-grid{display:grid;grid-template-columns:repeat(3,15px);gap:2px}
+.mini-grid i{height:15px;border:2px solid var(--ink);border-radius:3px;background:var(--surface)}
+.mini-grid i.q{background:var(--coral)}
+
+/* Lesson 3: adding up to 20, adding without carrying */
+.frames{display:flex;flex-direction:column;align-items:center;gap:10px;padding:6px 0 2px}
+.frames .frame{grid-template-columns:repeat(5,40px)}
+.frames .fcell{width:40px;height:40px}
+.frames .frame.mini{grid-template-columns:repeat(5,11px)}
+.frames .frame.mini .fcell{width:11px;height:11px}
+.frames.mini2{flex-direction:row;gap:4px;padding:0}
+button.fcell{background:none;padding:0;cursor:pointer;font:inherit}
+.frames .fcell.on::after{content:attr(data-n);display:grid;place-items:center;font-family:var(--f-display);font-size:16px;color:var(--on-coral)}
+.blocks{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 0}
+.bgrp{display:flex;align-items:flex-end;gap:10px;padding:8px 10px;border:3px dashed var(--edge);border-radius:14px;min-height:44px}
+.bplus{font-family:var(--f-display);font-size:30px;line-height:1;color:var(--muted)}
+.rods{display:flex;gap:4px;align-items:flex-end}
+.rod{width:16px;height:78px;padding:0;border:2px solid var(--ink);border-radius:4px;background:repeating-linear-gradient(var(--b1) 0 6px,var(--ink) 6px 7.8px);cursor:pointer}
+.cubes{display:grid;grid-template-columns:repeat(3,18px);gap:3px}
+.cube{width:18px;height:18px;padding:0;border:2px solid var(--ink);border-radius:4px;cursor:pointer}
+.cube.a{background:var(--blue)}
+.cube.b{background:var(--coral)}
+.rod.on,.cube.on{box-shadow:0 0 0 3px var(--sun)}
+.rod.on{background:repeating-linear-gradient(var(--sun) 0 6px,var(--ink) 6px 7.8px)}
+.cube.on{background:var(--sun)}
+.matchgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;width:100%;max-width:320px;margin:0 auto}
+.mq,.ma{height:58px;border:3px solid var(--ink);border-radius:16px;background:var(--surface);box-shadow:0 4px 0 var(--ink);font-family:var(--f-display);font-size:26px;color:var(--ink);cursor:pointer;padding:0}
+.mq:active,.ma:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.mq.sel{background:var(--hint-bg);border-color:var(--grape)}
+.mq.new,.ma.new{background:var(--good-bg);border-color:var(--good);box-shadow:0 4px 0 var(--good);pointer-events:none}
+.bal-body .bn{font-family:var(--f-display);font-weight:400;font-size:32px}
+.mini-balloon .bn{font-size:16px}
+.col .qd{display:grid;place-items:center;width:52px;height:50px;box-sizing:border-box;border:3px dashed var(--muted);border-radius:12px;color:var(--muted);font-size:32px}
+/* Lesson 2: making 10 and column addition */
+.sdate{flex-basis:100%;margin:0 0 -4px;font-weight:800;font-size:14px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.cgrid{margin-inline:auto}
+.eq{display:flex;justify-content:center;align-items:center;gap:10px;font-family:var(--f-display);font-size:clamp(40px,12vw,54px);line-height:1;margin:0 0 6px}
+.eq .op{color:var(--muted)}
+.eq .q{display:grid;place-items:center;min-width:1.1em;height:1.25em;padding:0 6px;border:3px dashed var(--muted);border-radius:14px;color:var(--muted)}
+.hands{display:flex;justify-content:center;gap:14px;padding-top:6px}
+.hand{position:relative;display:flex;gap:3px;align-items:flex-end;padding:0 6px 34px}
+.hand::after{content:'';position:absolute;left:0;right:0;bottom:0;height:40px;border:3px solid var(--ink);border-radius:10px 10px 26px 26px;background:var(--empty)}
+.fg{position:relative;z-index:1;width:22px;height:22px;padding:0;border:3px solid var(--ink);border-radius:11px 11px 4px 4px;background:var(--empty);cursor:default;transition:height .15s}
+.fg.up{height:62px;cursor:pointer}
+.fg.up.a{background:var(--blue)}
+.fg.up.b{background:var(--coral)}
+.fg.up.on::after{content:attr(data-n);display:grid;place-items:center;width:16px;height:16px;margin:3px auto 0;border-radius:50%;background:var(--sun);color:#12303F;font-family:var(--f-display);font-size:11px;line-height:1}
+.framebox{display:flex;justify-content:center;padding:8px 0 2px}
+.frame{display:grid;grid-template-columns:repeat(5,44px);border:3px solid var(--ink);border-radius:10px;background:var(--surface);overflow:hidden}
+.fcell{width:44px;height:44px;box-sizing:border-box;border:1.5px solid var(--ink);display:grid;place-items:center}
+.fcell.a::after,.fcell.b::after,.fcell.fill::after{content:'';width:30px;height:30px;border-radius:50%;box-sizing:border-box}
+.fcell.a::after{background:var(--blue)}
+.fcell.b::after{background:var(--coral)}
+.fcell.fill::after{background:var(--sun);border:2px solid var(--line);animation:fpop .3s}
+@keyframes fpop{from{transform:scale(.3)}to{transform:scale(1)}}
+.frame.mini{grid-template-columns:repeat(5,11px);border-width:2px;border-radius:4px}
+.frame.mini .fcell{width:11px;height:11px;border-width:1px}
+.frame.mini .fcell::after{width:7px!important;height:7px!important}
+.bond{display:block;width:min(86vw,290px);height:auto;margin:0 auto}
+.bond path{fill:none;stroke:var(--ink);stroke-width:4;stroke-linecap:round}
+.bond circle{fill:var(--surface);stroke:var(--ink);stroke-width:4}
+.bond circle.qc{stroke:var(--muted);stroke-dasharray:7 6}
+.bond text{font-family:var(--f-display);font-size:38px;fill:var(--ink);text-anchor:middle;dominant-baseline:central}
+.stepline{margin:0 0 8px;text-align:center;font-weight:800;font-size:19px}
+.stepline b{color:var(--c2)}
+.col{display:grid;grid-template-columns:30px repeat(var(--n),62px);justify-content:center;font-family:var(--f-display);font-size:42px;line-height:1;margin:0 auto}
+.col .cd{height:56px;display:grid;place-items:center;border-radius:12px;min-width:0}
+.col .cd.cr{height:36px;font-size:24px;color:var(--grape)}
+.col .cd.lab{height:20px;font-family:var(--f-body);font-weight:800;font-size:12px;color:var(--muted);letter-spacing:.03em}
+.col .cd.hl{background:var(--hint-bg)}
+.col .rule{grid-column:1/-1;height:5px;border-radius:3px;background:var(--ink);margin:4px 0}
+.col .nbox{min-width:52px;height:50px;padding:0;font-size:32px;border-radius:12px}
+.col .nbox.cbox{min-width:36px;width:36px;height:30px;font-size:20px;border-radius:9px;color:var(--grape)}
+.colwrap{padding-bottom:6px}
+.alignopt{padding:10px 12px 8px;border:3px solid var(--ink);border-radius:18px;background:var(--surface);box-shadow:0 5px 0 var(--ink);cursor:pointer}
+.alignopt:active{transform:translateY(3px);box-shadow:0 2px 0 var(--ink)}
+.alignopt.right{background:var(--good-bg);border-color:var(--good);box-shadow:0 5px 0 var(--good)}
+.alignopt.wrong{opacity:.4;pointer-events:none}
+.mcol{display:grid;grid-template-columns:18px repeat(3,26px);font-family:var(--f-display);font-size:28px;line-height:1;color:var(--ink)}
+.mcol i{font-style:normal;height:34px;display:grid;place-items:center}
+.mcol em{grid-column:1/-1;height:4px;background:var(--ink);border-radius:2px;margin-top:2px}
+.mini-col{display:grid;justify-items:end;font-family:var(--f-display);font-size:14px;line-height:1.05;padding:3px 5px;border:2px solid var(--ink);border-radius:6px;background:var(--surface);color:var(--ink)}
+.mini-col b{font-weight:400}
+.mini-col b.q{border-top:2px solid var(--ink);margin-top:1px;color:var(--c1)}
+.mini-col b.cr{font-size:10px;color:var(--grape)}
+.ans.wide{font-family:var(--f-display);font-size:28px;min-width:140px;padding:12px 18px;display:flex;align-items:center;justify-content:center;gap:8px}
+.ans.wide svg{width:30px;height:30px}
+.whos{display:grid;gap:14px;margin:8px 0 0}
+.who{display:flex;align-items:center;gap:16px;padding:12px 16px;border:3px solid var(--ink);border-radius:24px;background:var(--surface);box-shadow:0 6px 0 var(--ink);cursor:pointer;text-align:left;min-height:96px}
+.who:active{transform:translateY(4px);box-shadow:0 2px 0 var(--ink)}
+.who b{font-family:var(--f-display);font-weight:400;font-size:38px;line-height:1}
+.av{display:block;width:72px;height:72px;flex:none}.av svg{width:100%;height:100%}
+.hello{display:flex;align-items:center;gap:14px}.hello .av{width:64px;height:64px}.hello h1{margin:0}
+.swrow{margin:-6px 0 14px}
+.btn.small{font-size:16px;padding:8px 14px;min-height:44px}
+.note{margin:0 0 10px;font-weight:700;color:var(--muted)}
+.tools{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+.mist{margin-top:10px}.mist summary{font-weight:800;cursor:pointer}.mist td{vertical-align:top;font-weight:600;font-size:14px}
+.mi-student #swbtn{display:none!important}
+#miBack{position:fixed;left:10px;bottom:10px;z-index:50}
+.rcard{border:3px solid var(--ink);border-radius:22px;background:var(--surface);padding:14px;margin:0 0 16px;box-shadow:0 5px 0 var(--ink)}
+.rhead{display:flex;align-items:center;gap:12px;margin-bottom:8px}.rhead .av{width:52px;height:52px}
+.rhead h2{margin:0;font-family:var(--f-display);font-weight:400;font-size:28px}.rhead p{margin:0;font-weight:800;color:var(--muted)}
+.rcard table{width:100%;border-collapse:collapse;font-weight:700;font-size:15px}
+.rcard th{text-align:left;font-size:13px;color:var(--muted);padding:4px 4px}
+.rcard td{padding:8px 4px;border-top:2px solid var(--line);vertical-align:top}
+.rcard td small{display:block;font-weight:700;color:var(--muted);font-size:12px;margin-top:2px}
+.rcard tr.none td{color:var(--muted)}
+.pc{display:inline-block;padding:2px 8px;border-radius:10px;border:2px solid var(--ink);color:#12303F}
+.pc.hi{background:#8EE08E}.pc.mid{background:var(--sun)}.pc.lo{background:#FF9B8A}
+.ans.pickd{background:var(--sun);color:#12303F;transform:translateY(2px)}
+.build{margin-top:6px}.blab{margin:10px 0 4px;text-align:center;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-size:14px}
+.builtnum{margin:14px 0 0;text-align:center;font-weight:800}.builtnum b{font-family:var(--f-display);font-weight:400;font-size:34px;margin-left:6px}
+.tf{display:flex;gap:14px;justify-content:center;margin-top:18px}
+.tfb{flex:1;max-width:170px;min-height:96px;border:3px solid var(--ink);border-radius:22px;background:var(--surface);box-shadow:0 5px 0 var(--ink);font-family:var(--f-display);font-size:26px;cursor:pointer;display:grid;place-items:center;align-content:center;color:var(--ink)}
+.tfb b{font-size:36px;line-height:1}.tfb.yes{background:#CFF3CF}.tfb.no{background:#FFD9D2}
+.tfb:active{transform:translateY(3px);box-shadow:0 2px 0 var(--ink)}.tfb.right{outline:5px solid var(--good,#2FA84F)}.tfb.wrong{opacity:.5}
+.bigs{display:grid;gap:12px;margin-top:10px}
+.bigsum{min-height:84px;border:3px solid var(--ink);border-radius:20px;background:var(--surface);box-shadow:0 5px 0 var(--ink);font-family:var(--f-display);font-size:32px;cursor:pointer;color:var(--ink);padding:8px}
+.bigsum:active{transform:translateY(3px);box-shadow:0 2px 0 var(--ink)}.bigsum.right{background:#CFF3CF}.bigsum.wrong{background:#FFD9D2}
+.chain{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px;margin:8px 0 14px}
+.chop{font-family:var(--f-display);font-size:18px;color:var(--c1)}.chain .nbox{min-width:46px;height:50px;font-size:24px;padding:0 4px}.chain{gap:4px}
+.story{display:grid;gap:8px;margin:6px 0 4px}
+.sbar{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border:3px solid var(--ink);border-radius:18px;background:#DDF3FF;font-weight:800}
+.sbar.b{background:#FFE9B8}.sbar b{font-family:var(--f-display);font-weight:400;font-size:32px}
+/* tablets: everyone gets a roomier, larger layout; Ali and Abood get the biggest */
+.wrap{zoom:1.12}
+@media (min-width:700px){
+  .wrap{zoom:1.25;max-width:800px}
+  body.big .wrap{zoom:1.5;max-width:760px}
+}
+body.big .wrap{zoom:1.22}
+body.big .prompt{font-size:clamp(30px,6.6vw,38px)}
+body.big .counter{font-size:30px}
+body.big .msg{font-size:22px}
+body.big .gtext p{font-size:18px}
+body.big .gtext h3{font-size:28px}
+body.big .lead,body.big .foot{font-size:20px}
+body.big .ans.num{font-size:46px;min-width:96px}
+body.big .btn{font-size:28px}
+body.big .key{height:64px;font-size:32px}
+body.big .stargrid{max-width:440px}
+body.big .frames .frame{grid-template-columns:repeat(5,48px)}body.big .frames .fcell{width:48px;height:48px}
+@media (min-width:700px) and (orientation:landscape){body.big .wrap{zoom:1.25;max-width:900px}.wrap{zoom:1.15}}
+.objs{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;max-width:340px;margin:8px auto 6px}
+.obj{position:relative;aspect-ratio:1;padding:2px;border:0;background:none;cursor:pointer;min-width:0}
+.obj svg{width:100%;height:100%}
+.obj.gone svg,.cube.gone{opacity:.28}
+.obj.gone::after,.cube.gone::after{content:'';position:absolute;inset:8%;background:linear-gradient(45deg,transparent 45%,var(--bad) 45% 55%,transparent 55%),linear-gradient(-45deg,transparent 45%,var(--bad) 45% 55%,transparent 55%)}
+.cube{position:relative}
+.rod.fixed{display:block;cursor:default}
+.bond{width:100%;max-width:360px;display:block;margin:6px auto 0}
+.bond text{font-family:var(--f-display);font-size:38px;text-anchor:middle;fill:var(--ink)}
+.bond .qq{fill:var(--muted)}
+.bn-l{stroke:var(--line);stroke-width:4;fill:none;stroke-linecap:round}
+.bn-w{fill:var(--sun);stroke:var(--line);stroke-width:3.5}
+.bn-k{fill:var(--b1);stroke:var(--line);stroke-width:3.5}
+.bn-q{fill:var(--surface);stroke:var(--muted);stroke-width:3.5;stroke-dasharray:8 6}
+@media (prefers-reduced-motion:reduce){.fcell.fill::after{animation:none}.fg{transition:none}}
+
+.agbtn{display:block;width:100%;margin:14px 0 0;font-size:22px}
+.qhead{margin:14px 0 0;font-family:var(--f-display);font-weight:400;font-size:26px;color:var(--c2)}
+.weeks{display:grid;gap:12px;margin-top:12px}
+.wk{padding:12px 16px 10px;border:3px solid var(--ink);border-radius:20px;background:var(--surface);box-shadow:0 5px 0 var(--ink)}
+.wk h3{margin:0 0 6px;font-family:var(--f-display);font-weight:400;font-size:24px;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px}
+.wk h3 span{font-family:var(--f-body);font-weight:800;font-size:15px;color:var(--muted)}
+.wk ul{margin:0;padding-left:22px;font-weight:700;font-size:17px}
+.wk li{margin:2px 0}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <button class="icon-btn" id="backBtn" type="button" aria-label="Go back" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+    </button>
+    <div class="brand">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M5 27a15 15 0 0 1 30 0z" fill="var(--sun)" stroke="var(--line)" stroke-width="2.5" stroke-linejoin="round"/><path d="M2 32q4.5-5 9 0t9 0t9 0t9 0" fill="none" stroke="var(--teal)" stroke-width="3.5" stroke-linecap="round"/></svg>
+      <span>9S Island</span>
+    </div>
+    <button class="icon-btn" id="soundBtn" type="button" aria-label="Sound" aria-pressed="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z"/><g class="on"><path d="M16.5 8.5a5 5 0 010 7"/><path d="M19 6a8.5 8.5 0 010 12"/></g><path class="off" d="M17 9l5 6M22 9l-5 6"/></svg>
+    </button>
+  </header>
+  <main id="screen"></main>
+</div>
+<div id="fx" class="confetti" aria-hidden="true"></div>
+
+<script>
+(() => {
+'use strict';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const html = (s) => { const t = document.createElement('template'); t.innerHTML = s.trim(); return t.content.firstElementChild; };
+const rand = (n) => Math.floor(Math.random() * n);
+const pick = (a) => a[rand(a.length)];
+const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rand(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const plain = (s) => { const d = document.createElement('div'); d.innerHTML = String(s || '').replace(/<span class="fr[^"]*"><span>(.*?)<\/span><span class="b"><\/span><span>(.*?)<\/span><\/span>/g, ' $1/$2 '); return d.textContent.replace(/\s+/g, ' ').trim(); };
+const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+const screen = $('#screen');
+const state = { sound: true };
+
+/* ---------- students ---------- */
+const STUDENTS = [
+  { id: 'ali', name: 'Ali', group: 'g2' },
+  { id: 'abood', name: 'Abood', group: 'g2' },
+  { id: 'saud', name: 'Saud', group: 'g4' }
+];
+let curStudent = null;
+const AVATARS = {
+  ali: '<svg viewBox="0 0 100 100" aria-hidden="true"><g stroke="#12303F" stroke-width="3"><circle cx="22" cy="24" r="14" fill="#B9743F"/><circle cx="78" cy="24" r="14" fill="#B9743F"/><circle cx="50" cy="55" r="36" fill="#E2A25B"/><ellipse cx="50" cy="67" rx="16" ry="12" fill="#F6DDB5" stroke-width="2.5"/></g><ellipse cx="50" cy="60" rx="6" ry="4.5" fill="#12303F"/><circle cx="37" cy="46" r="5" fill="#12303F"/><circle cx="63" cy="46" r="5" fill="#12303F"/><circle cx="38.5" cy="44.5" r="1.7" fill="#fff"/><circle cx="64.5" cy="44.5" r="1.7" fill="#fff"/><path d="M42 72Q50 79 58 72" fill="none" stroke="#12303F" stroke-width="3" stroke-linecap="round"/></svg>',
+  abood: '<svg viewBox="0 0 100 100" aria-hidden="true"><g stroke="#12303F" stroke-width="3" stroke-linejoin="round"><polygon points="16,42 22,8 45,26" fill="#2FB5AA"/><polygon points="84,42 78,8 55,26" fill="#2FB5AA"/><circle cx="50" cy="57" r="34" fill="#3CC6BA"/></g><ellipse cx="38" cy="50" rx="5" ry="6.5" fill="#12303F"/><ellipse cx="62" cy="50" rx="5" ry="6.5" fill="#12303F"/><circle cx="39.5" cy="47.5" r="1.8" fill="#fff"/><circle cx="63.5" cy="47.5" r="1.8" fill="#fff"/><polygon points="45,61 55,61 50,67" fill="#F2799A" stroke="#12303F" stroke-width="2" stroke-linejoin="round"/><path d="M43 72Q50 78 57 72" fill="none" stroke="#12303F" stroke-width="3" stroke-linecap="round"/><g stroke="#12303F" stroke-width="2" stroke-linecap="round"><path d="M12 58h16M13 66l14-3M88 58H72M87 66l-14-3"/></g></svg>',
+  saud: '<svg viewBox="0 0 100 100" aria-hidden="true"><g stroke="#12303F" stroke-width="3" stroke-linejoin="round"><polygon points="18,34 24,8 42,22" fill="#E5A91E"/><polygon points="82,34 76,8 58,22" fill="#E5A91E"/><circle cx="50" cy="56" r="36" fill="#FFC83D"/><circle cx="35" cy="48" r="14" fill="#fff"/><circle cx="65" cy="48" r="14" fill="#fff"/><polygon points="44,60 56,60 50,73" fill="#F2793B"/></g><circle cx="37" cy="49" r="6" fill="#12303F"/><circle cx="63" cy="49" r="6" fill="#12303F"/><circle cx="39" cy="46.5" r="2" fill="#fff"/><circle cx="65" cy="46.5" r="2" fill="#fff"/></svg>'
+};
+
+/* ---------- saved stars (per student, per device) ---------- */
+const KEY = 'fraction-island-v1';
+let saved = {};
+try { saved = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { saved = {}; }
+const sk = (id) => (curStudent || 'guest') + ':' + id;
+const getStars = (id, l) => ((saved[sk(id)] || [])[l - 1]) || 0;
+const totalStars = (id) => (saved[sk(id)] || []).reduce((a, b) => a + (b || 0), 0);
+function setStars(id, l, s) {
+  const a = saved[sk(id)] || (saved[sk(id)] = Array(10).fill(0));
+  a[l - 1] = Math.max(a[l - 1] || 0, s);
+  try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) {}
+}
+
+/* ---------- answers: one record per play of a level {i id, s student, g game, l level, r right, w wrong, t start, u last, y synced} ---------- */
+const PKEY = KEY + '-plays';
+let plays = {};
+try { plays = JSON.parse(localStorage.getItem(PKEY) || '{}') || {}; } catch (e) { plays = {}; }
+function savePlays() {
+  try {
+    const ids = Object.keys(plays);
+    if (ids.length > 4000) ids.sort((a, b) => (plays[a].t || 0) - (plays[b].t || 0)).slice(0, ids.length - 4000).forEach(k => { delete plays[k]; });
+    localStorage.setItem(PKEY, JSON.stringify(plays));
+  } catch (e) {}
+}
+let curPlay = null;
+function startPlay(g, level) {
+  curPlay = curStudent && window.MI_MODE !== 'teacher' ? { i: `${curStudent}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`, s: curStudent, g: g.id, l: level, r: 0, w: 0, t: Date.now(), u: 0, y: 0 } : null;
+}
+function track(ok, info) {
+  if (!curPlay) return;
+  if (ok) curPlay.r++; else { curPlay.w++; if (info) curPlay.m = (curPlay.m || []).concat([{ q: info.q || "", a: info.a || "", at: Date.now() }]).slice(-20); }
+  curPlay.u = Date.now(); curPlay.y = 0;
+  plays[curPlay.i] = curPlay;
+  savePlays(); syncSoon();
+}
+/* shared copy (only where the page may use the artifact database; otherwise answers stay on this device) */
+let dbp = null, dbOff = false, syncTimer = 0, syncing = false;
+const getDb = () => dbp || (dbp = (async () => { try { return window.claude && window.claude.use ? await window.claude.use('db') : null; } catch (e) { return null; } })());
+function syncSoon() { if (dbOff) return; clearTimeout(syncTimer); syncTimer = setTimeout(flush, 1500); }
+async function flush() {
+  if (dbOff) return;
+  if (syncing) { syncSoon(); return; }
+  syncing = true;
+  try {
+    const db = await getDb();
+    if (!db) { dbOff = true; return; }
+    for (const p of Object.values(plays).filter(x => !x.y)) {
+      const r = p.r, w = p.w;
+      await db.collection('plays').doc(p.i).set({ s: p.s, g: p.g, l: p.l, r: p.r, w: p.w, t: p.t, u: p.u, m: p.m || [] });
+      if (p.r === r && p.w === w) p.y = 1;
+    }
+    savePlays();
+  } catch (e) { if (e && e.code && e.code !== 'unavailable' && e.code !== 'resource_exhausted') dbOff = true; }
+  finally { syncing = false; }
+}
+
+/* ---------- sound + speech ---------- */
+let ac = null;
+function note(freq, start, dur, type = 'sine', vol = 0.16) {
+  if (!state.sound) return;
+  try {
+    ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+    if (ac.state === 'suspended') ac.resume();
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = type; o.frequency.value = freq;
+    const t = ac.currentTime + start;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(ac.destination);
+    o.start(t); o.stop(t + dur + 0.05);
+  } catch (e) {}
+}
+const sfx = {
+  pick: () => note(440, 0, 0.08, 'sine', 0.08),
+  ok: () => { note(659, 0, 0.14); note(880, 0.12, 0.22); },
+  no: () => { note(220, 0, 0.22, 'triangle', 0.2); note(165, 0.14, 0.28, 'triangle', 0.2); },
+  pop: () => note(900, 0, 0.1, 'square', 0.07),
+  win: () => [523, 659, 784, 1047].forEach((f, i) => note(f, i * 0.13, 0.3))
+};
+const canSpeak = 'speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined';
+function speak(text) {
+  if (!canSpeak || !state.sound) return;
+  try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.rate = 0.88; u.lang = 'en-US'; speechSynthesis.speak(u); } catch (e) {}
+}
+function hush() { if (canSpeak) { try { speechSynthesis.cancel(); } catch (e) {} } }
+
+/* ---------- fraction data ---------- */
+const NUM_W = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
+const DEN_W = { 2: ['half', 'halves'], 3: ['third', 'thirds'], 4: ['fourth', 'fourths'], 5: ['fifth', 'fifths'], 6: ['sixth', 'sixths'], 8: ['eighth', 'eighths'], 10: ['tenth', 'tenths'] };
+const words = (n, d) => DEN_W[d] ? `${NUM_W[n]} ${DEN_W[d][n === 1 ? 0 : 1]}` : `${n} over ${d}`;
+const fr = (n, d, cls = '') => `<span class="fr ${cls}"><span>${n}</span><span class="b"></span><span>${d}</span></span>`;
+const DPOOL = [2, 3, 4, 5, 6, 8, 10];
+/* bottom numbers used on each level (index = level) */
+const DENS = [null, [2, 3], [4], [2, 3, 4], [5], [2, 3, 4, 5], [6], [2, 3, 4, 5, 6], [8], [2, 3, 4, 5, 6, 8], [2, 3, 4, 5, 6, 8, 10]];
+const ADENS = [null, [4], [3, 4], [5], [3, 4, 5], [6], [2, 3, 4, 5, 6], [8], [3, 4, 5, 6, 8], [10], [3, 4, 5, 6, 8, 10]];
+const PAIRS = [3, 3, 4, 4, 5, 5, 6, 7, 8, 8];
+const vEq = (p, q, p2, q2) => p * q2 === p2 * q;
+
+/* wrong-answer fractions for "which fraction is this?" (never equal in value to the right one) */
+function fracOptions(p, d, n) {
+  const A = [], B = [], Cc = [];
+  for (const q of DPOOL) for (let a = 1; a < q; a++) {
+    if (vEq(a, q, p, d)) continue;
+    if (q === d) A.push([a, q]); else if (a === p) B.push([a, q]); else Cc.push([a, q]);
+  }
+  const out = [], vals = [p / d];
+  const add = (f) => {
+    const v = f[0] / f[1];
+    if (out.length >= n || vals.some(x => Math.abs(x - v) < 1e-9)) return false;
+    vals.push(v); out.push(f); return true;
+  };
+  [A, B, Cc].forEach(list => { for (const f of shuffle(list)) if (add(f)) break; });
+  for (const f of shuffle([...A, ...B, ...Cc])) add(f);
+  return out;
+}
+/* note: add() refuses when out is already full, so n = number of wrong answers wanted */
+function addProblem(level) {
+  const d = pick(ADENS[level]);
+  const whole = d < 3 || (level >= 6 && Math.random() < 0.35);
+  let a, b;
+  if (whole) { a = 1 + rand(d - 1); b = d - a; }
+  else { a = 1 + rand(d - 2); b = 1 + rand(d - 1 - a); }
+  return { d, a, b, s: a + b };
+}
+function sumOptions(P, n) {
+  const { d, a, b, s } = P;
+  const cand = [[s, 2 * d], [s + 1, d], [s - 1, d], [a, d], [b, d], [s, d + 1], [Math.abs(a - b), d], [s + 2, d]];
+  const seen = [s / d], out = [];
+  for (const [p, q] of shuffle(cand)) {
+    if (p < 1 || p > q) continue;
+    const v = p / q;
+    if (seen.some(x => Math.abs(x - v) < 1e-9)) continue;
+    seen.push(v); out.push([p, q]);
+    if (out.length >= n) break;
+  }
+  return out;
+}
+
+/* ---------- pictures ---------- */
+const C0 = 100, RAD = 84;
+const polar = (a, r) => { const t = a * Math.PI / 180; return [C0 + r * Math.cos(t), C0 + r * Math.sin(t)]; };
+const f1 = (v) => v.toFixed(1);
+function sector(a0, a1) {
+  const [x0, y0] = polar(a0, RAD), [x1, y1] = polar(a1, RAD);
+  return `M${C0} ${C0}L${f1(x0)} ${f1(y0)}A${RAD} ${RAD} 0 ${(a1 - a0) > 180 ? 1 : 0} 1 ${f1(x1)} ${f1(y1)}Z`;
+}
+const rectP = (x, y, w, h) => `M${f1(x)} ${f1(y)}h${f1(w)}v${f1(h)}h${f1(-w)}Z`;
+const GRID = { 4: [2, 2], 6: [2, 3], 8: [2, 4], 10: [2, 5] };
+const kindsFor = (d) => GRID[d] ? ['circle', 'bar', 'grid'] : ['circle', 'bar'];
+function weights(d, uneq) {
+  if (!uneq) return Array(d).fill(1 / d);
+  const w = Array.from({ length: d }, (_, i) => i === 0 ? 0.45 : i === 1 ? 1.7 : 1);
+  const s = w.reduce((x, y) => x + y, 0);
+  return w.map(x => x / s);
+}
+function partPaths(kind, d, uneq) {
+  const w = weights(d, uneq);
+  if (kind === 'circle') { let a = -90; return w.map(f => { const p = sector(a, a + f * 360); a += f * 360; return p; }); }
+  if (kind === 'bar') { let x = 8; return w.map(f => { const p = rectP(x, 52, 184 * f, 96); x += 184 * f; return p; }); }
+  const [rows, cols] = GRID[d], cell = 160 / Math.max(rows, cols);
+  const x0 = 100 - cols * cell / 2, y0 = 100 - rows * cell / 2, out = [];
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) out.push(rectP(x0 + c * cell, y0 + r * cell, cell, cell));
+  return out;
+}
+function outlineEl(kind, d) {
+  if (kind === 'circle') return `<circle class="outline" cx="100" cy="100" r="${RAD}"/>`;
+  if (kind === 'bar') return `<rect class="outline" x="8" y="52" width="184" height="96" rx="2"/>`;
+  const [rows, cols] = GRID[d], cell = 160 / Math.max(rows, cols);
+  return `<rect class="outline" x="${f1(100 - cols * cell / 2)}" y="${f1(100 - rows * cell / 2)}" width="${f1(cols * cell)}" height="${f1(rows * cell)}" rx="2"/>`;
+}
+function pic(kind, d, o = {}) {
+  const on = o.on || [], on2 = o.on2 || [];
+  const parts = partPaths(kind, d, o.uneq).map((p, i) =>
+    `<path class="part${on.includes(i) ? ' on' : ''}${on2.includes(i) ? ' on2' : ''}" d="${p}" data-i="${i}"${o.tap ? ` tabindex="0" role="button" aria-pressed="false" aria-label="Part ${i + 1}"` : ''}/>`).join('');
+  return `<svg class="pic${o.tap ? ' tappable' : ''}" viewBox="0 0 200 200" aria-hidden="${o.tap ? 'false' : 'true'}">${parts}${outlineEl(kind, d)}</svg>`;
+}
+const run = (d, p) => { const s = rand(d - p + 1); return Array.from({ length: p }, (_, i) => s + i); };
+function barSVG(d, cls = []) {
+  const w = 280 / d; let s = '';
+  for (let i = 0; i < d; i++) s += `<rect class="seg ${cls[i] || ''}" x="${(10 + i * w).toFixed(1)}" y="8" width="${w.toFixed(1)}" height="40"/>`;
+  return `<svg class="bar-svg" viewBox="0 0 300 56" aria-hidden="true">${s}<rect class="outline" x="10" y="8" width="280" height="40" rx="3"/></svg>`;
+}
+
+/* ---------- ui helpers ---------- */
+const STAR = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.2 6.8.8-5 4.7 1.3 6.7L12 17.5l-6 3.4 1.3-6.7-5-4.7 6.8-.8z"/></svg>';
+const starsRow = (n) => `<span class="stars" role="img" aria-label="${n} of 3 stars">${[0, 1, 2].map(i => `<span class="${i < n ? 'on' : ''}">${STAR}</span>`).join('')}</span>`;
+const ICON_SPK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 010 7"/></svg>';
+const ICON_TICK = '<svg viewBox="0 0 24 24" fill="none" stroke="var(--good-ink)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 13l5 5L20 6"/></svg>';
+const ICON_CROSS = '<svg viewBox="0 0 24 24" fill="none" stroke="var(--bad)" stroke-width="4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+function head(level, i, total, add) {
+  let d = ''; for (let k = 0; k < total; k++) d += `<span class="dot${k < i ? ' done' : k === i ? ' now' : ''}"></span>`;
+  return `<div class="gamehead"><span class="lvl">Level ${level}</span>${total ? `<div class="dots" role="img" aria-label="Question ${i + 1} of ${total}">${d}</div>` : ''}</div>`;
+}
+function promptRow(h, say) {
+  return `<div class="promptrow"><h2 class="prompt">${h}</h2>${canSpeak ? `<button class="chip" type="button" data-say="${esc(say)}">${ICON_SPK}<span>Listen</span></button>` : ''}</div>`;
+}
+function setMsg(el, text, kind) { el.textContent = text; el.className = 'msg ' + (kind || ''); }
+let onKey = null;
+document.addEventListener('keydown', e => { if (onKey) onKey(e); });
+function mount(node) { onKey = null; screen.replaceChildren(node); try { window.scrollTo(0, 0); } catch (e) {} }
+function confetti() {
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const fx = $('#fx'), cols = ['var(--coral)', 'var(--sun)', 'var(--good)', 'var(--blue)'];
+  for (let i = 0; i < 36; i++) {
+    const p = document.createElement('i');
+    p.style.left = rand(100) + '%'; p.style.background = cols[i % 4];
+    p.style.animationDelay = (Math.random() * 0.6) + 's';
+    p.style.animationDuration = (1.8 + Math.random() * 1.4) + 's';
+    p.style.transform = `rotate(${rand(360)}deg)`;
+    fx.appendChild(p);
+  }
+  setTimeout(() => fx.replaceChildren(), 4000);
+}
+let backFn = null;
+function setBack(fn) { backFn = fn; $('#backBtn').hidden = !fn; }
+
+/* ---------- screens ---------- */
+const GAMES = [];
+const GROUPS = [
+  { id: 'g2', short: 'Ali and Abood', title: 'Ali and Abood', sub: 'Adding, counting, fractions' },
+  { id: 'g4', short: 'Saud', title: 'Saud', sub: 'Adding, skip counting, fractions' }
+];
+const SECTIONS = [
+  { id: 'sub1', group: 'g2', title: 'Subtracting: one digit minus one digit', date: 'Sun 8 Nov 2026', blurb: 'Take away. Count back. Cross out.', cls: 'blue', today: true },
+  { id: 'a20', group: 'g2', title: 'Adding up to 20', date: 'Tue 3 Nov 2026', blurb: 'Count on. Make 10 first. Then add the rest.', cls: 'blue' },
+  { id: 'm10', group: 'g2', title: 'Making 10', date: 'Mon 2 Nov 2026', blurb: 'Add up to 10. Count on your fingers.', cls: 'add' },
+  { id: 'c1', group: 'g2', title: 'Counting by 1', date: 'Wed 21 Oct 2026', blurb: 'Count from 1 to 100.', cls: '' },
+  { id: 'id', group: 'g2', title: 'Fractions: name the fraction', date: 'Mon 12 Oct 2026', blurb: 'Read it, paint it, build it, spot it.', cls: '' },
+  { id: 'sub2', group: 'g4', title: 'Subtracting without borrowing', date: 'Sun 8 Nov 2026', blurb: 'Two-digit minus one-digit. The ones digit is big enough.', cls: 'add', today: true },
+  { id: 'nc', group: 'g4', title: 'Adding without carrying', date: 'Tue 3 Nov 2026', blurb: 'Two-digit plus one-digit. The ones add to 9 or less.', cls: 'add' },
+  { id: 'nc2', group: 'g4', title: 'Adding without carrying: set 2', date: 'Tue 3 Nov 2026', blurb: 'Same lesson. Five new games to practise.', cls: 'add' },
+  { id: 'col', group: 'g4', title: 'Adding in columns', date: 'Mon 2 Nov 2026', blurb: 'Two-digit plus one-digit. Line up, add, carry.', cls: 'blue' },
+  { id: 'c5', group: 'g4', title: 'Counting by 5', date: 'Wed 21 Oct 2026', blurb: '5, 10, 15, 20 ...', cls: 'blue' },
+  { id: 'c10', group: 'g4', title: 'Counting by 10', date: 'Wed 21 Oct 2026', blurb: '10, 20, 30, 40 ...', cls: 'add' },
+  { id: 'add', group: 'g4', title: 'Fractions: add the fractions', date: 'Mon 12 Oct 2026', blurb: 'Same bottom number. Add the tops.', cls: 'add' }
+];
+const AGENDA = {
+  g2: [
+    { q: 'Quarter 2', weeks: [
+      { week: 2, dates: '8 – 12 Nov 2026', items: ['Subtracting one-digit numbers from one-digit numbers'] },
+      { week: 1, dates: '2 – 6 Nov 2026', items: ['Making 10', 'Adding up to 10, using fingers', 'Adding up to 20'] }
+    ] },
+    { q: 'Quarter 1', weeks: [
+      { week: 7, dates: '18 – 22 Oct 2026', items: ['Counting', 'Counting by 1, from 1 to 100'] },
+      { week: 6, dates: '11 – 15 Oct 2026', items: ['Fractions', 'Naming fractions'] },
+      { week: 5, dates: '27 Sep – 1 Oct 2026', items: ['Counts on 2s, 5s and 10s (Continue)', 'Worksheets', 'Notebook work'] },
+      { week: 4, dates: '20 – 24 Sep 2026', items: ['Counts on 2s, 5s and 10s', 'Projects (Place values)', 'Worksheets', 'Notebook work'] },
+      { week: 3, dates: '13 – 17 Sep 2026', items: ['Counting 1–120', 'Place value of 2-digit numbers', 'Worksheets', 'Notebook work'] },
+      { week: 2, dates: '6 – 10 Sep 2026', items: ['Counting 1–50', 'Counting 1–120', 'Worksheets', 'Notebook work'] },
+      { week: 1, dates: '30 Aug – 3 Sep 2026', items: ['Introduction', 'Classroom rules', 'Safety and hygiene', 'Revision', 'Pre-knowledge assessments'] }
+    ] }
+  ],
+  g4: [
+    { q: 'Quarter 2', weeks: [
+      { week: 2, dates: '8 – 12 Nov 2026', items: ['Subtracting a 1-digit number from a 2-digit number without borrowing'] },
+      { week: 1, dates: '2 – 6 Nov 2026', items: ['Adding in columns', 'Two-digit plus one-digit, column method', 'Adding 2-digit and 1-digit numbers without carrying'] }
+    ] },
+    { q: 'Quarter 1', weeks: [
+      { week: 7, dates: '18 – 22 Oct 2026', items: ['Counting', 'Counting by 5 and counting by 10'] },
+      { week: 6, dates: '11 – 15 Oct 2026', items: ['Fractions', 'Adding fractions with the same denominator'] },
+      { week: 5, dates: '27 Sep – 1 Oct 2026', items: ['Place values (Expanding)', 'Rounding of a number', 'Worksheets', 'Notebook work'] },
+      { week: 4, dates: '20 – 24 Sep 2026', items: ['Expanding 3-digit numbers (Place values)', 'Projects (Place values)', 'Worksheets', 'Notebook work'] },
+      { week: 3, dates: '13 – 17 Sep 2026', items: ['Even and odd numbers', 'Place values of 2-digit numbers', 'Worksheets', 'Notebook work'] },
+      { week: 2, dates: '6 – 10 Sep 2026', items: ['Counting 1–120', 'Even and odd numbers', 'Worksheets', 'Notebook work'] },
+      { week: 1, dates: '30 Aug – 3 Sep 2026', items: ['Introduction', 'Classroom rules', 'Safety and hygiene', 'Revision', 'Pre-knowledge assessments'] }
+    ] }
+  ]
+};
+let curGroup = 'g2';
+function chooseStudent(id) {
+  const ST = STUDENTS.find(x => x.id === id); if (!ST) return;
+  curStudent = id; curGroup = ST.group; document.body.classList.toggle('big', ST.group === 'g2'); home();
+}
+function who() {
+  hush(); setBack(null); curStudent = null; curPlay = null; document.body.classList.remove('big');
+  const sec = html(`<section><p class="eyebrow">9S class games</p><h1>9S Island</h1><p class="lead">Tap your name to start.</p>
+    <div class="whos">${STUDENTS.map(ST => `<button class="who" type="button" data-s="${ST.id}"><span class="av">${AVATARS[ST.id]}</span><b>${ST.name}</b></button>`).join('')}</div>
+    <p class="foot"><button class="btn small alt" id="tbtn" type="button">Teacher results</button></p></section>`);
+  $$('.who', sec).forEach(b => b.addEventListener('click', () => { sfx.pick(); chooseStudent(b.dataset.s); }));
+  $('#tbtn', sec).addEventListener('click', () => { sfx.pick(); results(); });
+  mount(sec);
+}
+function home() {
+  if (!curStudent) { who(); return; }
+  hush(); setBack(null);
+  const ST = STUDENTS.find(x => x.id === curStudent), GR = GROUPS.find(x => x.id === curGroup);
+  const sec = html(`<section><div class="hello"><span class="av">${AVATARS[ST.id]}</span><div><p class="eyebrow">9S class games</p><h1>Hi, ${ST.name}!</h1></div></div>
+    <p class="lead">Today's lesson is subtraction. Pick a game. Every game has ten levels.</p><div class="swrow"><button class="btn small alt" id="swbtn" type="button">Switch student</button></div><div id="secs"></div>
+    <p class="foot">Stars are saved on this device. Your answers go to your teacher. Every level is open, so start anywhere.</p></section>`);
+  $('#swbtn', sec).addEventListener('click', () => { sfx.pick(); who(); });
+  const host = $('#secs', sec);
+  SECTIONS.filter(S => S.group === curGroup).forEach(S => {
+    const wrap = html(`<div><div class="sechead ${S.cls}"><p class="sdate">Lesson${S.date ? ' · ' + S.date : ''}</p><h2>${S.title}${S.today ? '<span class="today">Today</span>' : ''}</h2><p>${S.blurb}</p></div><div class="glist"></div></div>`);
+    GAMES.filter(g => g.sec === S.id).forEach(g => {
+      const b = html(`<button class="gcard" type="button"><div class="gthumb">${g.thumb()}</div><div class="gtext"><h3>${g.title}</h3><p>${g.desc}</p><span class="gsum">${STAR}${totalStars(g.id)} of 30 stars</span></div></button>`);
+      b.addEventListener('click', () => { sfx.pick(); levelSelect(g); });
+      $('.glist', wrap).appendChild(b);
+    });
+    host.appendChild(wrap);
+  });
+  const ag = AGENDA[curGroup] || [];
+  if (ag.length) host.appendChild(html(`<div id="agenda"><div class="sechead blue"><p class="sdate">Semester 1, 2026-27</p><h2>Weekly agenda</h2><p>Newest first</p></div>${ag.map(Q => `<h3 class="qhead">${Q.q} · ${Q.weeks.length === 1 ? 'Week 1' : 'Weeks 1–' + Q.weeks[0].week}</h3><div class="weeks">${Q.weeks.map(w => `<article class="wk"><h3>Week ${w.week}<span>${w.dates}</span></h3><ul>${w.items.map(i => `<li>${i}</li>`).join('')}</ul></article>`).join('')}</div>`).join('')}<p class="foot">Check Google Classroom for worksheets and classroom assessments.</p></div>`));
+  if (ag.length) {
+    const G = GROUPS.find(x => x.id === curGroup), jump = html(`<button class="btn agbtn" type="button">${G.short} weekly agenda</button>`);
+    jump.addEventListener('click', () => { sfx.pick(); const t = $('#agenda', sec); if (t) t.scrollIntoView({ behavior: window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }); });
+    host.prepend(jump);
+  }
+  mount(sec);
+}
+function levelSelect(g) {
+  hush(); setBack(home);
+  const S = SECTIONS.find(s => s.id === g.sec);
+  let btns = '';
+  for (let l = 1; l <= 10; l++) {
+    const st = getStars(g.id, l);
+    btns += `<button class="lvbtn${l >= 8 ? ' hard' : ''}" type="button" data-l="${l}" aria-label="Level ${l}, ${st} stars"><b>${l}</b><span class="ms">${[0, 1, 2].map(i => `<span class="${i < st ? 'on' : ''}">${STAR}</span>`).join('')}</span></button>`;
+  }
+  const sec = html(`<section><p class="eyebrow ${S.cls}">${S.title}</p><h1>${g.title}</h1><p class="lead">${g.desc}</p><div class="levels">${btns}</div>
+    <p class="foot">Level 1 is the easiest. Level 10 is the hardest.</p></section>`);
+  $$('.lvbtn', sec).forEach(b => b.addEventListener('click', () => { sfx.pick(); play(g, +b.dataset.l); }));
+  mount(sec);
+}
+function play(g, level) {
+  hush(); setBack(() => levelSelect(g));
+  startPlay(g, level);
+  if (g.run) g.run(level); else playRounds(g, level);
+}
+const starsFor = (m) => m === 0 ? 3 : m <= 2 ? 2 : 1;
+function finish(g, level, stars, line) {
+  hush(); setStars(g.id, level, stars);
+  const title = ['Good try!', 'Great job!', 'Perfect!'][stars - 1];
+  const sec = html(`<section class="result"><h1>${title}</h1>${starsRow(stars)}<p>${line || (stars === 3 ? 'No mistakes. You are a star!' : 'Play again to win more stars.')}</p><div class="actions"></div></section>`);
+  const act = $('.actions', sec);
+  if (level < 10) { const n = html(`<button class="btn" type="button">Level ${level + 1}</button>`); n.addEventListener('click', () => play(g, level + 1)); act.appendChild(n); }
+  const again = html('<button class="btn alt" type="button">Play again</button>'); again.addEventListener('click', () => play(g, level)); act.appendChild(again);
+  const m = html('<button class="btn alt" type="button">All levels</button>'); m.addEventListener('click', () => levelSelect(g)); act.appendChild(m);
+  mount(sec); sfx.win(); confetti();
+}
+
+/* ---------- teacher results ---------- */
+const gameTitle = (id) => { const g = GAMES.find(x => x.id === id); return g ? g.title : id; };
+const secOf = (id) => { const g = GAMES.find(x => x.id === id); return g ? g.sec : ''; };
+function mergePlays(list) { let n = 0; list.forEach(p => { if (p && p.i && !plays[p.i]) { plays[p.i] = { i: p.i, s: p.s, g: p.g, l: p.l, r: +p.r || 0, w: +p.w || 0, t: +p.t || 0, u: +p.u || 0, y: p.y || 0, m: p.m || [] }; n++; } else if (p && p.i && plays[p.i] && (+p.r + +p.w) > (plays[p.i].r + plays[p.i].w)) { Object.assign(plays[p.i], { r: +p.r, w: +p.w, u: +p.u, m: p.m || plays[p.i].m || [] }); n++; } }); if (n) savePlays(); return n; }
+async function pullShared() {
+  try {
+    const db = await getDb(); if (!db) return -1;
+    const snap = await db.collection('plays').get();
+    return mergePlays(snap.docs.map(d => Object.assign({ i: d.id, y: 1 }, d.data())));
+  } catch (e) { return -1; }
+}
+function statsFor(sid) {
+  const by = {};
+  Object.values(plays).filter(p => p.s === sid).forEach(p => {
+    const a = by[p.g] || (by[p.g] = { r: 0, w: 0, n: 0, lv: {}, last: 0 });
+    a.r += p.r; a.w += p.w; a.n++; a.last = Math.max(a.last, p.u || p.t || 0);
+    const L = a.lv[p.l] || (a.lv[p.l] = { r: 0, w: 0 }); L.r += p.r; L.w += p.w;
+  });
+  return by;
+}
+const pct = (r, w) => (r + w) ? Math.round(100 * r / (r + w)) : null;
+const dstr = (t) => { if (!t) return ''; const d = new Date(t); return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }); };
+function csvText() {
+  const rows = [['Student', 'Game', 'Lesson', 'Level', 'Right', 'Wrong', 'Percent right', 'Started', 'Last answer', 'Mistakes (question -> what he was told)']];
+  Object.values(plays).sort((a, b) => a.t - b.t).forEach(p => {
+    const S = STUDENTS.find(x => x.id === p.s);
+    const Sc = SECTIONS.find(x => x.id === secOf(p.g));
+    rows.push([S ? S.name : p.s, gameTitle(p.g), Sc ? Sc.title : '', p.l, p.r, p.w, pct(p.r, p.w) ?? '', new Date(p.t).toISOString(), p.u ? new Date(p.u).toISOString() : '', (p.m || []).map(x => x.q + ' -> ' + x.a).join(' | ')]);
+  });
+  return rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\r\n');
+}
+async function download(name, text, type) {
+  try {
+    const d = window.claude && window.claude.use ? await window.claude.use('downloads') : null;
+    if (d) { await d.save({ filename: name, data: text }); return; }
+  } catch (e) { if (e && e.code === 'declined') return; }
+  try {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([text], { type }));
+    a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  } catch (e) {}
+}
+function mistakesHTML(sid) {
+  const list = Object.values(plays).filter(p => p.s === sid).flatMap(p => (p.m || []).map(x => ({ ...x, g: p.g, l: p.l }))).sort((a, b) => b.at - a.at).slice(0, 40);
+  if (!list.length) return '';
+  return `<details class="mist"><summary>Mistakes (${list.length}${list.length === 40 ? ', newest' : ''})</summary><table><thead><tr><th>When</th><th>Game</th><th>Question</th><th>What he was told</th></tr></thead><tbody>${list.map(x => `<tr><td>${dstr(x.at)}</td><td>${esc(gameTitle(x.g))}<small>Level ${x.l}</small></td><td>${esc(x.q)}</td><td>${esc(x.a)}</td></tr>`).join('')}</tbody></table></details>`;
+}
+function results() {
+  hush(); setBack(who);
+  const sec = html(`<section><p class="eyebrow">Teacher</p><h1>Results</h1>
+    <p class="lead">Percent right = right answers out of all answers, for every time a student played the game.</p>
+    <p class="note" id="rnote">Showing answers saved on this device.</p><div class="tools"></div><div id="rbody"></div></section>`);
+  const tools = $('.tools', sec);
+  const mk = (label, fn, cls) => { const b = html(`<button class="btn small ${cls || 'alt'}" type="button">${label}</button>`); b.addEventListener('click', () => { sfx.pick(); fn(); }); tools.appendChild(b); return b; };
+  const body = $('#rbody', sec), note = $('#rnote', sec);
+  const draw = () => {
+    body.replaceChildren(...STUDENTS.map(ST => {
+      const by = statsFor(ST.id), ids = Object.keys(by);
+      const tr = ids.reduce((a, k) => ({ r: a.r + by[k].r, w: a.w + by[k].w }), { r: 0, w: 0 });
+      const rows = SECTIONS.filter(S => S.group === ST.group).flatMap(S => GAMES.filter(g => g.sec === S.id)).map(g => {
+        const a = by[g.id], p = a ? pct(a.r, a.w) : null;
+        if (!a) return `<tr class="none"><td>${g.title}</td><td colspan="3">not played</td></tr>`;
+        const best = Object.keys(a.lv).sort((x, y) => x - y).map(l => `L${l} ${pct(a.lv[l].r, a.lv[l].w)}%`).join(' &middot; ');
+        return `<tr><td>${g.title}<small>${best}</small></td><td><b class="pc ${p >= 80 ? 'hi' : p >= 50 ? 'mid' : 'lo'}">${p}%</b></td><td>${a.r} / ${a.r + a.w}</td><td>${a.n}&times;</td></tr>`;
+      }).join('');
+      const sum = pct(tr.r, tr.w);
+      return html(`<article class="rcard"><div class="rhead"><span class="av">${AVATARS[ST.id]}</span><div><h2>${ST.name}</h2><p>${sum === null ? 'No answers yet' : `${sum}% right overall &middot; ${tr.r} of ${tr.r + tr.w} answers`}</p></div></div>
+        <table><thead><tr><th>Game</th><th>Right</th><th>Correct / all</th><th>Plays</th></tr></thead><tbody>${rows}</tbody></table>${mistakesHTML(ST.id)}</article>`);
+    }));
+  };
+  mk('Refresh shared answers', async () => { note.textContent = 'Checking shared answers…'; const n = await pullShared(); note.textContent = n < 0 ? 'Shared answers are not available here. Showing answers saved on this device.' : `Shared answers loaded (${n} new or updated). Plus answers saved on this device.`; draw(); });
+  mk('Download CSV', () => download('9s-results.csv', csvText(), 'text/csv'));
+  mk('Export backup', () => download('9s-backup.json', JSON.stringify(Object.values(plays)), 'application/json'));
+  const imp = html('<input type="file" accept=".json,application/json" hidden>');
+  imp.addEventListener('change', () => {
+    const f = imp.files && imp.files[0]; if (!f) return;
+    const rd = new FileReader();
+    rd.onload = () => { try { const n = mergePlays(JSON.parse(rd.result)); note.textContent = `Imported ${n} new or updated plays.`; draw(); } catch (e) { note.textContent = 'That file could not be read.'; } };
+    rd.readAsText(f);
+  });
+  tools.appendChild(imp); mk('Import backup', () => imp.click());
+  draw(); mount(sec);
+  pullShared().then(n => { if (n > 0 && document.body.contains(sec)) { note.textContent = `Shared answers included (${n} new). Plus answers saved on this device.`; draw(); } });
+}
+
+/* ---------- round engine ---------- */
+const secCls = (g) => { const S = SECTIONS.find(x => x.id === g.sec); return S && S.cls ? S.cls + '-game' : ''; };
+function playRounds(g, level) {
+  const total = g.rounds || 4, rounds = [], seen = new Set();
+  for (let i = 0; i < total; i++) {
+    let R, tries = 0;
+    do { R = g.make(level); tries++; } while (seen.has(g.key(R)) && tries < 30);
+    seen.add(g.key(R)); rounds.push(R);
+  }
+  let r = 0, mistakes = 0;
+  function show() {
+    const R = rounds[r], [ph, say] = g.prompt(R, level);
+    const sec = html(`<section class="game ${secCls(g)}">${head(level, r, total)}${promptRow(ph, say)}<div class="board"></div><p class="msg" role="status" aria-live="polite"></p><div class="actions"></div></section>`);
+    mount(sec);
+    const actions = $('.actions', sec), msg = $('.msg', sec);
+    const nextBtn = html(`<button class="btn" type="button" hidden>${r === total - 1 ? 'See my stars' : 'Next'}</button>`);
+    actions.appendChild(nextBtn);
+    let done = false;
+    const c = {
+      R, level, sec, board: $('.board', sec), msg, actions,
+      addBtn(label, fn, cls = '') { const b = html(`<button class="btn ${cls}" type="button">${label}</button>`); b.addEventListener('click', fn); actions.insertBefore(b, nextBtn); return b; },
+      good(t) { if (done) return; done = true; track(true); setMsg(msg, t, 'good'); sfx.ok(); nextBtn.hidden = false; },
+      bad(t) { if (done) return; mistakes++; track(false, { q: plain(say), a: plain(t) }); setMsg(msg, t, 'hint'); sfx.no(); },
+      info(t) { setMsg(msg, t, 'hint'); },
+      get done() { return done; }
+    };
+    /*T1*/
+    g.view(c);
+    nextBtn.addEventListener('click', () => { r++; if (r >= total) finish(g, level, starsFor(mistakes)); else show(); });
+  }
+  show();
+}
+const shakeEl = (el) => { el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); };
+
+/* =====================  NAME THE FRACTION  ===================== */
+
+/* 1. Paint It: tap parts to paint the fraction */
+GAMES.push({
+  id: 'paint', sec: 'id', title: 'Paint It', desc: 'Tap the parts to paint the fraction.',
+  thumb: () => pic('circle', 4, { on: [0, 1, 2] }),
+  key: R => `${R.d}/${R.p}`,
+  make(level) { const d = pick(DENS[level]); return { d, p: 1 + rand(d - 1), kind: pick(kindsFor(d)) }; },
+  prompt(R, level) {
+    const w = words(R.p, R.d);
+    return level === 10 ? [`Paint <b>${w}</b> of the shape.`, `Paint ${w} of the shape.`] : [`Paint ${fr(R.p, R.d, 'c1')} of the shape.`, `Paint ${w} of the shape.`];
+  },
+  view(c) {
+    const R = c.R;
+    c.board.innerHTML = `<div class="figbox">${pic(R.kind, R.d, { tap: true })}</div><p class="counter"><b>0</b> of ${R.d} parts painted</p>`;
+    const box = $('.figbox', c.board), cnt = $('.counter b', c.board);
+    const painted = () => $$('.part.on', box).length;
+    box.addEventListener('click', e => {
+      const p = e.target.closest('.part'); if (!p || c.done) return;
+      p.classList.toggle('on'); p.setAttribute('aria-pressed', String(p.classList.contains('on')));
+      sfx.pick(); cnt.textContent = painted();
+    });
+    box.addEventListener('keydown', e => {
+      if ((e.key === 'Enter' || e.key === ' ') && e.target.classList && e.target.classList.contains('part')) { e.preventDefault(); e.target.dispatchEvent(new MouseEvent('click', { bubbles: true })); }
+    });
+    const chk = c.addBtn('Check', () => {
+      const n = painted();
+      if (n === 0) { c.info('Tap the parts to paint them first.'); return; }
+      if (n === R.p) { box.classList.add('locked'); chk.hidden = true; c.good(`Yes! ${R.p} of the ${R.d} equal parts are painted. That is ${words(R.p, R.d)}.`); }
+      else c.bad(`You painted ${n}. The top number, ${R.p}, is how many parts to paint.`);
+    });
+  }
+});
+
+/* 2. Balloon Pop: read the picture, pop the right balloon */
+GAMES.push({
+  id: 'balloon', sec: 'id', title: 'Balloon Pop', desc: 'Pop the balloon that matches the picture.',
+  thumb: () => `<span class="mini-balloon">${fr(3, 4)}</span><span class="mini-balloon" style="background:var(--b1);transform:translateY(-4px)">${fr(1, 3)}</span>`,
+  key: R => `${R.d}/${R.p}`,
+  make(level) {
+    const d = pick(DENS[level]), p = 1 + rand(d - 1), n = level <= 3 ? 3 : 4;
+    const opts = shuffle([{ p, q: d, ok: true }, ...fracOptions(p, d, n - 1).map(([a, q]) => ({ p: a, q, ok: false }))]);
+    return { d, p, kind: pick(kindsFor(d)), on: run(d, p), opts };
+  },
+  prompt: () => ['Which balloon matches the picture?', 'Which balloon matches the picture?'],
+  view(c) {
+    const R = c.R;
+    c.board.innerHTML = `<div class="figbox">${pic(R.kind, R.d, { on: R.on })}</div><div class="sky">${R.opts.map((o, i) =>
+      `<button class="balloon" type="button" data-i="${i}" style="--dl:${(i * 0.45).toFixed(2)}s" aria-label="${words(o.p, o.q)}"><span class="bal-body">${fr(o.p, o.q)}</span><span class="bal-string"></span></button>`).join('')}</div>`;
+    $$('.balloon', c.board).forEach(b => b.addEventListener('click', () => {
+      if (c.done) return;
+      const o = R.opts[+b.dataset.i];
+      if (o.ok) {
+        b.classList.add('popped'); sfx.pop();
+        $$('.balloon', c.board).forEach(x => { if (x !== b) x.classList.add('away'); });
+        c.good(`Yes! ${R.p} of the ${R.d} equal parts are painted. That is ${words(R.p, R.d)}.`);
+      } else {
+        b.classList.add('wrong');
+        c.bad(o.q === R.d ? 'Count the painted parts. That is the top number.' : o.p === R.p ? 'Count ALL the equal parts. That is the bottom number.' : 'Count the painted parts for the top. Count all the parts for the bottom.');
+      }
+    }));
+  }
+});
+
+/* 3. Memory Match: flip cards, match picture and fraction */
+GAMES.push({
+  id: 'memory', sec: 'id', title: 'Memory Match', desc: 'Flip two cards. Match each picture with its fraction.',
+  thumb: () => `<span class="mini-card">?</span><span class="mini-card up">${fr(1, 2)}</span><span class="mini-card up" style="background:var(--good-bg)">${pic('circle', 2, { on: [0] })}</span>`,
+  run(level) {
+    const g = this;
+    const pool = [], vals = [];
+    for (const d of DENS[level]) for (let p = 1; p < d; p++) { const v = p / d; if (!vals.some(x => Math.abs(x - v) < 1e-9)) { vals.push(v); pool.push({ p, d }); } }
+    const chosen = shuffle(pool).slice(0, PAIRS[level - 1]);
+    const cards = shuffle(chosen.flatMap((f, id) => [
+      { id, type: 'pic', content: pic(pick(kindsFor(f.d)), f.d, { on: run(f.d, f.p) }), label: 'picture' },
+      { id, type: 'frac', content: fr(f.p, f.d), label: words(f.p, f.d) }]));
+    const n = cards.length, cols = n <= 6 ? 3 : n === 10 ? 5 : 4;
+    const sec = html(`<section class="game">${head(level, 0, 0)}${promptRow('Find the pairs. Match each picture with its fraction.', 'Find the pairs. Match each picture with its fraction.')}
+      <div class="board"><div class="memgrid" style="--cols:${cols}">${cards.map((k, i) => `<button class="mem" type="button" data-i="${i}" aria-label="Card ${i + 1}"><span class="in"><span class="front">?</span><span class="back">${k.content}</span></span></button>`).join('')}</div>
+      <p class="counter"><b>0</b> of ${chosen.length} pairs</p></div><p class="msg" role="status" aria-live="polite"></p></section>`);
+    mount(sec);
+    /*T3*/
+    const msg = $('.msg', sec), cnt = $('.counter b', sec), els = $$('.mem', sec);
+    let first = null, lock = false, found = 0, miss = 0;
+    els.forEach((el, i) => el.addEventListener('click', () => {
+      if (lock || el.classList.contains('up') || el.classList.contains('done')) return;
+      el.classList.add('up'); sfx.pick();
+      if (first === null) { first = i; return; }
+      const a = first, b = i; first = null;
+      if (cards[a].id === cards[b].id && cards[a].type !== cards[b].type) {
+        els[a].classList.replace('up', 'done'); els[b].classList.replace('up', 'done');
+        found++; track(true); cnt.textContent = found; sfx.ok();
+        setMsg(msg, 'A match!', 'good');
+        if (found === chosen.length) setTimeout(() => {
+          if (!document.body.contains(sec)) return;
+          const stars = miss <= chosen.length / 2 ? 3 : miss <= chosen.length * 1.5 ? 2 : 1;
+          finish(g, level, stars, miss === 0 ? 'No wrong flips. Great memory!' : `${miss} wrong flip${miss > 1 ? 's' : ''}. Try again to beat it.`);
+        }, 700);
+      } else {
+        miss++; track(false, { q: 'Memory pairs', a: 'Turned over two cards that do not match' }); lock = true; sfx.no();
+        setMsg(msg, 'Not a pair. Look again.', 'hint');
+        setTimeout(() => { els[a].classList.remove('up'); els[b].classList.remove('up'); lock = false; }, 950);
+      }
+    }));
+  }
+});
+
+/* 4. Fraction Maker: set the top and bottom numbers */
+GAMES.push({
+  id: 'maker', sec: 'id', title: 'Fraction Maker', desc: 'Use + and − to build the fraction you see.',
+  thumb: () => `<span class="op">−</span>${fr(3, 4)}<span class="op">+</span>`,
+  key: R => `${R.d}/${R.p}/${R.ask}`,
+  make(level) {
+    const d = pick(DENS[level]);
+    return { d, p: 1 + rand(d - 1), kind: pick(kindsFor(d)), ask: level >= 8 && Math.random() < 0.5 ? 'empty' : 'painted' };
+  },
+  prompt(R) {
+    return R.ask === 'painted' ? ['What fraction is painted? Set the numbers.', 'What fraction is painted? Set the numbers.'] : ['What fraction is <b>empty</b>? Set the numbers.', 'What fraction is empty? Set the numbers.'];
+  },
+  view(c) {
+    const R = c.R, ans = R.ask === 'painted' ? [R.p, R.d] : [R.d - R.p, R.d];
+    let top = 1, bot = 2;
+    c.board.innerHTML = `<div class="figbox">${pic(R.kind, R.d, { on: run(R.d, R.p) })}</div>
+      <div class="maker"><div class="mrow"><button class="stp" type="button" data-t="top" data-s="-1" aria-label="Top number down">−</button><output class="mnum" data-o="top" aria-label="Top number">1</output><button class="stp" type="button" data-t="top" data-s="1" aria-label="Top number up">+</button></div>
+      <span class="mbar"></span>
+      <div class="mrow"><button class="stp" type="button" data-t="bot" data-s="-1" aria-label="Bottom number down">−</button><output class="mnum" data-o="bot" aria-label="Bottom number">2</output><button class="stp" type="button" data-t="bot" data-s="1" aria-label="Bottom number up">+</button></div></div>`;
+    const oTop = $('[data-o=top]', c.board), oBot = $('[data-o=bot]', c.board);
+    $$('.stp', c.board).forEach(b => b.addEventListener('click', () => {
+      if (c.done) return;
+      const s = +b.dataset.s;
+      if (b.dataset.t === 'top') top = Math.min(10, Math.max(1, top + s)); else bot = Math.min(10, Math.max(2, bot + s));
+      oTop.textContent = top; oBot.textContent = bot; sfx.pick();
+    }));
+    const part = R.ask === 'painted' ? 'painted' : 'empty';
+    const chk = c.addBtn('Check', () => {
+      const topOk = top === ans[0], botOk = bot === ans[1];
+      if (topOk && botOk) { chk.hidden = true; c.good(`Yes! ${ans[0]} of the ${ans[1]} equal parts are ${part}. That is ${words(ans[0], ans[1])}.`); }
+      else if (topOk) c.bad(`The top number is right. Count ALL the equal parts for the bottom number.`);
+      else if (botOk) c.bad(`The bottom number is right. Count the ${part} parts for the top number.`);
+      else c.bad(`Not yet. Top number: count the ${part} parts. Bottom number: count ALL the parts.`);
+    });
+  }
+});
+
+/* 5. Fraction Detective: find the picture for a fraction */
+GAMES.push({
+  id: 'detective', sec: 'id', title: 'Fraction Detective', desc: 'Find the picture that shows the fraction.',
+  thumb: () => `<svg class="ico" viewBox="0 0 40 40" fill="none" stroke="var(--ink)" stroke-width="3.5" stroke-linecap="round"><circle cx="17" cy="17" r="11" fill="var(--empty)"/><path d="M25 25l11 11"/></svg>${fr(2, 3)}`,
+  key: R => `${R.d}/${R.p}`,
+  make(level) {
+    const d = pick(DENS[level]), p = 1 + rand(d - 1), n = level <= 3 ? 3 : 4;
+    const wrong = fracOptions(p, d, n - 1).map(([a, q]) => ({ p: a, d: q, ok: false, kind: pick(kindsFor(q)) }));
+    if (level >= 5 && Math.random() < 0.7) wrong[rand(wrong.length)] = { p, d, ok: false, uneq: true, kind: pick(['circle', 'bar']) };
+    const opts = shuffle([{ p, d, ok: true, kind: pick(kindsFor(d)) }, ...wrong]).map(o => ({ ...o, on: run(o.d, o.p) }));
+    return { d, p, opts };
+  },
+  prompt: R => [`Find the picture that shows ${fr(R.p, R.d, 'c1')}`, `Find the picture that shows ${words(R.p, R.d)}.`],
+  view(c) {
+    const R = c.R;
+    c.board.innerHTML = `<div class="picks ${R.opts.length === 3 ? 'three' : ''}">${R.opts.map((o, i) => `<button class="pick" type="button" data-i="${i}" aria-label="Picture ${i + 1}">${pic(o.kind, o.d, { on: o.on, uneq: o.uneq })}</button>`).join('')}</div>`;
+    $$('.pick', c.board).forEach(b => b.addEventListener('click', () => {
+      if (c.done) return;
+      const o = R.opts[+b.dataset.i];
+      if (o.ok) { b.classList.add('right'); c.good(`Yes! That picture has ${R.d} equal parts and ${R.p} are painted: ${words(R.p, R.d)}.`); }
+      else { b.classList.add('wrong'); c.bad(o.uneq ? 'The parts are not the same size. Fractions need equal parts.' : `That picture shows ${words(o.p, o.d)}. Look for ${words(R.p, R.d)}.`); }
+    }));
+  }
+});
+
+/* =====================  ADD THE FRACTIONS  ===================== */
+
+/* 6. Join the Bars: put two bars together, pick the total */
+GAMES.push({
+  id: 'join', sec: 'add', title: 'Join the Bars', desc: 'Put two bars together. Pick the total.',
+  thumb: () => barSVG(6, ['on', 'on', 'on2', 'on2']),
+  key: R => `${R.d}-${R.a}-${R.b}`,
+  make(level) { const P = addProblem(level); const n = level <= 3 ? 2 : 3; return { ...P, opts: shuffle([[P.s, P.d, true], ...sumOptions(P, n).map(([p, q]) => [p, q, false])]) }; },
+  prompt: R => ['Add the fractions. Pick the total.', `${words(R.a, R.d)} plus ${words(R.b, R.d)}. Pick the total.`],
+  view(c) {
+    const R = c.R, { d, a, b, s } = R;
+    c.board.innerHTML = `<div class="eqrow">${fr(a, d, 'c1')}<span class="op">+</span>${fr(b, d, 'c2')}<span class="op">=</span><span class="qm">?</span></div>
+      <div class="stack">${barSVG(d, Array.from({ length: d }, (_, i) => i < a ? 'on' : ''))}<span class="plus">+</span>${barSVG(d, Array.from({ length: d }, (_, i) => i < b ? 'on2' : ''))}</div>
+      <div class="joined"><small>Together</small>${barSVG(d, [])}</div>
+      <div class="opts">${R.opts.map((o, i) => `<button class="ans" type="button" data-i="${i}" aria-label="${o[0]} over ${o[1]}">${fr(o[0], o[1])}</button>`).join('')}</div>`;
+    const fill = () => {
+      $$('.joined .seg', c.board).forEach((r, i) => { if (i < s) { r.classList.add(i < a ? 'on' : 'on2', 'fill'); r.style.animationDelay = (i * 0.12) + 's'; } });
+    };
+    const joinBtn = c.addBtn('Put them together', () => { fill(); joinBtn.disabled = true; sfx.pick(); }, 'alt');
+    $$('.ans', c.board).forEach(btn => btn.addEventListener('click', () => {
+      if (c.done) return;
+      const o = R.opts[+btn.dataset.i];
+      if (o[2]) {
+        btn.classList.add('right'); fill(); joinBtn.hidden = true;
+        c.good(`${a}/${d} + ${b}/${d} = ${s}/${d}. Add the tops. The bottom stays ${d}.${s === d ? ' That is 1 whole!' : ''}`);
+      } else {
+        btn.classList.add('wrong');
+        c.bad(o[1] !== d ? 'The pieces stay the same size, so the bottom number stays the same.' : `Count the colored parts together. ${a} + ${b} = ?`);
+      }
+    }));
+  }
+});
+
+/* 7. Answer Pad: type the answer on a number pad */
+GAMES.push({
+  id: 'pad', sec: 'add', title: 'Answer Pad', desc: 'Type the answer with the number pad.',
+  thumb: () => `<span class="mini-pad">${'123456789'.split('').map(x => `<i>${x}</i>`).join('')}</span>`,
+  key: R => `${R.d}-${R.a}-${R.b}`,
+  make(level) { return { ...addProblem(level), bothFields: level >= 6 }; },
+  prompt: R => ['Add the fractions. Type the answer.', `${words(R.a, R.d)} plus ${words(R.b, R.d)}. Type the answer.`],
+  view(c) {
+    const R = c.R, { d, a, b, s } = R;
+    c.board.innerHTML = `<div class="eqrow">${fr(a, d, 'c1')}<span class="op">+</span>${fr(b, d, 'c2')}<span class="op">=</span>
+      <span class="afr"><button class="fld active" type="button" id="fn" aria-label="Top number"></button><span class="b"></span>${R.bothFields ? '<button class="fld" type="button" id="fd" aria-label="Bottom number"></button>' : `<span class="fld fixed" id="fd">${d}</span>`}</span></div>
+      <div class="keypad">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(k => `<button class="key" type="button" data-k="${k}">${k}</button>`).join('')}<button class="key" type="button" data-k="back" aria-label="Delete">⌫</button><button class="key" type="button" data-k="0">0</button><button class="key go" type="button" data-k="go" aria-label="Check">✓</button></div>`;
+    const fn = $('#fn', c.board), fd = $('#fd', c.board);
+    const val = { fn: '', fd: R.bothFields ? '' : String(d) };
+    let active = 'fn';
+    const paint = () => {
+      fn.textContent = val.fn; if (R.bothFields) fd.textContent = val.fd;
+      fn.classList.toggle('active', active === 'fn'); if (R.bothFields) fd.classList.toggle('active', active === 'fd');
+    };
+    fn.addEventListener('click', () => { if (!c.done) { active = 'fn'; paint(); } });
+    if (R.bothFields) fd.addEventListener('click', () => { if (!c.done) { active = 'fd'; paint(); } });
+    const press = (k) => {
+      if (c.done) return;
+      if (k === 'back') { val[active] = val[active].slice(0, -1); }
+      else if (k === 'go') {
+        if (!val.fn) { c.info('Type the top number first.'); return; }
+        if (R.bothFields && !val.fd) { active = 'fd'; paint(); c.info('Now type the bottom number.'); return; }
+        if (+val.fn === s && +val.fd === d) {
+          fn.classList.add('ok'); fd.classList.add('ok'); $$('.key', c.board).forEach(x => { x.disabled = true; });
+          c.good(`${a}/${d} + ${b}/${d} = ${s}/${d}. Add the tops. The bottom stays ${d}.${s === d ? ' That is 1 whole!' : ''}`);
+        } else if (+val.fd !== d) { c.bad('The bottom number stays the same when the pieces are the same size.'); val.fd = R.bothFields ? '' : val.fd; }
+        else { c.bad(`Add the top numbers: ${a} + ${b} = ?`); val.fn = ''; active = 'fn'; }
+      }
+      else if (val[active].length < 2) { val[active] += k; sfx.pick(); }
+      paint();
+    };
+    $$('.key', c.board).forEach(k => k.addEventListener('click', () => press(k.dataset.k)));
+    onKey = (e) => {
+      if (/^[0-9]$/.test(e.key)) press(e.key); else if (e.key === 'Backspace') press('back'); else if (e.key === 'Enter') press('go');
+    };
+    paint();
+  }
+});
+
+/* 8. Frog Hops: add on a number line */
+const FROG = `<ellipse cx="0" cy="0" rx="13" ry="10" fill="var(--good)" stroke="var(--line)" stroke-width="2.5"/><circle cx="-7" cy="-9" r="5" fill="var(--surface)" stroke="var(--line)" stroke-width="2.5"/><circle cx="7" cy="-9" r="5" fill="var(--surface)" stroke="var(--line)" stroke-width="2.5"/><circle cx="-7" cy="-9" r="2" fill="var(--line)"/><circle cx="7" cy="-9" r="2" fill="var(--line)"/><path d="M-5 3q5 4 10 0" fill="none" stroke="var(--line)" stroke-width="2" stroke-linecap="round"/>`;
+GAMES.push({
+  id: 'frog', sec: 'add', title: 'Frog Hops', desc: 'The frog hops along the number line. Where does it land?',
+  thumb: () => `<svg viewBox="0 0 84 44" width="80" height="42" aria-hidden="true"><path d="M8 32H76" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/><g stroke="var(--ink)" stroke-width="2.5"><path d="M8 28v8M25 28v8M42 28v8M59 28v8M76 28v8"/></g><path d="M25 24Q33 8 42 24M42 24Q51 8 59 24" fill="none" stroke="var(--grape)" stroke-width="3" stroke-linecap="round"/><circle cx="25" cy="18" r="5" fill="var(--good)" stroke="var(--ink)" stroke-width="2"/></svg>`,
+  key: R => `${R.d}-${R.a}-${R.b}`,
+  make(level) { return addProblem(level); },
+  prompt: R => [`The frog hops ${R.b} ${R.b === 1 ? 'time' : 'times'}. Where does it land?`, `The frog is at ${words(R.a, R.d)}. It hops ${R.b} ${R.b === 1 ? 'time' : 'times'}. Each hop is one ${DEN_W[R.d][0]}. Where does it land?`],
+  view(c) {
+    const R = c.R, { d, a, b, s } = R, labelAll = c.level <= 5;
+    const X = (i) => 20 + i * 300 / d;
+    let svg = `<line class="ax" x1="20" y1="80" x2="320" y2="80"/>`;
+    for (let i = 0; i <= d; i++) {
+      svg += `<line class="tick" x1="${X(i).toFixed(1)}" y1="72" x2="${X(i).toFixed(1)}" y2="88"/>`;
+      if (i === 0 || i === d) svg += `<text x="${X(i).toFixed(1)}" y="118">${i === 0 ? 0 : 1}</text>`;
+      else if (labelAll) svg += `<text x="${X(i).toFixed(1)}" y="108">${i}</text><line class="lb" x1="${(X(i) - 7).toFixed(1)}" x2="${(X(i) + 7).toFixed(1)}" y1="113" y2="113"/><text x="${X(i).toFixed(1)}" y="131">${d}</text>`;
+    }
+    let hops = '';
+    for (let i = a; i < s; i++) hops += `<path class="hop" pathLength="1" style="animation-delay:${(i - a) * 0.55}s" d="M${X(i).toFixed(1)} 58 Q${((X(i) + X(i + 1)) / 2).toFixed(1)} 22 ${X(i + 1).toFixed(1)} 58"/>`;
+    let taps = '';
+    for (let i = 0; i <= d; i++) taps += `<circle class="tk" data-i="${i}" cx="${X(i).toFixed(1)}" cy="80" r="${Math.min(15, 150 / d).toFixed(1)}" tabindex="0" role="button" aria-label="Tick ${i} of ${d}"/>`;
+    c.board.innerHTML = `<div class="eqrow">${fr(a, d, 'c1')}<span class="op">+</span>${fr(b, d, 'c2')}<span class="op">=</span><span class="qm">?</span></div>
+      <svg class="nline" viewBox="0 0 340 142" role="group" aria-label="Number line">${svg}<g id="hops"></g><g id="frog" style="transform:translate(${X(a).toFixed(1)}px,64px)">${FROG}</g>${taps}</svg>
+      <p class="counter">Each hop is ${fr(1, d)}</p>`;
+    const frog = $('#frog', c.board);
+    const showBtn = c.addBtn('Show the hops', () => { $('#hops', c.board).innerHTML = hops; showBtn.disabled = true; sfx.pick(); }, 'alt');
+    const choose = (t) => {
+      if (c.done) return;
+      const i = +t.dataset.i;
+      if (i === s) {
+        t.classList.add('right'); frog.style.transform = `translate(${X(s).toFixed(1)}px,64px)`; showBtn.hidden = true;
+        c.good(`${a}/${d} + ${b}/${d} = ${s}/${d}. ${b} hops of 1/${d} take the frog to ${s}/${d}.${s === d ? ' That is 1 whole!' : ''}`);
+      } else { t.classList.add('wrong'); c.bad(`Count ${b} hop${b > 1 ? 's' : ''} of 1/${d} from ${a}/${d}. Try "Show the hops".`); }
+    };
+    $$('.tk', c.board).forEach(t => {
+      t.addEventListener('click', () => choose(t));
+      t.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(t); } });
+    });
+  }
+});
+
+/* 9. Right or Wrong: judge a sum */
+GAMES.push({
+  id: 'check', sec: 'add', title: 'Right or Wrong?', desc: 'Is the sum right? Tap tick or cross.',
+  thumb: () => `<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="var(--good-ink)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13l5 5L20 6"/></svg><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="var(--bad)" stroke-width="4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>`,
+  key: R => `${R.d}-${R.a}-${R.b}-${R.truth}`,
+  make(level) {
+    const P = addProblem(level), truth = Math.random() < 0.5;
+    let shown = [P.s, P.d];
+    if (!truth) {
+      const cand = shuffle([[P.s, 2 * P.d], [P.s + 1, P.d], [P.s - 1, P.d], [P.s, P.d + 1], [P.a, P.d], [P.a + P.b + 2, P.d]]).filter(([p, q]) => p >= 1 && p <= q && !vEq(p, q, P.s, P.d));
+      shown = cand[0];
+    }
+    return { ...P, truth, shown, picture: level <= 5 };
+  },
+  prompt: () => ['Is this sum right or wrong?', 'Is this sum right or wrong?'],
+  view(c) {
+    const R = c.R, { d, a, b, s } = R, [P, Q] = R.shown;
+    const cls = Array.from({ length: d }, (_, i) => i < a ? 'on' : i < s ? 'on2' : '');
+    c.board.innerHTML = `<div class="claim"><div class="eqrow">${fr(a, d, 'c1')}<span class="op">+</span>${fr(b, d, 'c2')}<span class="op">=</span>${fr(P, Q)}</div>
+      <div class="joined" id="pic" ${R.picture ? '' : 'hidden'}><small>The bars together</small>${barSVG(d, cls)}</div></div>`;
+    let peek = null;
+    if (!R.picture) peek = c.addBtn('Show a picture', () => { $('#pic', c.board).hidden = false; peek.disabled = true; }, 'alt');
+    const yes = c.addBtn(`${ICON_TICK}Right`, () => judge(true, yes), 'verdict yes');
+    const no = c.addBtn(`${ICON_CROSS}Wrong`, () => judge(false, no), 'verdict no');
+    yes.className = 'verdict yes'; no.className = 'verdict no';
+    function judge(said, btn) {
+      if (c.done) return;
+      if (said === R.truth) {
+        $('#pic', c.board).hidden = false; if (peek) peek.hidden = true; yes.disabled = no.disabled = true;
+        c.good(R.truth ? `Right! ${a}/${d} + ${b}/${d} = ${s}/${d}. Add the tops. The bottom stays ${d}.` : `Yes, it is wrong. ${a}/${d} + ${b}/${d} is really ${s}/${d}.`);
+      } else {
+        btn.disabled = true;
+        c.bad(R.truth ? `Look again. Add the tops: ${a} + ${b} = ${s}. The bottom stays ${d}.` : (Q === 2 * d ? 'Look at the bottom number. The pieces stay the same size, so the bottom does not change.' : `Add the tops: ${a} + ${b} = ${s}. Does the answer match?`));
+      }
+    }
+  }
+});
+
+/* 10. Make the Sum: tap two cards that add to the target */
+GAMES.push({
+  id: 'pairs', sec: 'add', title: 'Make the Sum', desc: 'Tap two cards that add up to the target.',
+  thumb: () => `${fr(1, 5, 'c1')}<span class="op">+</span>${fr(2, 5, 'c2')}`,
+  key: R => `${R.d}-${R.c}-${R.tiles.join(',')}`,
+  make(level) {
+    const d = pick(ADENS[level].filter(x => x >= (level >= 9 ? 6 : level >= 7 ? 5 : 3)));
+    const maxT = level >= 6 ? d : d - 1;
+    const target = 2 + rand(maxT - 1);
+    const lo = Math.max(1, target - (d - 1)), hi = Math.min(d - 1, target - 1);
+    const x = lo + rand(hi - lo + 1), y = target - x;
+    const n = [4, 4, 5, 5, 6, 6, 7, 7, 8, 8][level - 1], tiles = [x, y];
+    while (tiles.length < n) tiles.push(1 + rand(d - 1));
+    return { d, c: target, x, y, tiles: shuffle(tiles) };
+  },
+  prompt: R => [`Tap two cards that add up to ${fr(R.c, R.d, 'c1')}`, `Tap two cards that add up to ${words(R.c, R.d)}.`],
+  view(c) {
+    const R = c.R, { d } = R;
+    c.board.innerHTML = `<div class="target">Target ${fr(R.c, R.d, 'c1')}</div><div class="pairs">${R.tiles.map((t, i) => `<button class="tile" type="button" data-i="${i}" aria-label="${t} over ${d}">${fr(t, d)}</button>`).join('')}</div>`;
+    const els = $$('.tile', c.board);
+    let sel = [];
+    els.forEach((el, i) => el.addEventListener('click', () => {
+      if (c.done || el.classList.contains('good')) return;
+      if (sel.includes(i)) { sel = sel.filter(x => x !== i); el.classList.remove('sel'); return; }
+      sel.push(i); el.classList.add('sel'); sfx.pick();
+      if (sel.length < 2) return;
+      const [p, q] = sel, total = R.tiles[p] + R.tiles[q];
+      if (total === R.c) {
+        els[p].classList.replace('sel', 'good'); els[q].classList.replace('sel', 'good');
+        c.good(`${R.tiles[p]}/${d} + ${R.tiles[q]}/${d} = ${total}/${d}. Add the tops. The bottom stays ${d}.${total === d ? ' That is 1 whole!' : ''}`);
+      } else {
+        c.bad(`${R.tiles[p]}/${d} + ${R.tiles[q]}/${d} = ${total}/${d}. We need ${R.c}/${d}. Try two other cards.`);
+        [p, q].forEach(k => { shakeEl(els[k]); });
+        setTimeout(() => els.forEach(e2 => e2.classList.remove('sel')), 450);
+      }
+      sel = [];
+    }));
+  }
+});
+
+/* =====================  9S COUNTING  ===================== */
+const numWords = (n) => {
+  const ones = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+  const tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+  if (n < 20) return ones[n];
+  if (n < 100) return tens[Math.floor(n / 10)] + (n % 10 ? '-' + ones[n % 10] : '');
+  if (n === 100) return 'one hundred';
+  return String(n);
+};
+const SEQ_HI = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+const STAR_PATH = 'M12 2.5l2.9 6.2 6.8.8-5 4.7 1.3 6.7L12 17.5l-6 3.4 1.3-6.7-5-4.7 6.8-.8z';
+/* answer choices near the right number; never repeats the right one or any number in `avoid` */
+function numOptions(ans, total, deltas, lo, hi, avoid = []) {
+  const out = [ans], seen = new Set([ans, ...avoid]);
+  for (const dl of shuffle(deltas)) {
+    for (const v of shuffle([ans + dl, ans - dl])) {
+      if (out.length >= total) break;
+      if (v < lo || v > hi || seen.has(v)) continue;
+      seen.add(v); out.push(v);
+    }
+    if (out.length >= total) break;
+  }
+  for (let t = 0; out.length < total && t < 300; t++) {
+    const v = lo + rand(hi - lo + 1);
+    if (!seen.has(v)) { seen.add(v); out.push(v); }
+  }
+  return shuffle(out);
+}
+function numAnswers(c, opts, correct, goodText, badFn) {
+  c.board.insertAdjacentHTML('beforeend', `<div class="opts">${opts.map(v => `<button class="ans num" type="button" data-v="${v}">${v}</button>`).join('')}</div>`);
+  $$('.ans', c.board).forEach(b => b.addEventListener('click', () => {
+    if (c.done) return;
+    const v = +b.dataset.v;
+    if (v === correct) { b.classList.add('right'); c.good(goodText); speak(String(v)); }
+    else { b.classList.add('wrong'); c.bad(badFn(v)); }
+  }));
+}
+const seqBoxes = (seq, pos) => `<div class="numrow">${seq.map((v, i) => i === pos ? '<span class="nbox q">?</span>' : `<span class="nbox">${v}</span>`).join('')}</div>`;
+const KEYPAD = `<div class="keypad">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(k => `<button class="key" type="button" data-k="${k}">${k}</button>`).join('')}<button class="key" type="button" data-k="back" aria-label="Delete">⌫</button><button class="key" type="button" data-k="0">0</button><button class="key go" type="button" data-k="go" aria-label="Check">✓</button></div>`;
+
+/* ---- Grade 2: counting by 1, from 1 to 100 ---- */
+
+/* 1. Count the Stars: tap each star to count */
+GAMES.push({
+  id: 'c1count', sec: 'c1', title: 'Count the Stars', desc: 'Tap each star to count it. Then pick the number.',
+  thumb: () => [0, 1, 2].map(() => `<svg class="ico" viewBox="0 0 24 24" fill="var(--coral)" stroke="var(--line)" stroke-width="1.5" stroke-linejoin="round"><path d="${STAR_PATH}"/></svg>`).join(''),
+  key: R => R.n,
+  make(level) {
+    const hi = [10, 15, 20, 25, 30, 40, 50, 60, 80, 100][level - 1], lo = Math.max(3, Math.round(hi * 0.4));
+    const n = lo + rand(hi - lo + 1);
+    return { n, opts: numOptions(n, level < 5 ? 3 : 4, [1, 2, 10, 5], 1, Math.max(hi, 12)) };
+  },
+  prompt: () => ['How many stars are there?', 'How many stars are there? Tap each star to count.'],
+  view(c) {
+    const R = c.R, cols = R.n <= 10 ? 5 : 10, sz = cols === 5 ? 52 : 27;
+    c.board.innerHTML = `<div class="stargrid" style="--cols:${cols};--sz:${sz}px">${Array.from({ length: R.n }, () => `<button class="st" type="button" aria-label="Star"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${STAR_PATH}"/></svg></button>`).join('')}</div><p class="counter">Counted: <b>0</b></p>`;
+    let k = 0; const cnt = $('.counter b', c.board);
+    $$('.st', c.board).forEach(b => b.addEventListener('click', () => {
+      if (b.classList.contains('on') || c.done) return;
+      k++; b.classList.add('on'); b.dataset.n = k; cnt.textContent = k; speak(String(k)); sfx.pick();
+      if (k === R.n) c.info(`You counted ${R.n}. Now pick the number.`);
+    }));
+    numAnswers(c, R.opts, R.n, `Yes! There are ${R.n} stars.`,
+      v => Math.abs(v - R.n) === 1 ? 'So close! Tap each star one time and count again.' : 'Tap each star to count them.');
+  }
+});
+
+/* 2. What Comes Next? */
+GAMES.push({
+  id: 'c1next', sec: 'c1', title: 'What Comes Next?', desc: 'Find the missing number in the counting line.',
+  thumb: () => '<span class="mini-seq"><i>4</i><i>5</i><i class="q">?</i></span>',
+  key: R => `${R.seq[0]}-${R.pos}`,
+  make(level) {
+    const hi = SEQ_HI[level - 1], s = 1 + rand(hi - 4), pos = level <= 2 ? 4 : level <= 4 ? pick([0, 4]) : rand(5);
+    const seq = [0, 1, 2, 3, 4].map(i => s + i), ans = seq[pos];
+    return { seq, pos, ans, opts: numOptions(ans, level <= 6 ? 3 : 4, [1, 2, 10, 3], 1, hi, seq) };
+  },
+  prompt(R) {
+    const t = R.pos === 4 ? 'What number comes next?' : R.pos === 0 ? 'What number comes before?' : 'Which number is missing?';
+    return [t, `Count: ${R.seq.map((v, i) => i === R.pos ? 'blank' : v).join(', ')}. ${t}`];
+  },
+  view(c) {
+    const R = c.R;
+    c.board.innerHTML = seqBoxes(R.seq, R.pos);
+    numAnswers(c, R.opts, R.ans, `Yes! ${R.seq.join(', ')}. We count up by 1.`,
+      () => R.pos === 0 ? `It is one less than ${R.seq[1]}.` : `It is one more than ${R.seq[R.pos - 1]}.`);
+  }
+});
+
+/* 3. Number Order: tap in order */
+GAMES.push({
+  id: 'c1order', sec: 'c1', title: 'Number Order', desc: 'Tap the numbers in order, smallest first.', rounds: 3,
+  thumb: () => '<span class="mini-seq"><i>1</i><i>2</i><i>3</i></span>',
+  key: R => R.nums[0],
+  make(level) {
+    const hi = SEQ_HI[level - 1], k = Math.min(12, 4 + level), s = 1 + rand(hi - k + 1);
+    const nums = Array.from({ length: k }, (_, i) => s + i);
+    return { nums, tiles: shuffle(nums) };
+  },
+  prompt: () => ['Tap the numbers in order. Start with the smallest.', 'Tap the numbers in order. Start with the smallest.'],
+  view(c) {
+    const R = c.R, k = R.nums.length;
+    c.board.innerHTML = `<div class="cgrid" style="--cols:${k <= 6 ? 3 : 4}">${R.tiles.map(v => `<button class="cell big" type="button" data-v="${v}">${v}</button>`).join('')}</div>`;
+    let ptr = 0;
+    $$('.cell', c.board).forEach(b => b.addEventListener('click', () => {
+      if (c.done || b.classList.contains('new')) return;
+      const v = +b.dataset.v;
+      if (v === R.nums[ptr]) {
+        b.classList.add('new'); speak(String(v)); sfx.pick(); ptr++;
+        if (ptr === k) c.good(`${R.nums.join(', ')}. You counted up by 1!`);
+      } else { shakeEl(b); c.bad(ptr === 0 ? 'Start with the smallest number.' : `Find the number that comes after ${R.nums[ptr - 1]}.`); }
+    }));
+  }
+});
+
+/* 4. Number Chart: fill the blanks on a chart that grows to 100 */
+GAMES.push({
+  id: 'c1chart', sec: 'c1', title: 'Number Chart', desc: 'Fill in the missing numbers on the chart.', rounds: 3,
+  thumb: () => `<span class="mini-grid">${Array.from({ length: 9 }, (_, i) => `<i${i === 4 ? ' class="q"' : ''}></i>`).join('')}</span>`,
+  key: R => R.blanks.join(','),
+  make(level) {
+    const n = 10 * level, k = [2, 3, 3, 4, 4, 5, 5, 6, 7, 8][level - 1];
+    const blanks = shuffle(Array.from({ length: n }, (_, i) => i + 1)).slice(0, k).sort((a, b) => a - b);
+    return { n, blanks, cols: level <= 2 ? 5 : 10 };
+  },
+  prompt: () => ['Fill the empty boxes. Tap a box, then pick the number.', 'Fill the empty boxes. Tap a box, then pick the number.'],
+  view(c) {
+    const R = c.R, blank = new Set(R.blanks), fs = R.cols === 5 ? 24 : 13;
+    c.board.innerHTML = `<div class="cgrid" style="--cols:${R.cols};font-size:${fs}px">${Array.from({ length: R.n }, (_, i) => {
+      const v = i + 1; return blank.has(v) ? `<button class="cell blank" type="button" data-v="${v}">?</button>` : `<span class="cell">${v}</span>`;
+    }).join('')}</div><div class="opts"></div>`;
+    const opts = $('.opts', c.board);
+    const show = (el) => {
+      $$('.cell.sel', c.board).forEach(x => x.classList.remove('sel'));
+      if (!el) { opts.innerHTML = ''; return; }
+      el.classList.add('sel');
+      const v = +el.dataset.v;
+      opts.innerHTML = numOptions(v, 3, [1, 10, 2], 1, R.n).map(x => `<button class="ans num" type="button" data-v="${x}">${x}</button>`).join('');
+      $$('.ans', opts).forEach(b => b.addEventListener('click', () => {
+        if (c.done) return;
+        if (+b.dataset.v === v) {
+          el.classList.remove('blank', 'sel'); el.classList.add('new'); el.textContent = v; speak(String(v)); sfx.ok();
+          const nxt = $('.cell.blank', c.board);
+          if (nxt) { show(nxt); setMsg(c.msg, 'Yes! Now fill the next empty box.', 'good'); }
+          else { opts.innerHTML = ''; c.good('Every box is filled. Great counting!'); }
+        } else { b.classList.add('wrong'); c.bad(`Count on. What comes after ${v - 1}?`); }
+      }));
+    };
+    $$('.cell.blank', c.board).forEach(el => el.addEventListener('click', () => { if (!c.done) show(el); }));
+    show($('.cell.blank', c.board));
+  }
+});
+
+/* 5. Find the Number: listen, look, tap (words only from Level 8) */
+GAMES.push({
+  id: 'c1find', sec: 'c1', title: 'Find the Number', desc: 'Listen, look and tap the number.',
+  thumb: () => '<svg class="ico" viewBox="0 0 40 40" fill="none" stroke="var(--ink)" stroke-width="3.5" stroke-linecap="round"><circle cx="17" cy="17" r="11" fill="var(--empty)"/><path d="M25 25l11 11"/></svg><span class="op" style="color:var(--ink)">37</span>',
+  key: R => R.t,
+  make(level) {
+    const hi = SEQ_HI[level - 1], k = [6, 6, 8, 8, 9, 9, 10, 10, 12, 12][level - 1], t = 1 + rand(hi), set = new Set([t]);
+    const conf = [];
+    if (level >= 3) conf.push(t + 1, t - 1);
+    if (level >= 5 && t >= 10) { const r = +String(t).split('').reverse().join(''); if (r !== t) conf.push(r); }
+    if (level >= 7) conf.push(t + 10, t - 10);
+    shuffle(conf).forEach(v => { if (set.size < k && v >= 1 && v <= hi) set.add(v); });
+    for (let g = 0; set.size < k && g < 500; g++) set.add(1 + rand(hi));
+    return { t, tiles: shuffle([...set]) };
+  },
+  prompt(R, level) {
+    return level >= 8 ? [`Find <b>${numWords(R.t)}</b>.`, `Find ${numWords(R.t)}.`] : [`Find the number <b>${R.t}</b>.`, `Find the number ${R.t}.`];
+  },
+  view(c) {
+    const R = c.R, k = R.tiles.length;
+    c.board.innerHTML = `<div class="cgrid" style="--cols:${k <= 6 ? 3 : 4}">${R.tiles.map(v => `<button class="cell big" type="button" data-v="${v}">${v}</button>`).join('')}</div>`;
+    $$('.cell', c.board).forEach(b => b.addEventListener('click', () => {
+      if (c.done) return;
+      const v = +b.dataset.v;
+      if (v === R.t) { b.classList.add('new'); c.good(`Yes! That is ${R.t}, ${numWords(R.t)}.`); speak(String(R.t)); }
+      else { b.classList.add('wrong'); speak(String(v)); c.bad(`That is ${v}. Look for ${c.level >= 8 ? numWords(R.t) : R.t}.`); }
+    }));
+  }
+});
+
+/* ---- Grade 4: counting by 5 and counting by 10 (same five games, each with its own numbers) ---- */
+const TOP = { 5: [30, 40, 50, 60, 75, 100, 100, 150, 200, 200], 10: [60, 70, 80, 100, 100, 120, 150, 200, 200, 200] };
+const FROG_THUMB = '<svg viewBox="0 0 84 44" width="80" height="42" aria-hidden="true"><path d="M8 32H76" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/><g stroke="var(--ink)" stroke-width="2.5"><path d="M8 28v8M25 28v8M42 28v8M59 28v8M76 28v8"/></g><path d="M25 24Q33 8 42 24M42 24Q51 8 59 24" fill="none" stroke="var(--grape)" stroke-width="3" stroke-linecap="round"/><circle cx="25" cy="18" r="5" fill="var(--good)" stroke="var(--ink)" stroke-width="2"/></svg>';
+function skipGames(step) {
+  const S = 'c' + step, top = (l) => TOP[step][l - 1];
+  const dl = step === 5 ? [5, 10, 1] : [10, 20, 1];
+  const ends = step === 5 ? 'end in 5 or 0' : 'end in 0';
+
+  /* A. What's Next? */
+  GAMES.push({
+    id: S + 'next', sec: S, title: "What's Next?", desc: `Count by ${step}s. Find the missing number.`,
+    thumb: () => `<span class="mini-seq"><i>${step}</i><i>${step * 2}</i><i class="q">?</i></span>`,
+    key: R => `${R.seq[0]}-${R.pos}-${R.dir}`,
+    make(level) {
+      const len = level >= 7 ? 6 : 5, maxIdx = Math.floor(top(level) / step);
+      const dir = level >= 8 && Math.random() < 0.5 ? -1 : 1, k0 = 1 + rand(maxIdx - len + 1);
+      const seq = Array.from({ length: len }, (_, i) => step * (k0 + i)); if (dir < 0) seq.reverse();
+      const pos = level <= 2 ? len - 1 : level <= 4 ? pick([0, len - 1]) : rand(len), ans = seq[pos];
+      return { seq, pos, ans, dir, opts: numOptions(ans, level <= 6 ? 3 : 4, dl, 1, top(level) + step, seq) };
+    },
+    prompt(R) {
+      const t = `Count by ${step}s${R.dir < 0 ? ' backward' : ''}. ` + (R.pos === R.seq.length - 1 ? 'What number comes next?' : R.pos === 0 ? 'What number comes before?' : 'Which number is missing?');
+      return [t, `${t} ${R.seq.map((v, i) => i === R.pos ? 'blank' : v).join(', ')}.`];
+    },
+    view(c) {
+      const R = c.R;
+      c.board.innerHTML = seqBoxes(R.seq, R.pos);
+      numAnswers(c, R.opts, R.ans, `Yes! ${R.seq.join(', ')}. We count by ${step}s.`,
+        () => R.dir < 0 ? `Counting backward: take away ${step} each time.` : `Counting by ${step}s: add ${step} each time.`);
+    }
+  });
+
+  /* B. Number Line Jumps */
+  GAMES.push({
+    id: S + 'line', sec: S, title: 'Number Line Jumps', desc: `The frog jumps ${step} at a time. Where does it land?`,
+    thumb: () => FROG_THUMB,
+    key: R => `${R.ws}-${R.a}-${R.h}`,
+    make(level) {
+      const t = top(level), maxH = Math.min(6, 2 + Math.floor(level / 2));
+      const wsMax = Math.max(0, Math.floor((t - 10 * step) / step));
+      const ws = level <= 3 ? 0 : step * rand(wsMax + 1);
+      const last = Math.min(10, Math.floor((t - ws) / step));
+      const h = 1 + rand(Math.min(maxH, last)), a = rand(last - h + 1);
+      return { ws, a, h, land: a + h };
+    },
+    prompt(R) {
+      const t = `The frog is at ${R.ws + R.a * step}. It jumps ${R.h} ${R.h === 1 ? 'time' : 'times'}, ${step} each time. Where does it land?`;
+      return [t, t];
+    },
+    view(c) {
+      const R = c.R, X = (i) => 20 + i * 30, V = (i) => R.ws + i * step, all = c.level <= 5;
+      let svg = '<line class="ax" x1="20" y1="80" x2="320" y2="80"/>';
+      for (let i = 0; i <= 10; i++) {
+        svg += `<line class="tick" x1="${X(i)}" y1="72" x2="${X(i)}" y2="88"/>`;
+        if (all || i === 0 || i === 10) svg += `<text x="${X(i)}" y="112" style="font-size:13px">${V(i)}</text>`;
+      }
+      let hops = '';
+      for (let i = R.a; i < R.land; i++) hops += `<path class="hop" pathLength="1" style="animation-delay:${(i - R.a) * 0.55}s" d="M${X(i)} 58 Q${(X(i) + X(i + 1)) / 2} 22 ${X(i + 1)} 58"/>`;
+      let taps = '';
+      for (let i = 0; i <= 10; i++) taps += `<circle class="tk" data-i="${i}" cx="${X(i)}" cy="80" r="13" tabindex="0" role="button" aria-label="${V(i)}"/>`;
+      c.board.innerHTML = `<svg class="nline" viewBox="0 0 340 126" role="group" aria-label="Number line">${svg}<g id="hops"></g><g id="frog" style="transform:translate(${X(R.a)}px,64px)">${FROG}</g>${taps}</svg><p class="counter">Each jump is <b>${step}</b></p>`;
+      const frog = $('#frog', c.board);
+      const showBtn = c.addBtn('Show the jumps', () => { $('#hops', c.board).innerHTML = hops; showBtn.disabled = true; sfx.pick(); }, 'alt');
+      const choose = (t) => {
+        if (c.done) return;
+        const i = +t.dataset.i;
+        if (i === R.land) {
+          t.classList.add('right'); frog.style.transform = `translate(${X(R.land)}px,64px)`; showBtn.hidden = true;
+          const list = Array.from({ length: R.h }, (_, j) => V(R.a + 1 + j)).join(', ');
+          c.good(`${list}. The frog lands on ${V(R.land)}.`); speak(String(V(R.land)));
+        } else { t.classList.add('wrong'); c.bad(`Count ${R.h} ${R.h === 1 ? 'jump' : 'jumps'} of ${step} from ${V(R.a)}. Try "Show the jumps".`); }
+      };
+      $$('.tk', c.board).forEach(t => {
+        t.addEventListener('click', () => choose(t));
+        t.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(t); } });
+      });
+    }
+  });
+
+  /* C. Skip Count Chart: tap every number you say */
+  GAMES.push({
+    id: S + 'chart', sec: S, title: 'Skip Count Chart', desc: `Tap every number you say when counting by ${step}s.`, rounds: 3,
+    thumb: () => `<span class="mini-grid">${Array.from({ length: 9 }, (_, i) => `<i${i % 3 === 2 ? ' class="q"' : ''}></i>`).join('')}</span>`,
+    key: R => `${R.lo}-${R.hi}`,
+    make(level) {
+      const CH = step === 5 ? [20, 30, 40, 50, 60, 70, 80, 90, 100, 100] : [30, 40, 50, 60, 70, 80, 90, 100, 100, 100];
+      let lo = 1, hi = CH[level - 1];
+      if (level === 9) { lo = 51; hi = 100; }
+      if (level === 10) { lo = 101; hi = 200; }
+      return { lo, hi };
+    },
+    prompt: () => [`Count by ${step}s. Tap every number you say.`, `Count by ${step}s. Tap every number you say.`],
+    view(c) {
+      const R = c.R, cols = step === 5 ? 5 : 10, fs = cols === 5 ? 26 : 13;
+      const targets = []; for (let v = R.lo; v <= R.hi; v++) if (v % step === 0) targets.push(v);
+      c.board.innerHTML = `<div class="chartbar"><p class="counter">Picked: <b>0</b></p><button class="btn alt small" type="button">Check</button></div>
+        <div class="cgrid" style="--cols:${cols};font-size:${fs}px">${Array.from({ length: R.hi - R.lo + 1 }, (_, i) => `<button class="cell" type="button" data-v="${R.lo + i}">${R.lo + i}</button>`).join('')}</div>`;
+      const grid = $('.cgrid', c.board), cnt = $('.counter b', c.board), chk = $('.chartbar .btn', c.board);
+      grid.addEventListener('click', e => {
+        const b = e.target.closest('.cell'); if (!b || c.done) return;
+        b.classList.toggle('on'); sfx.pick();
+        if (b.classList.contains('on')) speak(b.dataset.v);
+        cnt.textContent = $$('.cell.on', grid).length;
+      });
+      chk.addEventListener('click', () => {
+        if (c.done) return;
+        const picked = $$('.cell.on', grid).map(b => +b.dataset.v);
+        if (!picked.length) { c.info(`Tap the numbers you say when you count by ${step}s.`); return; }
+        const extra = picked.filter(v => v % step !== 0).length, missing = targets.filter(v => !picked.includes(v)).length;
+        if (!extra && !missing) { grid.classList.add('locked'); chk.hidden = true; c.good(`Yes! ${targets.slice(0, 4).join(', ')} ... Counting by ${step}s, the numbers ${ends}.`); }
+        else if (extra) c.bad(`Some numbers are not in the count by ${step}s. Start: ${targets.slice(0, 3).join(', ')}.`);
+        else c.bad(`You need ${missing} more. Start: ${targets.slice(0, 3).join(', ')} ... Keep counting by ${step}s.`);
+      });
+    }
+  });
+
+  /* D. Count the Groups */
+  GAMES.push({
+    id: S + 'groups', sec: S, title: 'Count the Groups', desc: `Each group has ${step}. Tap each group, count by ${step}s.`,
+    thumb: () => `<span class="op" style="color:var(--ink);font-size:20px">${Array(3).fill(step).join('+')}</span>`,
+    key: R => R.g,
+    make(level) {
+      const gmax = (step === 5 ? [4, 6, 8, 10, 12, 14, 16, 18, 20, 20] : [3, 4, 5, 6, 7, 8, 9, 10, 10, 10])[level - 1];
+      const g = 2 + rand(gmax - 1), total = g * step;
+      return { g, total, opts: numOptions(total, level < 5 ? 3 : 4, [step, 2 * step, 1, step + 1], 1, gmax * step + step) };
+    },
+    prompt: () => [`How many in all? Tap each group and count by ${step}s.`, `How many in all? Tap each group and count by ${step}s.`],
+    view(c) {
+      const R = c.R, dots = Array.from({ length: step }, () => '<i></i>').join('');
+      c.board.innerHTML = `<div class="grps">${Array.from({ length: R.g }, (_, i) => `<button class="grp${i % 2 ? ' alt' : ''}" type="button" aria-label="Group of ${step}">${dots}</button>`).join('')}</div>`;
+      let k = 0;
+      $$('.grp', c.board).forEach(b => b.addEventListener('click', () => {
+        if (b.classList.contains('on') || c.done) return;
+        k++; b.classList.add('on'); b.dataset.t = k * step; speak(String(k * step)); sfx.pick();
+        if (k === R.g) c.info(`${R.g} groups. You counted ${R.total}. Now pick the number.`);
+      }));
+      numAnswers(c, R.opts, R.total, `Yes! ${R.g} groups of ${step} make ${R.total}.`,
+        () => `Tap each group. Say ${step}, ${step * 2}, ${step * 3} ... as you go.`);
+    }
+  });
+
+  /* E. Fill the Chain: type the missing numbers */
+  GAMES.push({
+    id: S + 'chain', sec: S, title: 'Fill the Chain', desc: `Type the missing numbers. Count by ${step}s.`,
+    thumb: () => `<span class="mini-seq"><i>${step}</i><i class="q">?</i><i>${step * 3}</i></span>`,
+    key: R => `${R.seq.join(',')}-${R.blanks.join('')}`,
+    make(level) {
+      const len = level <= 3 ? 6 : level <= 6 ? 7 : 8, maxIdx = Math.floor(top(level) / step);
+      const dir = level >= 8 && Math.random() < 0.5 ? -1 : 1, k0 = 1 + rand(maxIdx - len + 1);
+      const seq = Array.from({ length: len }, (_, i) => step * (k0 + i)); if (dir < 0) seq.reverse();
+      const nb = [1, 2, 2, 3, 3, 4, 4, 5, 5, 6][level - 1];
+      const blanks = shuffle([...Array(len).keys()]).slice(0, nb).sort((a, b) => a - b);
+      return { seq, blanks, dir };
+    },
+    prompt: R => { const t = `Fill the empty boxes. Count by ${step}s${R.dir < 0 ? ' backward' : ''}.`; return [t, t]; },
+    view(c) {
+      const R = c.R, blank = new Set(R.blanks), vals = {};
+      R.blanks.forEach(i => { vals[i] = ''; });
+      c.board.innerHTML = `<div class="numrow">${R.seq.map((v, i) => blank.has(i) ? `<button class="nbox q" type="button" data-i="${i}" aria-label="Empty box">?</button>` : `<span class="nbox">${v}</span>`).join('')}</div>${KEYPAD}`;
+      const boxes = {}; $$('button.nbox', c.board).forEach(b => { boxes[+b.dataset.i] = b; });
+      const exp = (i) => String(R.seq[i]);
+      let active = R.blanks[0];
+      const paint = () => R.blanks.forEach(i => {
+        const b = boxes[i]; b.textContent = vals[i] || '?';
+        b.classList.toggle('sel', active === i); b.classList.toggle('q', !vals[i]);
+      });
+      const advance = () => { const nxt = R.blanks.find(i => i > active && vals[i].length < exp(i).length) ?? R.blanks.find(i => vals[i].length < exp(i).length); if (nxt !== undefined) active = nxt; };
+      R.blanks.forEach(i => boxes[i].addEventListener('click', () => { if (!c.done) { active = i; paint(); } }));
+      const press = (k) => {
+        if (c.done) return;
+        if (k === 'back') vals[active] = vals[active].slice(0, -1);
+        else if (k === 'go') {
+          const empty = R.blanks.filter(i => !vals[i]);
+          if (empty.length) { active = empty[0]; paint(); c.info('Fill every empty box.'); return; }
+          const wrong = R.blanks.filter(i => vals[i] !== exp(i));
+          if (!wrong.length) {
+            R.blanks.forEach(i => { boxes[i].classList.remove('sel'); boxes[i].classList.add('ok'); });
+            $$('.key', c.board).forEach(x => { x.disabled = true; });
+            c.good(`${R.seq.join(', ')}. ${R.dir < 0 ? 'Take away' : 'Add'} ${step} each time!`);
+          } else {
+            wrong.forEach(i => { vals[i] = ''; shakeEl(boxes[i]); }); active = wrong[0]; paint();
+            c.bad(`${wrong.length} ${wrong.length === 1 ? 'box is' : 'boxes are'} not right. ${R.dir < 0 ? 'Take away' : 'Add'} ${step} each time.`);
+          }
+          return;
+        }
+        else if (vals[active].length < 3) { vals[active] += k; sfx.pick(); if (vals[active].length === exp(active).length) advance(); }
+        paint();
+      };
+      $$('.key', c.board).forEach(k => k.addEventListener('click', () => press(k.dataset.k)));
+      onKey = (e) => { if (/^[0-9]$/.test(e.key)) press(e.key); else if (e.key === 'Backspace') press('back'); else if (e.key === 'Enter') press('go'); };
+      paint();
+    }
+  });
+}
+skipGames(5);
+skipGames(10);
+
+/* ---- Lesson: making 10 and adding up to 10 (Ali and Abood) ---- */
+const eqHTML = (parts) => `<div class="eq">${parts.map(p => p === '?' ? '<span class="q">?</span>' : /^[+=\u2212]$/.test(String(p)) ? `<span class="op">${p}</span>` : `<span>${p}</span>`).join('')}</div>`;
+/* a + b = s, both parts at least 1, sum never above 10 */
+function sumPair(level) {
+  const rng = [[3, 6], [4, 7], [5, 8], [6, 9], [7, 10], [8, 10]][level - 1];
+  const s = level <= 6 ? rng[0] + rand(rng[1] - rng[0] + 1) : (Math.random() < [0.7, 0.75, 0.8, 0.85][level - 7] ? 10 : 8 + rand(3));
+  const a = 1 + rand(s - 1);
+  return { a, b: s - a, s };
+}
+const HAND_ICON = '<svg class="ico" viewBox="0 0 40 30" aria-hidden="true"><g fill="var(--empty)" stroke="var(--line)" stroke-width="2"><rect x="5" y="3" width="6" height="16" rx="3"/><rect x="13" y="1" width="6" height="18" rx="3"/><rect x="21" y="3" width="6" height="16" rx="3"/><rect x="29" y="9" width="6" height="10" rx="3"/><rect x="4" y="16" width="32" height="11" rx="5"/></g></svg>';
+
+/* 1. Finger Count: count the raised fingers */
+GAMES.push({
+  id: 'm10fingers', sec: 'm10', title: 'Finger Count', desc: 'Count the raised fingers. Pick the sum.',
+  thumb: () => HAND_ICON,
+  key: R => `${R.a}+${R.b}`,
+  make(level) { const p = sumPair(level); return { ...p, opts: numOptions(p.s, level <= 5 ? 3 : 4, [1, 2, 3], 1, 10) }; },
+  prompt: R => ['Count the raised fingers. What is the sum?', `${R.a} plus ${R.b}. Count the raised fingers. What is the sum?`],
+  view(c) {
+    const R = c.R, hide = c.level >= 8;
+    c.board.innerHTML = eqHTML([R.a, '+', R.b, '=', '?'])
+      + `<div class="hands"${hide ? ' hidden' : ''}>${[0, 1].map(h => `<div class="hand">${[0, 1, 2, 3, 4].map(f => {
+        const i = h * 5 + f, up = i < R.s;
+        return `<button class="fg${up ? ' up ' + (i < R.a ? 'a' : 'b') : ''}" type="button" ${up ? '' : 'disabled tabindex="-1"'} aria-label="${up ? 'Raised finger' : 'Folded finger'}"></button>`;
+      }).join('')}</div>`).join('')}</div><p class="counter">Counted: <b>0</b></p>`;
+    const hands = $('.hands', c.board), cnt = $('.counter b', c.board);
+    let k = 0;
+    $$('.fg.up', c.board).forEach(b => b.addEventListener('click', () => {
+      if (b.classList.contains('on') || c.done) return;
+      k++; b.classList.add('on'); b.dataset.n = k; cnt.textContent = k; speak(String(k)); sfx.pick();
+      if (k === R.s) c.info(`You counted ${R.s}. Now pick the number.`);
+    }));
+    if (hide) c.addBtn('Show my fingers', () => { hands.hidden = false; sfx.pick(); }, 'alt');
+    numAnswers(c, R.opts, R.s, `Yes! ${R.a} + ${R.b} = ${R.s}.`,
+      () => `Start at ${R.a}. Count on ${R.b} more fingers.`);
+  }
+});
+
+/* 2. Ten Frame: add the counters, or find how many more make 10 */
+const frameHTML = (a, s, full) => `<div class="frame">${Array.from({ length: 10 }, (_, i) => `<span class="fcell${i < a ? ' a' : i < s ? ' b' : full && i >= a ? ' fill' : ''}"></span>`).join('')}</div>`;
+GAMES.push({
+  id: 'm10frame', sec: 'm10', title: 'Ten Frame', desc: 'Look at the ten frame. Add the counters.',
+  thumb: () => frameHTML(6, 9, false).replace('class="frame"', 'class="frame mini"'),
+  key: R => `${R.mode}${R.a}+${R.b}`,
+  make(level) {
+    if (level <= 5) { const p = sumPair(level); return { mode: 'sum', ...p, ans: p.s, opts: numOptions(p.s, level <= 3 ? 3 : 4, [1, 2, 3], 1, 10) }; }
+    const lo = [4, 3, 2, 1, 1][level - 6], a = lo + rand(10 - lo), need = 10 - a;
+    return { mode: 'more', a, b: need, s: 10, ans: need, flip: level >= 8 && Math.random() < 0.5, opts: numOptions(need, level <= 7 ? 3 : 4, [1, 2, 3], 1, 9) };
+  },
+  prompt: R => R.mode === 'sum' ? ['How many counters in all?', `${R.a} plus ${R.b}. How many counters in all?`] : ['How many more make 10?', `${R.a} and how many more make ten?`],
+  view(c) {
+    const R = c.R, sum = R.mode === 'sum';
+    c.board.innerHTML = eqHTML(sum ? [R.a, '+', R.b, '=', '?'] : R.flip ? ['?', '+', R.a, '=', 10] : [R.a, '+', '?', '=', 10])
+      + `<div class="framebox">${frameHTML(R.a, sum ? R.s : R.a, false)}</div>`;
+    numAnswers(c, R.opts, R.ans,
+      sum ? `Yes! ${R.a} and ${R.b} make ${R.s}.` : `Yes! ${R.a} + ${R.ans} = 10.`,
+      () => sum ? 'Count the blue counters. Then count the red ones. Count them all.' : 'Count the empty boxes. That is how many more you need.');
+    if (!sum) { const old = c.good; c.good = (t) => { $('.frame', c.board).innerHTML = frameHTML(R.a, R.a, true).replace(/^<div class="frame">|<\/div>$/g, ''); old(t); }; }
+  }
+});
+
+/* 3. Make the Number: tap two cards that add up to the target */
+GAMES.push({
+  id: 'm10pairs', sec: 'm10', title: 'Make the Number', desc: 'Tap two cards that add up to the target.',
+  thumb: () => '<span class="mini-seq"><i>7</i><i>+</i><i>3</i></span>',
+  key: R => `${R.T}:${R.cards.join('-')}`,
+  make(level) {
+    const T = level <= 5 ? [[5, 6], [6, 7], [7, 8], [8, 9], [9, 10]][level - 1][rand(2)] : 10;
+    const n = level <= 3 ? 4 : level <= 6 ? 6 : 8, x = 1 + rand(T - 1), cards = [x, T - x];
+    while (cards.length < n) cards.push(1 + rand(T - 1));
+    return { T, cards: shuffle(cards) };
+  },
+  prompt: R => [`Tap two cards that add up to ${R.T}.`, `Tap two cards that add up to ${numWords(R.T)}.`],
+  view(c) {
+    const R = c.R, k = R.cards.length;
+    c.board.innerHTML = `<p class="counter">Target: <b>${R.T}</b></p><div class="cgrid" style="--cols:${k <= 4 ? 2 : 4};max-width:${k <= 4 ? 220 : 340}px">${R.cards.map((v, i) => `<button class="cell big" type="button" data-i="${i}" data-v="${v}">${v}</button>`).join('')}</div>`;
+    const sel = [];
+    $$('.cell', c.board).forEach(b => b.addEventListener('click', () => {
+      if (c.done || b.classList.contains('sel')) return;
+      sel.push(b); b.classList.add('sel'); speak(b.dataset.v); sfx.pick();
+      if (sel.length < 2) return;
+      const x = +sel[0].dataset.v, y = +sel[1].dataset.v;
+      if (x + y === R.T) { sel.forEach(e => { e.classList.remove('sel'); e.classList.add('new'); }); c.good(`Yes! ${x} + ${y} = ${R.T}.`); }
+      else { const pair = sel.splice(0, 2); pair.forEach(e => { e.classList.remove('sel'); shakeEl(e); }); c.bad(`${x} + ${y} = ${x + y}, not ${R.T}. Try two other cards.`); }
+    }));
+  }
+});
+
+/* 4. Number Bond: find the missing part */
+GAMES.push({
+  id: 'm10bond', sec: 'm10', title: 'Number Bond', desc: 'Two parts make the whole. Find the missing part.',
+  thumb: () => '<svg class="ico" viewBox="0 0 40 34" aria-hidden="true"><g fill="var(--surface)" stroke="var(--line)" stroke-width="2"><path d="M20 10L10 24M20 10l10 14" fill="none"/><circle cx="20" cy="9" r="7"/><circle cx="10" cy="26" r="6"/><circle cx="30" cy="26" r="6" stroke-dasharray="3 2"/></g></svg>',
+  key: R => `${R.whole}-${R.a}-${R.pos}`,
+  make(level) {
+    const whole = level <= 5 ? 4 + level + rand(2) : (Math.random() < [0.75, 0.8, 0.85, 0.9, 0.95][level - 6] ? 10 : 9);
+    const a = 1 + rand(whole - 1), ans = whole - a;
+    return { whole, a, ans, pos: rand(2), opts: numOptions(ans, level <= 5 ? 3 : 4, [1, 2, 3], 1, whole) };
+  },
+  prompt: R => ['What goes in the empty circle?', `${R.a} and what make ${R.whole}?`],
+  view(c) {
+    const R = c.R, left = R.pos === 0 ? '?' : R.a, right = R.pos === 0 ? R.a : '?';
+    const circ = (x, y, r, t) => `<circle cx="${x}" cy="${y}" r="${r}" class="${t === '?' ? 'qc' : ''}"/><text x="${x}" y="${y + 2}">${t}</text>`;
+    c.board.innerHTML = `<svg class="bond" viewBox="0 0 260 200" role="img" aria-label="Number bond. Whole ${R.whole}. One part ${R.a}. The other part is missing."><path d="M122 72L72 122M138 72l50 50"/>${circ(130, 42, 38, R.whole)}${circ(62, 152, 36, left)}${circ(198, 152, 36, right)}</svg>`;
+    numAnswers(c, R.opts, R.ans, `Yes! ${R.a} and ${R.ans} make ${R.whole}.`,
+      () => `Think: ${R.a} + ? = ${R.whole}. Count on from ${R.a}.`);
+  }
+});
+
+/* 5. Type the Sum: keypad */
+GAMES.push({
+  id: 'm10type', sec: 'm10', title: 'Type the Sum', desc: 'Type the missing number with the number pad.',
+  thumb: () => '<span class="mini-seq"><i>6</i><i>+</i><i class="q">?</i></span>',
+  key: R => `${R.form}${R.a}+${R.b}`,
+  rounds: 5,
+  make(level) {
+    const p = sumPair(level);
+    const form = level <= 3 ? 'sum' : level <= 5 ? pick(['sum', 'm2']) : level <= 7 ? (Math.random() < 0.7 ? 'm2' : 'sum') : pick(['sum', 'm2', 'm1']);
+    return { ...p, form, ans: String(form === 'sum' ? p.s : form === 'm2' ? p.b : p.a) };
+  },
+  prompt(R) {
+    if (R.form === 'sum') return ['Type the sum.', `${R.a} plus ${R.b}. Type the sum.`];
+    return R.form === 'm2' ? ['Type the missing number.', `${R.a} plus what makes ${R.s}?`] : ['Type the missing number.', `What plus ${R.b} makes ${R.s}?`];
+  },
+  view(c) {
+    const R = c.R;
+    c.board.innerHTML = eqHTML(R.form === 'sum' ? [R.a, '+', R.b, '=', '?'] : R.form === 'm2' ? [R.a, '+', '?', '=', R.s] : ['?', '+', R.b, '=', R.s])
+      + `<div class="numrow"><span class="nbox q" id="tbox">?</span></div>${KEYPAD}`;
+    const box = $('#tbox', c.board); let v = '';
+    const paint = () => { box.textContent = v || '?'; box.classList.toggle('q', !v); box.classList.toggle('sel', !!v); };
+    const press = (k) => {
+      if (c.done) return;
+      if (k === 'back') v = v.slice(0, -1);
+      else if (k === 'go') {
+        if (!v) { c.info('Type a number first.'); return; }
+        if (v === R.ans) { box.classList.remove('sel'); box.classList.add('ok'); $$('.key', c.board).forEach(x => { x.disabled = true; }); c.good(`Yes! ${R.a} + ${R.b} = ${R.s}.`); speak(`${R.a} plus ${R.b} equals ${R.s}`); }
+        else { v = ''; shakeEl(box); c.bad(R.form === 'sum' ? `Start at ${R.a}. Count on ${R.b} more on your fingers.` : 'Count on from the small number until you reach the total. Use your fingers.'); }
+        paint(); return;
+      }
+      else if (v.length < 2) { v += k; sfx.pick(); }
+      paint();
+    };
+    $$('.key', c.board).forEach(k => k.addEventListener('click', () => press(k.dataset.k)));
+    onKey = (e) => { if (/^[0-9]$/.test(e.key)) press(e.key); else if (e.key === 'Backspace') press('back'); else if (e.key === 'Enter') press('go'); };
+  }
+});
+
+/* ---- Lesson: adding a one-digit number to a two-digit number, column method (Saud) ---- */
+/* a is two-digit, b is one-digit. Levels 1-3 no carry, 4-6 carry, 7 mixed, 8 ones add to 9 or 10, 9 crosses 100, 10 everything.
+   mix = true gives about half carry and half no-carry at every level (for yes/no and spot-the-mistake games). */
+function addGen(level, mix) {
+  const maxA = [40, 70, 99, 50, 70, 99, 99, 99, 99, 99][level - 1];
+  const want = mix ? Math.random() < 0.5 : level <= 3 ? false : level <= 6 ? true : undefined;
+  const wantCross = Math.random() < 0.4;
+  for (let t = 0; t < 2000; t++) {
+    const hiA = (level === 9 && (!mix || want)) || (level === 10 && wantCross && want !== false);
+    const a = hiA ? 90 + rand(10) : 10 + rand(maxA - 9), b = 1 + rand(9), o = a % 10, os = o + b, carry = os >= 10, cross = a + b >= 100;
+    if (want !== undefined && carry !== want) continue;
+    if (level === 1 && b > 5) continue;
+    if (level <= 8 && cross) continue;
+    if (level === 8 && !(os === 9 || os === 10)) continue;
+    if (level === 9 && !mix && !cross) continue;
+    if (level === 9 && mix && carry && !cross) continue;
+    if (level === 10 && carry && cross !== wantCross) continue;
+    return { a, b, o, os, carry, cross, sum: a + b };
+  }
+  return { a: 38, b: 5, o: 8, os: 13, carry: true, cross: false, sum: 43, fb: true };
+}
+/* the column picture. s.ans = [hundreds, tens, ones] html; s.c1 / s.c2 = carry html above tens / hundreds */
+function colHTML(R, s = {}) {
+  const n = R.sum >= 100 ? 3 : 2, T = n - 1, O = n, H = n === 3 ? 1 : -1;
+  const hl = (j) => s.hi && ((s.hi === 'o' && j === O) || (s.hi === 't' && j === T)) ? ' hl' : '';
+  const row = (fill, cls) => { const cells = Array(n + 1).fill(''); Object.keys(fill).forEach(k => { cells[k] = fill[k]; }); return cells.map((x, j) => `<div class="cd ${cls || ''}${hl(j)}">${x}</div>`).join(''); };
+  let out = `<div class="col" style="--n:${n}">`;
+  if (s.labels) out += row(n === 3 ? { 1: 'Hundreds', 2: 'Tens', 3: 'Ones' } : { 1: 'Tens', 2: 'Ones' }, 'lab');
+  if (s.carryRow !== false) out += row({ [T]: s.c1 || '', ...(H > 0 ? { [H]: s.c2 || '' } : {}) }, 'cr');
+  out += row({ [T]: s.top ? s.top[0] : Math.floor(R.a / 10), [O]: s.top ? s.top[1] : R.a % 10 });
+  out += row({ 0: s.op || '+', [O]: s.bot !== undefined ? s.bot : R.b });
+  out += '<div class="rule"></div>';
+  const ans = s.ans || ['', '', ''];
+  out += row({ [O]: ans[2], [T]: ans[1], ...(H > 0 ? { [H]: ans[0] } : {}) });
+  return out + '</div>';
+}
+const miniCol = (a, b) => `<span class="mini-col"><b>${a}</b><b>+ ${b}</b></span>`;
+
+/* 1. Line Them Up: choose the column that is written correctly */
+GAMES.push({
+  id: 'colalign', sec: 'col', title: 'Line Them Up', desc: 'Write the sum in a column. Which one is lined up right?',
+  thumb: () => miniCol(47, 6),
+  key: R => `${R.a}+${R.b}`,
+  make(level) { return { ...addGen(level), order: shuffle([0, 1, 2]) }; },
+  prompt: R => [`Write ${R.a} + ${R.b} in a column. Which one is lined up right?`, `Write ${R.a} plus ${R.b} in a column. Which one is lined up right? Ones go under ones.`],
+  view(c) {
+    const R = c.R, tens = Math.floor(R.a / 10), ones = R.a % 10, pos = [2, 1, 3];
+    const opt = (v) => `<button class="alignopt" type="button" data-v="${v}" aria-label="Option ${R.order.indexOf(v) + 1}"><span class="mcol">`
+      + ['', tens, ones, ''].map(x => `<i>${x}</i>`).join('')
+      + [0, 1, 2, 3].map(j => `<i>${j === 0 ? '+' : j === pos[v] ? R.b : ''}</i>`).join('')
+      + '<em></em></span></button>';
+    c.board.innerHTML = `<p class="stepline">${R.a} + ${R.b}</p><div class="opts">${R.order.map(opt).join('')}</div>`;
+    $$('.alignopt', c.board).forEach(b => b.addEventListener('click', () => {
+      if (c.done) return;
+      const v = +b.dataset.v;
+      if (v === 0) { b.classList.add('right'); c.good(`Yes! Ones go under ones, tens go under tens. The ${R.b} is under the ${ones}.`); speak('Ones go under ones.'); }
+      else { b.classList.add('wrong'); c.bad(v === 1 ? `The ${R.b} is a ones number. Put it under the ones digit, ${ones}.` : 'Line up on the right side. Ones go under ones.'); }
+    }));
+  }
+});
+
+/* 2. Ones First: add the ones, then write the ones digit */
+GAMES.push({
+  id: 'colones', sec: 'col', title: 'Ones First', desc: 'Add the ones first. Then write the ones digit.',
+  thumb: () => '<span class="mini-col"><b>8</b><b>+ 5</b><b class="q">13</b></span>',
+  key: R => `${R.a}+${R.b}`,
+  make(level) { return addGen(level); },
+  prompt: () => ['Add the ones first. Then write the ones digit.', 'Add the ones first. Then write the ones digit.'],
+  view(c) {
+    const R = c.R; let step = 1;
+    const choose = (opts, correct, onRight, badFn) => {
+      c.board.insertAdjacentHTML('beforeend', `<div class="opts">${opts.map(v => `<button class="ans num" type="button" data-v="${v}">${v}</button>`).join('')}</div>`);
+      $$('.ans', c.board).forEach(b => b.addEventListener('click', () => {
+        if (c.done) return;
+        const v = +b.dataset.v;
+        if (v === correct) { b.classList.add('right'); onRight(); } else { b.classList.add('wrong'); c.bad(badFn(v)); }
+      }));
+    };
+    const draw = () => {
+      c.board.innerHTML = `<p class="stepline">${step === 1 ? `<b>Step 1.</b> Add the ones: ${R.o} + ${R.b} = ?` : `<b>Step 2.</b> ${R.o} + ${R.b} = ${R.os}. Which digit goes under the ones?`}</p>`
+        + colHTML(R, { hi: 'o', labels: c.level <= 6, carryRow: c.level >= 4, ans: ['', '', '?'] });
+      if (step === 1) choose(numOptions(R.os, 4, [1, 2, 3, 10], 1, 18), R.os, () => { speak(`${R.o} plus ${R.b} equals ${R.os}`); step = 2; c.info(`${R.o} + ${R.b} = ${R.os}.`); draw(); }, () => `Count on from ${R.o}. Add ${R.b} more.`);
+      else {
+        const d = R.os % 10, set = [d, Math.floor(R.os / 10), (d + 1) % 10, (d + 9) % 10].filter((v, i, a) => a.indexOf(v) === i);
+        choose(shuffle(set.slice(0, 4)), d, () => {
+          const done = colHTML(R, { hi: 'o', labels: c.level <= 6, carryRow: c.level >= 4, c1: R.carry ? '1' : '', ans: ['', '', d] });
+          c.board.innerHTML = `<p class="stepline"><b>${R.os}</b> = ${R.carry ? `1 ten and ${d} ones` : `${d} ones`}</p>` + done;
+          c.good(R.carry ? `Yes! Write ${d} under the ones. Carry the 1 ten to the tens column.` : `Yes! Write ${d} under the ones. Nothing to carry.`);
+        }, () => R.carry ? `${R.os} is 1 ten and ${d} ones. Write only the ones digit.` : `Write the answer to the ones, ${R.os}.`);
+      }
+    };
+    draw();
+  }
+});
+
+/* 3. Carry or Not? */
+GAMES.push({
+  id: 'colcarry', sec: 'col', title: 'Carry or Not?', desc: 'Add the ones. Do we need to carry?',
+  thumb: () => '<span class="mini-col"><b class="cr">1</b><b>38</b><b>+ 5</b></span>',
+  key: R => `${R.a}+${R.b}`,
+  make(level) { return addGen(level, true); },
+  prompt: R => [`Add the ones: ${R.o} + ${R.b}. Do we carry?`, `Add the ones: ${R.o} plus ${R.b}. Do we carry?`],
+  view(c) {
+    const R = c.R, pic = (show) => colHTML(R, { hi: 'o', labels: c.level <= 6, c1: show && R.carry ? '1' : '' });
+    c.board.innerHTML = `<div class="colwrap">${pic(false)}</div><div class="opts"><button class="ans wide" type="button" data-v="1">Carry</button><button class="ans wide" type="button" data-v="0">No carry</button></div>`;
+    $$('.ans', c.board).forEach(b => b.addEventListener('click', () => {
+      if (c.done) return;
+      const yes = b.dataset.v === '1';
+      if (yes === R.carry) {
+        b.classList.add('right'); $('.colwrap', c.board).innerHTML = pic(true);
+        c.good(R.carry ? `Yes! ${R.o} + ${R.b} = ${R.os}. That is 10 or more, so carry 1 ten.` : `Yes! ${R.o} + ${R.b} = ${R.os}. That is less than 10, so no carry.`);
+        speak(R.carry ? 'Carry one ten.' : 'No carry.');
+      } else { b.classList.add('wrong'); c.bad(R.carry ? `Add the ones: ${R.o} + ${R.b} = ${R.os}. That is 10 or more, so we do carry.` : `Add the ones: ${R.o} + ${R.b} = ${R.os}. That is less than 10, so we do not carry.`); }
+    }));
+  }
+});
+
+/* 4. Solve the Column: fill the whole column with the number pad */
+GAMES.push({
+  id: 'colsolve', sec: 'col', title: 'Solve the Column', desc: 'Add in a column. Carry when you need to.',
+  thumb: () => '<span class="mini-col"><b>47</b><b>+ 6</b><b class="q">53</b></span>',
+  key: R => `${R.a}+${R.b}`,
+  make(level) { return addGen(level); },
+  prompt: R => [`Solve ${R.a} + ${R.b} in the column.`, `Solve ${R.a} plus ${R.b} in the column. Start with the ones.`],
+  view(c) {
+    const R = c.R, S = String(R.sum), n = S.length, useC = c.level >= 4;
+    const ex = { o: S[n - 1], t: S[n - 2], c1: R.carry ? '1' : '', c2: R.cross ? '1' : '' };
+    if (n === 3) ex.h = S[0];
+    const order = ['o', ...(useC ? ['c1'] : []), 't', ...(useC && n === 3 ? ['c2'] : []), ...(n === 3 ? ['h'] : [])];
+    const need = order.filter(k => k[0] !== 'c'), vals = {};
+    order.forEach(k => { vals[k] = ''; });
+    const names = { o: 'Ones answer', t: 'Tens answer', h: 'Hundreds answer', c1: 'Carry to tens', c2: 'Carry to hundreds' };
+    const box = (k) => `<button class="nbox${k[0] === 'c' ? ' cbox' : ''}" type="button" data-b="${k}" aria-label="${names[k]}"></button>`;
+    c.board.innerHTML = colHTML(R, { labels: c.level <= 6, carryRow: useC, c1: useC ? box('c1') : '', c2: useC && n === 3 ? box('c2') : '', ans: [n === 3 ? box('h') : '', box('t'), box('o')] }) + KEYPAD;
+    const boxes = {}; $$('.nbox', c.board).forEach(b => { boxes[b.dataset.b] = b; });
+    let active = 'o';
+    const paint = () => order.forEach(k => {
+      const b = boxes[k]; b.textContent = vals[k] || (k[0] === 'c' ? '' : '?');
+      b.classList.toggle('sel', active === k && !c.done); b.classList.toggle('q', !vals[k]);
+    });
+    const tens = Math.floor(R.a / 10);
+    const hint = {
+      o: `Add the ones first: ${R.o} + ${R.b}. Write only the ones digit.`,
+      c1: R.carry ? `${R.os} is 1 ten and ${R.os % 10} ones. Carry the 1 above the tens.` : `No carry here. ${R.os} is less than 10.`,
+      t: R.carry ? `Add the tens: ${tens} + the 1 you carried.` : `Add the tens. There is nothing to add to ${tens}.`,
+      c2: R.cross ? 'The tens make 10. Carry the 1 above the hundreds.' : 'No carry here.',
+      h: 'Write the 1 hundred.'
+    };
+    order.forEach(k => boxes[k].addEventListener('click', () => { if (!c.done) { active = k; paint(); } }));
+    const press = (k) => {
+      if (c.done) return;
+      if (k === 'back') vals[active] = '';
+      else if (k === 'go') {
+        const empty = need.filter(x => !vals[x]);
+        if (empty.length) { active = empty[0]; paint(); c.info(`Fill every empty box.${useC ? ' No carry? Leave the carry box empty.' : ''}`); return; }
+        const wrong = order.filter(x => vals[x] !== ex[x]);
+        if (!wrong.length) {
+          order.forEach(x => { boxes[x].classList.remove('sel'); if (vals[x]) boxes[x].classList.add('ok'); });
+          $$('.key', c.board).forEach(x => { x.disabled = true; });
+          c.good(`Yes! ${R.a} + ${R.b} = ${R.sum}.`); speak(`${R.a} plus ${R.b} equals ${R.sum}`);
+        } else {
+          const first = wrong[0];
+          wrong.forEach(x => { vals[x] = ''; shakeEl(boxes[x]); }); active = first; paint();
+          c.bad(first === 'c1' && R.carry ? `Write the carry: ${R.os} is 1 ten and ${R.os % 10} ones.` : hint[first]);
+        }
+        return;
+      }
+      else { vals[active] = k; sfx.pick(); const nxt = order.slice(order.indexOf(active) + 1).find(x => !vals[x]); if (nxt) active = nxt; }
+      paint();
+    };
+    $$('.key', c.board).forEach(k => k.addEventListener('click', () => press(k.dataset.k)));
+    onKey = (e) => { if (/^[0-9]$/.test(e.key)) press(e.key); else if (e.key === 'Backspace') press('back'); else if (e.key === 'Enter') press('go'); };
+    paint();
+  }
+});
+
+/* 5. Spot the Mistake: is the finished column right? */
+GAMES.push({
+  id: 'colspot', sec: 'col', title: 'Spot the Mistake', desc: 'Look at the finished column. Is it right or wrong?',
+  thumb: () => '<span class="mini-col"><b>38</b><b>+ 5</b><b class="q">33</b></span>',
+  key: R => `${R.a}+${R.b}:${R.kind}`,
+  make(level) {
+    const g = addGen(level, true), right = Math.random() < 0.45;
+    const kind = right ? 'right' : pick(g.carry ? ['ones', 'tens', 'carry', 'carry'] : ['ones', 'tens']);
+    const S = String(g.sum).padStart(3, ' ').split(''); let c1 = g.carry ? '1' : '', c2 = g.cross ? '1' : '';
+    if (kind === 'ones') S[2] = String((+S[2] + pick([1, 2, 8, 9])) % 10);
+    else if (kind === 'tens') { let d; do { d = String((+S[1] + pick([1, 2, 8, 9])) % 10); } while (d === '0' && S[0].trim() === ''); S[1] = d; }
+    else if (kind === 'carry') { const w = String(g.sum - 10).padStart(3, ' ').split(''); S[0] = w[0]; S[1] = w[1]; S[2] = w[2]; c1 = ''; c2 = ''; }
+    return { ...g, kind, right: kind === 'right', shown: S.map(x => x.trim()), c1, c2 };
+  },
+  prompt: R => ['Is the answer right?', `${R.a} plus ${R.b}. The answer shown is ${R.shown.join('')}. Is it right?`],
+  view(c) {
+    const R = c.R;
+    c.board.innerHTML = `<div class="colwrap">${colHTML(R, { labels: c.level <= 6, c1: R.c1, c2: R.c2, ans: R.shown })}</div>`
+      + `<div class="opts"><button class="ans wide" type="button" data-v="1">${ICON_TICK}<span>Right</span></button><button class="ans wide" type="button" data-v="0">${ICON_CROSS}<span>Wrong</span></button></div>`;
+    const why = { ones: `The ones are wrong. ${R.o} + ${R.b} = ${R.os}.`, tens: 'The tens digit is wrong.', carry: 'The carry was forgotten.' };
+    $$('.ans', c.board).forEach(b => b.addEventListener('click', () => {
+      if (c.done) return;
+      if ((b.dataset.v === '1') === R.right) {
+        b.classList.add('right');
+        c.good(R.right ? `Yes! ${R.a} + ${R.b} = ${R.sum}. This one is right.` : `Yes! ${why[R.kind]} The right answer is ${R.sum}.`);
+        speak(R.right ? 'Right.' : 'Wrong.');
+      } else { b.classList.add('wrong'); c.bad(`Add it yourself: ${R.a} + ${R.b}. Start with the ones and carry if you need to. Does your answer match?`); }
+    }));
+  }
+});
+
+/* ---- Lesson 3 helpers ---- */
+function chooseOpts(c, opts, correct, onRight, badFn) {
+  c.board.insertAdjacentHTML('beforeend', `<div class="opts">${opts.map(v => `<button class="ans num" type="button" data-v="${v}">${v}</button>`).join('')}</div>`);
+  $$('.ans', c.board).forEach(b => b.addEventListener('click', () => {
+    if (c.done) return;
+    const v = +b.dataset.v;
+    if (v === correct) { b.classList.add('right'); onRight(); } else { b.classList.add('wrong'); c.bad(badFn(v)); }
+  }));
+}
+/* number line with 11 ticks (ws .. ws+10); the frog starts on tick ai and the right answer is tick li */
+function hopView(c, R, all) {
+  const X = (i) => 20 + i * 30, V = (i) => R.ws + i;
+  let svg = '<line class="ax" x1="20" y1="80" x2="320" y2="80"/>';
+  for (let i = 0; i <= 10; i++) {
+    svg += `<line class="tick" x1="${X(i)}" y1="72" x2="${X(i)}" y2="88"/>`;
+    if (all || i === 0 || i === 10) svg += `<text x="${X(i)}" y="112" style="font-size:13px">${V(i)}</text>`;
+  }
+  let hops = '';
+  for (let i = R.ai; i < R.li; i++) hops += `<path class="hop" pathLength="1" style="animation-delay:${(i - R.ai) * 0.45}s" d="M${X(i)} 58 Q${(X(i) + X(i + 1)) / 2} 22 ${X(i + 1)} 58"/>`;
+  let taps = '';
+  for (let i = 0; i <= 10; i++) taps += `<circle class="tk" data-i="${i}" cx="${X(i)}" cy="80" r="13" tabindex="0" role="button" aria-label="${V(i)}"/>`;
+  c.board.innerHTML = `<svg class="nline" viewBox="0 0 340 126" role="group" aria-label="Number line">${svg}<g id="hops"></g><g id="frog" style="transform:translate(${X(R.ai)}px,64px)">${FROG}</g>${taps}</svg><p class="counter">${R.a} + ${R.b}</p>`;
+  const frog = $('#frog', c.board);
+  const showBtn = c.addBtn('Show the hops', () => { $('#hops', c.board).innerHTML = hops; showBtn.disabled = true; sfx.pick(); }, 'alt');
+  const choose = (t) => {
+    if (c.done) return;
+    const i = +t.dataset.i;
+    if (i === R.li) {
+      t.classList.add('right'); frog.style.transform = `translate(${X(R.li)}px,64px)`; showBtn.hidden = true;
+      c.good(`${R.a} + ${R.b} = ${R.s}. The frog lands on ${R.s}.`); speak(String(R.s));
+    } else { t.classList.add('wrong'); c.bad(`Count ${R.b} ${R.b === 1 ? 'hop' : 'hops'} from ${R.a}. Try "Show the hops".`); }
+  };
+  $$('.tk', c.board).forEach(t => {
+    t.addEventListener('click', () => choose(t));
+    t.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(t); } });
+  });
+}
+/* keypad game: type the sum or the missing number. gen(level) -> {a, b, s}; form(level) -> 'sum' | 'flip' | 'm2' | 'm1' */
+function typeGame(cfg) {
+  GAMES.push({
+    id: cfg.id, sec: cfg.sec, title: cfg.title, desc: cfg.desc, rounds: 5,
+    thumb: cfg.thumb,
+    key: R => `${R.form}${R.a}+${R.b}`,
+    make(level) { const p = cfg.gen(level), form = cfg.form(level); return { ...p, form, ans: String(form === 'm2' ? p.b : form === 'm1' ? p.a : p.s) }; },
+    prompt(R) {
+      if (R.form === 'sum') return ['Type the sum.', `${R.a} plus ${R.b}. Type the sum.`];
+      if (R.form === 'flip') return ['Type the sum.', `${R.b} plus ${R.a}. Type the sum.`];
+      return R.form === 'm2' ? ['Type the missing number.', `${R.a} plus what makes ${R.s}?`] : ['Type the missing number.', `What plus ${R.b} makes ${R.s}?`];
+    },
+    view(c) {
+      const R = c.R;
+      const parts = R.form === 'sum' ? [R.a, '+', R.b, '=', '?'] : R.form === 'flip' ? [R.b, '+', R.a, '=', '?'] : R.form === 'm2' ? [R.a, '+', '?', '=', R.s] : ['?', '+', R.b, '=', R.s];
+      c.board.innerHTML = eqHTML(parts) + `<div class="numrow"><span class="nbox q" id="tbox">?</span></div>${KEYPAD}`;
+      const box = $('#tbox', c.board); let v = '';
+      const paint = () => { box.textContent = v || '?'; box.classList.toggle('q', !v); box.classList.toggle('sel', !!v); };
+      const press = (k) => {
+        if (c.done) return;
+        if (k === 'back') v = v.slice(0, -1);
+        else if (k === 'go') {
+          if (!v) { c.info('Type a number first.'); return; }
+          if (v === R.ans) { box.classList.remove('sel'); box.classList.add('ok'); $$('.key', c.board).forEach(x => { x.disabled = true; }); c.good(`Yes! ${R.a} + ${R.b} = ${R.s}.`); speak(`${R.a} plus ${R.b} equals ${R.s}`); }
+          else { v = ''; shakeEl(box); c.bad(cfg.hint(R)); }
+          paint(); return;
+        }
+        else if (v.length < 2) { v += k; sfx.pick(); }
+        paint();
+      };
+      $$('.key', c.board).forEach(k => k.addEventListener('click', () => press(k.dataset.k)));
+      onKey = (e) => { if (/^[0-9]$/.test(e.key)) press(e.key); else if (e.key === 'Backspace') press('back'); else if (e.key === 'Enter') press('go'); };
+    }
+  });
+}
+const cellsHTML = (arr) => arr.map(k => `<span class="fcell ${k}"></span>`).join('');
+const rowOf = (parts) => { const r = []; parts.forEach(([n, k]) => { for (let i = 0; i < n; i++) r.push(k); }); while (r.length < 10) r.push(''); return r; };
+const twoFrames = (f1, f2) => `<div class="frames"><div class="frame">${cellsHTML(f1)}</div><div class="frame">${cellsHTML(f2)}</div></div>`;
+
+/* ---- Lesson: adding up to 20 (Ali and Abood) ---- */
+/* levels: 1 ten + ones | 2-3 teen + ones (no bridging) | 4-5 single + single over 10 | 6 doubles and near doubles | 7 teen + ones up to 20
+           8 mix of 4-7 | 9 any two numbers (one may be a teen) | 10 mostly 9 with doubles and teens */
+function pair20(level) {
+  for (let t = 0; t < 3000; t++) {
+    const k = level === 8 ? pick([4, 5, 6, 7]) : level === 10 ? pick([9, 9, 7, 6]) : level;
+    let a, b;
+    if (k === 1) { a = 10; b = 1 + rand(9); }
+    else if (k === 2) { a = 10 + rand(6); b = 1 + rand(9); if (a % 10 + b > 9) continue; }
+    else if (k === 3) { a = 11 + rand(9); b = 1 + rand(9); if (a % 10 + b > 9) continue; }
+    else if (k === 4) { a = 2 + rand(8); b = 2 + rand(8); if (a + b < 11 || a + b > 14) continue; }
+    else if (k === 5) { a = 2 + rand(8); b = 2 + rand(8); if (a + b < 11) continue; }
+    else if (k === 6) { a = 5 + rand(6); b = a + pick([0, 0, 1, -1]); if (b < 1 || b > 10) continue; }
+    else if (k === 7) { a = 11 + rand(9); b = 1 + rand(9); if (a + b > 20) continue; }
+    else { a = 1 + rand(19); b = 1 + rand(19); if (a + b < 11 || a + b > 20) continue; }
+    if (k <= 3 && Math.random() < 0.4) [a, b] = [b, a];
+    return { a, b, s: a + b };
+  }
+  return { a: 10, b: 5, s: 15, fb: true };
+}
+
+/* 1. Count the Counters: two ten frames */
+GAMES.push({
+  id: 'a20frames', sec: 'a20', title: 'Two Ten Frames', desc: 'Tap the counters to count them. Pick the sum.',
+  thumb: () => twoFrames(rowOf([[10, 'a']]), rowOf([[4, 'b']])).replace('class="frames"', 'class="frames mini2"').replace(/class="frame"/g, 'class="frame mini"'),
+  key: R => `${R.a}+${R.b}`,
+  make(level) { const p = pair20(level); return { ...p, opts: numOptions(p.s, level <= 4 ? 3 : 4, [1, 2, 3, 10], 1, 20) }; },
+  prompt: R => ['Count the counters. What is the sum?', `${R.a} plus ${R.b}. Count the counters. What is the sum?`],
+  view(c) {
+    const R = c.R;
+    const cell = (i) => i < R.s ? `<button class="fcell ${i < R.a ? 'a' : 'b'}" type="button" aria-label="Counter"></button>` : '<span class="fcell"></span>';
+    c.board.innerHTML = eqHTML([R.a, '+', R.b, '=', '?'])
+      + `<div class="frames">${[0, 1].map(f => `<div class="frame">${Array.from({ length: 10 }, (_, j) => cell(f * 10 + j)).join('')}</div>`).join('')}</div><p class="counter">Counted: <b>0</b></p>`;
+    const cnt = $('.counter b', c.board); let k = 0;
+    $$('button.fcell', c.board).forEach(b => b.addEventListener('click', () => {
+      if (b.classList.contains('on') || c.done) return;
+      k++; b.classList.add('on'); b.dataset.n = k; cnt.textContent = k; speak(String(k)); sfx.pick();
+      if (k === R.s) c.info(`You counted ${R.s}. Now pick the number.`);
+    }));
+    numAnswers(c, R.opts, R.s, `Yes! ${R.a} + ${R.b} = ${R.s}.`, () => `Fill the first frame to 10. Then count on the rest.`);
+  }
+});
+
+/* 2. Bridge to Ten: make 10 first, then add the rest */
+GAMES.push({
+  id: 'a20bridge', sec: 'a20', title: 'Make 10 First', desc: 'Fill the first frame to make 10. Then add the rest.',
+  thumb: () => '<span class="mini-seq"><i>10</i><i>+</i><i>3</i></span>',
+  key: R => `${R.big}+${R.small}`,
+  make(level) {
+    const smax = [12, 13, 14, 15, 16, 17, 18, 18, 18, 18][level - 1];
+    for (let t = 0; t < 1000; t++) {
+      const x = 2 + rand(8), y = 2 + rand(8), big = Math.max(x, y), small = Math.min(x, y), s = x + y;
+      if (s < 11 || s > smax) continue;
+      const need = 10 - big, rest = small - need;
+      if (need < 1 || rest < 1) continue;
+      return { big, small, need, rest, s, swap: level >= 9 && Math.random() < 0.7, opts1: numOptions(need, 3, [1, 2, 3], 1, 9), opts2: numOptions(s, 4, [1, 2, 10], 10, 20) };
+    }
+    return { big: 8, small: 5, need: 2, rest: 3, s: 13, swap: false, opts1: [2, 3, 1], opts2: [13, 12, 14, 23], fb: true };
+  },
+  prompt: () => ['Make 10 first. Then add the rest.', 'Make 10 first. Then add the rest.'],
+  view(c) {
+    const R = c.R, x = R.swap ? R.small : R.big, y = R.swap ? R.big : R.small; let step = 1;
+    const draw = () => {
+      const f1 = step === 1 ? rowOf([[R.big, 'a']]) : rowOf([[R.big, 'a'], [R.need, 'b']]);
+      const f2 = step === 1 ? rowOf([[R.small, 'b']]) : rowOf([[R.rest, 'b']]);
+      c.board.innerHTML = eqHTML([x, '+', y, '=', '?'])
+        + `<p class="stepline">${step === 1 ? `<b>Step 1.</b> ${R.swap ? `Start with the bigger number, ${R.big}. ` : ''}${R.big} + ? = 10` : `<b>Step 2.</b> 10 + ${R.rest} = ?`}</p>` + twoFrames(f1, f2);
+      if (step === 1) chooseOpts(c, R.opts1, R.need, () => { speak(`${R.big} plus ${R.need} equals 10`); step = 2; c.info(`${R.big} + ${R.need} = 10. ${R.rest} left over.`); draw(); }, () => 'Count the empty boxes in the first frame. How many make it full?');
+      else chooseOpts(c, R.opts2, R.s, () => { c.good(`Yes! ${R.big} + ${R.small} = ${R.s}. Make 10 first, then add ${R.rest}.`); speak(String(R.s)); }, () => `Start at 10. Count on ${R.rest} more.`);
+    };
+    draw();
+  }
+});
+
+/* 3. Hop to the Answer: number line */
+GAMES.push({
+  id: 'a20line', sec: 'a20', title: 'Hop to the Answer', desc: 'The frog hops 1 at a time. Where does it land?',
+  thumb: () => FROG_THUMB,
+  key: R => `${R.a}+${R.b}`,
+  make(level) {
+    let { a, b, s } = pair20(level); if (b > 10) [a, b] = [b, a];
+    const lo = Math.max(0, s - 10), hi = Math.min(a, 10), ws = lo + rand(hi - lo + 1);
+    return { a, b, s, ws, ai: a - ws, li: s - ws };
+  },
+  prompt: R => { const t = `The frog is at ${R.a}. It hops ${R.b} ${R.b === 1 ? 'time' : 'times'}. Where does it land?`; return [t, t]; },
+  view(c) { hopView(c, c.R, c.level <= 5); }
+});
+
+/* 4. Match the Sum: join each sum to its answer */
+GAMES.push({
+  id: 'a20match', sec: 'a20', title: 'Match the Sum', desc: 'Tap a sum. Then tap its answer.', rounds: 2,
+  thumb: () => '<span class="mini-seq"><i>9+4</i><i>13</i></span>',
+  key: R => R.eqs.map(e => e.s).sort((p, q) => p - q).join(','),
+  make(level) {
+    const eqs = [], sums = new Set();
+    for (let t = 0; eqs.length < 4 && t < 800; t++) { const p = pair20(level); if (sums.has(p.s)) continue; sums.add(p.s); eqs.push(p); }
+    return { eqs, answers: shuffle(eqs.map(e => e.s)) };
+  },
+  prompt: () => ['Match each sum to its answer.', 'Match each sum to its answer. Tap a sum, then tap its answer.'],
+  view(c) {
+    const R = c.R;
+    c.board.innerHTML = `<div class="matchgrid">${R.eqs.map((e, i) => `<button class="mq" type="button" data-a="${e.a}" data-b="${e.b}" data-s="${e.s}">${e.a} + ${e.b}</button><button class="ma" type="button" data-v="${R.answers[i]}">${R.answers[i]}</button>`).join('')}</div>`;
+    let selEq = null, matched = 0;
+    $$('.mq', c.board).forEach(b => b.addEventListener('click', () => {
+      if (c.done || b.classList.contains('new')) return;
+      if (selEq) selEq.classList.remove('sel');
+      selEq = b; b.classList.add('sel'); sfx.pick(); speak(`${b.dataset.a} plus ${b.dataset.b}`);
+    }));
+    $$('.ma', c.board).forEach(b => b.addEventListener('click', () => {
+      if (c.done || b.classList.contains('new')) return;
+      if (!selEq) { c.info('Tap a sum on the left first.'); return; }
+      const v = +b.dataset.v, a = +selEq.dataset.a, q = +selEq.dataset.b;
+      if (v === a + q) {
+        selEq.classList.remove('sel'); selEq.classList.add('new'); b.classList.add('new'); selEq = null; matched++; speak(String(v));
+        if (matched === 4) c.good('Yes! All four sums are matched.'); else c.info(`${a} + ${q} = ${v}. Keep going.`);
+      } else {
+        shakeEl(b); selEq.classList.remove('sel'); const t = selEq; selEq = null; shakeEl(t);
+        c.bad(`${a} + ${q} is not ${v}. Count on from ${Math.max(a, q)} to check.`);
+      }
+    }));
+  }
+});
+
+/* 5. Type the Sum (up to 20) */
+typeGame({
+  id: 'a20type', sec: 'a20', title: 'Type the Sum', desc: 'Type the answer with the number pad.',
+  thumb: () => '<span class="mini-seq"><i>9</i><i>+</i><i class="q">?</i></span>',
+  gen: pair20,
+  form: (level) => level <= 3 ? 'sum' : level <= 6 ? pick(['sum', 'sum', 'm2']) : pick(['sum', 'm2', 'm1']),
+  hint: R => R.form === 'sum' ? 'Make 10 first, then add the rest. Or count on from the bigger number.' : 'Count on from the first number until you reach the total.'
+});
+
+/* ---- Lesson: adding a one-digit number to a two-digit number, without carrying (Saud) ---- */
+/* the ones always add to 9 or less. The tens digit never changes. */
+function ncGen(level) {
+  const maxA = [29, 49, 59, 69, 79, 89, 99, 99, 99, 99][level - 1], maxB = [4, 5, 6, 7, 8, 9, 9, 9, 9, 9][level - 1];
+  for (let t = 0; t < 2000; t++) {
+    const a = 10 + rand(maxA - 9), b = 1 + rand(maxB), o = a % 10;
+    if (o + b > 9) continue;
+    if (o === 0 && Math.random() < 0.8) continue;
+    return { a, b, o, t: Math.floor(a / 10), so: o + b, sum: a + b };
+  }
+  return { a: 34, b: 5, o: 4, t: 3, so: 9, sum: 39, fb: true };
+}
+
+/* 1. Count the Blocks: tens rods and ones cubes */
+GAMES.push({
+  id: 'ncblocks', sec: 'nc', title: 'Count the Blocks', desc: 'Tap the rods and cubes to count. Pick the sum.',
+  thumb: () => '<svg class="ico" viewBox="0 0 44 32" aria-hidden="true"><g stroke="var(--line)" stroke-width="2"><rect x="4" y="3" width="6" height="24" rx="1.5" fill="var(--b1)"/><rect x="13" y="3" width="6" height="24" rx="1.5" fill="var(--b1)"/><rect x="24" y="17" width="7" height="7" fill="var(--blue)"/><rect x="24" y="8" width="7" height="7" fill="var(--blue)"/><rect x="34" y="17" width="7" height="7" fill="var(--coral)"/></g></svg>',
+  key: R => `${R.a}+${R.b}`,
+  make(level) { const g = ncGen(level); return { ...g, opts: numOptions(g.sum, level <= 4 ? 3 : 4, [1, 2, 10, 5], 10, 99) }; },
+  prompt: R => ['Count the blocks. What is the sum?', `${R.a} plus ${R.b}. Count the blocks. What is the sum?`],
+  view(c) {
+    const R = c.R, rod = '<button class="rod" type="button" aria-label="Ten"></button>', cube = (k) => `<button class="cube ${k}" type="button" aria-label="One"></button>`;
+    c.board.innerHTML = eqHTML([R.a, '+', R.b, '=', '?'])
+      + `<div class="blocks"><div class="bgrp"><div class="rods">${rod.repeat(R.t)}</div><div class="cubes">${cube('a').repeat(R.o)}</div></div><span class="bplus">+</span><div class="bgrp"><div class="cubes">${cube('b').repeat(R.b)}</div></div></div><p class="counter">Counted: <b>0</b></p>`;
+    const cnt = $('.counter b', c.board), all = R.t + R.o + R.b; let tot = 0, taps = 0;
+    $$('.rod, .cube', c.board).forEach(b => b.addEventListener('click', () => {
+      if (b.classList.contains('on') || c.done) return;
+      b.classList.add('on'); tot += b.classList.contains('rod') ? 10 : 1; taps++; cnt.textContent = tot; speak(String(tot)); sfx.pick();
+      if (taps === all) c.info(`You counted ${R.sum}. Now pick the number.`);
+    }));
+    numAnswers(c, R.opts, R.sum, `Yes! ${R.a} + ${R.b} = ${R.sum}. ${R.t} tens and ${R.so} ones.`, () => 'Count the rods by tens. Then count the cubes by ones.');
+  }
+});
+
+/* 2. Missing Digit: one digit of the column is hidden */
+GAMES.push({
+  id: 'ncmissing', sec: 'nc', title: 'Missing Digit', desc: 'One digit is hidden in the column. Which one?',
+  thumb: () => '<span class="mini-col"><b>4?</b><b>+ 5</b><b class="q">49</b></span>',
+  key: R => `${R.a}+${R.b}:${R.kind}`,
+  make(level) {
+    const g = ncGen(level), kinds = level <= 3 ? ['so'] : level <= 5 ? ['so', 'st'] : level <= 7 ? ['so', 'st', 'ao'] : ['so', 'st', 'ao', 'at', 'b'];
+    const kind = pick(kinds), ans = { so: g.so, st: g.t, ao: g.o, at: g.t, b: g.b }[kind];
+    return { ...g, kind, ans, opts: numOptions(ans, level <= 5 ? 3 : 4, [1, 2, 3], 0, 9) };
+  },
+  prompt: R => ['Which digit is missing?', `${R.a} plus ${R.b} equals ${R.sum}. Which digit is missing?`],
+  view(c) {
+    const R = c.R, q = '<span class="qd">?</span>';
+    c.board.innerHTML = `<div class="colwrap">${colHTML(R, { labels: true, carryRow: false, top: [R.kind === 'at' ? q : R.t, R.kind === 'ao' ? q : R.o], bot: R.kind === 'b' ? q : R.b, ans: ['', R.kind === 'st' ? q : R.t, R.kind === 'so' ? q : R.so] })}</div>`;
+    const hint = {
+      so: `Add the ones: ${R.o} + ${R.b}.`,
+      st: `The tens do not change. Look at the tens in ${R.a}.`,
+      ao: `Think: ? + ${R.b} = ${R.so}. Count back from ${R.so}.`,
+      at: 'The tens do not change. Look at the tens in the answer.',
+      b: `Think: ${R.o} + ? = ${R.so}. Count on from ${R.o}.`
+    };
+    numAnswers(c, R.opts, R.ans, `Yes! ${R.a} + ${R.b} = ${R.sum}.`, () => hint[R.kind]);
+  }
+});
+
+/* 3. Jump Along: number line */
+GAMES.push({
+  id: 'ncline', sec: 'nc', title: 'Jump Along', desc: 'The frog hops 1 at a time. Where does it land?',
+  thumb: () => FROG_THUMB,
+  key: R => `${R.a}+${R.b}`,
+  make(level) {
+    const g = ncGen(level), lo = Math.max(0, g.sum - 10), ws = lo + rand(Math.min(g.a, 90) - lo + 1);
+    return { ...g, s: g.sum, ws, ai: g.a - ws, li: g.sum - ws };
+  },
+  prompt: R => { const t = `The frog is at ${R.a}. It hops ${R.b} ${R.b === 1 ? 'time' : 'times'}. Where does it land?`; return [t, t]; },
+  view(c) { hopView(c, c.R, c.level <= 5); }
+});
+
+/* 4. Pop the Sum: balloons */
+GAMES.push({
+  id: 'ncpop', sec: 'nc', title: 'Pop the Sum', desc: 'Pop the balloon with the right answer.',
+  thumb: () => '<span class="mini-balloon"><b class="bn">43</b></span>',
+  key: R => `${R.form}${R.a}+${R.b}`,
+  make(level) {
+    const g = ncGen(level), form = level <= 5 ? 'sum' : level <= 7 ? pick(['sum', 'flip']) : pick(['sum', 'm2', 'm2']);
+    const ans = form === 'm2' ? g.b : g.sum;
+    return { ...g, form, ans, opts: numOptions(ans, 4, form === 'm2' ? [1, 2, 3] : [1, 2, 10, 5], form === 'm2' ? 1 : 10, form === 'm2' ? 9 : 99) };
+  },
+  prompt: R => R.form === 'm2' ? ['Pop the missing number.', `${R.a} plus what makes ${R.sum}?`] : ['Pop the right answer.', `${R.form === 'flip' ? R.b : R.a} plus ${R.form === 'flip' ? R.a : R.b}. Pop the right answer.`],
+  view(c) {
+    const R = c.R, parts = R.form === 'sum' ? [R.a, '+', R.b, '=', '?'] : R.form === 'flip' ? [R.b, '+', R.a, '=', '?'] : [R.a, '+', '?', '=', R.sum];
+    c.board.innerHTML = eqHTML(parts) + `<div class="sky">${R.opts.map((v, i) => `<button class="balloon" type="button" data-v="${v}" style="--dl:${(i * 0.45).toFixed(2)}s" aria-label="${v}"><span class="bal-body"><b class="bn">${v}</b></span><span class="bal-string"></span></button>`).join('')}</div>`;
+    $$('.balloon', c.board).forEach(b => b.addEventListener('click', () => {
+      if (c.done) return;
+      if (+b.dataset.v === R.ans) {
+        b.classList.add('popped'); sfx.pop(); $$('.balloon', c.board).forEach(x => { if (x !== b) x.classList.add('away'); });
+        c.good(`Yes! ${R.a} + ${R.b} = ${R.sum}.`); speak(String(R.ans));
+      } else {
+        b.classList.add('wrong');
+        c.bad(R.form === 'm2' ? `${R.a} + ? = ${R.sum}. Look at the ones: ${R.o} + ? = ${R.so}.` : `Add the ones: ${R.o} + ${R.b} = ${R.so}. Keep the tens: ${R.t}.`);
+      }
+    }));
+  }
+});
+
+/* 5. Write the Answer: keypad */
+typeGame({
+  id: 'nctype', sec: 'nc', title: 'Write the Answer', desc: 'Type the answer with the number pad.',
+  thumb: () => '<span class="mini-seq"><i>43</i><i>+</i><i class="q">?</i></span>',
+  gen: (level) => { const g = ncGen(level); return { ...g, s: g.sum }; },
+  form: (level) => level <= 3 ? 'sum' : level <= 5 ? pick(['sum', 'flip']) : level <= 7 ? pick(['sum', 'flip', 'm2']) : pick(['sum', 'm2', 'm1']),
+  hint: R => R.form === 'sum' || R.form === 'flip' ? `Add the ones: ${R.o} + ${R.b}. Keep the tens: ${R.t}.` : `Think about the ones first: ${R.o} + ? = ${R.so}.`
+});
+
+/* ---- Saud: Adding without carrying, set 2 (same lesson, five new games) ---- */
+const wrongSum = (g) => {
+  const kind = pick(['o1', 'o2', 't', 'o1', 'swap']);
+  let v = g.sum;
+  if (kind === 'o1') v = g.sum + pick([1, -1]);
+  else if (kind === 'o2') v = g.sum + pick([2, -2, 3, -3]);
+  else if (kind === 't') v = g.sum + pick([10, -10]);
+  else { const s = +String(g.sum).split('').reverse().join(''); v = (s !== g.sum && s >= 10) ? s : g.sum + 1; }
+  return { v: v === g.sum || v < 10 ? g.sum + 1 : v, kind };
+};
+
+/* 1. Build the Answer: choose the tens digit and the ones digit */
+GAMES.push({
+  id: 'ncbuild', sec: 'nc2', title: 'Build the Answer', desc: 'Pick the tens digit and the ones digit. Then check.',
+  thumb: () => '<span class="mini-seq"><i>4</i><i>8</i><i class="q">&#10003;</i></span>',
+  key: R => `${R.a}+${R.b}`,
+  make(level) { const g = ncGen(level); return { ...g, topt: numOptions(g.t, level <= 4 ? 3 : 4, [1, 2, 3], 0, 9), oopt: numOptions(g.so, level <= 4 ? 3 : 4, [1, 2, 3], 0, 9) }; },
+  prompt: R => ['Build the answer. Pick two digits.', `${R.a} plus ${R.b}. Build the answer with two digits.`],
+  view(c) {
+    const R = c.R; let T = null, O = null;
+    c.board.innerHTML = eqHTML([R.a, '+', R.b, '=', '?'])
+      + `<div class="build"><p class="blab">Tens</p><div class="opts" data-row="t">${R.topt.map(v => `<button class="ans num" type="button" data-v="${v}">${v}</button>`).join('')}</div>`
+      + `<p class="blab">Ones</p><div class="opts" data-row="o">${R.oopt.map(v => `<button class="ans num" type="button" data-v="${v}">${v}</button>`).join('')}</div><p class="builtnum">Your answer: <b>? ?</b></p></div>`;
+    const show = () => { $('.builtnum b', c.board).textContent = `${T === null ? '?' : T}${O === null ? '?' : O}`; };
+    $$('.ans', c.board).forEach(b => b.addEventListener('click', () => {
+      if (c.done) return;
+      const row = b.parentElement.dataset.row; $$('.ans', b.parentElement).forEach(x => x.classList.remove('pickd')); b.classList.add('pickd'); sfx.pick();
+      if (row === 't') T = +b.dataset.v; else O = +b.dataset.v; show();
+    }));
+    const chk = c.addBtn('Check', () => {
+      if (c.done) return;
+      if (T === null || O === null) { c.info('Pick a tens digit and a ones digit first.'); return; }
+      if (T === R.t && O === R.so) { chk.hidden = true; c.good(`Yes! ${R.a} + ${R.b} = ${R.sum}. ${R.t} tens and ${R.so} ones.`); speak(String(R.sum)); }
+      else if (O !== R.so) c.bad(`Add the ones: ${R.o} + ${R.b}. Try the ones again.`);
+      else c.bad(`The tens do not change. Look at the tens in ${R.a}.`);
+    });
+  }
+});
+
+/* 2. Check the Answer: is the sum right or wrong? */
+GAMES.push({
+  id: 'nccheck', sec: 'nc2', title: 'Check the Answer', desc: 'Someone wrote an answer. Is it right or wrong?',
+  thumb: () => '<span class="mini-seq"><i>&#10003;</i><i class="q">?</i><i>&#10007;</i></span>',
+  key: R => `${R.a}+${R.b}=${R.shown}`,
+  make(level) { const g = ncGen(level), ok = Math.random() < 0.5, w = wrongSum(g); return { ...g, ok, shown: ok ? g.sum : w.v, kind: ok ? '' : w.kind }; },
+  prompt: R => ['Is this sum right or wrong?', `${R.a} plus ${R.b} equals ${R.shown}. Is that right or wrong?`],
+  view(c) {
+    const R = c.R;
+    c.board.innerHTML = eqHTML([R.a, '+', R.b, '=', R.shown]) + `<div class="tf"><button class="tfb yes" type="button" data-v="1"><b>&#10003;</b>Right</button><button class="tfb no" type="button" data-v="0"><b>&#10007;</b>Wrong</button></div>`;
+    $$('.tfb', c.board).forEach(b => b.addEventListener('click', () => {
+      if (c.done) return;
+      if ((b.dataset.v === '1') === R.ok) {
+        b.classList.add('right');
+        c.good(R.ok ? `Yes! ${R.a} + ${R.b} = ${R.sum}.` : `Yes! It is wrong. ${R.a} + ${R.b} = ${R.sum}.`);
+      } else { b.classList.add('wrong'); c.bad(`Check it. Add the ones: ${R.o} + ${R.b} = ${R.so}. Keep the tens: ${R.t}.`); }
+    }));
+  }
+});
+
+/* 3. Which Is Bigger: compare the sums */
+GAMES.push({
+  id: 'ncbigger', sec: 'nc2', title: 'Which Is Bigger?', desc: 'Work out the sums. Tap the one with the biggest answer.',
+  thumb: () => '<span class="mini-seq"><i>43</i><i>&gt;</i><i>38</i></span>',
+  key: R => R.list.map(x => x.a + '+' + x.b).join(','),
+  make(level) {
+    const n = level <= 5 ? 2 : 3, list = [];
+    for (let t = 0; t < 300 && list.length < n; t++) { const g = ncGen(level); if (list.every(x => x.sum !== g.sum && Math.abs(x.sum - g.sum) >= (level <= 3 ? 8 : 1))) list.push(g); }
+    while (list.length < n) { const g = ncGen(level); if (list.every(x => x.sum !== g.sum)) list.push(g); }
+    return { list, best: Math.max(...list.map(x => x.sum)) };
+  },
+  prompt: R => ['Tap the biggest sum.', 'Work out each sum. Tap the biggest one.'],
+  view(c) {
+    const R = c.R;
+    c.board.innerHTML = `<div class="bigs">${R.list.map((x, i) => `<button class="bigsum" type="button" data-i="${i}"><b>${x.a} + ${x.b}</b></button>`).join('')}</div>`;
+    $$('.bigsum', c.board).forEach(b => b.addEventListener('click', () => {
+      if (c.done) return;
+      const x = R.list[+b.dataset.i];
+      if (x.sum === R.best) { b.classList.add('right'); $$('.bigsum b', c.board).forEach((e, i) => { e.textContent = `${R.list[i].a} + ${R.list[i].b} = ${R.list[i].sum}`; }); c.good(`Yes! ${x.sum} is the biggest.`); }
+      else { b.classList.add('wrong'); c.bad('Add each sum. Compare the tens first, then the ones.'); }
+    }));
+  }
+});
+
+/* 4. Add Chain: add more than once */
+GAMES.push({
+  id: 'ncchain', sec: 'nc2', title: 'Add Chain', desc: 'Keep adding. Fill every step of the chain.',
+  thumb: () => '<span class="mini-seq"><i>23</i><i>+2</i><i>25</i><i class="q">?</i></span>',
+  key: R => `${R.a}:${R.steps.join(',')}`,
+  make(level) {
+    const k = level <= 5 ? 2 : 3;
+    for (let t = 0; t < 500; t++) {
+      const a = 10 + rand([29, 49, 59, 69, 79, 89, 99, 99, 99, 99][level - 1] - 9), o = a % 10;
+      if (o + k > 9) continue;
+      let left = 9 - o; const steps = [];
+      for (let i = 0; i < k; i++) { const mx = Math.min(left - (k - 1 - i), level <= 5 ? 4 : 5); if (mx < 1) break; const b = 1 + rand(mx); steps.push(b); left -= b; }
+      if (steps.length !== k) continue;
+      const vals = [a]; steps.forEach(b => vals.push(vals[vals.length - 1] + b));
+      return { a, steps, vals };
+    }
+    return { a: 31, steps: [2, 3], vals: [31, 33, 36] };
+  },
+  prompt: R => ['Fill the chain. Keep adding.', `Start at ${R.a}. ${R.steps.map(b => 'Add ' + b).join(', then ')}.`],
+  view(c) {
+    const R = c.R; let i = 1;
+    const draw = () => `<div class="chain">${R.vals.map((v, j) => `${j ? `<span class="chop">+${R.steps[j - 1]}</span>` : ''}<span class="nbox${j >= i ? ' q' : ''}">${j < i ? v : '?'}</span>`).join('')}</div>`;
+    const holder = html('<div></div>'); c.board.appendChild(holder);
+    const step = () => {
+      holder.innerHTML = draw();
+      const ans = R.vals[i], prev = R.vals[i - 1], b = R.steps[i - 1];
+      const opts = html(`<div class="opts">${numOptions(ans, 4, [1, 2, 3, 10], 10, 99).map(v => `<button class="ans num" type="button" data-v="${v}">${v}</button>`).join('')}</div>`);
+      holder.appendChild(opts);
+      $$('.ans', opts).forEach(btn => btn.addEventListener('click', () => {
+        if (c.done) return;
+        if (+btn.dataset.v === ans) {
+          btn.classList.add('right'); speak(String(ans)); i++;
+          if (i >= R.vals.length) { holder.innerHTML = draw(); c.good(`Yes! The chain ends at ${R.vals[R.vals.length - 1]}.`); } else { c.info(`${prev} + ${b} = ${ans}. Next step.`); setTimeout(step, 450); }
+        } else { btn.classList.add('wrong'); c.bad(`Add the ones: ${prev % 10} + ${b}. Keep the tens: ${Math.floor(prev / 10)}.`); }
+      }));
+    };
+    step();
+  }
+});
+
+/* 5. Story Time: word problems */
+const STORIES = [
+  ['stickers', 'sticker', 'gets', 'more'], ['toy cars', 'toy car', 'finds', 'more'], ['marbles', 'marble', 'wins', 'more'],
+  ['pencils', 'pencil', 'buys', 'more'], ['cards', 'card', 'gets', 'more'], ['stamps', 'stamp', 'gets', 'more']
+];
+const KIDS = ['Ali', 'Abood', 'Saud', 'Hamad', 'Yousef', 'Omar', 'Faisal', 'Hassan'];
+GAMES.push({
+  id: 'ncstory', sec: 'nc2', title: 'Story Time', desc: 'Read the little story. Add to find the answer.',
+  thumb: () => '<span class="mini-seq"><i>&#128214;</i><i>+</i><i class="q">?</i></span>',
+  key: R => `${R.name}${R.a}+${R.b}`,
+  make(level) {
+    const g = ncGen(level), st = pick(STORIES), name = pick(KIDS), friend = pick(KIDS.filter(k => k !== name));
+    return { ...g, st, name, friend, form: level <= 5 ? 'more' : pick(['more', 'all']), opts: numOptions(g.sum, level <= 4 ? 3 : 4, [1, 2, 10, 5], 10, 99) };
+  },
+  prompt(R) {
+    const [pl, , verb] = R.st;
+    const t = R.form === 'more'
+      ? `${R.name} has ${R.a} ${pl}. ${R.friend} gives him ${R.b} more. How many ${pl} does ${R.name} have now?`
+      : `${R.name} has ${R.a} ${pl}. ${R.friend} has ${R.b} ${pl}. How many ${pl} do they have in all?`;
+    return [t, t];
+  },
+  view(c) {
+    const R = c.R;
+    c.board.innerHTML = `<div class="story"><div class="sbar"><span class="sk">${R.name}</span><b>${R.a}</b></div><div class="sbar b"><span class="sk">${R.form === 'more' ? 'More' : R.friend}</span><b>${R.b}</b></div></div>` + eqHTML([R.a, '+', R.b, '=', '?']);
+    numAnswers(c, R.opts, R.sum, `Yes! ${R.a} + ${R.b} = ${R.sum}.`, () => `Add the ones: ${R.o} + ${R.b} = ${R.so}. Keep the tens: ${R.t}.`);
+  }
+});
+
+/* ---- Lesson 4 (8 Nov 2026): subtraction. Ali and Abood: one digit minus one digit. Saud: two digit minus one digit, no borrowing ---- */
+const MINUS = '\u2212';
+/* Ali and Abood: a is 2 to 9, b is 1 to a */
+function sub1Gen(level) {
+  const maxA = [5, 6, 7, 8, 9, 9, 9, 9, 9, 9][level - 1], maxB = [2, 2, 3, 4, 4, 5, 6, 7, 8, 9][level - 1];
+  for (let t = 0; t < 2000; t++) {
+    const a = 2 + rand(maxA - 1), b = 1 + rand(Math.min(maxB, a));
+    if (level >= 6 && b === a && Math.random() < 0.6) continue;
+    if (level <= 4 && b === a) continue;
+    if (level >= 7 && b < a - 4 && Math.random() < 0.6) continue;
+    return { a, b, d: a - b };
+  }
+  return { a: 7, b: 3, d: 4, fb: true };
+}
+/* Saud: 2-digit a, one-digit b, the ones digit of a is at least b (no borrowing) */
+function sub2Gen(level) {
+  const maxA = [29, 39, 49, 59, 69, 79, 89, 99, 99, 99][level - 1], maxB = [3, 4, 5, 6, 7, 8, 9, 9, 9, 9][level - 1];
+  for (let t = 0; t < 3000; t++) {
+    const a = 10 + rand(maxA - 9), o = a % 10;
+    if (o < 1) continue;
+    const b = 1 + rand(Math.min(maxB, o)), so = o - b;
+    if (so === 0 && level < 6 && Math.random() < 0.8) continue;
+    return { a, b, o, t: Math.floor(a / 10), so, d: a - b };
+  }
+  return { a: 37, b: 4, o: 7, t: 3, so: 3, d: 33, fb: true };
+}
+/* number line where the frog hops BACK. R: ws (first tick value), ai (start tick), li (landing tick), a, b, d */
+function hopBackView(c, R, all) {
+  const X = (i) => 20 + i * 30, V = (i) => R.ws + i;
+  let svg = '<line class="ax" x1="20" y1="80" x2="320" y2="80"/>';
+  for (let i = 0; i <= 10; i++) {
+    svg += `<line class="tick" x1="${X(i)}" y1="72" x2="${X(i)}" y2="88"/>`;
+    if (all || i === 0 || i === 10) svg += `<text x="${X(i)}" y="112" style="font-size:13px">${V(i)}</text>`;
+  }
+  let hops = '';
+  for (let i = R.ai; i > R.li; i--) hops += `<path class="hop" pathLength="1" style="animation-delay:${(R.ai - i) * 0.45}s" d="M${X(i)} 58 Q${(X(i) + X(i - 1)) / 2} 22 ${X(i - 1)} 58"/>`;
+  let taps = '';
+  for (let i = 0; i <= 10; i++) taps += `<circle class="tk" data-i="${i}" cx="${X(i)}" cy="80" r="13" tabindex="0" role="button" aria-label="${V(i)}"/>`;
+  c.board.innerHTML = `<svg class="nline" viewBox="0 0 340 126" role="group" aria-label="Number line">${svg}<g id="hops"></g><g id="frog" style="transform:translate(${X(R.ai)}px,64px)">${FROG}</g>${taps}</svg><p class="counter">${R.a} ${MINUS} ${R.b}</p>`;
+  const frog = $('#frog', c.board);
+  const showBtn = c.addBtn('Show the hops', () => { $('#hops', c.board).innerHTML = hops; showBtn.disabled = true; sfx.pick(); }, 'alt');
+  const choose = (t) => {
+    if (c.done) return;
+    const i = +t.dataset.i;
+    if (i === R.li) {
+      t.classList.add('right'); frog.style.transform = `translate(${X(R.li)}px,64px)`; showBtn.hidden = true;
+      c.good(`${R.a} ${MINUS} ${R.b} = ${R.d}. The frog lands on ${R.d}.`); speak(String(R.d));
+    } else { t.classList.add('wrong'); c.bad(`Hop back ${R.b} ${R.b === 1 ? 'time' : 'times'} from ${R.a}. Try "Show the hops".`); }
+  };
+  $$('.tk', c.board).forEach(t => {
+    t.addEventListener('click', () => choose(t));
+    t.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(t); } });
+  });
+}
+const APPLE = '<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 12c-6-5-15-1-14 9 1 9 8 15 14 13 6 2 13-4 14-13 1-10-8-14-14-9z" fill="var(--coral)" stroke="var(--line)" stroke-width="2.5" stroke-linejoin="round"/><path d="M20 12c0-4 1-7 4-9" fill="none" stroke="var(--line)" stroke-width="2.5" stroke-linecap="round"/><path d="M23 7c3-3 7-2 8 0-3 2-6 2-8 0z" fill="var(--good)" stroke="var(--line)" stroke-width="2"/></svg>';
+/* subtraction keypad game. gen(level) -> {a, b, d}; form(level) -> 'diff' | 'm2' | 'm1' */
+function typeSubGame(cfg) {
+  GAMES.push({
+    id: cfg.id, sec: cfg.sec, title: cfg.title, desc: cfg.desc, rounds: 5,
+    thumb: cfg.thumb,
+    key: R => `${R.form}${R.a}-${R.b}`,
+    make(level) { const p = cfg.gen(level), form = cfg.form(level); return { ...p, form, ans: String(form === 'm2' ? p.b : form === 'm1' ? p.a : p.d) }; },
+    prompt(R) {
+      if (R.form === 'diff') return ['Type the answer.', `${R.a} minus ${R.b}. Type the answer.`];
+      return R.form === 'm2' ? ['Type the missing number.', `${R.a} minus what makes ${R.d}?`] : ['Type the missing number.', `What minus ${R.b} makes ${R.d}?`];
+    },
+    view(c) {
+      const R = c.R;
+      const parts = R.form === 'diff' ? [R.a, MINUS, R.b, '=', '?'] : R.form === 'm2' ? [R.a, MINUS, '?', '=', R.d] : ['?', MINUS, R.b, '=', R.d];
+      c.board.innerHTML = eqHTML(parts) + `<div class="numrow"><span class="nbox q" id="tbox">?</span></div>${KEYPAD}`;
+      const box = $('#tbox', c.board); let v = '';
+      const paint = () => { box.textContent = v || '?'; box.classList.toggle('q', !v); box.classList.toggle('sel', !!v); };
+      const press = (k) => {
+        if (c.done) return;
+        if (k === 'back') v = v.slice(0, -1);
+        else if (k === 'go') {
+          if (!v) { c.info('Type a number first.'); return; }
+          if (v === R.ans) { box.classList.remove('sel'); box.classList.add('ok'); $$('.key', c.board).forEach(x => { x.disabled = true; }); c.good(`Yes! ${R.a} ${MINUS} ${R.b} = ${R.d}.`); speak(`${R.a} minus ${R.b} equals ${R.d}`); }
+          else { v = ''; shakeEl(box); c.bad(cfg.hint(R)); }
+          paint(); return;
+        }
+        else if (v.length < 2) { v += k; sfx.pick(); }
+        paint();
+      };
+      $$('.key', c.board).forEach(k => k.addEventListener('click', () => press(k.dataset.k)));
+      onKey = (e) => { if (/^[0-9]$/.test(e.key)) press(e.key); else if (e.key === 'Backspace') press('back'); else if (e.key === 'Enter') press('go'); };
+    }
+  });
+}
+/* tap-to-cross-out helper. items: elements; need: how many to cross; onCount(n) */
+function crossOut(c, sel, need) {
+  const cnt = $('.counter b', c.board); let n = 0;
+  $$(sel, c.board).forEach(b => b.addEventListener('click', () => {
+    if (c.done || b.classList.contains('gone')) return;
+    if (n >= need) { c.info(`That is enough. You took away ${need}. Now count what is left.`); sfx.no(); return; }
+    b.classList.add('gone'); n++; cnt.textContent = n; speak(String(n)); sfx.pick();
+    if (n === need) c.info(`You took away ${need}. Now count what is left.`);
+  }));
+}
+
+/* ===== Ali and Abood: one digit minus one digit ===== */
+/* 1. Cross Out */
+GAMES.push({
+  id: 'sbcross', sec: 'sub1', title: 'Cross Out', desc: 'Tap apples to take them away. Pick what is left.',
+  thumb: () => '<span class="mini-seq"><i>7</i><i>&minus;</i><i>3</i></span>',
+  key: R => `${R.a}-${R.b}`,
+  make(level) { const g = sub1Gen(level); return { ...g, opts: numOptions(g.d, level <= 4 ? 3 : 4, [1, 2, 3], 0, 9) }; },
+  prompt: R => [`${R.a} take away ${R.b}. How many are left?`, `${R.a} take away ${R.b}. Tap ${R.b} to take them away. How many are left?`],
+  view(c) {
+    const R = c.R;
+    c.board.innerHTML = eqHTML([R.a, MINUS, R.b, '=', '?']) + `<div class="objs">${Array.from({ length: R.a }, () => `<button class="obj" type="button" aria-label="Apple">${APPLE}</button>`).join('')}</div><p class="counter">Taken away: <b>0</b> of ${R.b}</p>`;
+    crossOut(c, '.obj', R.b);
+    numAnswers(c, R.opts, R.d, `Yes! ${R.a} ${MINUS} ${R.b} = ${R.d}.`, () => `Cross out ${R.b}. Then count the apples that are left.`);
+  }
+});
+/* 2. Hop Back */
+GAMES.push({
+  id: 'sbhop', sec: 'sub1', title: 'Hop Back', desc: 'The frog hops back. Where does it land?',
+  thumb: () => FROG_THUMB,
+  key: R => `${R.a}-${R.b}`,
+  make(level) { const g = sub1Gen(level); return { ...g, ws: 0, ai: g.a, li: g.d }; },
+  prompt: R => { const t = `The frog is on ${R.a}. It hops back ${R.b}. Where does it land?`; return [t, t]; },
+  view(c) { hopBackView(c, c.R, true); }
+});
+/* 3. Pop the Answer */
+GAMES.push({
+  id: 'sbpop', sec: 'sub1', title: 'Pop the Answer', desc: 'Pop the balloon with the right answer.',
+  thumb: () => '<span class="mini-balloon"><b class="bn">4</b></span>',
+  key: R => `${R.form}${R.a}-${R.b}`,
+  make(level) {
+    const g = sub1Gen(level), form = level <= 5 ? 'diff' : level <= 7 ? pick(['diff', 'm2']) : pick(['diff', 'm2', 'm1']);
+    const ans = form === 'm2' ? g.b : form === 'm1' ? g.a : g.d;
+    return { ...g, form, ans, opts: numOptions(ans, 4, [1, 2, 3], form === 'm2' ? 1 : form === 'm1' ? 2 : 0, 9) };
+  },
+  prompt: R => R.form === 'diff' ? ['Pop the right answer.', `${R.a} minus ${R.b}. Pop the right answer.`] : ['Pop the missing number.', R.form === 'm2' ? `${R.a} minus what makes ${R.d}?` : `What minus ${R.b} makes ${R.d}?`],
+  view(c) {
+    const R = c.R, parts = R.form === 'diff' ? [R.a, MINUS, R.b, '=', '?'] : R.form === 'm2' ? [R.a, MINUS, '?', '=', R.d] : ['?', MINUS, R.b, '=', R.d];
+    c.board.innerHTML = eqHTML(parts) + `<div class="sky">${R.opts.map((v, i) => `<button class="balloon" type="button" data-v="${v}" style="--dl:${(i * 0.45).toFixed(2)}s" aria-label="${v}"><span class="bal-body"><b class="bn">${v}</b></span><span class="bal-string"></span></button>`).join('')}</div>`;
+    $$('.balloon', c.board).forEach(b => b.addEventListener('click', () => {
+      if (c.done) return;
+      if (+b.dataset.v === R.ans) { b.classList.add('popped'); sfx.pop(); $$('.balloon', c.board).forEach(x => { if (x !== b) x.classList.add('away'); }); c.good(`Yes! ${R.a} ${MINUS} ${R.b} = ${R.d}.`); speak(String(R.ans)); }
+      else { b.classList.add('wrong'); c.bad(`Count back ${R.b} from ${R.a}. Or use your fingers.`); }
+    }));
+  }
+});
+/* 4. Number Bond */
+GAMES.push({
+  id: 'sbbond', sec: 'sub1', title: 'Number Bond', desc: 'The whole is split into two parts. Find the missing part.',
+  thumb: () => '<svg class="ico" viewBox="0 0 44 36" aria-hidden="true"><g stroke="var(--line)" stroke-width="2" fill="var(--surface)"><path d="M22 12L10 26M22 12l12 14" fill="none"/><circle cx="22" cy="9" r="8"/><circle cx="10" cy="27" r="7"/><circle cx="34" cy="27" r="7" stroke-dasharray="3 2"/></g></svg>',
+  key: R => `${R.a}-${R.b}-${R.flip}`,
+  make(level) { const g = sub1Gen(level); return { ...g, flip: Math.random() < 0.5, opts: numOptions(g.d, level <= 4 ? 3 : 4, [1, 2, 3], 0, 9) }; },
+  prompt: R => [`The whole is ${R.a}. One part is ${R.b}. What is the other part?`, `The whole is ${R.a}. One part is ${R.b}. What is the other part?`],
+  view(c) {
+    const R = c.R, known = `<g><circle cx="${R.flip ? 215 : 85}" cy="140" r="38" class="bn-k"/><text x="${R.flip ? 215 : 85}" y="153">${R.b}</text></g>`, unk = `<g><circle cx="${R.flip ? 85 : 215}" cy="140" r="38" class="bn-q"/><text x="${R.flip ? 85 : 215}" y="153" class="qq">?</text></g>`;
+    c.board.innerHTML = `<svg class="bond" viewBox="0 0 300 190" role="img" aria-label="Whole ${R.a}, one part ${R.b}"><path d="M150 62L85 105M150 62l65 43" class="bn-l"/><circle cx="150" cy="40" r="40" class="bn-w"/><text x="150" y="54">${R.a}</text>${known}${unk}</svg><p class="counter">${R.a} ${MINUS} ${R.b} = ?</p>`;
+    numAnswers(c, R.opts, R.d, `Yes! ${R.a} ${MINUS} ${R.b} = ${R.d}. The parts are ${R.b} and ${R.d}.`, () => `Take the part ${R.b} away from the whole ${R.a}.`);
+  }
+});
+/* 5. Type the Answer */
+typeSubGame({
+  id: 'sbtype', sec: 'sub1', title: 'Type the Answer', desc: 'Type the answer with the number pad.',
+  thumb: () => '<span class="mini-seq"><i>8</i><i>&minus;</i><i class="q">?</i></span>',
+  gen: sub1Gen,
+  form: (level) => level <= 3 ? 'diff' : level <= 6 ? pick(['diff', 'diff', 'm2']) : pick(['diff', 'm2', 'm1']),
+  hint: R => R.form === 'diff' ? `Count back ${R.b} from ${R.a}. Use your fingers.` : R.form === 'm2' ? `Think: ${R.a} minus what makes ${R.d}? Count back from ${R.a} to ${R.d}.` : `Think: what number, take away ${R.b}, is ${R.d}? Count on from ${R.d}.`
+});
+
+/* ===== Saud: two digit minus one digit, no borrowing ===== */
+/* 1. Rods and Cubes: cross out ones */
+GAMES.push({
+  id: 'nscubes', sec: 'sub2', title: 'Rods and Cubes', desc: 'Cross out cubes to take away the ones. Pick the answer.',
+  thumb: () => '<svg class="ico" viewBox="0 0 44 32" aria-hidden="true"><g stroke="var(--line)" stroke-width="2"><rect x="5" y="3" width="6" height="24" rx="1.5" fill="var(--b1)"/><rect x="14" y="3" width="6" height="24" rx="1.5" fill="var(--b1)"/><rect x="26" y="17" width="7" height="7" fill="var(--blue)"/><rect x="26" y="8" width="7" height="7" fill="var(--blue)"/><rect x="35" y="17" width="7" height="7" fill="var(--blue)" opacity=".35"/></g></svg>',
+  key: R => `${R.a}-${R.b}`,
+  make(level) { const g = sub2Gen(level); return { ...g, opts: numOptions(g.d, level <= 4 ? 3 : 4, [1, 2, 10, 5], 10, 99) }; },
+  prompt: R => [`${R.a} minus ${R.b}. Cross out ${R.b} ones. Pick the answer.`, `${R.a} minus ${R.b}. Cross out ${R.b} cubes. Pick the answer.`],
+  view(c) {
+    const R = c.R, rod = '<span class="rod fixed" aria-label="Ten"></span>', cube = '<button class="cube a" type="button" aria-label="One"></button>';
+    c.board.innerHTML = eqHTML([R.a, MINUS, R.b, '=', '?']) + `<div class="blocks"><div class="bgrp"><div class="rods">${rod.repeat(R.t)}</div><div class="cubes">${cube.repeat(R.o)}</div></div></div><p class="counter">Taken away: <b>0</b> of ${R.b}</p>`;
+    crossOut(c, '.cube', R.b);
+    numAnswers(c, R.opts, R.d, `Yes! ${R.a} ${MINUS} ${R.b} = ${R.d}. ${R.t} tens and ${R.so} ones.`, () => 'Take the cubes away from the ones. The tens stay the same.');
+  }
+});
+/* 2. Missing Digit */
+GAMES.push({
+  id: 'nsmissing', sec: 'sub2', title: 'Missing Digit', desc: 'One digit is hidden in the column. Which one?',
+  thumb: () => '<span class="mini-col"><b>4?</b><b>&minus; 5</b><b class="q">42</b></span>',
+  key: R => `${R.a}-${R.b}:${R.kind}`,
+  make(level) {
+    const g = sub2Gen(level), kinds = level <= 3 ? ['so'] : level <= 5 ? ['so', 'st'] : level <= 7 ? ['so', 'st', 'ao'] : ['so', 'st', 'ao', 'at', 'b'];
+    const kind = pick(kinds), ans = { so: g.so, st: g.t, ao: g.o, at: g.t, b: g.b }[kind];
+    return { ...g, kind, ans, opts: numOptions(ans, level <= 5 ? 3 : 4, [1, 2, 3], 0, 9) };
+  },
+  prompt: R => ['Which digit is missing?', `${R.a} minus ${R.b} equals ${R.d}. Which digit is missing?`],
+  view(c) {
+    const R = c.R, q = '<span class="qd">?</span>';
+    c.board.innerHTML = `<div class="colwrap">${colHTML(R, { op: MINUS, labels: true, carryRow: false, top: [R.kind === 'at' ? q : R.t, R.kind === 'ao' ? q : R.o], bot: R.kind === 'b' ? q : R.b, ans: ['', R.kind === 'st' ? q : R.t, R.kind === 'so' ? q : R.so] })}</div>`;
+    const hint = {
+      so: `Take away the ones: ${R.o} ${MINUS} ${R.b}.`,
+      st: `The tens do not change. Look at the tens in ${R.a}.`,
+      ao: `Think: ? ${MINUS} ${R.b} = ${R.so}. Count on from ${R.so}.`,
+      at: 'The tens do not change. Look at the tens in the answer.',
+      b: `Think: ${R.o} ${MINUS} ? = ${R.so}. Count back from ${R.o} to ${R.so}.`
+    };
+    numAnswers(c, R.opts, R.ans, `Yes! ${R.a} ${MINUS} ${R.b} = ${R.d}.`, () => hint[R.kind]);
+  }
+});
+/* 3. Jump Back */
+GAMES.push({
+  id: 'nsline', sec: 'sub2', title: 'Jump Back', desc: 'The frog hops back 1 at a time. Where does it land?',
+  thumb: () => FROG_THUMB,
+  key: R => `${R.a}-${R.b}`,
+  make(level) {
+    const g = sub2Gen(level), lo = Math.max(0, g.a - 10), ws = lo + rand(g.d - lo + 1);
+    return { ...g, ws, ai: g.a - ws, li: g.d - ws };
+  },
+  prompt: R => { const t = `The frog is at ${R.a}. It hops back ${R.b} ${R.b === 1 ? 'time' : 'times'}. Where does it land?`; return [t, t]; },
+  view(c) { hopBackView(c, c.R, c.level <= 5); }
+});
+/* 4. Take Away Chain */
+GAMES.push({
+  id: 'nschain', sec: 'sub2', title: 'Take Away Chain', desc: 'Keep taking away. Fill every step of the chain.',
+  thumb: () => '<span class="mini-seq"><i>48</i><i>&minus;3</i><i>45</i><i class="q">?</i></span>',
+  key: R => `${R.a}:${R.steps.join(',')}`,
+  make(level) {
+    const k = level <= 5 ? 2 : 3;
+    for (let t = 0; t < 800; t++) {
+      const a = 10 + rand([29, 49, 59, 69, 79, 89, 99, 99, 99, 99][level - 1] - 9), o = a % 10;
+      if (o < k) continue;
+      let left = o; const steps = [];
+      for (let i = 0; i < k; i++) { const mx = Math.min(left - (k - 1 - i), level <= 5 ? 4 : 5); if (mx < 1) break; const b = 1 + rand(mx); steps.push(b); left -= b; }
+      if (steps.length !== k) continue;
+      const vals = [a]; steps.forEach(b => vals.push(vals[vals.length - 1] - b));
+      return { a, steps, vals };
+    }
+    return { a: 48, steps: [2, 3], vals: [48, 46, 43] };
+  },
+  prompt: R => ['Fill the chain. Keep taking away.', `Start at ${R.a}. ${R.steps.map(b => 'Take away ' + b).join(', then ')}.`],
+  view(c) {
+    const R = c.R; let i = 1;
+    const draw = () => `<div class="chain">${R.vals.map((v, j) => `${j ? `<span class="chop">${MINUS}${R.steps[j - 1]}</span>` : ''}<span class="nbox${j >= i ? ' q' : ''}">${j < i ? v : '?'}</span>`).join('')}</div>`;
+    const holder = html('<div></div>'); c.board.appendChild(holder);
+    const step = () => {
+      holder.innerHTML = draw();
+      const ans = R.vals[i], prev = R.vals[i - 1], b = R.steps[i - 1];
+      const opts = html(`<div class="opts">${numOptions(ans, 4, [1, 2, 3, 10], 10, 99).map(v => `<button class="ans num" type="button" data-v="${v}">${v}</button>`).join('')}</div>`);
+      holder.appendChild(opts);
+      $$('.ans', opts).forEach(btn => btn.addEventListener('click', () => {
+        if (c.done) return;
+        if (+btn.dataset.v === ans) {
+          btn.classList.add('right'); speak(String(ans)); i++;
+          if (i >= R.vals.length) { holder.innerHTML = draw(); c.good(`Yes! The chain ends at ${R.vals[R.vals.length - 1]}.`); } else { c.info(`${prev} ${MINUS} ${b} = ${ans}. Next step.`); setTimeout(step, 450); }
+        } else { btn.classList.add('wrong'); c.bad(`Take away the ones: ${prev % 10} ${MINUS} ${b}. Keep the tens: ${Math.floor(prev / 10)}.`); }
+      }));
+    };
+    step();
+  }
+});
+/* 5. Write the Answer */
+typeSubGame({
+  id: 'nstype', sec: 'sub2', title: 'Write the Answer', desc: 'Type the answer with the number pad.',
+  thumb: () => '<span class="mini-seq"><i>47</i><i>&minus;</i><i class="q">?</i></span>',
+  gen: sub2Gen,
+  form: (level) => level <= 3 ? 'diff' : level <= 5 ? pick(['diff', 'diff', 'm2']) : level <= 7 ? pick(['diff', 'm2', 'm1']) : pick(['diff', 'm2', 'm1']),
+  hint: R => R.form === 'diff' ? `Take away the ones: ${R.o} ${MINUS} ${R.b}. Keep the tens: ${R.t}.` : R.form === 'm2' ? `Think about the ones first: ${R.o} ${MINUS} ? = ${R.so}.` : `Think about the ones first: ? ${MINUS} ${R.b} = ${R.so}. Count on from ${R.so}.`
+});
+
+/* ---------- wiring ---------- */
+screen.addEventListener('click', e => {
+  const b = e.target.closest('[data-say]');
+  if (b) speak(b.dataset.say);
+});
+$('#backBtn').addEventListener('click', () => { sfx.pick(); hush(); if (backFn) backFn(); });
+$('#soundBtn').addEventListener('click', e => {
+  state.sound = !state.sound;
+  e.currentTarget.setAttribute('aria-pressed', String(state.sound));
+  if (!state.sound) hush(); else sfx.pick();
+});
+/*T2*/
+function message(h, p) { setBack(null); mount(html(`<section><h1>${esc(h)}</h1><p class="lead">${esc(p)}</p></section>`)); }
+window.__island = { chooseStudent, who, results, message };
+if (window.MI) mount(html('<section><p class="lead">Loading…</p></section>')); else home();
+})();
+</script>
+
+<button class="btn small alt" id="miBack" type="button">Back to Math Island</button>
+<script type="module" src="island.js"></script>
+</html>

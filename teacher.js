@@ -60,6 +60,11 @@ window.__resolveClaude({ use: async n => n === "db" ? db : n === "user" ? { can:
 // Students may only spend what the shop price list allows, so the list lives in the database.
 setDoc(doc(fs, "shop", "prices"), { prices: Object.fromEntries(SHOP.map(i => [i.id, i.price])) }).catch(() => {});
 
+if (CLASSES.some(c => /^9S$/i.test(c))) {   // 9S Island: results of the 9S games
+  const ib = document.createElement("button"); ib.className = "ghost small"; ib.id = "islandBtn"; ib.type = "button"; ib.textContent = "9S Island";
+  ib.onclick = () => { location.href = "island9s.html"; };
+  $("outBtn").before(ib);
+}
 if (ADMIN) { // the button is only created for the owner; other teachers' pages never contain it
   const dv = document.createElement("button"); dv.className = "ghost small"; dv.id = "devBtn"; dv.type = "button"; dv.textContent = "Developer";
   dv.onclick = () => { location.href = "developer.html"; };
