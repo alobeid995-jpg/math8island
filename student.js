@@ -82,9 +82,7 @@ function render() {
       <div class="pk-acts"><button class="ghost" data-act="moreAv" type="button">Show more</button><button class="ghost" data-act="closeAv" type="button">Close</button></div></section>` : "";
   const items = SHOP.filter(x => x.cat === shopCat);
   const recent = st.log.slice(-8).reverse();
-  const island = /^9S$/i.test(st.cls) ? `<section class="card island-cta"><h3>9S Island</h3><p>Your games for today's lesson.</p><a class="primary" href="island9s.html">Play my games</a></section>` : "";
   $("app").innerHTML = `
-    ${island}
     <section class="card">
       <div class="who2">${avatarHTML(st, "xl")}<div>
         <div class="nm2">${nameHTML(st)}${titleTag(st)}</div>

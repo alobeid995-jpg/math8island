@@ -1,9 +1,7 @@
 // Connects the 9S Island games page to Math Island: who is playing, and where the answers go.
 import { auth, fs, doc, getDoc, setDoc, collection, getDocs, query, where, whenUser, profileOf, signOut } from "./fb.js";
 
-// Which Math Island student is which island player. Student ID first, first name as a fallback.
-const BY_ID = { "18-00058": "ali", "15-00003": "abood", "16-00107": "saud" };
-const BY_NAME = { ali: "ali", abdulla: "abood", abdullah: "abood", abood: "abood", saud: "saud" };
+import { playerOf } from "./islandmap.js";
 
 const u = await whenUser();
 const p = u && await profileOf(u.uid);
@@ -29,11 +27,14 @@ const db = {
 };
 window.__resolveIsland(n => n === "db" ? db : null);
 
-if (mode === "teacher") { api.who(); }
+const game = (location.hash.match(/[#&]g=([\w-]+)/) || [])[1];
+if (window.MI_EMBED) document.body.classList.add("mi-embed");
+if (mode === "teacher") { if (game && api.setStudent("ali")) api.openGame(game); else api.who(); }   // the teacher can try a game; nothing is saved for him
 else {
-  const id = me && (BY_ID[String(me.enrollment || "").trim()] || BY_NAME[String(me.name || "").trim().split(/\s+/)[0].toLowerCase()]);
+  const id = playerOf(me);
   document.body.classList.add("mi-student");
-  if (id) api.chooseStudent(id);
-  else api.message("Your games are not ready yet", "Ask your teacher to add you to 9S Island.");
+  if (!id) api.message("Your games are not ready yet", "Ask your teacher.");
+  else if (game) { api.setStudent(id); api.openGame(game); }
+  else api.chooseStudent(id);
 }
 document.getElementById("miBack").onclick = () => { location.href = mode === "teacher" ? "teacher.html" : "student.html"; };

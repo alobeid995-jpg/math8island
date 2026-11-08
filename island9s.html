@@ -1,10 +1,10 @@
 <!doctype html>
 <html lang="en">
 <head>
-<script>window.MI = true; window.__islandDb = new Promise(r => { window.__resolveIsland = r; }); window.claude = { use: async n => (await window.__islandDb)(n) };</script>
+<script>window.MI = true; window.MI_EMBED = /[#&]g=/.test(location.hash); window.__islandDb = new Promise(r => { window.__resolveIsland = r; }); window.claude = { use: async n => (await window.__islandDb)(n) };</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>9S Island</title>
+<title>My classwork · Math Island</title>
 <style>body{margin:0}:root{padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}img{max-width:100%}[hidden]{display:none!important}</style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -449,7 +449,7 @@ button.fcell{background:none;padding:0;cursor:pointer;font:inherit}
 .tools{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
 .mist{margin-top:10px}.mist summary{font-weight:800;cursor:pointer}.mist td{vertical-align:top;font-weight:600;font-size:14px}
 .mi-student #swbtn{display:none!important}
-#miBack{position:fixed;left:10px;bottom:10px;z-index:50}
+#miBack{position:fixed;left:10px;bottom:10px;z-index:50}.mi-embed #miBack{display:none!important}
 .rcard{border:3px solid var(--ink);border-radius:22px;background:var(--surface);padding:14px;margin:0 0 16px;box-shadow:0 5px 0 var(--ink)}
 .rhead{display:flex;align-items:center;gap:12px;margin-bottom:8px}.rhead .av{width:52px;height:52px}
 .rhead h2{margin:0;font-family:var(--f-display);font-weight:400;font-size:28px}.rhead p{margin:0;font-weight:800;color:var(--muted)}
@@ -530,7 +530,7 @@ body.big .frames .frame{grid-template-columns:repeat(5,48px)}body.big .frames .f
     </button>
     <div class="brand">
       <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M5 27a15 15 0 0 1 30 0z" fill="var(--sun)" stroke="var(--line)" stroke-width="2.5" stroke-linejoin="round"/><path d="M2 32q4.5-5 9 0t9 0t9 0t9 0" fill="none" stroke="var(--teal)" stroke-width="3.5" stroke-linecap="round"/></svg>
-      <span>9S Island</span>
+      <span>My classwork</span>
     </div>
     <button class="icon-btn" id="soundBtn" type="button" aria-label="Sound" aria-pressed="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z"/><g class="on"><path d="M16.5 8.5a5 5 0 010 7"/><path d="M19 6a8.5 8.5 0 010 12"/></g><path class="off" d="M17 9l5 6M22 9l-5 6"/></svg>
@@ -851,6 +851,7 @@ function who() {
   mount(sec);
 }
 function home() {
+  if (window.MI_EMBED) { try { parent.postMessage('mi-close', location.origin); } catch (e) {} return; }
   if (!curStudent) { who(); return; }
   hush(); setBack(null);
   const ST = STUDENTS.find(x => x.id === curStudent), GR = GROUPS.find(x => x.id === curGroup);
@@ -2870,8 +2871,10 @@ $('#soundBtn').addEventListener('click', e => {
   if (!state.sound) hush(); else sfx.pick();
 });
 /*T2*/
+function setStudent(id) { const ST = STUDENTS.find(x => x.id === id); if (!ST) return false; curStudent = id; curGroup = ST.group; document.body.classList.toggle('big', ST.group === 'g2'); return true; }
+function openGame(id) { const g = GAMES.find(x => x.id === id); if (g) levelSelect(g); else message('Game not found', 'Ask your teacher.'); }
 function message(h, p) { setBack(null); mount(html(`<section><h1>${esc(h)}</h1><p class="lead">${esc(p)}</p></section>`)); }
-window.__island = { chooseStudent, who, results, message };
+window.__island = { chooseStudent, who, results, message, setStudent, openGame };
 if (window.MI) mount(html('<section><p class="lead">Loading…</p></section>')); else home();
 })();
 </script>

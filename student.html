@@ -1197,7 +1197,13 @@ header.book { padding-bottom: 70px; }
 .wrap{max-width:760px} #app{display:grid;gap:16px} #app .card h3{margin:0;font-family:var(--f-display);font-size:20px}
 .topbar{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .topbar h1{font-size:clamp(24px,5vw,32px)}
-.island-cta a{display:inline-block;padding:12px 20px;font-weight:800;text-decoration:none;border-radius:10px;background:#1f4fd8;color:#fff;border:3px solid var(--edge)} .island-cta p{margin:4px 0 10px}
+.wk-box{display:grid;gap:12px} .wk-lesson{display:grid;gap:8px} .wk-lh b{display:block;font-size:17px} .wk-lh small{color:var(--muted)}
+.wk-games{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
+.wk-game{display:grid;gap:2px;text-align:left;padding:10px 12px;border:2px solid var(--edge);border-radius:10px;background:var(--card);color:var(--ink);font:inherit;cursor:pointer}
+.wk-game b{font-size:16px} .wk-game small{color:var(--muted);font-size:13px} .wk-game.done{border-color:#1e7a46}
+.wk-play{position:fixed;inset:0;z-index:9999;background:#fff;display:flex;flex-direction:column} .wk-play iframe{flex:1;border:0;width:100%}
+.wk-x{align-self:flex-end;margin:8px;padding:8px 14px;font:inherit;font-weight:800;border:2px solid #151412;border-radius:8px;background:#fffdf4;cursor:pointer}
+body.wk-noscroll{overflow:hidden}
 .wk-list{display:grid;gap:8px} .wk-card{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border:2px solid var(--edge);border-radius:10px;background:var(--card)}
 .wk-card small{display:block;color:var(--muted)} .wk-card.done{opacity:.75} .wk-tick{font-weight:800;color:#1e7a46}
 .wk-do form{display:grid;gap:14px} .wk-item p{margin:0 0 6px;font-size:17px} .wk-item input:not([type]){font:inherit;font-size:18px;padding:10px 12px;width:100%;max-width:420px}
