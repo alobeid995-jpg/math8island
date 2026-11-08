@@ -973,7 +973,15 @@ header.book .acct{position:relative;z-index:1;display:flex;gap:6px;flex-wrap:wra
 .lg-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .tab.addcls{border-style:dashed;font-weight:700}
 .cl-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)}
-#workModal .sheet{width:min(1100px,100%)}
+#workModal .sheet,#progressModal .sheet{width:min(1100px,100%)}
+.pg-card{border:2px solid var(--edge);border-radius:12px;padding:12px;margin:12px 0;background:var(--card)}
+.pg-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:6px}.pg-head b{font-size:18px}.pg-head small{margin-left:8px;color:var(--muted)}
+.pg-pc{font-weight:800}.pg-pc.hi{color:#1e7a46}.pg-pc.mid{color:#9a6a00}.pg-pc.lo{color:#b3261e}
+.pg-mist{margin-top:8px}.pg-mist summary{font-weight:800;cursor:pointer}.pg-mist td{vertical-align:top}
+.pg-link{display:inline-flex;align-items:center;text-decoration:none;color:inherit}
+@media print{ body.pg-printing > #progressModal:not(#a):not(#b){display:block !important;position:static !important;background:#fff !important;padding:0 !important}
+  body.pg-printing #progressModal .sheet{width:100% !important;max-height:none !important;overflow:visible !important;background:#fff;box-shadow:none !important;border:0 !important}
+  body.pg-printing > :not(#progressModal){display:none !important} }
 .wk-f{display:grid;gap:4px;margin:8px 0;font-weight:700;font-size:14px}.wk-f input{font:inherit;font-weight:400;padding:8px 10px}
 .wk-cls{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;font-weight:400}
 .wk-qs{display:grid;gap:12px;padding-left:22px}.wk-qs textarea{width:100%;font:inherit;padding:8px}
@@ -3895,6 +3903,7 @@ header.book { padding-bottom: 70px; }
 
 </style>
 
+<div class="modal" id="progressModal" hidden><div class="sheet pg-sheet" role="dialog" aria-modal="true" aria-label="Games progress"><div id="pgBody"></div></div></div>
 <div class="modal" id="workModal" hidden><div class="sheet wk-sheet" role="dialog" aria-modal="true" aria-label="Classwork"><div id="wkBody"></div></div></div>
 <div class="modal" id="classModal" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="clTitle">
