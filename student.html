@@ -721,6 +721,7 @@ input, select, textarea { border-width: 1.5px; border-radius: 10px; }
 .hrow { padding: 10px 0; }
 .sg { border-width: 1.5px; }
 .endnote { font-size: 13px; }
+.nmedit input { font: inherit; padding: 6px 8px; min-width: 180px; }
 
 /* Student of the day / week strip */
 .topstrip { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 12px; }
@@ -961,7 +962,6 @@ header.book .sync { z-index: 1; background: rgba(0,0,0,.4); border-color: rgba(2
 .f-fire::before { border-radius: 50% 0 50% 50%; }
 .f-void { --r1: #1a0b3b; --r2: #7b2cff; --r3: #ff3df2; --r4: #0b0620; --r5: #3df0ff; --gem: #3df0ff; --spd: 5s; }
 @keyframes fburn { 50% { box-shadow: inset 0 2px 1px rgba(255,255,255,.85), inset 0 -3px 3px rgba(0,0,0,.5), 0 3px 5px rgba(0,0,0,.4), 0 0 20px 3px var(--gl); } }
-@media (prefers-reduced-motion: reduce) { .avw.fr, .avw.fr::after { animation: none !important; } }
 /* ===== Math Island — "Elements" design layer =====
    After Oliver Byrne's 1847 colour Euclid: three primaries, black construction lines,
    heavy type, figures that do the explaining. */

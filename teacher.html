@@ -721,6 +721,7 @@ input, select, textarea { border-width: 1.5px; border-radius: 10px; }
 .hrow { padding: 10px 0; }
 .sg { border-width: 1.5px; }
 .endnote { font-size: 13px; }
+.nmedit input { font: inherit; padding: 6px 8px; min-width: 180px; }
 
 /* Student of the day / week strip */
 .topstrip { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 12px; }
@@ -1150,7 +1151,7 @@ try { const c = localStorage.getItem("xp_class"); if (CLASSES.includes(c)) cls =
 
 let db = null;          // db namespace, or null when running locally only
 let students = [];      // [{id, name, xp, log:[{title,xp,kind,at}]}]
-let pendingDelete = null;
+let pendingDelete = null, editNameId = null;
 let openId = null;      // the one student whose options are showing
 let view = "students";  // "students" or "cup"
 try { const v0 = localStorage.getItem("xp_view"); if (v0 === "cup" || v0 === "shop" || v0 === "hub" || v0 === "board") view = v0; } catch {}
@@ -1820,6 +1821,20 @@ function setSync(state, text) {
 function showNotice(text) { const n = $("notice"); n.textContent = text; n.hidden = !text; }
 
 /* ---------- persistence ---------- */
+function saveName(id) {
+  const st = students.find(s => s.id === id), i = $("en-" + id); if (!st || !i) return;
+  const v = i.value.replace(/\s+/g, " ").trim();
+  if (!v) { toast("Type a name first."); i.focus(); return; }
+  if (v === st.name) { editNameId = null; render(); return; }
+  const old = st.name; st.name = v; editNameId = null; render(); save(st);
+  if (db) db.collection("logins").doc(id).update({ name: v }).catch(() => {});   // keep the login list in step (if he has a login)
+  toast(`${old} is now ${v}`);
+}
+document.addEventListener("keydown", e => {
+  const i = e.target.closest && e.target.closest("[data-enter]"); if (!i) return;
+  if (e.key === "Enter") { e.preventDefault(); saveName(i.dataset.enter); }
+  if (e.key === "Escape") { editNameId = null; render(); }
+});
 async function save(st) {
   const body = { name: st.name, cls: st.cls, enrollment: st.enrollment || "", xp: st.xp, log: st.log, createdAt: st.createdAt || Date.now(), bonusWeek: st.bonusWeek || "", counts: { ...(st.counts || {}) },
     spent: st.spent || 0, carry: st.carry || 0, owned: st.owned || [], eq: eqOf(st), reqs: st.reqs || [], buys: st.buys || 0, lastBuy: st.lastBuy || "", hist: (st.hist || []).slice(-600), sp: (st.sp || []).slice(-200), note: String(st.note || "").slice(0, 1500), certs: (st.certs || []).slice(-100) };
@@ -3260,6 +3275,9 @@ function renderClass(students) {
         <button class="primary mail" data-act="email" data-id="${st.id}">Write parent email</button>
         <button class="ghost" data-act="report" data-id="${st.id}">Student report</button>
         <button class="ghost" data-act="cert" data-id="${st.id}">Certificate</button>
+        ${readOnly ? "" : editNameId === st.id
+          ? `<span class="confirm nmedit"><input id="en-${st.id}" data-enter="${st.id}" value="${esc(st.name)}" maxlength="60" aria-label="New name for ${esc(st.name)}"><button class="primary small" data-act="nameSave" data-id="${st.id}">Save name</button><button class="ghost small" data-act="nameNo">Cancel</button></span>`
+          : `<button class="ghost" data-act="nameEdit" data-id="${st.id}">Edit name</button>`}
         ${readOnly ? "" : pendingDelete === st.id
           ? `<span class="confirm">Remove? <button class="danger small" data-act="delYes" data-id="${st.id}">Remove</button><button class="ghost small" data-act="delNo">Keep</button></span>`
           : `<button class="ghost" data-act="delAsk" data-id="${st.id}" aria-label="Remove ${esc(st.name)}">Remove</button>`}
@@ -3279,6 +3297,9 @@ document.addEventListener("click", e => {
     case "neg": award(id, false); break;
     case "undo": undo(id); break;
     case "email": openEmail(id); break;
+    case "nameEdit": editNameId = id; pendingDelete = null; render(); setTimeout(() => { const i = $("en-" + id); if (i) { i.focus(); i.select(); } }, 30); break;
+    case "nameNo": editNameId = null; render(); break;
+    case "nameSave": saveName(id); break;
     case "delAsk": pendingDelete = id; render(); break;
     case "delNo": pendingDelete = null; render(); break;
     case "delYes": {
