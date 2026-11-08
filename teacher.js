@@ -1,6 +1,7 @@
 import { auth, fs, firebaseConfig, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, collection, query, where, writeBatch, setBase, bcol, bdoc, signOut, whenUser, profileOf, emailFor, pinKey,
   initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js";
 import { db } from "./fbdb.js";
+import { openWork } from "./teacherwork.js";
 
 const $ = id => document.getElementById(id);
 const esc2 = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -64,6 +65,7 @@ if (ADMIN) { // the button is only created for the owner; other teachers' pages 
   dv.onclick = () => { location.href = "developer.html"; };
   $("outBtn").before(dv);
 }
+$("workBtn").onclick = () => openWork();
 $("outBtn").onclick = async () => { await signOut(auth); location.href = "index.html"; };
 
 /* ---------- student logins ---------- */

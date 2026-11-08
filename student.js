@@ -1,4 +1,5 @@
 import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js";
+import { initWork } from "./stuwork.js";
 
 const sub = (t, n) => t.split("{n}").join(n);
 let me = null, ref = null, shopCat = "frame", confirmId = "", pickerOpen = false, seeds = [], loaded = false;
@@ -23,6 +24,7 @@ async function start() {
   if (lg && lg.first === true) { await choosePin(u, lref, String(lg.pin || "")); }
   onSnapshot(ref, snap => { loaded = true; me = snap.exists() ? fromDoc(snap) : null; render(); },
     () => { loaded = true; me = null; render(); });
+  initWork(p, () => me, toast).catch(() => {});
 }
 
 function choosePin(u, lref, startPin) {

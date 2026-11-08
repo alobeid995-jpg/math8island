@@ -973,6 +973,17 @@ header.book .acct{position:relative;z-index:1;display:flex;gap:6px;flex-wrap:wra
 .lg-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .tab.addcls{border-style:dashed;font-weight:700}
 .cl-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)}
+#workModal .sheet{width:min(1100px,100%)}
+.wk-f{display:grid;gap:4px;margin:8px 0;font-weight:700;font-size:14px}.wk-f input{font:inherit;font-weight:400;padding:8px 10px}
+.wk-cls{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;font-weight:400}
+.wk-qs{display:grid;gap:12px;padding-left:22px}.wk-qs textarea{width:100%;font:inherit;padding:8px}
+.wk-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.wk-row input{flex:1;min-width:180px;font:inherit;padding:6px 8px}.wk-row select{font:inherit}
+.wk-acts{display:flex;gap:6px;flex-wrap:wrap}.wk-res{overflow-x:auto}.wk-res td{vertical-align:top}
+.wk-ok{background:#e3f4e8}.wk-no{background:#fde6e4}.wk-miss td{color:var(--muted)}
+.wk-q{margin-top:10px}.wk-q li{margin:4px 0}
+@media print{ body.wk-printing > #workModal:not(#a):not(#b){display:block !important;position:static !important;background:#fff !important;padding:0 !important}
+  body.wk-printing #workModal .sheet{width:100% !important;max-height:none !important;overflow:visible !important;color:#000;background:#fff;box-shadow:none !important;border:0 !important}
+  body.wk-printing > :not(#workModal){display:none !important} body.wk-printing .wk-q{display:block} body.wk-printing details.wk-q > *{display:block} }
 .lg-stale{margin:8px 0;padding:10px 12px;border:2px solid #b8860b;border-radius:8px;background:#fff6d6;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .lg-old{color:#b3261e;font-weight:700}
 .lg-msg{font-size:13px;color:var(--muted);white-space:pre-line}
@@ -1001,7 +1012,7 @@ header.book .acct{position:relative;z-index:1;display:flex;gap:6px;flex-wrap:wra
       <div class="formula" aria-label="Effort adds up">∑ effort = progress</div>
     </div>
     <div class="sync"><span class="dot" id="syncDot"></span><span id="syncText">Connecting…</span></div>
-    <div class="acct"><button class="ghost small" id="loginsBtn" type="button">Student logins</button><button class="ghost small" id="impBtn" type="button">Import old data</button><input type="file" id="impFile" accept=".json,application/json" hidden><button class="ghost small" id="outBtn" type="button">Log out</button></div>
+    <div class="acct"><button class="ghost small" id="workBtn" type="button">Classwork</button><button class="ghost small" id="loginsBtn" type="button">Student logins</button><button class="ghost small" id="impBtn" type="button">Import old data</button><input type="file" id="impFile" accept=".json,application/json" hidden><button class="ghost small" id="outBtn" type="button">Log out</button></div>
     
     <div class="deco" aria-hidden="true">
       <span class="d1">a² + b² = c²</span>
@@ -3884,6 +3895,7 @@ header.book { padding-bottom: 70px; }
 
 </style>
 
+<div class="modal" id="workModal" hidden><div class="sheet wk-sheet" role="dialog" aria-modal="true" aria-label="Classwork"><div id="wkBody"></div></div></div>
 <div class="modal" id="classModal" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="clTitle">
     <h3 id="clTitle">Your classes</h3>
