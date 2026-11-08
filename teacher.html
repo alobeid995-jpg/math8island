@@ -1153,7 +1153,7 @@ try { const c = localStorage.getItem("xp_class"); if (CLASSES.includes(c)) cls =
 
 let db = null;          // db namespace, or null when running locally only
 let students = [];      // [{id, name, xp, log:[{title,xp,kind,at}]}]
-let pendingDelete = null, editNameId = null;
+let pendingDelete = null, editNameId = null, moveId = null;
 let openId = null;      // the one student whose options are showing
 let view = "students";  // "students" or "cup"
 try { const v0 = localStorage.getItem("xp_view"); if (v0 === "cup" || v0 === "shop" || v0 === "hub" || v0 === "board") view = v0; } catch {}
@@ -3280,6 +3280,9 @@ function renderClass(students) {
         ${readOnly ? "" : editNameId === st.id
           ? `<span class="confirm nmedit"><input id="en-${st.id}" data-enter="${st.id}" value="${esc(st.name)}" maxlength="60" aria-label="New name for ${esc(st.name)}"><button class="primary small" data-act="nameSave" data-id="${st.id}">Save name</button><button class="ghost small" data-act="nameNo">Cancel</button></span>`
           : `<button class="ghost" data-act="nameEdit" data-id="${st.id}">Edit name</button>`}
+        ${readOnly || CLASSES.length < 2 ? "" : moveId === st.id
+          ? `<span class="confirm nmedit">Move to <select id="mv-${st.id}" aria-label="New class for ${esc(st.name)}">${CLASSES.filter(c => c !== st.cls).map(c => `<option>${esc(c)}</option>`).join("")}</select><button class="primary small" data-act="moveSave" data-id="${st.id}">Move</button><button class="ghost small" data-act="moveNo">Cancel</button></span>`
+          : `<button class="ghost" data-act="moveAsk" data-id="${st.id}">Change class</button>`}
         ${readOnly ? "" : pendingDelete === st.id
           ? `<span class="confirm">Remove? <button class="danger small" data-act="delYes" data-id="${st.id}">Remove</button><button class="ghost small" data-act="delNo">Keep</button></span>`
           : `<button class="ghost" data-act="delAsk" data-id="${st.id}" aria-label="Remove ${esc(st.name)}">Remove</button>`}
@@ -3301,6 +3304,17 @@ document.addEventListener("click", e => {
     case "email": openEmail(id); break;
     case "nameEdit": editNameId = id; pendingDelete = null; render(); setTimeout(() => { const i = $("en-" + id); if (i) { i.focus(); i.select(); } }, 30); break;
     case "nameNo": editNameId = null; render(); break;
+    case "moveAsk": moveId = id; editNameId = null; pendingDelete = null; render(); break;
+    case "moveNo": moveId = null; render(); break;
+    case "moveSave": {
+      const st = students.find(s => s.id === id), sel = $("mv-" + id); if (!st || !sel) break;
+      const from = st.cls, to = sel.value; moveId = null;
+      if (!to || to === from) { render(); break; }
+      st.cls = to; openId = null; render(); save(st);
+      if (db) db.collection("logins").doc(id).update({ cls: to }).catch(() => {});   // his login moves with him
+      toast(`${st.name} moved from ${from} to ${to}. XP and items kept.`);
+      break;
+    }
     case "nameSave": saveName(id); break;
     case "delAsk": pendingDelete = id; render(); break;
     case "delNo": pendingDelete = null; render(); break;
