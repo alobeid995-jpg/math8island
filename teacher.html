@@ -473,6 +473,11 @@ button, .srow { touch-action: manipulation; -webkit-tap-highlight-color: transpa
 .shop-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
 .shop-tab { background: var(--card); color: var(--ink); border: 1px solid var(--line); border-radius: 99px; padding: 7px 14px; font-size: 13px; font-weight: 600; }
 .shop-tab[aria-pressed="true"] { background: var(--ink); color: var(--card); border-color: var(--ink); }
+.tier-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 2px; }
+.tier-tab { background: transparent; color: var(--ink); border: 2px solid var(--line); border-radius: 10px; padding: 6px 14px; font-size: 13px; font-weight: 700; }
+.tier-tab small { opacity: .6; font-weight: 600; }
+.tier-tab[aria-pressed="true"] { border-color: #151515; background: #f2b31b; color: #151515; }
+.tier-tab[aria-pressed="true"] small { opacity: .75; }
 .shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
 .sitem { border: 1px solid var(--line); border-radius: 12px; padding: 12px 10px; display: grid; gap: 6px; justify-items: center; align-content: start; text-align: center; background: var(--card); min-width: 0; }
 .sitem.eq { border-color: var(--good); box-shadow: 0 0 0 1px var(--good) inset; }
@@ -1601,6 +1606,14 @@ function shopPreview(it, st) {
     default: return `<span class="picon">${it.icon}</span>`;
   }
 }
+// Avatars are split in three tiers so each tab stays short. The tier is fixed per avatar (prices can change).
+const AV_TIERS = [["basic", "Basic"], ["epic", "Epic"], ["legendary", "Legendary"]];
+const AV_TIER = {"e-slime": "basic", "e-zombie": "basic", "e-robot": "basic", "e-ghost": "basic", "e-skeleton": "basic", "e-vampire": "basic", "e-alien": "basic", "e-dragon": "basic", "e-pirate": "basic", "s-slime": "basic", "s-zombie": "basic", "s-robot": "basic", "e-knight": "epic", "e-golem": "epic", "e-frost": "epic", "e-wizard": "epic", "e-ninja": "epic", "e-pharaoh": "epic", "s-ghost": "epic", "s-bone": "epic", "s-bat": "epic", "s-alien": "epic", "s-wyvern": "epic", "s-knight": "epic", "s-pirate": "epic", "s-stone": "epic", "e-cosmic": "legendary", "e-phoenix": "legendary", "s-icedragon": "legendary", "s-sorcerer": "legendary", "s-ninja": "legendary", "s-pharaoh": "legendary", "s-astro": "legendary", "s-phoenix": "legendary"};
+let shopTier = "basic";
+const setTier = k => { shopTier = k; };
+const tierOf = it => AV_TIER[it.id] || "basic";
+const shopList = cat => SHOP.filter(x => x.cat === cat && (cat !== "skin" || tierOf(x) === shopTier));
+const tierBar = act => `<div class="tier-tabs" role="tablist" aria-label="Avatar tiers">${AV_TIERS.map(([k, l]) => `<button class="tier-tab" type="button" data-act="${act}" data-tier="${k}" aria-pressed="${k === shopTier}">${l} <small>${SHOP.filter(x => x.cat === "skin" && tierOf(x) === k).length}</small></button>`).join("")}</div>`;
 function applyPrices(m) { if (!m) return; SHOP.forEach(i => { const v = Number(m[i.id]); if (Number.isFinite(v) && v >= 0 && m[i.id] !== "") i.price = Math.round(v); }); }
 function shopCard(st, it) {
   const perk = it.cat === "perk", have = !perk && st.owned.includes(it.id);
@@ -1623,7 +1636,8 @@ function renderShop() {
     <div class="shop-hd">${avatarHTML(st, "lg")}<div><h3 id="shopTitle">XP Shop</h3><div class="nm2">${nameHTML(st)}${titleTag(st)}</div>
       <div class="wallet"><b>${walletOf(st)}</b> XP to spend<small>earned ${st.xp}${st.carry ? " · carried " + st.carry : ""} · spent ${st.spent || 0}</small></div></div></div>
     <div class="shop-tabs">${SHOP_CATS.map(c => `<button class="shop-tab" data-act="shopCat" data-cat="${c.key}" aria-pressed="${c.key === shopCat}">${c.label}</button>`).join("")}</div>
-    <div class="shop-grid">${SHOP.filter(x => x.cat === shopCat).map(it => shopCard(st, it)).join("")}</div>
+    ${shopCat === "skin" ? tierBar("shopTier") : ""}
+    <div class="shop-grid">${shopList(shopCat).map(it => shopCard(st, it)).join("")}</div>
     ${shopCat === "perk" && pend.length ? `<div class="pend"><div class="bb-hd">Waiting for teacher approval</div>${pend.map(it => `<div class="ent pos"><span>${it.icon} ${esc(it.name)}</span><span>pending</span></div>`).join("")}</div>` : ""}
     <div class="acts"><button class="ghost" data-act="shopClose">Close</button></div></div>`;
   m.hidden = false; m.querySelector(".sheet").scrollTop = keep;
@@ -1639,7 +1653,7 @@ function renderShopView() {
   $("shopView").innerHTML = `<div class="shop-intro"><h2>XP Shop</h2><p>Students spend XP here. Open a student in the list and press Shop. Spending never lowers their level or badges.</p>${window.__owner ? `<p class="pxbar"><b>Set prices:</b> change any number below, then save. Students see the new price straight away. <button class="primary small" type="button" id="pxSave" data-act="savePrices" ${Object.keys(priceEdits).length ? "" : "disabled"}>Save prices</button></p>` : ""}</div>
     ${pend.length ? `<section class="card"><h3>Old perk requests (${pend.length})</h3>${pendHTML}</section>` : ""}
     <div class="shop-tabs" role="tablist" aria-label="Shop categories">${SHOP_CATS.map(c => `<button class="shop-tab" role="tab" data-act="shopViewCat" data-cat="${c.key}" aria-pressed="${c.key === shopViewCat}" aria-selected="${c.key === shopViewCat}">${c.label} <small>${SHOP.filter(x => x.cat === c.key).length}</small></button>`).join("")}</div>
-    ${SHOP_CATS.filter(c => c.key === shopViewCat).map(c => `<section class="card"><h3>${c.label}</h3><div class="shop-grid">${SHOP.filter(x => x.cat === c.key).map(it => `<div class="sitem"><div class="prev">${shopPreview(it, demo)}</div><b>${esc(it.name)}</b>${window.__owner ? `<label class="pxe"><input type="number" inputmode="numeric" min="0" max="99999" step="10" data-pid="${it.id}" value="${priceEdits[it.id] ?? it.price}" aria-label="Price of ${esc(it.name)}"> XP</label>` : `<span class="pr">${it.price} XP</span>`}${it.desc ? `<small>${esc(it.desc)}</small>` : ""}</div>`).join("")}</div></section>`).join("")}`;
+    ${SHOP_CATS.filter(c => c.key === shopViewCat).map(c => `<section class="card"><h3>${c.label}</h3>${c.key === "skin" ? tierBar("shopViewTier") : ""}<div class="shop-grid">${shopList(c.key).map(it => `<div class="sitem"><div class="prev">${shopPreview(it, demo)}</div><b>${esc(it.name)}</b>${window.__owner ? `<label class="pxe"><input type="number" inputmode="numeric" min="0" max="99999" step="10" data-pid="${it.id}" value="${priceEdits[it.id] ?? it.price}" aria-label="Price of ${esc(it.name)}"> XP</label>` : `<span class="pr">${it.price} XP</span>`}${it.desc ? `<small>${esc(it.desc)}</small>` : ""}</div>`).join("")}</div></section>`).join("")}`;
 }
 function announceBuy(name, it) {
   if (sndMode === "off") return;
@@ -3405,6 +3419,8 @@ document.addEventListener("click", e => {
     case "shopCat": shopCat = b.dataset.cat; shopConfirm = ""; renderShop(); break;
     case "savePrices": (async () => { const m = {}; for (const k in priceEdits) { const v = Number(priceEdits[k]); if (priceEdits[k] === "" || !Number.isFinite(v) || v < 0 || v > 99999) { toast("Check the prices: use whole numbers from 0 to 99999."); return; } m[k] = Math.round(v); }
       try { await window.__savePrices(m); applyPrices(m); for (const k in priceEdits) delete priceEdits[k]; toast("Prices saved."); renderShopView(); } catch (er) { toast("Could not save prices. Check your internet."); } })(); break;
+    case "shopTier": setTier(b.dataset.tier); shopConfirm = ""; renderShop(); break;
+    case "shopViewTier": setTier(b.dataset.tier); renderShopView(); break;
     case "shopViewCat": shopViewCat = b.dataset.cat; renderShopView(); break;
     case "shopAsk": shopConfirm = b.dataset.item; renderShop(); break;
     case "shopNo": shopConfirm = ""; renderShop(); break;

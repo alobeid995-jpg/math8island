@@ -473,6 +473,11 @@ button, .srow { touch-action: manipulation; -webkit-tap-highlight-color: transpa
 .shop-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
 .shop-tab { background: var(--card); color: var(--ink); border: 1px solid var(--line); border-radius: 99px; padding: 7px 14px; font-size: 13px; font-weight: 600; }
 .shop-tab[aria-pressed="true"] { background: var(--ink); color: var(--card); border-color: var(--ink); }
+.tier-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0 2px; }
+.tier-tab { background: transparent; color: var(--ink); border: 2px solid var(--line); border-radius: 10px; padding: 6px 14px; font-size: 13px; font-weight: 700; }
+.tier-tab small { opacity: .6; font-weight: 600; }
+.tier-tab[aria-pressed="true"] { border-color: #151515; background: #f2b31b; color: #151515; }
+.tier-tab[aria-pressed="true"] small { opacity: .75; }
 .shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
 .sitem { border: 1px solid var(--line); border-radius: 12px; padding: 12px 10px; display: grid; gap: 6px; justify-items: center; align-content: start; text-align: center; background: var(--card); min-width: 0; }
 .sitem.eq { border-color: var(--good); box-shadow: 0 0 0 1px var(--good) inset; }
@@ -957,11 +962,6 @@ header.book .sync { z-index: 1; background: rgba(0,0,0,.4); border-color: rgba(2
 @keyframes fspin { to { --ang: 360deg; } }
 @keyframes fshine { 0%, 55% { background-position: 130% 0; } 100% { background-position: -30% 0; } }
 .f-chalk { --r1: #f7fbff; --r2: #8d9db6; --r3: #ffffff; --r4: #56637a; --r5: #dfe8f4; --gem: #4fc3f7; --gl: rgba(150,180,220,.8); --spd: 14s; }
-.f-pencil { --r1: #ffe7a0; --r2: #d9861a; --r3: #fff2c0; --r4: #8f4f08; --r5: #f6b04a; --gem: #ff9800; --gl: rgba(240,150,30,.8); --spd: 14s; }
-.f-blue { --r1: #c8dbff; --r2: #2f5bd8; --r3: #eef4ff; --r4: #14307a; --r5: #6f94ff; --gem: #e3f2fd; --gl: rgba(60,110,255,.85); --spd: 11s; }
-.f-board { --r1: #c2f7d8; --r2: #1f9d62; --r3: #eafff2; --r4: #0a4a31; --r5: #52d28f; --gem: #ffd54f; --gl: rgba(40,200,120,.8); --spd: 11s; }
-.f-gold { --r1: #fff6c2; --r2: #e6a800; --r3: #fffbe3; --r4: #9c6200; --r5: #ffd84a; --gem: #e53935; --gl: rgba(255,190,0,.95); --spd: 7s; }
-.f-diamond { --r1: #d9fbff; --r2: #ffc9f0; --r3: #d3ffd8; --r4: #fff1a8; --r5: #c4d6ff; --gem: #ffffff; --gl: rgba(110,220,255,.95); --spd: 6s; }
 /* ===== Math Island — "Elements" design layer =====
    After Oliver Byrne's 1847 colour Euclid: three primaries, black construction lines,
    heavy type, figures that do the explaining. */
@@ -1625,6 +1625,14 @@ function shopPreview(it, st) {
     default: return `<span class="picon">${it.icon}</span>`;
   }
 }
+// Avatars are split in three tiers so each tab stays short. The tier is fixed per avatar (prices can change).
+const AV_TIERS = [["basic", "Basic"], ["epic", "Epic"], ["legendary", "Legendary"]];
+const AV_TIER = {"e-slime": "basic", "e-zombie": "basic", "e-robot": "basic", "e-ghost": "basic", "e-skeleton": "basic", "e-vampire": "basic", "e-alien": "basic", "e-dragon": "basic", "e-pirate": "basic", "s-slime": "basic", "s-zombie": "basic", "s-robot": "basic", "e-knight": "epic", "e-golem": "epic", "e-frost": "epic", "e-wizard": "epic", "e-ninja": "epic", "e-pharaoh": "epic", "s-ghost": "epic", "s-bone": "epic", "s-bat": "epic", "s-alien": "epic", "s-wyvern": "epic", "s-knight": "epic", "s-pirate": "epic", "s-stone": "epic", "e-cosmic": "legendary", "e-phoenix": "legendary", "s-icedragon": "legendary", "s-sorcerer": "legendary", "s-ninja": "legendary", "s-pharaoh": "legendary", "s-astro": "legendary", "s-phoenix": "legendary"};
+let shopTier = "basic";
+const setTier = k => { shopTier = k; };
+const tierOf = it => AV_TIER[it.id] || "basic";
+const shopList = cat => SHOP.filter(x => x.cat === cat && (cat !== "skin" || tierOf(x) === shopTier));
+const tierBar = act => `<div class="tier-tabs" role="tablist" aria-label="Avatar tiers">${AV_TIERS.map(([k, l]) => `<button class="tier-tab" type="button" data-act="${act}" data-tier="${k}" aria-pressed="${k === shopTier}">${l} <small>${SHOP.filter(x => x.cat === "skin" && tierOf(x) === k).length}</small></button>`).join("")}</div>`;
 function applyPrices(m) { if (!m) return; SHOP.forEach(i => { const v = Number(m[i.id]); if (Number.isFinite(v) && v >= 0 && m[i.id] !== "") i.price = Math.round(v); }); }
 </script>
 

@@ -81,7 +81,7 @@ function render() {
   const picker = pickerOpen ? `<section class="picker"><b>Pick a new look</b>
       <div class="pk-grid">${seeds.map(s => `<button class="pk" type="button" data-act="setAv" data-seed="${s}" aria-label="Use this avatar">${avatarHTML({ id: st.id, avatar: s, eq: st.eq }, "")}</button>`).join("")}</div>
       <div class="pk-acts"><button class="ghost" data-act="moreAv" type="button">Show more</button><button class="ghost" data-act="closeAv" type="button">Close</button></div></section>` : "";
-  const items = SHOP.filter(x => x.cat === shopCat);
+  const items = shopList(shopCat);
   const recent = st.log.slice(-8).reverse();
   $("app").innerHTML = `
     <section class="card">
@@ -96,6 +96,7 @@ function render() {
     </section>
     <section class="card"><h3>XP Shop</h3>
       <div class="shop-tabs">${SHOP_CATS.map(c => `<button class="shop-tab" data-act="cat" data-cat="${c.key}" aria-pressed="${c.key === shopCat}">${c.label}</button>`).join("")}</div>
+      ${shopCat === "skin" ? tierBar("tier") : ""}
       <div class="shop-grid">${items.map(it => card(st, it)).join("")}</div>
     </section>
     <section class="card"><h3>My latest XP</h3>
@@ -106,6 +107,7 @@ function render() {
 document.addEventListener("click", e => {
   const b = e.target.closest("[data-act]"); if (!b || !me) return;
   const a = b.dataset.act, id = b.dataset.item, it = id && shopItem(id);
+  if (a === "tier") { setTier(b.dataset.tier); confirmId = ""; render(); }
   if (a === "cat") { shopCat = b.dataset.cat; confirmId = ""; render(); }
   else if (a === "ask") { confirmId = id; render(); }
   else if (a === "noBuy") { confirmId = ""; render(); }
