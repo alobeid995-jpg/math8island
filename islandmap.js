@@ -2,7 +2,8 @@
 // so a new lesson shows up everywhere as soon as the new games page is uploaded).
 export const BY_ID = { "18-00058": "ali", "15-00003": "abood", "16-00107": "saud" };
 const BY_NAME = { ali: "ali", abdulla: "abood", abdullah: "abood", abood: "abood", saud: "saud" };
-export const playerOf = st => st ? (BY_ID[String(st.enrollment || "").trim()] || BY_NAME[String(st.name || "").trim().split(/\s+/)[0].toLowerCase()] || "") : "";
+// The 9S boys are matched by ID, or by first name but ONLY inside class 9S. A Grade 8 student called Ali is not the 9S Ali.
+export const playerOf = st => st ? (BY_ID[String(st.enrollment || "").trim()] || (/^9S$/i.test(String(st.cls || "").trim()) ? BY_NAME[String(st.name || "").trim().split(/\s+/)[0].toLowerCase()] : "") || "") : "";
 
 let cat = null;
 export async function catalog() {

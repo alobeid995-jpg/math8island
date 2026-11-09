@@ -2088,6 +2088,7 @@ document.addEventListener("keydown", e => {
   if (e.key === "Enter") { e.preventDefault(); saveName(i.dataset.enter); }
   if (e.key === "Escape") { editNameId = null; render(); }
 });
+const healedCls = new Set();
 async function save(st) {
   const body = { name: st.name, cls: st.cls, enrollment: st.enrollment || "", xp: st.xp, log: st.log, createdAt: st.createdAt || Date.now(), bonusWeek: st.bonusWeek || "", counts: { ...(st.counts || {}) },
     spent: st.spent || 0, carry: st.carry || 0, owned: st.owned || [], eq: eqOf(st), reqs: st.reqs || [], buys: st.buys || 0, lastBuy: st.lastBuy || "", hist: (st.hist || []).slice(-600), sp: (st.sp || []).slice(-200), note: String(st.note || "").slice(0, 1500), certs: (st.certs || []).slice(-100) };
@@ -3815,6 +3816,8 @@ render();
       const v = d.data() || {};
       return { id: d.id, name: String(v.name || "Unnamed"), cls: CLASSES.includes(v.cls) ? v.cls : (v.cls || CLASSES[0] || ""), enrollment: v.enrollment, xp: Number(v.xp) || 0, log: Array.isArray(v.log) ? v.log : [], createdAt: v.createdAt, bonusWeek: v.bonusWeek || "", avatar: typeof v.avatar === "number" ? v.avatar : undefined, counts: readCounts(v, Array.isArray(v.log) ? v.log : []), ...readShop(v) };
     });
+    // A student record with no class saved: write the class the teacher sees, so the student page shows it and class-only work targets him correctly.
+    snap.docs.forEach(d => { const v = d.data() || {}; if (!v.cls && !readOnly && !healedCls.has(d.id)) { healedCls.add(d.id); const st = students.find(x => x.id === d.id); if (st && st.cls) save(st); } });
     if (pendingDelete && !students.some(s => s.id === pendingDelete)) pendingDelete = null;
     setSync("ok", snap.metadata.hasPendingWrites ? "Saving…" : "Saved");
     render();
