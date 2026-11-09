@@ -74,8 +74,8 @@ input:focus-visible,button:focus-visible{outline:3px solid var(--yellow);outline
   </form>
 
   <form id="fT" hidden>
-    <label for="em">Email</label>
-    <input id="em" type="email" autocomplete="email" required>
+    <label for="em">Email or username</label>
+    <input id="em" type="text" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" required>
     <label for="pw">Password</label>
     <input id="pw" type="password" autocomplete="current-password" required minlength="6">
     <div id="inviteWrap" hidden>
@@ -114,15 +114,16 @@ $("fS").onsubmit = async e => {
   try { const id = $("sid").value, v = await loginVersion(id); const c = await signInWithEmailAndPassword(auth, emailFor(id, v), $("pin").value.trim()); await go(c.user.uid); }
   catch (er) { showErr(er.code === "no-profile" ? "This login is not set up yet. Ask your teacher." : friendlyError(er)); b.disabled = false; }
 };
+const tEmail = () => { const v = $("em").value.trim(); return v.includes("@") ? v : v.toLowerCase().replace(/\s+/g, "") + "@math8island.app"; };   // a short username works like an email
 $("fT").onsubmit = async e => {
   e.preventDefault(); showErr(""); const b = $("goT"); b.disabled = true;
   try {
     if (creating) {
-      const c = await createUserWithEmailAndPassword(auth, $("em").value.trim(), $("pw").value);
+      const c = await createUserWithEmailAndPassword(auth, tEmail(), $("pw").value);
       await setDoc(doc(fs, "users", c.user.uid), { role: "teacher", code: $("inv").value.trim(), name: $("em").value.trim() });
       await go(c.user.uid);
     } else {
-      const c = await signInWithEmailAndPassword(auth, $("em").value.trim(), $("pw").value); await go(c.user.uid);
+      const c = await signInWithEmailAndPassword(auth, tEmail(), $("pw").value); await go(c.user.uid);
     }
   } catch (er) {
     if (creating && auth.currentUser) { try { await auth.currentUser.delete(); } catch {} }   // do not leave a half-made account
