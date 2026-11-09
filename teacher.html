@@ -1115,7 +1115,7 @@ header.book .acct{position:relative;z-index:1;display:flex;gap:6px;flex-wrap:wra
 
   <section class="toolbar">
     <form class="add" id="addForm">
-      <input type="text" id="studentName" placeholder="Student name, or ID and name: 15-00003 Ali Ahmed" autocomplete="off" aria-label="Student name">
+      <input type="text" id="studentName" placeholder="Student name, or ID and name — or paste ID + name columns from Excel" autocomplete="off" aria-label="Student name">
       <button class="primary" type="submit" id="addBtn">Add student</button>
     </form>
     <div class="tools">
@@ -2124,7 +2124,7 @@ function handleWriteError(e) {
 function addStudent(name) {
   if (!cls) { toast("Add a class first, then add students to it."); return; }
   // "15-00003 ABDULLA KHALED" (ID first, as in the school system) also saves the student ID
-  const m = String(name).match(/^\s*(\d{2}-\d{4,6})\s+(.+)$/), enrollment = m ? m[1] : "";
+  const m = String(name).match(/^\s*(\d[\d-]{3,})\s+(.+)$/), enrollment = m ? m[1] : "";
   if (m) name = m[2].trim();
   if (name === name.toUpperCase()) name = name.toLowerCase().replace(/(^|[\s\-'.])(\p{L})/gu, (x, a, c) => a + c.toUpperCase());
   if (enrollment && students.some(s => String(s.enrollment || "").trim() === enrollment)) { toast("The ID " + enrollment + " is already in your list."); return; }
@@ -3731,6 +3731,23 @@ $("addForm").addEventListener("submit", e => {
   // several "ID Name" pairs pasted in one go are added one by one
   const parts = v.split(/(?=\b\d{2}-\d{4,6}\s)/).map(x => x.trim()).filter(Boolean);
   if (parts.length > 1 && parts.every(x => /^\d{2}-\d{4,6}\s+\S/.test(x))) parts.forEach(addStudent); else addStudent(v);
+});
+// Paste two columns straight from Excel (ID + name, either order): every row is added at once.
+$("studentName").addEventListener("paste", e => {
+  const txt = (e.clipboardData && e.clipboardData.getData("text")) || "";
+  if (!/[\r\n]/.test(txt.trim()) || readOnly) return;
+  const rows = [];
+  for (const line of txt.split(/\r?\n/)) {
+    const cells = line.split(/\t|,|;/).map(x => x.trim()).filter(Boolean);
+    if (!cells.length) continue;
+    const idc = cells.find(c => /^[\d-]{4,}$/.test(c)), nm = cells.filter(c => c !== idc).join(" ");
+    if (!nm || /^(id|name|student)/i.test(nm) && !idc) continue;
+    rows.push(idc ? idc + " " + nm : nm);
+  }
+  if (rows.length < 2) return;
+  e.preventDefault();
+  rows.forEach(addStudent);
+  toast(rows.length + " students added to " + cls);
 });
 $("sortBy").addEventListener("change", () => {
   try { localStorage.setItem("xp_sort", $("sortBy").value); } catch {}

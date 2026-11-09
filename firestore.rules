@@ -1,0 +1,179 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---- who is this person? ----
+    function signedIn() { return request.auth != null; }
+    function hasProfile() { return signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)); }
+    function profile() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
+    function isTeacher() { return hasProfile() && profile().role == 'teacher'; }
+    // The owner of the website: a teacher whose profile has admin = true. Only you can set that, by hand, in the console.
+    function isAdmin() { return isTeacher() && profile().get('admin', false) == true; }
+    // Teacher tid's own folder: teachers/<tid>/...
+    function ownsFolder(tid) { return isTeacher() && request.auth.uid == tid; }
+    // A student belongs to one teacher (tid). Old students of the owner have no tid ('').
+    function isStudentOf(tid, sid) { return hasProfile() && profile().role == 'student' && profile().sid == sid && profile().get('tid', '') == tid; }
+
+    // ---- what a student is allowed to change on his own record ----
+    // Only: avatar, equipped items, owned items, spending. XP, wallet carry and the log are teacher-only.
+    function ownsOrEmpty(nw, key) {
+      return nw.get('eq', {}).get(key, '') == '' || nw.get('eq', {}).get(key, '') in nw.get('owned', []);
+    }
+    function equipOk(nw) {
+      return nw.get('eq', {}).keys().hasOnly(['frame', 'color', 'title', 'top', 'skin'])
+        && ownsOrEmpty(nw, 'frame') && ownsOrEmpty(nw, 'color') && ownsOrEmpty(nw, 'title')
+        && ownsOrEmpty(nw, 'top') && ownsOrEmpty(nw, 'skin');
+    }
+    function buyOk(old, nw) {
+      let oo = old.get('owned', []);
+      let no = nw.get('owned', []);
+      let oldSpent = old.get('spent', 0);
+      let newSpent = nw.get('spent', 0);
+      let wallet = old.get('xp', 0) + old.get('carry', 0) - newSpent;
+      return no.hasAll(oo)
+        && (
+          // only equipping or changing the avatar: spending must not change
+          (no.size() == oo.size() && newSpent == oldSpent)
+          // buying exactly one new item at the listed price, and the wallet stays at zero or above
+          || (no.size() == oo.size() + 1 && wallet >= 0
+              && newSpent == oldSpent + get(/databases/$(database)/documents/shop/prices).data.prices[no.removeAll(oo)[0]])
+        );
+    }
+    function studentMayEdit(tid, sid) {
+      return isStudentOf(tid, sid)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['avatar', 'eq', 'owned', 'spent', 'buys', 'lastBuy', 'sp'])
+        && request.resource.data.get('avatar', 0) is number
+        && equipOk(request.resource.data)
+        && buyOk(resource.data, request.resource.data);
+    }
+
+    // ---- people ----
+    match /users/{uid} {
+      // you can read your own profile; a teacher can read the profiles of his own students; the owner reads all
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin() || (isTeacher() && resource.data.tid == request.auth.uid));
+      // A new teacher creates his own profile once, with the invite code. CHANGE THE CODE BELOW.
+      allow create: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['role', 'code', 'name'])
+        && request.resource.data.role == 'teacher'
+        && request.resource.data.code == 'mrk';
+      // A teacher creates the login profiles of his own students, and only those.
+      allow create: if isTeacher()
+        && request.resource.data.keys().hasOnly(['role', 'sid', 'tid'])
+        && request.resource.data.role == 'student'
+        && request.resource.data.tid == request.auth.uid;
+      // Changing or removing a profile: his own students only. The owner can manage everyone.
+      allow update, delete: if isAdmin()
+        || (isTeacher() && resource.data.get('role', '') == 'student' && resource.data.get('tid', '') == request.auth.uid);
+      allow create: if isAdmin();
+    }
+
+    // ---- the owner's original data (top level) ----
+    match /students/{sid} {
+      allow read: if isAdmin() || isStudentOf('', sid);
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() || studentMayEdit('', sid);
+    }
+
+    // ---- every other teacher's data lives in his own folder: teachers/<uid>/... ----
+    match /teachers/{tid}/students/{sid} {
+      allow read: if ownsFolder(tid) || isAdmin() || isStudentOf(tid, sid);
+      allow create, delete: if ownsFolder(tid) || isAdmin();
+      allow update: if ownsFolder(tid) || isAdmin() || studentMayEdit(tid, sid);
+    }
+    match /teachers/{tid}/{coll}/{d} {
+      allow read, write: if ownsFolder(tid) || isAdmin();
+    }
+
+    // ---- a student's own login row: he can read it and replace the starting PIN with his own ----
+    function pinChangeOk() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['pin', 'first'])
+        && request.resource.data.first == false
+        && request.resource.data.pin is string && request.resource.data.pin.matches('^[0-9]{6}$');
+    }
+    match /logins/{sid} {
+      allow read: if isStudentOf('', sid);
+      allow update: if isStudentOf('', sid) && pinChangeOk();
+    }
+    match /teachers/{tid}/logins/{sid} {
+      allow read: if isStudentOf(tid, sid);
+      allow update: if isStudentOf(tid, sid) && pinChangeOk();
+    }
+
+    // ---- which login version each student ID is on (only a number; the login page reads it before signing in) ----
+    match /pinver/{id} {
+      allow read: if true;
+      allow create: if isTeacher() && request.resource.data.tid == request.auth.uid;
+      allow update, delete: if isAdmin() || (isTeacher() && resource.data.tid == request.auth.uid && request.resource.data.tid == request.auth.uid);
+    }
+
+    // ---- classwork: a student reads the worksheets sent to his class and hands in his answers once ----
+    function stuIn(tid) { return hasProfile() && profile().role == 'student' && profile().get('tid', '') == tid; }
+    function clsRoot() { return get(/databases/$(database)/documents/students/$(profile().sid)).data.cls; }
+    function clsIn(tid) { return get(/databases/$(database)/documents/teachers/$(tid)/students/$(profile().sid)).data.cls; }
+    function subOk(wid, id, workPath) {
+      return request.resource.data.keys().hasOnly(['wid', 'sid', 'name', 'cls', 'answers', 'at'])
+        && request.resource.data.sid == profile().sid && request.resource.data.wid == wid
+        && id == wid + '_' + profile().sid
+        && request.resource.data.answers is list && request.resource.data.answers.size() <= 200
+        && get(workPath).data.get('open', true) == true;
+    }
+    match /work/{w} {
+      allow read: if stuIn('') && clsRoot() in resource.data.classes;
+    }
+    match /teachers/{tid}/work/{w} {
+      allow read: if stuIn(tid) && clsIn(tid) in resource.data.classes;
+    }
+    match /subs/{id} {
+      allow read: if stuIn('') && resource.data.sid == profile().sid;
+      allow create: if stuIn('') && subOk(request.resource.data.wid, id, /databases/$(database)/documents/work/$(request.resource.data.wid));
+    }
+    match /teachers/{tid}/subs/{id} {
+      allow read: if stuIn(tid) && resource.data.sid == profile().sid;
+      allow create: if stuIn(tid) && subOk(request.resource.data.wid, id, /databases/$(database)/documents/teachers/$(tid)/work/$(request.resource.data.wid));
+    }
+
+    // ---- shop prices: everyone signed in can read, teachers set ----
+    // ---- 9S Island games: a student saves his own plays (score and mistakes) ----
+    function playOk() {
+      return request.resource.data.keys().hasOnly(['s', 'g', 'l', 'r', 'w', 't', 'u', 'm', 'sid', 'name'])
+        && request.resource.data.sid == profile().sid
+        && request.resource.data.m is list && request.resource.data.m.size() <= 20
+        && (resource == null || resource.data.sid == profile().sid);
+    }
+    match /plays/{id} {
+      allow read: if stuIn('') && resource.data.sid == profile().sid;
+      allow create, update: if stuIn('') && playOk();
+    }
+    match /teachers/{tid}/plays/{id} {
+      allow read: if stuIn(tid) && resource.data.sid == profile().sid;
+      allow create, update: if stuIn(tid) && playOk();
+    }
+
+    // ---- who is on the site: a student writes only his own record; the owner reads all, a teacher reads his own students ----
+    match /presence/{uid} {
+      allow read: if isAdmin() || (isTeacher() && resource.data.get('tid', '') == request.auth.uid);
+      allow create, update: if signedIn() && request.auth.uid == uid && hasProfile() && profile().role == 'student'
+        && request.resource.data.keys().hasOnly(['sid', 'tid', 'name', 'cls', 'first', 'last', 'n', 'ev', 'use'])
+        && request.resource.data.sid == profile().sid
+        && request.resource.data.get('tid', '') == profile().get('tid', '')
+        && request.resource.data.ev is list && request.resource.data.ev.size() <= 15;
+    }
+
+    // ---- usage counter: each teacher writes his own small record; only the owner reads them all ----
+    match /usage/{uid} {
+      allow read: if isAdmin();
+      allow create, update: if signedIn() && request.auth.uid == uid && isTeacher()
+        && request.resource.data.keys().hasOnly(['name', 'role', 'at', 'd', 'dr', 'dw', 'm', 'mr', 'mw']);
+    }
+
+    match /shop/{d} {
+      allow read: if signedIn();
+      allow write: if isAdmin();   // only the owner sets prices
+    }
+
+    // ---- everything else at the top level (cup, seats, logins, attendance, homework, tests...) is the owner's ----
+    match /{coll}/{d} {
+      allow read, write: if isAdmin();
+    }
+  }
+}
