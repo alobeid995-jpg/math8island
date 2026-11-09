@@ -478,6 +478,9 @@ button, .srow { touch-action: manipulation; -webkit-tap-highlight-color: transpa
 .sitem.eq { border-color: var(--good); box-shadow: 0 0 0 1px var(--good) inset; }
 .sitem .prev { min-height: 70px; display: grid; place-items: center; padding-top: 8px; font-size: 16px; font-weight: 700; max-width: 100%; }
 .sitem b { font-size: 14px; } .sitem small { color: var(--muted); font-size: 12px; line-height: 1.3; }
+.pxe { display: inline-flex; align-items: center; gap: 4px; font-family: var(--f-num); font-size: 13px; color: var(--gold); font-weight: 600; }
+.pxe input { width: 78px; padding: 6px 8px; border: 2px solid var(--ink, #151515); border-radius: 8px; font: inherit; color: var(--ink, #151515); background: #fff; }
+.pxbar { margin: 8px 0 0; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .sitem .pr { font-family: var(--f-num); font-size: 13px; color: var(--gold); font-weight: 600; }
 .picon { font-size: 40px; line-height: 1; }
 .sconf { display: grid; gap: 6px; font-size: 12px; justify-items: center; }
@@ -959,9 +962,6 @@ header.book .sync { z-index: 1; background: rgba(0,0,0,.4); border-color: rgba(2
 .f-gold { --r1: #fff6c2; --r2: #e6a800; --r3: #fffbe3; --r4: #9c6200; --r5: #ffd84a; --gem: #e53935; --gl: rgba(255,190,0,.95); --spd: 7s; }
 .f-diamond { --r1: #d9fbff; --r2: #ffc9f0; --r3: #d3ffd8; --r4: #fff1a8; --r5: #c4d6ff; --gem: #ffffff; --gl: rgba(110,220,255,.95); --spd: 6s; }
 .f-fire { --r1: #ffec4d; --r2: #ff7a18; --r3: #e8261a; --r4: #7d0e08; --r5: #ffb02e; --gem: #ffeb3b; --gl: rgba(255,90,10,.95); --spd: 4s; animation: fspin var(--spd) linear infinite, fburn 1.1s ease-in-out infinite; }
-.f-fire::before { border-radius: 50% 0 50% 50%; }
-.f-void { --r1: #1a0b3b; --r2: #7b2cff; --r3: #ff3df2; --r4: #0b0620; --r5: #3df0ff; --gem: #3df0ff; --spd: 5s; }
-@keyframes fburn { 50% { box-shadow: inset 0 2px 1px rgba(255,255,255,.85), inset 0 -3px 3px rgba(0,0,0,.5), 0 3px 5px rgba(0,0,0,.4), 0 0 20px 3px var(--gl); } }
 /* ===== Math Island — "Elements" design layer =====
    After Oliver Byrne's 1847 colour Euclid: three primaries, black construction lines,
    heavy type, figures that do the explaining. */
@@ -1625,6 +1625,7 @@ function shopPreview(it, st) {
     default: return `<span class="picon">${it.icon}</span>`;
   }
 }
+function applyPrices(m) { if (!m) return; SHOP.forEach(i => { const v = Number(m[i.id]); if (Number.isFinite(v) && v >= 0 && m[i.id] !== "") i.price = Math.round(v); }); }
 </script>
 
 <style>

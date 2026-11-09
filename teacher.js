@@ -59,7 +59,16 @@ document.addEventListener("click", async ev => {
 window.__resolveClaude({ use: async n => n === "db" ? db : n === "user" ? { can: async () => true, isOwner: () => true, canEdit: () => true } : null });
 
 // Students may only spend what the shop price list allows, so the list lives in the database.
-setDoc(doc(fs, "shop", "prices"), { prices: Object.fromEntries(SHOP.map(i => [i.id, i.price])) }).catch(() => {});
+window.__owner = ADMIN;   // only the owner can change prices
+{
+  const pref = doc(fs, "shop", "prices"); let saved = {};
+  try { const s = await getDoc(pref); if (s.exists()) saved = s.data().prices || {}; } catch {}
+  applyPrices(saved);   // prices he has set win over the defaults in the code
+  const all = () => Object.fromEntries(SHOP.map(i => [i.id, i.price]));
+  if (ADMIN) setDoc(pref, { prices: all() }).catch(() => {});   // new items get their default price; his own prices stay
+  window.__savePrices = async m => { await setDoc(pref, { prices: { ...all(), ...m } }); };
+  try { renderShopView(); } catch {}
+}
 
 if (CLASSES.some(c => /^9S$/i.test(c))) {   // 9S games: progress of each boy, inside this page
   const ib = document.createElement("button"); ib.className = "ghost small"; ib.id = "islandBtn"; ib.type = "button"; ib.textContent = "Games progress";

@@ -22,6 +22,7 @@ async function start() {
   const lref = p.tid ? doc(fs, "teachers", p.tid, "logins", p.sid) : doc(fs, "logins", p.sid);
   let lg = null; try { const s = await getDoc(lref); lg = s.exists() ? s.data() : null; } catch {}
   if (lg && lg.first === true) { await choosePin(u, lref, String(lg.pin || "")); }
+  onSnapshot(doc(fs, "shop", "prices"), s => { if (s.exists()) { applyPrices(s.data().prices); render(); } }, () => {});   // prices the owner sets
   onSnapshot(ref, snap => { loaded = true; me = snap.exists() ? fromDoc(snap) : null; render(); },
     () => { loaded = true; me = null; render(); });
   initWork(p, () => me, toast).catch(() => {});
