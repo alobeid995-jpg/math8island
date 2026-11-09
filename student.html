@@ -560,6 +560,7 @@ button, .srow { touch-action: manipulation; -webkit-tap-highlight-color: transpa
 .ins-c { border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: grid; gap: 4px; font-size: 13px; } .ins-c .cn { font-family: var(--f-display); font-size: 22px; }
 .ins-c i { font-style: normal; } .ins-c .g, .why .g { color: var(--good); } .ins-c .r { color: var(--bad); } .why { font-size: 12px; color: var(--muted); }
 .plist .why { margin-top: 2px; }
+.bknote { border-left: 4px solid var(--bad); background: var(--bad-soft); border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; font-size: 14px; line-height: 1.45; } .bknote b { color: var(--bad); } .bknote.over { border-left-color: #8a1c1c; }
 .hlist { display: grid; } .hrow { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); flex-wrap: wrap; }
 .hn { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1 1 150px; } .hnm { font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; }
 .seg { display: inline-flex; gap: 4px; } .sg { background: var(--card); color: var(--muted); border: 1px solid var(--line); border-radius: 8px; padding: 7px 11px; font-size: 13px; font-weight: 600; min-height: 38px; }
@@ -1797,6 +1798,7 @@ function readShop(v) {
     buys: Number(v.buys) || 0, lastBuy: String(v.lastBuy || ""),
     note: String(v.note || ""),
     certs: Array.isArray(v.certs) ? v.certs.filter(c => c && c.title) : [],
+    books: Object.fromEntries(Object.entries(v.books && typeof v.books === "object" ? v.books : {}).filter(([d, x]) => /^\d{4}-\d{2}-\d{2}$/.test(d) && /^[ynl]$/.test(x))),
     hist: Array.isArray(v.hist) ? v.hist.filter(e => e && typeof e.xp === "number") : [],
     sp: Array.isArray(v.sp) ? v.sp.filter(e => e && shopItem(e.k)) : []
   };

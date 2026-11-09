@@ -75,6 +75,15 @@ function card(st, it) {
   return `<div class="sitem${on ? " eq" : ""}"><div class="prev">${shopPreview(it, st)}</div><b>${esc(it.name)}</b><span class="pr">${it.price} XP${have ? " · owned" : ""}</span>${act}</div>`;
 }
 
+const bkAdd = (d, n) => { const t = new Date(d + "T00:00:00Z"); t.setUTCDate(t.getUTCDate() + n); return t.toISOString().slice(0, 10); };
+const bkShow = d => new Date(d + "T00:00:00Z").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
+function bookNotes(st) {
+  const today = new Date(Date.now() + 3 * 3600e3).toISOString().slice(0, 10);
+  return Object.entries(st.books || {}).filter(([, v]) => v === "n").map(([d]) => d).sort().map(d => {
+    const due = bkAdd(d, 3), over = due < today;
+    return `<div class="bknote${over ? " over" : ""}" role="alert"><b>📒 You have not handed in your notebook.</b><br>Your teacher collected notebooks on ${bkShow(d)} and yours was not handed in. ${over ? `The deadline was <b>${bkShow(due)}</b>. Please hand it in to your teacher as soon as you can.` : `You have 3 days to hand it in: the deadline is <b>${bkShow(due)}</b>.`}</div>`;
+  }).join("");
+}
 function render() {
   const app = $("app");
   if (!loaded) { app.innerHTML = `<div class="empty"><h2>Loading…</h2></div>`; return; }
@@ -86,7 +95,7 @@ function render() {
   GIRL = isGirlCls(st.cls);
   const items = shopList(shopCat);
   const recent = st.log.slice(-8).reverse();
-  $("app").innerHTML = `
+  $("app").innerHTML = bookNotes(st) + `
     <section class="card">
       <div class="who2">${avatarHTML(st, "xl")}<div>
         <div class="nm2">${nameHTML(st)}${titleTag(st)}</div>

@@ -560,6 +560,7 @@ button, .srow { touch-action: manipulation; -webkit-tap-highlight-color: transpa
 .ins-c { border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: grid; gap: 4px; font-size: 13px; } .ins-c .cn { font-family: var(--f-display); font-size: 22px; }
 .ins-c i { font-style: normal; } .ins-c .g, .why .g { color: var(--good); } .ins-c .r { color: var(--bad); } .why { font-size: 12px; color: var(--muted); }
 .plist .why { margin-top: 2px; }
+.bknote { border-left: 4px solid var(--bad); background: var(--bad-soft); border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; font-size: 14px; line-height: 1.45; } .bknote b { color: var(--bad); } .bknote.over { border-left-color: #8a1c1c; }
 .hlist { display: grid; } .hrow { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); flex-wrap: wrap; }
 .hn { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1 1 150px; } .hnm { font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; }
 .seg { display: inline-flex; gap: 4px; } .sg { background: var(--card); color: var(--muted); border: 1px solid var(--line); border-radius: 8px; padding: 7px 11px; font-size: 13px; font-weight: 600; min-height: 38px; }
@@ -1768,6 +1769,7 @@ function readShop(v) {
     buys: Number(v.buys) || 0, lastBuy: String(v.lastBuy || ""),
     note: String(v.note || ""),
     certs: Array.isArray(v.certs) ? v.certs.filter(c => c && c.title) : [],
+    books: Object.fromEntries(Object.entries(v.books && typeof v.books === "object" ? v.books : {}).filter(([d, x]) => /^\d{4}-\d{2}-\d{2}$/.test(d) && /^[ynl]$/.test(x))),
     hist: Array.isArray(v.hist) ? v.hist.filter(e => e && typeof e.xp === "number") : [],
     sp: Array.isArray(v.sp) ? v.sp.filter(e => e && shopItem(e.k)) : []
   };
@@ -2099,7 +2101,7 @@ document.addEventListener("keydown", e => {
 const healedCls = new Set();
 async function save(st) {
   const body = { name: st.name, cls: st.cls, enrollment: st.enrollment || "", xp: st.xp, log: st.log, createdAt: st.createdAt || Date.now(), bonusWeek: st.bonusWeek || "", counts: { ...(st.counts || {}) },
-    spent: st.spent || 0, carry: st.carry || 0, owned: st.owned || [], eq: eqOf(st), reqs: st.reqs || [], buys: st.buys || 0, lastBuy: st.lastBuy || "", hist: (st.hist || []).slice(-600), sp: (st.sp || []).slice(-200), note: String(st.note || "").slice(0, 1500), certs: (st.certs || []).slice(-100) };
+    spent: st.spent || 0, carry: st.carry || 0, owned: st.owned || [], eq: eqOf(st), reqs: st.reqs || [], buys: st.buys || 0, lastBuy: st.lastBuy || "", hist: (st.hist || []).slice(-600), sp: (st.sp || []).slice(-200), note: String(st.note || "").slice(0, 1500), certs: (st.certs || []).slice(-100), books: { ...(st.books || {}) } };
   if (typeof st.avatar === "number") body.avatar = st.avatar;
   if (!db) return;
   try { await db.collection("students").doc(st.id).set(body); }
@@ -2697,7 +2699,7 @@ const todayStr = () => new Date(Date.now() + 3 * 3600e3).toISOString().slice(0, 
 const addDays = (d, n) => { const t = new Date(d + "T00:00:00Z"); t.setUTCDate(t.getUTCDate() + n); return t.toISOString().slice(0, 10); };
 const dayLabel = d => new Date(d + "T00:00:00Z").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 const shortDay = d => new Date(d + "T00:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
-let hubTab = "insights", attDate = todayStr(), hwOpenId = null, testOpenId = null, hubConf = "", grp = null;
+let hubTab = "insights", bkDate = todayStr(), attDate = todayStr(), hwOpenId = null, testOpenId = null, hubConf = "", grp = null;
 const clone = o => JSON.parse(JSON.stringify(o));
 const clsStu = c => students.filter(s => s.cls === c).sort((a, b) => a.name.localeCompare(b.name));
 const hubChain = new Map();
@@ -2873,13 +2875,14 @@ function groupsText() { return grp ? grp.groups.map((g, i) => `Group ${i + 1}: `
 function hubStudentRow(st, right) { return `<div class="hrow"><span class="hn">${avatarHTML(st, "sm")}<span class="hnm">${esc(shortName(st.name))}</span></span>${right}</div>`; }
 function renderHub() {
   const el = $("hubView");
-  const tabs = [["insights", "Insights"], ["att", "Attendance"], ["hw", "Homework"], ["marks", "Marks"], ["seats", "Seat plan"], ["tools", "Tools"]];
+  const tabs = [["insights", "Insights"], ["att", "Attendance"], ["hw", "Homework"], ["marks", "Marks"], ["books", "Notebooks"], ["seats", "Seat plan"], ["tools", "Tools"]];
   const chips = hubTab === "insights" ? "" : `<div class="shop-tabs">${CLASSES.map(c => `<button class="shop-tab" data-act="hubCls" data-cls="${c}" aria-pressed="${c === cls}">${c} <small>${students.filter(s => s.cls === c).length}</small></button>`).join("")}</div>`;
   let body = "";
   if (hubTab === "insights") body = hubInsights();
   else if (hubTab === "att") body = hubAtt();
   else if (hubTab === "hw") body = hubHw();
   else if (hubTab === "marks") body = hubMarks();
+  else if (hubTab === "books") body = hubBooks();
   else if (hubTab === "seats") body = hubSeats();
   else body = hubTools();
   el.innerHTML = `<div class="shop-intro"><h2>Teacher Hub</h2><p>Your classroom tools in one place: who needs attention, attendance, homework, test marks, a lesson timer and group maker.</p></div>
@@ -2921,6 +2924,26 @@ function hubHw() {
   }
   return `<section class="card"><h3>New task for ${cls}</h3>${readOnly ? "" : `<div class="hub-bar"><input id="hwTitle" placeholder="e.g. Worksheet: Pythagoras" maxlength="80"><input type="date" id="hwDue" value="${todayStr()}"><button class="primary" data-act="hwAdd">Add task</button></div>`}
     ${list.length ? `<div class="tlist">${list.map(([id, d]) => { const t = hwStats(d); return `<button class="titem" data-act="hwOpen" data-h="${id}" aria-pressed="${id === open}"><b>${esc(d.title)}</b><span>due ${shortDay(d.due)} · ${t.done + t.late}/${t.total - t.exc} handed in${d.xpDone ? " · XP applied" : ""}</span></button>`; }).join("")}</div>` : `<div class="none">No tasks yet for ${cls}.</div>`}</section>${det}`;
+}
+function bkOwing(st) { return Object.entries(st.books || {}).filter(([, v]) => v === "n").map(([d]) => d).sort(); }
+function hubBooks() {
+  const list = clsStu(cls), isT = bkDate === todayStr(), val = st => (st.books || {})[bkDate] || "";
+  const cnt = k => list.filter(s => val(s) === k).length, today = todayStr();
+  const owing = list.filter(s => bkOwing(s).length);
+  return `<section class="card"><div class="hub-bar"><button class="ghost small" data-act="bkDay" data-n="-1" aria-label="Previous day">‹</button><input type="date" id="bkDate" value="${bkDate}"><button class="ghost small" data-act="bkDay" data-n="1" aria-label="Next day">›</button>${isT ? "" : `<button class="ghost small" data-act="bkToday">Today</button>`}</div>
+    <h3>Notebooks collected ${dayLabel(bkDate)} · ${cls}</h3>
+    <div class="rep-sum"><div class="g"><b>${cnt("y") + cnt("l")}</b><span>handed in</span></div><div class="r"><b>${cnt("n")}</b><span>not handed in</span></div><div><b>${list.length - cnt("y") - cnt("l") - cnt("n")}</b><span>not marked</span></div></div>
+    <p class="rep-note">Tick the students who handed in their notebook today and cross the ones who did not. A student with a cross sees a message in his account with 3 days to hand it in.</p>
+    ${readOnly ? "" : `<button class="primary small" data-act="bkAll" style="justify-self:start">Mark everyone handed in</button>`}
+    <div class="hlist">${list.map(s => hubStudentRow(s, `<span class="seg"><button class="sg d" data-act="bkSet" data-id="${s.id}" data-v="y" aria-pressed="${val(s) === "y" || val(s) === "l"}" aria-label="Handed in">✓</button><button class="sg a" data-act="bkSet" data-id="${s.id}" data-v="n" aria-pressed="${val(s) === "n"}" aria-label="Not handed in">✗</button></span>`)).join("") || `<div class="none">No students in ${cls}.</div>`}</div></section>
+    <section class="card"><h3>Still owing a notebook (${owing.length})</h3>${owing.length ? `<div class="hlist">${owing.map(s => hubStudentRow(s, `<span class="rep-note">${bkOwing(s).map(d => { const due = addDays(d, 3); return `${shortDay(d)} → due ${shortDay(due)}${due < today ? " (overdue)" : ""}`; }).join(" · ")}</span>${readOnly ? "" : `<button class="ghost small" data-act="bkLate" data-id="${s.id}">Handed in now</button>`}`)).join("")}</div>` : `<div class="none">Nobody owes a notebook.</div>`}</section>`;
+}
+function setBook(id, v) {
+  const st = students.find(s => s.id === id); if (!st || readOnly) return;
+  const b = { ...(st.books || {}) };
+  if (b[bkDate] === v || (v === "y" && b[bkDate] === "l")) delete b[bkDate]; else b[bkDate] = v;
+  if (v === "y" && b[bkDate]) Object.keys(b).forEach(d => { if (b[d] === "n" && d < bkDate) b[d] = "l"; });   // handing it in now clears earlier crosses
+  st.books = b; render(); save(st);
 }
 function hubMarks() {
   const list = classTests(cls), open = testOpenId && tests.get(testOpenId) && tests.get(testOpenId).cls === cls ? testOpenId : null;
@@ -3643,6 +3666,11 @@ document.addEventListener("click", e => {
     case "hubNo": hubConf = ""; render(); break;
     case "attSet": setAtt(id, b.dataset.s); break;
     case "attAll": attAllPresent(); break;
+    case "bkSet": setBook(id, b.dataset.v); break;
+    case "bkDay": bkDate = addDays(bkDate, Number(b.dataset.n)); render(); break;
+    case "bkToday": bkDate = todayStr(); render(); break;
+    case "bkAll": if (!readOnly) { clsStu(cls).forEach(st => { if ((st.books || {})[bkDate] !== "y") { const bb = { ...(st.books || {}), [bkDate]: "y" }; Object.keys(bb).forEach(d => { if (bb[d] === "n" && d < bkDate) bb[d] = "l"; }); st.books = bb; save(st); } }); render(); } break;
+    case "bkLate": { const st = students.find(x => x.id === id); if (st && !readOnly) { st.books = Object.fromEntries(Object.entries(st.books || {}).map(([d, x]) => [d, x === "n" ? "l" : x])); render(); save(st); } break; }
     case "attDay": attDate = addDays(attDate, Number(b.dataset.n)); render(); break;
     case "attToday": attDate = todayStr(); render(); break;
     case "hwAdd": addHw(); break;
@@ -3720,6 +3748,7 @@ document.addEventListener("change", e => {
     cert.type = t.value; const d = certDefaults(t.value); cert.title = d.title; cert.reason = d.reason;
     $("certTitle").value = d.title; $("certReason").value = d.reason; updateCert();
   }
+  else if (t.id === "bkDate") { bkDate = t.value || todayStr(); render(); }
   else if (t.id === "attDate") { attDate = t.value || todayStr(); render(); }
   else if (t.dataset && t.dataset.score) setScore(t.dataset.score, t.dataset.id, t.value);
 });
