@@ -1,8 +1,8 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>My XP · Math Island</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Lexend:wght@400;500;600&family=JetBrains+Mono:wght@500;700&family=Caveat:wght@500;700&family=Marcellus&family=Cinzel:wght@700;800&family=Amiri:wght@400;700&display=swap">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Instrument+Serif:ital@0;1&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Lexend:wght@400;500;600&family=JetBrains+Mono:wght@500;700&family=Caveat:wght@500;700&family=Marcellus&family=Cinzel:wght@700;800&family=Amiri:wght@400;700&family=Fredoka:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Instrument+Serif:ital@0;1&family=Fredoka:wght@500;600;700&display=swap">
 <style>
 /* Layout: exercise-book graph paper; summary strip, add row, then a grid of student cards */
 :root {
@@ -962,6 +962,48 @@ header.book .sync { z-index: 1; background: rgba(0,0,0,.4); border-color: rgba(2
 @keyframes fspin { to { --ang: 360deg; } }
 @keyframes fshine { 0%, 55% { background-position: 130% 0; } 100% { background-position: -30% 0; } }
 .f-chalk { --r1: #f7fbff; --r2: #8d9db6; --r3: #ffffff; --r4: #56637a; --r5: #dfe8f4; --gem: #4fc3f7; --gl: rgba(150,180,220,.8); --spd: 14s; }
+.f-pencil { --r1: #ffe7a0; --r2: #d9861a; --r3: #fff2c0; --r4: #8f4f08; --r5: #f6b04a; --gem: #ff9800; --gl: rgba(240,150,30,.8); --spd: 14s; }
+.f-blue { --r1: #c8dbff; --r2: #2f5bd8; --r3: #eef4ff; --r4: #14307a; --r5: #6f94ff; --gem: #e3f2fd; --gl: rgba(60,110,255,.85); --spd: 11s; }
+.f-board { --r1: #c2f7d8; --r2: #1f9d62; --r3: #eafff2; --r4: #0a4a31; --r5: #52d28f; --gem: #ffd54f; --gl: rgba(40,200,120,.8); --spd: 11s; }
+.f-gold { --r1: #fff6c2; --r2: #e6a800; --r3: #fffbe3; --r4: #9c6200; --r5: #ffd84a; --gem: #e53935; --gl: rgba(255,190,0,.95); --spd: 7s; }
+.f-diamond { --r1: #d9fbff; --r2: #ffc9f0; --r3: #d3ffd8; --r4: #fff1a8; --r5: #c4d6ff; --gem: #ffffff; --gl: rgba(110,220,255,.95); --spd: 6s; }
+.f-fire { --r1: #ffec4d; --r2: #ff7a18; --r3: #e8261a; --r4: #7d0e08; --r5: #ffb02e; --gem: #ffeb3b; --gl: rgba(255,90,10,.95); --spd: 4s; animation: fspin var(--spd) linear infinite, fburn 1.1s ease-in-out infinite; }
+.f-fire::before { border-radius: 50% 0 50% 50%; }
+.f-void { --r1: #1a0b3b; --r2: #7b2cff; --r3: #ff3df2; --r4: #0b0620; --r5: #3df0ff; --gem: #3df0ff; --spd: 5s; }
+@keyframes fburn { 50% { box-shadow: inset 0 2px 1px rgba(255,255,255,.85), inset 0 -3px 3px rgba(0,0,0,.5), 0 3px 5px rgba(0,0,0,.4), 0 0 20px 3px var(--gl); } }
+@media (prefers-reduced-motion: reduce) { .avw.fr, .avw.fr::after { animation: none !important; } }
+/* ---------- Girls' shop (class 8G) ---------- */
+.f-g-rose { --fb: linear-gradient(135deg,#ffd1e0,#ff6fa3); --r1: #ffd1e0; --r2: #ff6fa3; --r3: #fff0f5; --r4: #b8235a; --r5: #ff9ec2; --gem: #ff4d94; --gl: rgba(255,90,150,.85); --spd: 12s; }
+.f-g-lilac { --fb: linear-gradient(135deg,#efe0ff,#a77bff); --r1: #efe0ff; --r2: #a77bff; --r3: #ffffff; --r4: #5e35b1; --r5: #cdb4ff; --gem: #e1bee7; --gl: rgba(160,120,255,.85); --spd: 12s; }
+.f-g-mint { --fb: linear-gradient(135deg,#d9fff0,#4fd1a5); --r1: #d9fff0; --r2: #4fd1a5; --r3: #f4fffa; --r4: #1b8d6b; --r5: #8ff0cb; --gem: #b9f6ca; --gl: rgba(70,210,165,.8); --spd: 12s; }
+.f-g-peach { --fb: linear-gradient(135deg,#ffe0c2,#ff9d6c); --r1: #ffe0c2; --r2: #ff9d6c; --r3: #fff4e8; --r4: #c4552b; --r5: #ffb98a; --gem: #ffcc80; --gl: rgba(255,150,100,.85); --spd: 11s; }
+.f-g-heart { --fb: linear-gradient(135deg,#ff9ec7,#ff3f8e); --r1: #ff9ec7; --r2: #ff3f8e; --r3: #ffd9ea; --r4: #c2185b; --r5: #ff6fb1; --gem: #ff80ab; --gl: rgba(255,63,142,.9); --spd: 8s; }
+.f-g-star { --fb: linear-gradient(135deg,#fff3b0,#ffb3d9,#c06ad6); --r1: #fff3b0; --r2: #ffb3d9; --r3: #ffffff; --r4: #c06ad6; --r5: #ffe27a; --gem: #fff59d; --gl: rgba(255,200,120,.95); --spd: 7s; }
+.f-g-rainbow { --fb: linear-gradient(135deg,#ff6f91,#ffd166,#8be28b,#5ab8ff,#c39bff); --r1: #ff6f91; --r2: #ffd166; --r3: #8be28b; --r4: #5ab8ff; --r5: #c39bff; --gem: #ffffff; --gl: rgba(200,150,255,.9); --spd: 5s; }
+.f-g-glitter { --fb: linear-gradient(135deg,#ffd1f0,#ff5cc8,#7be8ff); --r1: #ffd1f0; --r2: #ff5cc8; --r3: #ffffff; --r4: #8a2be2; --r5: #7be8ff; --gem: #ffffff; --gl: rgba(255,92,200,.95); --spd: 4s; animation: fspin var(--spd) linear infinite, fburn 1.4s ease-in-out infinite; }
+.f-g-pearl::before, .f-g-heart::before, .f-g-glitter::before, .f-g-rainbow::before, .f-g-mint::before { border-radius: 50%; }
+.c-g-rose { color: #e0457b; } .c-g-lilac { color: #9b6bd6; } .c-g-mint { color: #12a083; } .c-g-sky { color: #2f93e8; } .c-g-peach { color: #ee7430; }
+.c-g-bubble, .c-g-rainbow, .c-g-glitter { -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
+.c-g-bubble { background-image: linear-gradient(90deg, #ff4d94, #b36bff); }
+.c-g-rainbow { background-image: linear-gradient(90deg, #ff5f8f, #ffb02e, #38c97a, #3aa0ff, #a46bff, #ff5f8f); background-size: 200% 100%; animation: grbw 4s linear infinite; }
+.c-g-glitter { background-image: linear-gradient(90deg, #e6a8ff, #ff5cc8, #ffd166, #ff5cc8, #e6a8ff); background-size: 200% 100%; animation: grbw 3s linear infinite; }
+@keyframes grbw { to { background-position: -200% 0; } }
+.girlshop { --gp1: #ff7eb6; --gp2: #b57bff; font-family: "Fredoka", var(--f-display, sans-serif);
+  background: radial-gradient(circle, rgba(255,160,205,.35) 1.4px, transparent 2px) 0 0 / 26px 26px, linear-gradient(160deg, #fff0f7 0%, #f6ecff 55%, #e9f7ff 100%); border: 2px solid #ffc2dc; border-radius: 22px; }
+.girlshop h3 { font-family: "Fredoka", var(--f-display, sans-serif); font-weight: 700; background: linear-gradient(90deg, var(--gp1), var(--gp2)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
+.girlshop .gs-sub { margin: 2px 0 10px; color: #a23b7a; font-size: 14px; font-weight: 500; }
+.girlshop .shop-tab, .girlshop .tier-tab { border-radius: 99px; border: 2px solid #ffc2dc; background: #fff; color: #a23b7a; font-family: inherit; font-weight: 600; }
+.girlshop .shop-tab[aria-pressed="true"], .girlshop .tier-tab[aria-pressed="true"] { background: linear-gradient(90deg, var(--gp1), var(--gp2)); color: #fff; border-color: transparent; box-shadow: 0 4px 10px -4px rgba(214,70,140,.7); }
+.girlshop .sitem { border-radius: 20px; border: 2px solid #ffd3e6; background: rgba(255,255,255,.92); box-shadow: 0 8px 16px -10px rgba(214,70,140,.55); }
+.girlshop .sitem.eq { border-color: var(--gp1); box-shadow: 0 0 0 3px rgba(255,126,182,.25), 0 8px 16px -10px rgba(214,70,140,.55); }
+.girlshop .sitem b { color: #6b2a52; }
+.girlshop .sitem .pr { color: #c2357f; font-weight: 600; }
+.girlshop .sitem .prev { background: linear-gradient(160deg, #fff5fa, #f3eaff); border-radius: 16px; }
+.girlshop .plus, .girlshop .primary { background: linear-gradient(90deg, var(--gp1), var(--gp2)); color: #fff; border-color: transparent; border-radius: 99px; }
+.girlshop .ghost { border-radius: 99px; border-color: #ffc2dc; color: #a23b7a; }
+.girlshop .ttag { color: #b0306f; background: #ffe3f0; border-color: #ffb8d6; }
+.gs-sw { display: inline-flex; gap: 6px; margin: 0 0 12px; }
+@media (prefers-reduced-motion: reduce) { .c-g-rainbow, .c-g-glitter { animation: none; } }
 /* ===== Math Island — "Elements" design layer =====
    After Oliver Byrne's 1847 colour Euclid: three primaries, black construction lines,
    heavy type, figures that do the explaining. */
@@ -1411,6 +1453,7 @@ function spriteSVG(id) {   // pixel-art character from the asset sheet; rendered
 }
 function enemyFig(id, wid) {
   const k = id + "|" + (wid || ""); if (enemyFigCache.has(k)) return enemyFigCache.get(k);
+  if (GFIG[id]) { const o = girlFig(GFIG[id], wid); enemyFigCache.set(k, o); return o; }
   if (SPRITE[id]) { const o = spriteSVG(id); enemyFigCache.set(k, o); return o; }
   if (LEGEND[id]) { const o = legendSVG(id); enemyFigCache.set(k, o); return o; }   // pixel sprites carry no drawn arms, so no weapon is overlaid
   const raw = enemySVG(id); if (!raw) return ""; const b = ENEMY_BODY[id] || ["#607d8b", "#ffcc80"];
@@ -1496,11 +1539,112 @@ function libraryScene() {
 
 const avatarCache = new Map();
 function eqOf(st) { const e = (st && st.eq) || {}; return { frame: e.frame || "", color: e.color || "", title: e.title || "", top: e.top || "", skin: e.skin || "" }; }
+/* ---------- Girls' shop (class 8G only): soft, rounded characters ---------- */
+const isGirlCls = c => /^8G$/i.test(String(c || "").trim());
+let GIRL = false;
+const GOL = "#5b3347";
+const gp = (d, f, x = "") => `<path d="${d}" fill="${f}" stroke="${GOL}" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round" ${x}/>`;
+const gc = (cx, cy, r, f, x = "") => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${f}" stroke="${GOL}" stroke-width="1.2" ${x}/>`;
+const ge = (cx, cy, rx, ry, f, x = "") => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${f}" stroke="${GOL}" stroke-width="1.2" ${x}/>`;
+const gstar = (x, y, s, f = "#fff59d") => `<path class="wsp" d="M${x} ${y - s} L${x + s * .3} ${y - s * .3} L${x + s} ${y} L${x + s * .3} ${y + s * .3} L${x} ${y + s} L${x - s * .3} ${y + s * .3} L${x - s} ${y} L${x - s * .3} ${y - s * .3}Z" fill="${f}"/>`;
+const gstar5 = (x, y, r, f) => { let d = ""; for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, q = i % 2 ? r * .45 : r; d += (i ? "L" : "M") + (x + Math.cos(a) * q).toFixed(1) + " " + (y + Math.sin(a) * q).toFixed(1); } return gp(d + "Z", f); };
+const gheart = (x, y, s, f) => `<path d="M${x} ${y + s * .95} C${x - s * 1.7} ${y - s * .1} ${x - s * .8} ${y - s * 1.2} ${x} ${y - s * .4} C${x + s * .8} ${y - s * 1.2} ${x + s * 1.7} ${y - s * .1} ${x} ${y + s * .95}Z" fill="${f}" stroke="${GOL}" stroke-width="1" stroke-linejoin="round"/>`;
+const GFLOWERS = ["#ff8fb8", "#fff176", "#ce93d8", "#ffab91", "#81d4fa"];
+const GACC = {
+  bow: (c, x = 67, y = 24) => gp(`M${x} ${y} L${x - 11} ${y - 7} L${x - 11} ${y + 7}Z`, c) + gp(`M${x} ${y} L${x + 11} ${y - 7} L${x + 11} ${y + 7}Z`, c) + gc(x, y, 3.2, shade(c, .82)),
+  flowers: cols => [[31, 30], [40, 23], [50, 21], [60, 23], [69, 30]].map(([x, y], i) => { const c = (cols || GFLOWERS)[i % (cols || GFLOWERS).length]; return [[0, -3.4], [3.4, 0], [0, 3.4], [-3.4, 0]].map(([dx, dy]) => gc(x + dx, y + dy, 2.7, c)).join("") + gc(x, y, 2, "#ffe066"); }).join(""),
+  tiara: (c, g) => gp("M31 26 L35 15 L42 22 L50 11 L58 22 L65 15 L69 26Z", c) + gc(50, 17, 2.6, g) + gc(36, 21, 1.8, g) + gc(64, 21, 1.8, g),
+  crown: (c, g) => gp("M30 26 L31 10 L41 19 L50 6 L59 19 L69 10 L70 26Z", c) + gc(50, 14, 3, g) + gc(36, 20, 2, g) + gc(64, 20, 2, g) + gstar(78, 14, 3),
+  band: c => `<path d="M30 37 Q50 6 70 37" stroke="${GOL}" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M30 37 Q50 6 70 37" stroke="${c}" stroke-width="3" fill="none" stroke-linecap="round"/>`,
+  cat: c => gp("M29 28 L30 8 L44 20Z", c) + gp("M71 28 L70 8 L56 20Z", c) + `<path d="M32 22 L33 14 L39 20Z M68 22 L67 14 L61 20Z" fill="#ffb3c7"/>` + `<path d="M25 49 H35 M25 53 L35 51 M75 49 H65 M75 53 L65 51" stroke="${GOL}" stroke-width="1" stroke-linecap="round"/>` + `<path d="M48 46 L52 46 L50 48.4Z" fill="#ff7a9c"/>`,
+  bunny: c => `<g transform="rotate(-9 42 22)">${ge(42, 10, 5.4, 15, c)}${ge(42, 11, 2.6, 10, "#ffc0d6", 'stroke="none"')}</g><g transform="rotate(9 58 22)">${ge(58, 10, 5.4, 15, c)}${ge(58, 11, 2.6, 10, "#ffc0d6", 'stroke="none"')}</g>`,
+  horn: () => gp("M45.5 22 L50 -1 L54.5 22Z", "#fff3b0") + `<path d="M46.8 16 L53 12.5 M47.6 10.6 L52.2 7.6" stroke="#e0a800" stroke-width="1.1"/>`,
+  halo: () => `<ellipse cx="50" cy="11" rx="14" ry="4.2" fill="none" stroke="${GOL}" stroke-width="4.4"/><ellipse cx="50" cy="11" rx="14" ry="4.2" fill="none" stroke="#ffd54f" stroke-width="2.6"/>`,
+  witch: c => gp("M24 25 Q50 15 76 25 Q50 32 24 25Z", c) + gp("M37 22 L53 1 Q51 11 63 22Z", c) + `<path d="M38 21 Q50 25 62 21" stroke="#ffd54f" stroke-width="3" fill="none"/>` + gstar(56, 12, 2.6),
+  star: (x = 66, y = 27) => gstar5(x, y, 6.5, "#ffe066"),
+  hearts: () => gheart(19, 30, 3.6, "#ff80ab") + gheart(84, 24, 3, "#ff80ab") + gheart(80, 44, 2.2, "#f48fb1"),
+  headset: () => `<path d="M30 40 Q50 4 70 40" stroke="${GOL}" stroke-width="5" fill="none"/><path d="M30 40 Q50 4 70 40" stroke="#4a4a6a" stroke-width="3" fill="none"/>` + gc(30, 42, 5.5, "#ff5cc8") + gc(70, 42, 5.5, "#ff5cc8") + `<path d="M30 48 Q34 58 44 57" stroke="#4a4a6a" stroke-width="2" fill="none"/>` + gc(45, 57, 2.4, "#4a4a6a"),
+  shell: () => gp("M62 25 Q70 17 76 25 Q70 31 62 25Z", "#ffb3d1") + `<path d="M64 25 L72 22 M64 25 L73 25.5 M64 25 L72 29" stroke="${GOL}" stroke-width=".8"/>`,
+  roses: () => [[34, 66], [50, 70], [66, 66]].map(([x, y]) => gc(x, y, 4.6, "#e53970") + `<path d="M${x - 2} ${y} Q${x} ${y - 3} ${x + 2} ${y} Q${x} ${y + 2.4} ${x - 1} ${y - 1}" stroke="#7a1636" stroke-width=".9" fill="none"/>`).join("")
+};
+function girlHairBack(hs, c) {
+  switch (hs) {
+    case 0: return gp("M28 40 Q24 12 50 12 Q76 12 72 40 L79 80 Q66 78 62 68 L38 68 Q34 78 21 80Z", c);
+    case 1: return gp("M28 34 Q8 40 12 68 Q22 74 27 58Z", c) + gp("M72 34 Q92 40 88 68 Q78 74 73 58Z", c) + gc(26, 38, 3, "#ff7fb0") + gc(74, 38, 3, "#ff7fb0");
+    case 2: return gc(50, 12, 8.5, c) + gp("M30 40 Q30 14 50 14 Q70 14 70 40Z", c);
+    case 3: return gp("M28 42 Q26 12 50 12 Q74 12 72 42 L75 62 Q60 68 50 63 Q40 68 25 62Z", c);
+    default: return gp("M68 24 Q98 28 90 64 Q86 80 74 72 Q86 52 68 40Z", c) + gp("M28 40 Q26 12 50 12 Q74 12 72 40Z", c) + gc(71, 30, 3, "#ff7fb0");
+  }
+}
+function girlFig(o, wid) {
+  const skin = o.skin || "#ffe0c8", hair = o.hair || "#5a3a22", dress = o.dress || "#ff8fb8", trim = o.trim || "#fff", hs = o.hs || 0, eye = o.eye || "#4a3326";
+  const w = wid ? girlTop(wid) : {};
+  const grad = o.rainbow ? `<defs><linearGradient id="grb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff7ac8"/><stop offset=".33" stop-color="#ffd166"/><stop offset=".66" stop-color="#6fe3c1"/><stop offset="1" stop-color="#8f7cff"/></linearGradient></defs>` : "";
+  const hc = o.rainbow ? "url(#grb)" : hair;
+  const back = (o.back || []).map(([k, ...a]) => k === "wings" ? gp("M40 64 Q4 34 8 68 Q14 86 40 74Z", a[0], 'opacity=".95"') + gp("M60 64 Q96 34 92 68 Q86 86 60 74Z", a[0], 'opacity=".95"') + gp("M40 66 Q18 62 16 76 Q24 82 40 74Z", a[1]) + gp("M60 66 Q82 62 84 76 Q76 82 60 74Z", a[1]) : GACC[k](...a)).join("");
+  const sparks = (o.sp || []).map(([x, y, s]) => gstar(x, y, s, o.spc || "#fff59d")).join("");
+  const cape = o.cape ? gp("M38 62 L16 99 L84 99 L62 62Z", o.cape) : "";
+  const skirt = o.tail
+    ? gp("M39 66 Q35 84 44 92 L29 101 Q46 98 50 94 Q54 98 71 101 L56 92 Q65 84 61 66Z", dress) + `<path d="M42 74 Q50 78 58 74 M41 82 Q50 86 59 82" stroke="${trim}" stroke-width="1.2" fill="none" opacity=".8"/>` + gc(43, 66, 4, trim) + gc(57, 66, 4, trim)
+    : gp(o.gown ? "M38 62 Q50 68 62 62 L88 99 Q50 108 12 99Z" : "M38 62 Q50 68 62 62 L73 95 Q50 103 27 95Z", dress) + `<path d="M${o.gown ? 13 : 28} ${o.gown ? 97 : 93} Q50 ${o.gown ? 106 : 101} ${o.gown ? 87 : 72} ${o.gown ? 97 : 93}" stroke="${trim}" stroke-width="3.2" fill="none" stroke-linecap="round"/><path d="M40 73 Q50 77 60 73" stroke="${trim}" stroke-width="3" fill="none" stroke-linecap="round"/>` + gheart(50, 84, 3.2, trim);
+  const arm = (x1, y1, x2, y2) => `<path d="M${x1} ${y1} L${x2} ${y2}" stroke="${GOL}" stroke-width="6.4" stroke-linecap="round"/><path d="M${x1} ${y1} L${x2} ${y2}" stroke="${o.tail ? skin : dress}" stroke-width="4.4" stroke-linecap="round"/>`;
+  const hands = gc(24, 81, 3.6, skin) + gc(75.5, 81, 3.6, skin);
+  const eyes = [42.5, 57.5].map(x => ge(x, 42.5, 3, 4.1, eye, 'stroke="none"') + `<circle cx="${x - 1}" cy="${40.8}" r="1.3" fill="#fff"/><circle cx="${x + 1.2}" cy="${44.2}" r=".7" fill="#fff"/><path d="M${x - 4.2} 39.6 Q${x} 36.4 ${x + 4.2} 39.6" stroke="${GOL}" stroke-width="1.5" fill="none" stroke-linecap="round"/>`).join("");
+  const face = ge(50, 40, 19.5, 19, skin) + eyes + ge(36.4, 49, 4, 2.3, "#ff8fa8", 'stroke="none" opacity=".55"') + ge(63.6, 49, 4, 2.3, "#ff8fa8", 'stroke="none" opacity=".55"') + `<path d="M46.3 50.4 Q50 54.4 53.7 50.4" stroke="${GOL}" stroke-width="1.5" fill="none" stroke-linecap="round"/>`;
+  const fringe = gp("M30.5 38 Q30 19 50 19 Q70 19 69.5 38 Q63 27 54 29.5 Q50 34 44 29 Q35 29 30.5 38Z", hc);
+  const front = (o.front || []).map(([k, ...a]) => GACC[k](...a)).join("");
+  return `<svg viewBox="0 0 100 100" aria-hidden="true" focusable="false"><circle cx="50" cy="50" r="50" fill="${o.bg || "#ffe4ef"}"/>${grad}${o.deco || ""}${sparks}${back}${girlHairBack(hs, hc)}${cape}${arm(39, 66, 25, 81)}${skirt}<rect x="45" y="55" width="10" height="11" fill="${skin}" stroke="${GOL}" stroke-width="1.1"/>${face}${fringe}${front}${arm(61, 66, 75.5, 81)}${w.back || ""}${hands}${w.front || ""}</svg>`;
+}
+const G_HAIRS = ["#2b1b12", "#5a3a22", "#b5651d", "#e8c15a", "#c62828", "#7b3fa0", "#e86a9a", "#212121"];
+const G_DRESS = ["#ff8fb8", "#b39ddb", "#80deea", "#ffab91", "#a5d6a7", "#f48fb1", "#90caf9", "#ffd180"];
+const G_BG = ["#ffe4ef", "#f1e6ff", "#e0f7fa", "#fff3e0", "#e8f5e9", "#fde7f3", "#e3f2fd", "#fffde7"];
+const G_EYE = ["#3b2a20", "#2e6fba", "#3a8f5c", "#7b4a9c"];
+function girlBase(seed, wid) {
+  const r = rng(seed); r(); r();
+  const pick = a => a[Math.floor(r() * a.length)];
+  const dress = pick(G_DRESS), a = Math.floor(r() * 6);
+  const front = [[["bow", pick(["#ff4d94", "#9c6bff", "#29b6f6", "#ff8a3d"])]], [["flowers"]], [["star"]], [["band", pick(["#ff6fa3", "#b57bff", "#4fc3f7"])]], [["hearts"]], []][a];
+  return girlFig({ bg: pick(G_BG), skin: pick(SKINS), hair: pick(G_HAIRS), hs: Math.floor(r() * 5), dress, trim: "#ffffff", eye: pick(G_EYE), front }, wid);
+}
+// Girls' shop avatars (three tiers)
+const GFIG = {
+  "g-bow": { bg: "#ffe4ef", hair: "#6d3b2a", hs: 0, dress: "#ff7fb0", front: [["bow", "#ff4d94"]] },
+  "g-bunny": { bg: "#ede4ff", hair: "#f6f1ff", hs: 3, dress: "#d1b3ff", back: [["bunny", "#f6f1ff"]], front: [["hearts"]] },
+  "g-kitty": { bg: "#e2fff0", hair: "#2f2633", hs: 4, dress: "#7fdcae", front: [["cat", "#2f2633"]] },
+  "g-flower": { bg: "#effbe0", hair: "#c47a3a", hs: 1, dress: "#8fd18f", front: [["flowers"]] },
+  "g-sweet": { bg: "#ffe1e1", hair: "#3a2320", hs: 1, dress: "#ef5370", front: [["band", "#ff5a7a"], ["hearts"]] },
+  "g-princess": { bg: "#fff0c9", hair: "#f1c75b", hs: 0, dress: "#f7a8d4", trim: "#ffd54f", gown: 1, front: [["tiara", "#ffd54f", "#ff4d94"]], sp: [[14, 24, 4], [86, 30, 3.4], [82, 60, 3]] },
+  "g-mermaid": { bg: "#d2f5ff", hair: "#25bfae", hs: 0, dress: "#38c9d8", trim: "#ffd9ec", tail: 1, front: [["shell"]], sp: [[16, 70, 3.4], [86, 54, 3]], spc: "#ffffff" },
+  "g-fairy": { bg: "#f1e6ff", hair: "#ff94d4", hs: 4, dress: "#c9a7ff", back: [["wings", "#d9f4ff", "#f4c6ff"]], front: [["star"]], sp: [[14, 20, 4], [88, 22, 3.4], [10, 50, 2.6]] },
+  "g-witch": { bg: "#2e2252", hair: "#2a1b3d", hs: 0, dress: "#7e4bd0", trim: "#ffd54f", front: [["witch", "#4b2a8c"]], sp: [[14, 30, 3.4], [86, 44, 4], [18, 62, 2.6]] },
+  "g-popstar": { bg: "#ffd9f3", hair: "#ff4fb2", hs: 4, dress: "#27d8e0", trim: "#ffffff", front: [["headset"], ["star", 28, 24]], sp: [[84, 22, 4], [14, 56, 3]], spc: "#ffffff" },
+  "g-unicorn": { bg: "#fde7ff", rainbow: 1, hs: 0, dress: "#f3e5ff", trim: "#ffb3e6", back: [["wings", "#ffffff", "#ffe0f6"]], front: [["horn"], ["flowers", ["#ff8fb8", "#ffd166", "#8be28b", "#7cc4ff", "#c39bff"]]], sp: [[12, 24, 4], [90, 18, 3.4], [88, 56, 3], [10, 56, 2.6]] },
+  "g-iceq": { bg: "#d4efff", hair: "#e6f6ff", hs: 0, dress: "#7fc8ff", trim: "#ffffff", cape: "#4aa3e8", front: [["crown", "#bfeaff", "#29b6f6"]], sp: [[14, 26, 4], [86, 28, 3.4], [90, 62, 3]], spc: "#ffffff" },
+  "g-angel": { bg: "#fff6cc", hair: "#f6d36b", hs: 3, dress: "#ffffff", trim: "#ffd54f", back: [["wings", "#ffffff", "#fff0a8"]], front: [["halo"]], sp: [[12, 18, 3.4], [90, 14, 3]] },
+  "g-galaxy": { bg: "#1a1040", hair: "#7a5cff", hs: 0, dress: "#3b2a8c", trim: "#ff9ee6", cape: "#5b3fd0", front: [["tiara", "#c6b3ff", "#ff9ee6"], ["star", 28, 26]], sp: [[12, 18, 3.4], [88, 20, 4], [8, 52, 2.6], [92, 56, 3], [20, 88, 2.4], [82, 86, 2.4]], spc: "#ffffff" },
+  "g-rose": { bg: "#ffd2e0", hair: "#7a1636", hs: 0, dress: "#d81b60", trim: "#ffd54f", gown: 1, front: [["crown", "#ffd54f", "#e91e63"], ["roses"]], sp: [[12, 28, 3.4], [88, 30, 3.4]] }
+};
+const GFIG_SET = new Set(Object.keys(GFIG));
+// accessories for the "top" slot: held in the right hand, anchored at x = 75.5
+function girlTop(id) {
+  const stick = (y1, c = "#ffb3d9") => `<path d="M75.5 88 L75.5 ${y1}" stroke="${GOL}" stroke-width="4.6" stroke-linecap="round"/><path d="M75.5 88 L75.5 ${y1}" stroke="${c}" stroke-width="2.8" stroke-linecap="round"/>`;
+  const aura = (cx, cy, r, c) => `<circle class="wg" cx="${cx}" cy="${cy}" r="${r}" fill="${c}" opacity=".4"/>`;
+  switch (id) {
+    case "w-star": return { back: aura(75.5, 32, 17, "#ffd54f") + stick(40) + gstar5(75.5, 31, 13, "#ffe066") + gstar(90, 16, 3.6) + gstar(62, 18, 3) + gstar(92, 44, 2.6) };
+    case "w-heart": return { back: aura(75.5, 32, 17, "#ff80ab") + stick(40, "#ffd9ec") + gheart(75.5, 30, 10, "#ff4d94") + `<ellipse cx="71" cy="25" rx="2.4" ry="1.4" fill="#fff" opacity=".8"/>` + gp("M64 44 Q56 36 58 46 Q60 50 66 48Z", "#fff") + gp("M87 44 Q95 36 93 46 Q91 50 85 48Z", "#fff") + gstar(92, 12, 3.2) };
+    case "w-rose": return { back: stick(48, "#5fbf6a") + `<path d="M75.5 88 L66 52 M75.5 88 L85 52" stroke="${GOL}" stroke-width="4" stroke-linecap="round"/><path d="M75.5 88 L66 52 M75.5 88 L85 52" stroke="#5fbf6a" stroke-width="2.4" stroke-linecap="round"/>` + gp("M70 70 Q58 66 60 76 Q68 78 72 74Z", "#7bd47f") + [[66, 50, "#ff6f9f"], [85, 50, "#ff9ec2"], [75.5, 42, "#e53970"]].map(([x, y, c]) => gc(x, y, 6, c) + `<path d="M${x - 3} ${y} Q${x} ${y - 4} ${x + 3} ${y} Q${x} ${y + 3} ${x - 1.4} ${y - 1}" stroke="#7a1636" stroke-width="1" fill="none"/>`).join(""), front: gp("M75.5 78 L68 72 L68 84Z M75.5 78 L83 72 L83 84Z", "#ff9ec2") + gc(75.5, 78, 2.6, "#e53970") };
+    case "w-crystal": return { back: aura(75.5, 46, 19, "#b388ff"), front: gp("M64 88 L87 88 L82 80 L69 80Z", "#ffd54f") + `<circle cx="75.5" cy="58" r="15" fill="#c9b6ff" stroke="${GOL}" stroke-width="1.4"/><circle cx="75.5" cy="58" r="12" fill="#e8dcff"/><ellipse cx="70" cy="52" rx="4" ry="2.6" fill="#fff" opacity=".9" transform="rotate(-30 70 52)"/>` + gstar(79, 61, 3.4, "#ff9ee6") + gstar(72, 64, 2.2, "#fff59d") };
+    case "w-parasol": return { back: stick(34, "#d9a0ff") + gp("M53 38 Q53 12 75.5 10 Q98 12 98 38 Q92 33 87 38 Q81 33 75.5 38 Q70 33 64 38 Q58 33 53 38Z", "#ff9ec7") + gp("M75.5 10 Q61 16 64 38 Q70 33 75.5 38Z", "#b39ddb") + gp("M75.5 10 Q90 16 87 38 Q81 33 75.5 38Z", "#b39ddb") + gstar(94, 12, 3.2) + gstar(56, 8, 2.6) };
+    case "w-mic": return { back: aura(75.5, 36, 15, "#ff5cc8") + `<path d="M75.5 88 L75.5 48" stroke="${GOL}" stroke-width="6" stroke-linecap="round"/><path d="M75.5 88 L75.5 48" stroke="#ff5cc8" stroke-width="3.6" stroke-linecap="round"/>` + gc(75.5, 40, 8, "#ffd54f") + `<path d="M69 36 H82 M68.6 41 H82.4 M70 46 H81" stroke="#e0a800" stroke-width="1"/>` + gstar(90, 24, 3.6) + gstar(62, 26, 3) + gstar(92, 50, 2.6) };
+    default: return {};
+  }
+}
+
 function avatarHTML(st, cls, over) {
   const seed = avatarSeed(st), e0 = over ? { ...eqOf(st), ...over } : eqOf(st);
   const wid = e0.top && shopItem(e0.top) ? e0.top : "", skid = e0.skin && shopItem(e0.skin) ? e0.skin : "";
-  const key = skid ? "s" + skid + "|" + wid : seed + "|" + wid;
-  if (!avatarCache.has(key)) avatarCache.set(key, skid ? enemyFig(skid, wid) : avatarSVG(seed, wid));
+  const gl = isGirlCls(st.cls), key = (gl ? "g" : "") + (skid ? "s" + skid + "|" + wid : seed + "|" + wid);
+  if (!avatarCache.has(key)) avatarCache.set(key, skid ? enemyFig(skid, wid) : gl ? girlBase(seed, wid) : avatarSVG(seed, wid));
   const inner = `<span class="av ${cls || ""}">${avatarCache.get(key)}</span>`;
   if (!over && st.id && isSotw(st)) return `<span class="avw sw w-${cls || "x"}"><span class="swring"></span>${inner}<span class="topper" aria-hidden="true">👑</span><span class="spk s1" aria-hidden="true">✦</span><span class="spk s2" aria-hidden="true">✦</span></span>`;
   const fr = e0.frame && shopItem(e0.frame) ? e0.frame : "";
@@ -1519,6 +1663,8 @@ const SHOP_CATS = [
   { key: "frame", label: "Frames" }, { key: "skin", label: "Avatars" }, { key: "color", label: "Name colours" }, { key: "title", label: "Titles" },
   { key: "top", label: "Legendary weapons" }
 ];
+const GIRL_LABELS = { frame: "Pretty frames", skin: "Avatars", color: "Name colours", title: "Titles", top: "Magic accessories" };
+const shopCats = () => SHOP_CATS.map(c => GIRL ? { ...c, label: GIRL_LABELS[c.key] } : c);
 // Which equipment slot an item goes into. Legendary avatars share the avatar slot ("skin") with the enemy avatars, so a boy wears one or the other.
 const slotOf = it => it.slot || it.cat;
 // Edit prices here. Frames: 200 basic, 500 premium.
@@ -1582,7 +1728,52 @@ const SHOP = [
   { id: "h-shield", cat: "top", name: "✦ Aegis of Pi", icon: "🛡️", price: 400 },
   { id: "h-trident", cat: "top", name: "✦ Tide-Sovereign Trident", icon: "🔱", price: 500 },
   { id: "h-axe", cat: "top", name: "✦ Dragonfire Axe", icon: "🪓", price: 600 },
-  { id: "h-hammer", cat: "top", name: "✦ Thunderforge Hammer", icon: "🔨", price: 700 }
+  { id: "h-hammer", cat: "top", name: "✦ Thunderforge Hammer", icon: "🔨", price: 700 },
+  { id: "g-bow", cat: "skin", name: "Bow Girl", price: 250, g: 1 },
+  { id: "g-bunny", cat: "skin", name: "Bunny Girl", price: 300, g: 1 },
+  { id: "g-kitty", cat: "skin", name: "Kitty Cat", price: 300, g: 1 },
+  { id: "g-flower", cat: "skin", name: "Flower Girl", price: 350, g: 1 },
+  { id: "g-sweet", cat: "skin", name: "Sweetheart", price: 350, g: 1 },
+  { id: "g-princess", cat: "skin", name: "Princess", price: 600, g: 1 },
+  { id: "g-mermaid", cat: "skin", name: "Mermaid", price: 650, g: 1 },
+  { id: "g-fairy", cat: "skin", name: "Sparkle Fairy", price: 650, g: 1 },
+  { id: "g-witch", cat: "skin", name: "Moon Witch", price: 700, g: 1 },
+  { id: "g-popstar", cat: "skin", name: "Pop Star", price: 700, g: 1 },
+  { id: "g-unicorn", cat: "skin", name: "Rainbow Unicorn", price: 1000, g: 1 },
+  { id: "g-iceq", cat: "skin", name: "Ice Queen", price: 900, g: 1 },
+  { id: "g-angel", cat: "skin", name: "Golden Angel", price: 900, g: 1 },
+  { id: "g-galaxy", cat: "skin", name: "Galaxy Princess", price: 1000, g: 1 },
+  { id: "g-rose", cat: "skin", name: "Rose Empress", price: 1100, g: 1 },
+  { id: "f-g-rose", cat: "frame", name: "✿ Rose Petal", price: 200, g: 1 },
+  { id: "f-g-lilac", cat: "frame", name: "✿ Lilac Dream", price: 200, g: 1 },
+  { id: "f-g-mint", cat: "frame", name: "✿ Mint Pearl", price: 250, g: 1 },
+  { id: "f-g-peach", cat: "frame", name: "✿ Peach Sunset", price: 250, g: 1 },
+  { id: "f-g-heart", cat: "frame", name: "♡ Candy Hearts", price: 350, g: 1 },
+  { id: "f-g-star", cat: "frame", name: "✦ Starlight Tiara", price: 400, g: 1 },
+  { id: "f-g-rainbow", cat: "frame", name: "✦ Rainbow Sparkle", price: 450, g: 1 },
+  { id: "f-g-glitter", cat: "frame", name: "✦ Glitter Queen", price: 500, g: 1 },
+  { id: "c-g-rose", cat: "color", name: "Rose Quartz", price: 150, g: 1 },
+  { id: "c-g-lilac", cat: "color", name: "Lavender", price: 150, g: 1 },
+  { id: "c-g-mint", cat: "color", name: "Mint Fresh", price: 150, g: 1 },
+  { id: "c-g-sky", cat: "color", name: "Sky Candy", price: 150, g: 1 },
+  { id: "c-g-peach", cat: "color", name: "Peach Fizz", price: 150, g: 1 },
+  { id: "c-g-bubble", cat: "color", name: "Bubblegum", price: 250, g: 1 },
+  { id: "c-g-glitter", cat: "color", name: "Glitter Pink", price: 300, g: 1 },
+  { id: "c-g-rainbow", cat: "color", name: "Rainbow Pop", price: 350, g: 1 },
+  { id: "t-g-princess", cat: "title", name: "Math Princess", price: 300, g: 1 },
+  { id: "t-g-fairy", cat: "title", name: "Number Fairy", price: 300, g: 1 },
+  { id: "t-g-queen", cat: "title", name: "Fraction Queen", price: 300, g: 1 },
+  { id: "t-g-star", cat: "title", name: "Geometry Star", price: 300, g: 1 },
+  { id: "t-g-angel", cat: "title", name: "Algebra Angel", price: 300, g: 1 },
+  { id: "t-g-pi", cat: "title", name: "Pi Sparkle", price: 300, g: 1 },
+  { id: "t-g-empress", cat: "title", name: "Equation Empress", price: 300, g: 1 },
+  { id: "t-g-genius", cat: "title", name: "Sweet Genius", price: 300, g: 1 },
+  { id: "w-star", cat: "top", name: "✦ Star Wand", price: 300, icon: "🪄", g: 1 },
+  { id: "w-heart", cat: "top", name: "✦ Heart Scepter", price: 350, icon: "💖", g: 1 },
+  { id: "w-rose", cat: "top", name: "✦ Rose Bouquet", price: 400, icon: "💐", g: 1 },
+  { id: "w-crystal", cat: "top", name: "✦ Crystal Ball", price: 500, icon: "🔮", g: 1 },
+  { id: "w-parasol", cat: "top", name: "✦ Rainbow Parasol", price: 550, icon: "🌂", g: 1 },
+  { id: "w-mic", cat: "top", name: "✦ Sparkle Mic", price: 600, icon: "🎤", g: 1 }
 ];
 const shopItem = id => SHOP.find(x => x.id === id);
 const walletOf = st => Math.max(0, (st.xp || 0) + (st.carry || 0) - (st.spent || 0));
@@ -1628,11 +1819,12 @@ function shopPreview(it, st) {
 // Avatars are split in three tiers so each tab stays short. The tier is fixed per avatar (prices can change).
 const AV_TIERS = [["basic", "Basic"], ["epic", "Epic"], ["legendary", "Legendary"]];
 const AV_TIER = {"e-slime": "basic", "e-zombie": "basic", "e-robot": "basic", "e-ghost": "basic", "e-skeleton": "basic", "e-vampire": "basic", "e-alien": "basic", "e-dragon": "basic", "e-pirate": "basic", "s-slime": "basic", "s-zombie": "basic", "s-robot": "basic", "e-knight": "epic", "e-golem": "epic", "e-frost": "epic", "e-wizard": "epic", "e-ninja": "epic", "e-pharaoh": "epic", "s-ghost": "epic", "s-bone": "epic", "s-bat": "epic", "s-alien": "epic", "s-wyvern": "epic", "s-knight": "epic", "s-pirate": "epic", "s-stone": "epic", "e-cosmic": "legendary", "e-phoenix": "legendary", "s-icedragon": "legendary", "s-sorcerer": "legendary", "s-ninja": "legendary", "s-pharaoh": "legendary", "s-astro": "legendary", "s-phoenix": "legendary"};
+Object.assign(AV_TIER, {"g-bow":"basic","g-bunny":"basic","g-kitty":"basic","g-flower":"basic","g-sweet":"basic","g-princess":"epic","g-mermaid":"epic","g-fairy":"epic","g-witch":"epic","g-popstar":"epic","g-unicorn":"legendary","g-iceq":"legendary","g-angel":"legendary","g-galaxy":"legendary","g-rose":"legendary"});
 let shopTier = "basic";
 const setTier = k => { shopTier = k; };
 const tierOf = it => AV_TIER[it.id] || "basic";
-const shopList = cat => SHOP.filter(x => x.cat === cat && (cat !== "skin" || tierOf(x) === shopTier));
-const tierBar = act => `<div class="tier-tabs" role="tablist" aria-label="Avatar tiers">${AV_TIERS.map(([k, l]) => `<button class="tier-tab" type="button" data-act="${act}" data-tier="${k}" aria-pressed="${k === shopTier}">${l} <small>${SHOP.filter(x => x.cat === "skin" && tierOf(x) === k).length}</small></button>`).join("")}</div>`;
+const shopList = cat => SHOP.filter(x => !!x.g === GIRL && x.cat === cat && (cat !== "skin" || tierOf(x) === shopTier));
+const tierBar = act => `<div class="tier-tabs" role="tablist" aria-label="Avatar tiers">${AV_TIERS.map(([k, l]) => `<button class="tier-tab" type="button" data-act="${act}" data-tier="${k}" aria-pressed="${k === shopTier}">${l} <small>${SHOP.filter(x => !!x.g === GIRL && x.cat === "skin" && tierOf(x) === k).length}</small></button>`).join("")}</div>`;
 function applyPrices(m) { if (!m) return; SHOP.forEach(i => { const v = Number(m[i.id]); if (Number.isFinite(v) && v >= 0 && m[i.id] !== "") i.price = Math.round(v); }); }
 </script>
 

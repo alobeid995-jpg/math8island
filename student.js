@@ -81,8 +81,9 @@ function render() {
   if (!me) { app.innerHTML = `<div class="empty"><h2>Your record was not found</h2>Ask your teacher to check your login.</div>`; return; }
   const st = me, lv = level(st.xp), into = Math.max(0, st.xp - (lv - 1) * LEVEL_XP), pct = Math.min(100, into / LEVEL_XP * 100);
   const picker = pickerOpen ? `<section class="picker"><b>Pick a new look</b>
-      <div class="pk-grid">${seeds.map(s => `<button class="pk" type="button" data-act="setAv" data-seed="${s}" aria-label="Use this avatar">${avatarHTML({ id: st.id, avatar: s, eq: st.eq }, "")}</button>`).join("")}</div>
+      <div class="pk-grid">${seeds.map(s => `<button class="pk" type="button" data-act="setAv" data-seed="${s}" aria-label="Use this avatar">${avatarHTML({ id: st.id, avatar: s, eq: st.eq, cls: st.cls }, "")}</button>`).join("")}</div>
       <div class="pk-acts"><button class="ghost" data-act="moreAv" type="button">Show more</button><button class="ghost" data-act="closeAv" type="button">Close</button></div></section>` : "";
+  GIRL = isGirlCls(st.cls);
   const items = shopList(shopCat);
   const recent = st.log.slice(-8).reverse();
   $("app").innerHTML = `
@@ -96,8 +97,8 @@ function render() {
       <div><div class="bar" aria-label="Progress to level ${lv + 1}"><i style="width:${pct}%"></i></div><div class="barlbl"><span>${into}/${LEVEL_XP} XP</span><span>Level ${lv + 1}</span></div></div>
       ${picker}
     </section>
-    <section class="card"><h3>XP Shop</h3>
-      <div class="shop-tabs">${SHOP_CATS.map(c => `<button class="shop-tab" data-act="cat" data-cat="${c.key}" aria-pressed="${c.key === shopCat}">${c.label}</button>`).join("")}</div>
+    <section class="card${GIRL ? " girlshop" : ""}"><h3>${GIRL ? "✨ Sparkle Boutique" : "XP Shop"}</h3>${GIRL ? `<p class="gs-sub">Dress up your avatar with pretty things. You pay with your XP.</p>` : ""}
+      <div class="shop-tabs">${shopCats().map(c => `<button class="shop-tab" data-act="cat" data-cat="${c.key}" aria-pressed="${c.key === shopCat}">${c.label}</button>`).join("")}</div>
       ${shopCat === "skin" ? tierBar("tier") : ""}
       <div class="shop-grid">${items.map(it => card(st, it)).join("")}</div>
     </section>
