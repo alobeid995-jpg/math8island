@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Simultaneous equations: elimination · Math Island</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fffdf4;--ink:#151412;--mut:#5c574b;--line:#d9d2bd;--y:#f3b31c;--b:#1f4fd8;--r:#d8402b;--g:#1e7a46;--gbg:#e2f3e8;--rbg:#fbe3df;--bbg:#e6edff;--ybg:#fff1c9}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.5 "Archivo",system-ui,sans-serif;min-height:100vh;
+ background-image:radial-gradient(circle at 92% 6%,rgba(31,79,216,.06) 0 120px,transparent 121px),radial-gradient(circle at 4% 96%,rgba(243,179,28,.12) 0 150px,transparent 151px)}
+button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:900px;margin:0 auto;padding:14px 16px 90px}
+.top{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.logo{width:42px;height:42px;background:var(--y);border:3px solid var(--ink);display:grid;place-items:center;transform:rotate(-6deg);font:italic 26px/1 "Instrument Serif",serif;flex:none}
+.top h1{margin:0;font-size:22px;font-weight:900;line-height:1.15;letter-spacing:-.01em}.top small{display:block;color:var(--mut);font-weight:500;font-size:14px}
+.x{margin-left:auto;border:3px solid var(--ink);background:#fff;border-radius:10px;padding:8px 14px;font-weight:800;box-shadow:3px 3px 0 var(--ink)}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0 16px}
+.step{border:3px solid var(--ink);background:#fff;border-radius:10px;padding:9px 8px;font-weight:800;text-align:center;box-shadow:3px 3px 0 var(--ink);font-size:16px;line-height:1.2}
+.step small{display:block;font-weight:600;color:var(--mut);font-size:12.5px;margin-top:2px}
+.step[aria-current=true]{background:var(--y)}.step.done{background:var(--gbg)}.step.lock{opacity:.55;box-shadow:none;border-style:dashed}
+.card{background:#fff;border:3px solid var(--ink);border-radius:12px;box-shadow:5px 5px 0 var(--ink);padding:18px;margin-bottom:16px}
+.card h2{margin:0 0 6px;font-size:24px;font-weight:900;letter-spacing:-.01em}.card h3{margin:0 0 6px;font-size:19px;font-weight:800}
+.q{font-size:21px;font-weight:600;margin:6px 0 12px}
+.big{font-size:26px;font-weight:900}
+.btn{border:3px solid var(--ink);background:var(--b);color:#fff;border-radius:12px;padding:13px 22px;font-weight:800;font-size:19px;box-shadow:4px 4px 0 var(--ink);min-height:54px}
+.btn:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--ink)}.btn.alt{background:#fff;color:var(--ink)}.btn.go{background:var(--g)}.btn:disabled{opacity:.45;box-shadow:none}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.chips{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin:10px 0}
+@media(max-width:560px){.chips{grid-template-columns:repeat(4,1fr)}}
+.chip{border:3px solid var(--ink);background:#fff;border-radius:10px;padding:10px 4px;font-weight:800;font-size:19px;min-height:52px;font-variant-numeric:tabular-nums}
+.chip[aria-pressed=true]{background:var(--ybg);outline:3px solid var(--y)}
+.chip.ok{background:var(--gbg);border-color:var(--g)}.chip.no{background:var(--rbg);border-color:var(--r)}.chip.miss{background:var(--gbg);border-style:dashed;border-color:var(--g)}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0}@media(max-width:560px){.opts{grid-template-columns:1fr}}
+.opt{border:3px solid var(--ink);background:#fff;border-radius:12px;padding:14px;font-weight:800;font-size:21px;text-align:center;min-height:62px;font-variant-numeric:tabular-nums}
+.opt[aria-pressed=true]{background:var(--ybg);outline:3px solid var(--y)}.opt.ok{background:var(--gbg);border-color:var(--g)}.opt.no{background:var(--rbg);border-color:var(--r)}
+.fb{margin:12px 0;padding:12px 14px;border-radius:10px;border:3px solid var(--ink);font-weight:600}.fb.good{background:var(--gbg)}.fb.bad{background:var(--rbg)}.fb.info{background:var(--bbg)}
+.bar{height:14px;border:3px solid var(--ink);border-radius:99px;background:#fff;overflow:hidden;margin:6px 0 12px}.bar i{display:block;height:100%;background:var(--g);transition:width .3s}
+.tag{display:inline-block;border:2px solid var(--ink);border-radius:99px;padding:1px 10px;font-weight:800;font-size:14px;background:var(--ybg)}
+.nl{position:relative;height:96px;margin:16px 8px 6px}
+.nl .ln{position:absolute;left:0;right:0;top:46px;height:4px;background:var(--ink);border-radius:2px}
+.nl .rng{position:absolute;top:34px;height:28px;background:rgba(30,122,70,.28);border:3px solid var(--g);border-radius:6px}
+.nl .pt{position:absolute;top:36px;width:4px;height:24px;background:var(--ink);transform:translateX(-2px)}
+.nl .lb{position:absolute;top:70px;transform:translateX(-50%);font-weight:800;font-size:16px;white-space:nowrap}
+.nl .dot{position:absolute;top:38px;width:20px;height:20px;border-radius:50%;border:3px solid var(--ink);transform:translateX(-10px)}
+.nl .dot.in{background:var(--g)}.nl .dot.out{background:#fff}
+.ineq{font:italic 30px/1.2 "Instrument Serif",serif;text-align:center;margin:8px 0;font-variant-numeric:tabular-nums}
+.ineq b{font:900 30px "Archivo",sans-serif;font-style:normal}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.tab{border:3px solid var(--ink);background:#fff;border-radius:99px;padding:8px 16px;font-weight:800}.tab[aria-pressed=true]{background:var(--y)}.tab.ok{background:var(--gbg)}
+.gcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.gc{border:3px solid var(--ink);background:#fff;border-radius:12px;box-shadow:4px 4px 0 var(--ink);padding:14px;text-align:left}
+.gc b{display:block;font-size:20px;font-weight:900}.gc span{color:var(--mut);font-size:15px;display:block;margin:2px 0 6px}.gc.ok{background:var(--gbg)}
+.ws .wq{border-bottom:2px dashed var(--line);padding:14px 0}.ws .wq:last-of-type{border:0}
+.ws .num{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--y);border:3px solid var(--ink);font-weight:900;margin-right:8px;font-size:16px}
+.lockbox{text-align:center;padding:26px 12px}.lockbox .big{margin-bottom:6px}
+.pick{display:flex;gap:8px;margin:10px 0}.pick .tab{flex:1;text-align:center}
+.stepper{display:flex;align-items:center;gap:12px;justify-content:center;margin:8px 0}.stepper b{font-size:36px;min-width:130px;text-align:center;font-variant-numeric:tabular-nums}
+.stepper button{width:56px;height:56px;border:3px solid var(--ink);border-radius:12px;background:#fff;font-size:30px;font-weight:900;box-shadow:3px 3px 0 var(--ink)}
+[hidden]{display:none!important}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style><style>
+.eqs{display:grid;gap:2px;justify-content:center;text-align:center;font:italic 30px/1.35 "Instrument Serif",serif;margin:10px 0;font-variant-numeric:tabular-nums}
+.work{border:3px solid var(--ink);border-radius:10px;background:var(--bbg);padding:10px 14px;margin:10px 0;font-weight:700}.wl{padding:3px 0;font-size:19px}
+.opts.one{grid-template-columns:1fr}.opt.left{text-align:left;font-size:19px}
+</style></head><body>
+<div class="wrap" id="app"><p>Loading…</p></div>
+<script type="module">
+import { fs, doc, getDoc, setDoc, getDocs, collection, query, where, whenUser, profileOf } from "./fb.js";
+
+const $ = id => document.getElementById(id), app = $("app");
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const G = { ex: "el42-examples", add: "el42-addsub", solve: "el42-solve", spot: "el42-spot", ws: "el42-ws" };
+
+/* ---------- who is here ---------- */
+const u = await whenUser(), p = u && await profileOf(u.uid);
+if (!p) { location.href = "index.html"; throw new Error("not signed in"); }
+const mode = p.role === "teacher" ? "teacher" : "student";
+const base = mode === "teacher" ? [] : (p.tid ? ["teachers", p.tid] : []);
+const embedded = window.parent !== window;
+let myName = "", done = { ex: false, add: false, solve: false, spot: false }, wsRes = null;
+if (mode === "student") {
+  try { const s = await getDoc(doc(fs, ...base, "students", p.sid)); myName = s.exists() ? s.data().name || "" : ""; } catch {}
+  try {
+    const s = await getDocs(query(collection(fs, ...base, "plays"), where("sid", "==", p.sid)));
+    s.docs.forEach(d => { const v = d.data();
+      if (v.g === G.ex) done.ex = true; if (v.g === G.add) done.add = true; if (v.g === G.solve) done.solve = true; if (v.g === G.spot) done.spot = true;
+      if (v.g === G.ws) wsRes = { r: v.r, w: v.w, m: v.m || [] }; });
+  } catch {}
+}
+async function save(g, r, w, m) {
+  if (mode !== "student") return;   // a teacher can look around; nothing is saved for him
+  const t = Date.now();
+  try { await setDoc(doc(fs, ...base, "plays", `${p.sid}_${g}_${t}`), { s: "el", g, l: 1, r, w, t, u: t, m: (m || []).slice(-20), sid: p.sid, name: myName }); } catch {}
+}
+const close = () => { if (embedded) { try { parent.postMessage("mi-close", location.origin); } catch {} } else location.href = mode === "teacher" ? "teacher.html" : "student.html"; };
+const gamesDone = () => done.add && done.solve && done.spot;
+const unlocked = () => mode === "teacher" || (done.ex && gamesDone());
+
+/* ---------- shell ---------- */
+let view = "ex";
+function shell(inner) {
+  const st = (k, n, l, d) => `<button class="step ${d ? "done" : ""} ${k === "ws" && !unlocked() ? "lock" : ""}" data-go="${k}" aria-current="${view === k || (k === "games" && ["add", "solve", "spot"].includes(view))}"><span>${n}. ${l}</span><small>${k === "ws" ? (wsRes ? "done" : unlocked() ? "ready" : "after 1 and 2") : d ? "done ✓" : ""}</small></button>`;
+  app.innerHTML = `<div class="top"><div class="logo">π</div><h1>Simultaneous equations: elimination<small>Exercise 4.2 · examples, games, then a worksheet</small></h1><button class="x" data-close="1" type="button">✕ Close</button></div>
+    <div class="steps">${st("ex", 1, "Examples", done.ex)}${st("games", 2, "Games", gamesDone())}${st("ws", 3, "Worksheet", !!wsRes)}</div>${inner}`;
+}
+document.addEventListener("click", e => {
+  const t = e.target;
+  if (t.closest("[data-close]")) return close();
+  const g = t.closest("[data-go]"); if (g) { view = g.dataset.go; render(); window.scrollTo({ top: 0, behavior: "smooth" }); }
+});
+function render() { ({ ex: renderEx, games: renderGames, ws: renderWs, add: () => runGame("add"), solve: () => runGame("solve"), spot: () => runGame("spot") })[view](); }
+const eqs = (a, b) => `<div class="eqs"><div>${a}</div><div>${b}</div></div>`;
+const num = n => String(n).replace("-", "−");
+
+/* ---------- 1. Examples: step by step, each step is a question ---------- */
+const EXS = [
+  { title: "Starter · Karim's mistake", e: ["x + y = 9", "x − y = 3"], intro: "Karim wrote: Add: 2x + 0y = 6, so x = 3. Find his mistake.", steps: [
+    { q: "Karim added the right-hand sides. What is 9 + 3?", o: ["12", "6", "3", "27"], c: "12", line: "9 + 3 = 12, not 6. So 2x = 12." },
+    { q: "2x = 12. What is x?", o: ["6", "12", "3", "24"], c: "6", line: "x = 12 ÷ 2 = 6" },
+    { q: "Substitute x = 6 into x + y = 9. What is y?", o: ["3", "15", "6", "−3"], c: "3", line: "6 + y = 9, y = 9 − 6 = 3" },
+    { q: "Check in the second equation: 6 − 3 = ?", o: ["3", "9", "−3", "18"], c: "3", line: "6 − 3 = 3 ✓" }], ans: "x = 6 and y = 3" },
+  { title: "Example A · add", e: ["x + y = 12", "x − y = 2"], intro: "The y terms are +y and −y. They have opposite signs.", steps: [
+    { q: "Opposite signs on the y terms. Add or subtract the equations?", o: ["Add", "Subtract"], c: "Add", line: "Add: 2x + 0y = 14" },
+    { q: "2x = 14. What is x?", o: ["7", "14", "12", "28"], c: "7", line: "x = 14 ÷ 2 = 7" },
+    { q: "Substitute x = 7 into x + y = 12. What is y?", o: ["5", "19", "7", "−5"], c: "5", line: "7 + y = 12, y = 12 − 7 = 5" },
+    { q: "Check in the second equation: 7 − 5 = ?", o: ["2", "12", "−2", "35"], c: "2", line: "7 − 5 = 2 ✓" }], ans: "x = 7 and y = 5" },
+  { title: "Example B · subtract", e: ["2x + y = 11", "x + y = 7"], intro: "The y terms are +y and +y. They have the same sign.", steps: [
+    { q: "Same signs on the y terms. Add or subtract the equations?", o: ["Add", "Subtract"], c: "Subtract", line: "Subtract: x + 0y = 4" },
+    { q: "What is x?", o: ["4", "18", "3", "7"], c: "4", line: "x = 4" },
+    { q: "Substitute x = 4 into x + y = 7. What is y?", o: ["3", "11", "4", "−3"], c: "3", line: "4 + y = 7, y = 7 − 4 = 3" },
+    { q: "Check in the first equation: 2 × 4 + 3 = ?", o: ["11", "10", "14", "9"], c: "11", line: "8 + 3 = 11 ✓" }], ans: "x = 4 and y = 3" },
+  { title: "Example C · add (3y)", e: ["x + 3y = 11", "x − 3y = 5"], intro: "The y terms are +3y and −3y. They have opposite signs.", steps: [
+    { q: "Opposite signs on the y terms. Add or subtract?", o: ["Add", "Subtract"], c: "Add", line: "Add: 2x + 0y = 16" },
+    { q: "2x = 16. What is x?", o: ["8", "16", "6", "11"], c: "8", line: "x = 16 ÷ 2 = 8" },
+    { q: "Substitute x = 8 into x + 3y = 11. 3y = 11 − 8 = ? ", o: ["3", "19", "8", "−3"], c: "3", line: "3y = 11 − 8 = 3, so y = 3 ÷ 3 = 1" },
+    { q: "Check in the second equation: 8 − 3 × 1 = ?", o: ["5", "11", "−5", "24"], c: "5", line: "8 − 3 = 5 ✓" }], ans: "x = 8 and y = 1" }
+];
+const ex = { tab: 0, st: EXS.map(() => 0), wrong: "", fin: EXS.map(() => false) };
+function renderEx() {
+  const tabs = `<div class="tabs">${EXS.map((e, i) => `<button class="tab ${ex.fin[i] ? "ok" : ""}" data-etab="${i}" aria-pressed="${ex.tab === i}">${e.title}</button>`).join("")}</div>`;
+  const e = EXS[ex.tab], s = ex.st[ex.tab], fin = s >= e.steps.length;
+  const lines = e.steps.slice(0, s).map(x => `<div class="wl">${esc(x.line)}</div>`).join("");
+  const cur = e.steps[s];
+  shell(`${tabs}<div class="card"><h2>${e.title}</h2>${eqs(e.e[0], e.e[1])}<p class="q">${e.intro}</p>
+    ${lines ? `<div class="work">${lines}</div>` : ""}
+    ${fin ? `<div class="fb good"><b>Answers: ${e.ans}</b></div>
+      <div class="row">${ex.tab < EXS.length - 1 ? `<button class="btn" data-etab="${ex.tab + 1}" type="button">Next example →</button>` : ""}${ex.fin.every(Boolean) || done.ex ? `<button class="btn go" data-exfin="1" type="button">${done.ex ? "Go to the games →" : "I understand. Finish the examples ✓"}</button>` : ""}</div>`
+    : `<p class="q"><span class="tag">Step ${s + 1} of ${e.steps.length}</span> ${esc(cur.q)}</p>
+      <div class="opts">${cur.o.map(o => `<button class="opt" data-eopt="${esc(o)}">${esc(o)}</button>`).join("")}</div>
+      ${ex.wrong ? `<div class="fb bad">${esc(ex.wrong)}</div>` : ""}`}</div>`);
+}
+document.addEventListener("click", async e => {
+  if (view !== "ex") return; const t = e.target;
+  const tb = t.closest("[data-etab]"); if (tb) { ex.tab = +tb.dataset.etab; ex.wrong = ""; renderEx(); return window.scrollTo({ top: 0 }); }
+  const op = t.closest("[data-eopt]"); if (op) {
+    const E = EXS[ex.tab], st = E.steps[ex.st[ex.tab]];
+    if (op.dataset.eopt === st.c) { ex.st[ex.tab]++; ex.wrong = ""; if (ex.st[ex.tab] >= E.steps.length) ex.fin[ex.tab] = true; }
+    else ex.wrong = "Not quite. Look at the signs and try again.";
+    return renderEx();
+  }
+  if (t.closest("[data-exfin]")) {
+    if (!done.ex) { done.ex = true; save(G.ex, EXS.length, 0, []); }
+    view = "games"; render(); window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+});
+
+/* ---------- 2. Games ---------- */
+const GAMES = [
+  { id: "add", gid: G.add, title: "Add or subtract?", desc: "Look at the signs. Choose the right operation." },
+  { id: "solve", gid: G.solve, title: "Solve it", desc: "Solve the pair of equations. Pick x and y." },
+  { id: "spot", gid: G.spot, title: "Spot the mistake", desc: "Find the line with the mistake." }
+];
+function renderGames() {
+  shell(`<div class="card"><h2>Games</h2><p class="q">Play all three. They unlock the worksheet.</p>
+    <div class="gcards">${GAMES.map(g => `<button class="gc ${done[g.id] ? "ok" : ""}" data-game="${g.id}" type="button"><b>${g.title}</b><span>${g.desc}</span><span class="tag">${done[g.id] ? "Played ✓" : "Play"}</span></button>`).join("")}</div>
+    ${unlocked() ? `<div class="row" style="margin-top:16px"><button class="btn go" data-go="ws" type="button">Go to the worksheet →</button></div>` : ""}</div>`);
+}
+document.addEventListener("click", e => { const g = e.target.closest("[data-game]"); if (g && view === "games") { gs = null; view = g.dataset.game; render(); window.scrollTo({ top: 0, behavior: "smooth" }); } });
+
+const ADD = [
+  { e: ["x + y = 15", "x − y = 5"], k: "Add", why: "The y terms are +y and −y. Opposite signs: add." },
+  { e: ["2x + y = 11", "x + y = 7"], k: "Subtract", why: "The y terms are +y and +y. Same signs: subtract." },
+  { e: ["x + 3y = 11", "x − 3y = 5"], k: "Add", why: "The y terms are +3y and −3y. Opposite signs: add." },
+  { e: ["4x + y = 19", "2x + y = 9"], k: "Subtract", why: "The y terms are +y and +y. Same signs: subtract." },
+  { e: ["3x + 2y = 34", "x − 2y = 6"], k: "Add", why: "The y terms are +2y and −2y. Opposite signs: add." },
+  { e: ["x + 5y = 28", "x + 3y = 18"], k: "Subtract", why: "The x terms are +x and +x. Same signs: subtract." },
+  { e: ["3x + y = 30", "2x − y = 15"], k: "Add", why: "The y terms are +y and −y. Opposite signs: add." },
+  { e: ["3x + 2y = 64", "x + 2y = 40"], k: "Subtract", why: "The y terms are +2y and +2y. Same signs: subtract." }
+];
+const SOLVE = [
+  { e: ["x + y = 20", "x − y = 16"], x: 18, y: 2, why: "Add: 2x = 36, x = 18. Then y = 20 − 18 = 2. Check: 18 − 2 = 16 ✓" },
+  { e: ["3x + y = 30", "2x − y = 15"], x: 9, y: 3, why: "Add: 5x = 45, x = 9. Then y = 30 − 27 = 3. Check: 18 − 3 = 15 ✓" },
+  { e: ["x + 2y = 21", "3x − 2y = 15"], x: 9, y: 6, why: "Add: 4x = 36, x = 9. Then 2y = 21 − 9 = 12, y = 6. Check: 27 − 12 = 15 ✓" },
+  { e: ["3x + 2y = 64", "x + 2y = 40"], x: 12, y: 14, why: "Subtract: 2x = 24, x = 12. Then 2y = 40 − 12 = 28, y = 14. Check: 36 + 28 = 64 ✓" },
+  { e: ["4x + y = 19", "2x + y = 9"], x: 5, y: -1, why: "Subtract: 2x = 10, x = 5. Then y = 9 − 10 = −1. Check: 20 − 1 = 19 ✓" },
+  { e: ["2x + 3y = 13", "2x − y = 1"], x: 2, y: 3, why: "Subtract: 4y = 12, y = 3. Then 2x = 1 + 3 = 4, x = 2. Check: 4 + 9 = 13 ✓" }
+];
+const SPOT = [
+  { e: ["x + y = 9", "x − y = 3"], lines: ["Add: 2x + 0y = 6", "x = 6 ÷ 2 = 3", "y = 9 − 3 = 6"], bad: 0, why: "9 + 3 = 12, not 6. It should be 2x = 12." },
+  { e: ["x + y = 14", "x − y = 2"], lines: ["Add: 2x + 0y = 16", "x = 16 ÷ 2 = 8", "y = 14 + 8 = 22"], bad: 2, why: "Move the 8 across and change its sign: y = 14 − 8 = 6." },
+  { e: ["2x + y = 11", "x + y = 7"], lines: ["Add: 3x + 2y = 18", "x = 6", "y = 7 − 6 = 1"], bad: 0, why: "The y terms have the same sign, so subtract: x + 0y = 4." },
+  { e: ["3x + y = 17", "x − y = 3"], lines: ["Add: 4x + 0y = 20", "x = 20 × 4 = 80", "y = 17 − 15 = 2"], bad: 1, why: "Divide, do not multiply: x = 20 ÷ 4 = 5." },
+  { e: ["x + 3y = 11", "x − 3y = 5"], lines: ["Subtract: 0x + 6y = 6", "y = 1", "x = 11 − 3 = 8"], bad: 0, why: "Opposite signs on the y terms: add. 2x + 0y = 16." },
+  { e: ["4x + y = 19", "2x + y = 9"], lines: ["Subtract: 2x + 0y = 10", "x = 10 ÷ 2 = 5", "y = 9 + 10 = 19"], bad: 2, why: "Move the 10 across and change its sign: y = 9 − 10 = −1." }
+];
+let gs = null;
+function runGame(id) {
+  if (!gs || gs.id !== id || gs.fresh) gs = { id, i: 0, r: 0, w: 0, m: [], shown: false, pick: null, opts: null, saved: false };
+  drawGame();
+}
+const ROUNDS = { add: ADD, solve: SOLVE, spot: SPOT };
+function solveOpts(r) {
+  const fmtp = (x, y) => `x = ${num(x)}, y = ${num(y)}`, c = fmtp(r.x, r.y), set = new Set([c]);
+  [[r.y, r.x], [r.x, r.y + 2 * r.x], [r.x + 1, r.y], [r.x, -r.y || r.y + 1], [r.x * 2, r.y], [r.x - 1, r.y + 1]].forEach(([a, b]) => { if (set.size < 4) set.add(fmtp(a, b)); });
+  return shuffle([...set]);
+}
+function drawGame() {
+  const { id } = gs, g = GAMES.find(x => x.id === id), rounds = ROUNDS[id];
+  if (gs.i >= rounds.length) {
+    const pc = Math.round(100 * gs.r / rounds.length);
+    done[id] = true; if (!gs.saved) { gs.saved = true; save(g.gid, gs.r, gs.w, gs.m); }
+    shell(`<div class="card"><h2>${g.title}: done!</h2><p class="big">${gs.r} of ${rounds.length} right (${pc}%)</p><div class="bar"><i style="width:${pc}%"></i></div>
+      <p class="q">${pc >= 80 ? "Excellent work." : pc >= 50 ? "Good. Play again to improve." : "Look at the examples again, then try once more."}</p>
+      <div class="row"><button class="btn alt" data-gagain="1" type="button">Play again</button><button class="btn go" data-go="games" type="button">Back to the games</button></div></div>`);
+    return;
+  }
+  const r = rounds[gs.i], head = `<div class="card"><h2>${g.title}</h2><div class="bar"><i style="width:${100 * gs.i / rounds.length}%"></i></div><p><span class="tag">Question ${gs.i + 1} of ${rounds.length}</span></p>`;
+  const next = `<div class="row"><button class="btn" data-gnext="1" type="button">${gs.i + 1 >= rounds.length ? "See my score" : "Next →"}</button></div>`;
+  if (id === "add") {
+    shell(`${head}<p class="q">Which operation eliminates a letter?</p>${eqs(r.e[0], r.e[1])}
+      <div class="opts">${["Add", "Subtract"].map(o => `<button class="opt ${gs.shown ? (o === r.k ? "ok" : o === gs.pick ? "no" : "") : ""}" data-gopt="${o}" ${gs.shown ? "disabled" : ""}>${o}</button>`).join("")}</div>
+      ${gs.shown ? `<div class="fb ${gs.ok ? "good" : "bad"}">${gs.ok ? "Correct! " : "The answer is <b>" + r.k + "</b>. "}${esc(r.why)}</div>${next}` : ""}</div>`);
+  } else if (id === "solve") {
+    if (!gs.opts) gs.opts = solveOpts(r);
+    const c = `x = ${num(r.x)}, y = ${num(r.y)}`;
+    shell(`${head}<p class="q">Solve using the method of elimination.</p>${eqs(r.e[0], r.e[1])}
+      <div class="opts">${gs.opts.map(o => `<button class="opt ${gs.shown ? (o === c ? "ok" : o === gs.pick ? "no" : "") : ""}" data-gopt="${esc(o)}" ${gs.shown ? "disabled" : ""}>${esc(o)}</button>`).join("")}</div>
+      ${gs.shown ? `<div class="fb ${gs.ok ? "good" : "bad"}">${gs.ok ? "Correct! " : "The answer is <b>" + esc(c) + "</b>. "}${esc(r.why)}</div>${next}` : ""}</div>`);
+  } else {
+    shell(`${head}<p class="q">Solve this pair. One line has a mistake. Tap it.</p>${eqs(r.e[0], r.e[1])}
+      <div class="opts one">${r.lines.map((l, i) => `<button class="opt left ${gs.shown ? (i === r.bad ? "no" : "") : ""} ${gs.shown && i === gs.pick && i !== r.bad ? "" : ""}" data-gopt="${i}" ${gs.shown ? "disabled" : ""}>Line ${i + 1}: ${esc(l)}</button>`).join("")}</div>
+      ${gs.shown ? `<div class="fb ${gs.ok ? "good" : "bad"}">${gs.ok ? "Correct! " : "The mistake is in <b>line " + (r.bad + 1) + "</b>. "}${esc(r.why)}</div>${next}` : ""}</div>`);
+  }
+}
+document.addEventListener("click", e => {
+  if (!["add", "solve", "spot"].includes(view) || !gs) return; const t = e.target, id = gs.id, rounds = ROUNDS[id], r = rounds[gs.i];
+  if (t.closest("[data-gagain]")) { gs = null; return runGame(id); }
+  const op = t.closest("[data-gopt]"); if (op && !gs.shown) {
+    const pick = op.dataset.gopt; gs.pick = id === "spot" ? +pick : pick; gs.shown = true;
+    let q, a;
+    if (id === "add") { gs.ok = pick === r.k; q = `${r.e[0]} and ${r.e[1]}: add or subtract?`; a = "chose " + pick + " | correct " + r.k; }
+    else if (id === "solve") { const c = `x = ${num(r.x)}, y = ${num(r.y)}`; gs.ok = pick === c; q = `Solve ${r.e[0]} and ${r.e[1]}`; a = "chose " + pick + " | correct " + c; }
+    else { gs.ok = +pick === r.bad; q = `Spot the mistake: ${r.e[0]} and ${r.e[1]}`; a = "chose line " + (+pick + 1) + " | correct line " + (r.bad + 1); }
+    gs.ok ? gs.r++ : (gs.w++, gs.m.push({ q, a, at: Date.now() }));
+    return drawGame();
+  }
+  if (t.closest("[data-gnext]")) { gs.i++; gs.shown = false; gs.pick = null; gs.opts = null; return drawGame(); }
+});
+
+/* ---------- 3. Worksheet (multiple choice) ---------- */
+const WS = [
+  { q: "x + y = 10 and x − y = 4. You add the two equations. What do you get?", c: "2x = 14", w: ["2x = 6", "2y = 14", "x = 14"] },
+  { q: "x + y = 10 and x − y = 4. What is x?", c: "7", w: ["14", "3", "6"] },
+  { q: "x + y = 10 and x − y = 4. What is y?", c: "3", w: ["7", "14", "6"] },
+  { q: "x + 5y = 28 and x + 3y = 18. Add or subtract? Why?", c: "Subtract, because the x terms have the same sign", w: ["Add, because the x terms have the same sign", "Add, because the numbers on the right are different", "Subtract, because the y terms are different"] },
+  { q: "x + 5y = 28 and x + 3y = 18. You subtract. What do you get?", c: "2y = 10", w: ["2y = 46", "8y = 46", "2x = 10"] },
+  { q: "x + 5y = 28 and x + 3y = 18. Substitute y = 5 into the first equation. What is x?", c: "3", w: ["23", "53", "5"] },
+  { q: "3x + 2y = 34 and x − 2y = 6. You add. What is x?", c: "10", w: ["7", "40", "9"] },
+  { q: "3x + 2y = 34 and x − 2y = 6. Substitute x = 10 into the first equation. What is y?", c: "2", w: ["4", "10", "6"] },
+  { q: "Solve x + y = 20 and x − y = 16.", c: "x = 18, y = 2", w: ["x = 2, y = 18", "x = 36, y = 2", "x = 18, y = 38"] },
+  { q: "Solve 3x + y = 30 and 2x − y = 15.", c: "x = 9, y = 3", w: ["x = 3, y = 9", "x = 45, y = 3", "x = 9, y = 57"] },
+  { q: "Solve x + 2y = 21 and 3x − 2y = 15.", c: "x = 9, y = 6", w: ["x = 6, y = 9", "x = 36, y = 6", "x = 9, y = 12"] },
+  { q: "Solve 3x + 2y = 64 and x + 2y = 40.", c: "x = 12, y = 14", w: ["x = 14, y = 12", "x = 24, y = 14", "x = 12, y = 28"] },
+  { q: "4x + y = 19 and 2x + y = 9. You subtract and get x = 5. What is y?", c: "−1", w: ["1", "19", "10"] }
+];
+let wsOrder = null, wsPick = [];
+function renderWs() {
+  if (!unlocked()) {
+    const need = [!done.ex && "the examples", !gamesDone() && "all three games"].filter(Boolean).join(" and ");
+    shell(`<div class="card lockbox"><div class="big">🔒 The worksheet opens soon</div><p class="q">First finish ${need}. Then come back here.</p><div class="row" style="justify-content:center"><button class="btn" data-go="${!done.ex ? "ex" : "games"}" type="button">${!done.ex ? "Go to the examples" : "Go to the games"}</button></div></div>`);
+    return;
+  }
+  if (wsRes) {
+    const n = wsRes.r + wsRes.w, pc = n ? Math.round(100 * wsRes.r / n) : 0;
+    shell(`<div class="card"><h2>Worksheet: handed in ✓</h2><p class="big">${wsRes.r} of ${n} right (${pc}%)</p><div class="bar"><i style="width:${pc}%"></i></div>
+      ${wsRes.m.length ? `<h3>Questions to look at again</h3>${wsRes.m.map(x => `<div class="fb bad"><b>${esc(x.q)}</b><br>${esc(x.a)}</div>`).join("")}` : `<p class="q">Every answer was right. Well done!</p>`}
+      <div class="row"><button class="btn go" data-close="1" type="button">Finish</button></div></div>`);
+    return;
+  }
+  if (!wsOrder) wsOrder = WS.map(q => ({ ...q, o: shuffle([q.c, ...q.w]) })), wsPick = WS.map(() => "");
+  const answered = wsPick.filter(Boolean).length;
+  shell(`<div class="card ws"><h2>Worksheet</h2><p class="q">Choose one answer for each question. You can hand in once.</p><div class="bar"><i style="width:${100 * answered / WS.length}%"></i></div>
+    ${wsOrder.map((q, i) => `<div class="wq"><p class="q"><span class="num">${i + 1}</span>${esc(q.q)}</p><div class="opts">${q.o.map(o => `<button class="opt" data-wq="${i}" data-wo="${esc(o)}" aria-pressed="${wsPick[i] === o}">${esc(o)}</button>`).join("")}</div></div>`).join("")}
+    <p class="fb info" id="wsNote">${answered} of ${WS.length} answered</p>
+    <div class="row"><button class="btn go" data-wsend="1" type="button" ${answered === WS.length ? "" : "disabled"}>Hand in</button></div></div>`);
+}
+document.addEventListener("click", async e => {
+  if (view !== "ws") return; const t = e.target;
+  const o = t.closest("[data-wq]"); if (o) { const y = window.scrollY; wsPick[+o.dataset.wq] = o.dataset.wo; renderWs(); window.scrollTo(0, y); return; }
+  if (t.closest("[data-wsend]")) {
+    if (!confirm("Hand in now? You cannot change your answers after this.")) return;
+    let r = 0, w = 0; const m = [];
+    wsOrder.forEach((q, i) => { if (wsPick[i] === q.c) r++; else { w++; m.push({ q: `${i + 1}. ${q.q}`, a: "chose " + wsPick[i] + " | correct " + q.c, at: Date.now() }); } });
+    wsRes = { r, w, m }; await save(G.ws, r, w, m); renderWs(); window.scrollTo({ top: 0 });
+  }
+});
+
+render();
+</script></body></html>

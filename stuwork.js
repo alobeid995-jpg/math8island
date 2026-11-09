@@ -7,7 +7,7 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const when = t => new Date(t).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 let P = null, base = [], works = [], mine = new Map(), openId = "", me = null, toast = () => {};
-let player = "", lessons = [], played = new Map(), showAll = false, agPlays = new Set(), isAG = false;
+let player = "", lessons = [], played = new Map(), showAll = false, agPlays = new Set(), isAG = false, isEL = false;
 
 export async function initWork(profile, getMe, toastFn) {
   P = profile; base = profile.tid ? ["teachers", profile.tid] : []; toast = toastFn || toast;
@@ -24,7 +24,8 @@ async function load() {
   } catch { works = []; }
   player = playerOf(me);
   isAG = /^8G$/i.test(String(me.cls || "").trim());   // this lesson is only for class 8G
-  if (isAG) { try { const pl = await getDocs(query(collection(fs, ...base, "plays"), where("sid", "==", P.sid))); agPlays = new Set(pl.docs.map(d => d.data().g)); } catch {} }
+  isEL = /^(8B|8Y|8S|8M)$/i.test(String(me.cls || "").trim());   // elimination lesson: only these four classes
+  if (isAG || isEL) { try { const pl = await getDocs(query(collection(fs, ...base, "plays"), where("sid", "==", P.sid))); agPlays = new Set(pl.docs.map(d => d.data().g)); } catch {} }
   if (player) {
     try {
       const c = await catalog(), grp = (c.players.find(x => x.id === player) || {}).group;
@@ -51,12 +52,15 @@ function draw() {
   const agCard = isAG ? `<div class="wk-lesson"><div class="wk-lh"><b>Lesson 3.4: Upper and lower bounds</b><small>Mon 9 Nov 2026</small></div>
       <div class="wk-games"><button class="wk-game${agPlays.has("ag34-ws") ? " done" : ""}" type="button" data-wkact="ag"><b>Examples, games and worksheet</b><small>Do the examples, play the games, then do the multiple choice worksheet.</small>
       <span>${agPart("ag34-examples", "Examples")}${agPart("ag34-tap", "Game 1")}${agPart("ag34-bound", "Game 2")}${agPart("ag34-ineq", "Game 3")}${agPart("ag34-ws", "Worksheet")}</span></button></div></div>` : "";
+  const elCard = isEL ? `<div class="wk-lesson"><div class="wk-lh"><b>Simultaneous equations: elimination</b><small>Exercise 4.2 · Day 1</small></div>
+      <div class="wk-games"><button class="wk-game${agPlays.has("el42-ws") ? " done" : ""}" type="button" data-wkact="el"><b>Examples, games and worksheet</b><small>Do the examples, play the games, then do the multiple choice worksheet.</small>
+      <span>${agPart("el42-examples", "Examples")}${agPart("el42-addsub", "Game 1")}${agPart("el42-solve", "Game 2")}${agPart("el42-spot", "Game 3")}${agPart("el42-ws", "Worksheet")}</span></button></div></div>` : "";
   box.innerHTML = `<section class="card wk-box"><h3>My classwork</h3>
-    ${agCard}
+    ${elCard}${agCard}
     ${sheets ? `<div class="wk-list">${sheets}</div>` : ""}
     ${games}
     ${lessons.length > 3 ? `<button class="ghost small" type="button" data-wkact="more">${showAll ? "Show fewer lessons" : `Show older lessons (${lessons.length - 3})`}</button>` : ""}
-    ${!sheets && !games && !agCard ? `<p class="none">Nothing to do right now. Your teacher's work will appear here.</p>` : ""}</section>`;
+    ${!sheets && !games && !agCard && !elCard ? `<p class="none">Nothing to do right now. Your teacher's work will appear here.</p>` : ""}</section>`;
 }
 function drawSheet(box, w) {
   box.innerHTML = `<section class="card wk-do"><h3>${esc(w.title)}</h3>
@@ -77,9 +81,9 @@ function drawSheet(box, w) {
     catch (er) { $("wkSend").disabled = false; $("wkNote").textContent = er && er.code === "permission-denied" ? "This worksheet is closed or was already handed in." : "Could not hand in. Check your internet and try again."; }
   };
 }
-function openAG() {
+function openAG(file = "ag34.html", ttl = "Lesson 3.4") {
   const ov = document.createElement("div"); ov.className = "wk-play"; ov.id = "wkPlay";
-  ov.innerHTML = `<button class="wk-x" type="button" data-wkact="closegame" aria-label="Close the lesson">✕ Close</button><iframe src="ag34.html" title="Lesson 3.4"></iframe>`;
+  ov.innerHTML = `<button class="wk-x" type="button" data-wkact="closegame" aria-label="Close the lesson">✕ Close</button><iframe src="${file}" title="${ttl}"></iframe>`;
   document.body.appendChild(ov); document.body.classList.add("wk-noscroll");
 }
 function openGame(id) {
@@ -101,5 +105,6 @@ document.addEventListener("click", e => {
   if (a === "more") { showAll = !showAll; draw(); }
   if (a === "game") openGame(b.dataset.id);
   if (a === "ag") openAG();
+  if (a === "el") openAG("elim.html", "Elimination lesson");
   if (a === "closegame") closeGame();
 });
