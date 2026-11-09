@@ -1,5 +1,6 @@
 import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js";
 import { initWork } from "./stuwork.js";
+import { startPresence, logEv } from "./presence.js";
 
 const sub = (t, n) => t.split("{n}").join(n);
 let me = null, ref = null, shopCat = "frame", confirmId = "", pickerOpen = false, seeds = [], loaded = false;
@@ -26,6 +27,7 @@ async function start() {
   onSnapshot(ref, snap => { loaded = true; me = snap.exists() ? fromDoc(snap) : null; render(); },
     () => { loaded = true; me = null; render(); });
   initWork(p, () => me, toast).catch(() => {});
+  startPresence(u, p, () => me).catch(() => {});
 }
 
 function choosePin(u, lref, startPin) {
@@ -116,12 +118,13 @@ document.addEventListener("click", e => {
     confirmId = "";
     save({ owned: [...me.owned, it.id], eq: { ...eqOf(me), [it.cat]: it.id }, spent: (me.spent || 0) + it.price, buys: (me.buys || 0) + 1, lastBuy: it.id,
       sp: [...(me.sp || []), { t: "buy", k: it.id, price: it.price, at: Date.now() }].slice(-200) }, `You bought ${it.name}!`);
+    logEv("Bought " + it.name + " (" + it.price + " XP)");
   }
-  else if (a === "eq" && it && me.owned.includes(it.id)) save({ eq: { ...eqOf(me), [it.cat]: b.dataset.off ? "" : it.id } });
+  else if (a === "eq" && it && me.owned.includes(it.id)) { logEv((b.dataset.off ? "Removed " : "Wearing ") + it.name); save({ eq: { ...eqOf(me), [it.cat]: b.dataset.off ? "" : it.id } }); }
   else if (a === "openAv") { newSeeds(); pickerOpen = true; render(); }
   else if (a === "moreAv") { newSeeds(); render(); }
   else if (a === "closeAv") { pickerOpen = false; render(); }
-  else if (a === "setAv") { pickerOpen = false; render(); save({ avatar: Number(b.dataset.seed) }, "New avatar saved"); }
+  else if (a === "setAv") { pickerOpen = false; render(); save({ avatar: Number(b.dataset.seed) }, "New avatar saved"); logEv("Changed his avatar"); }
 });
 $("outBtn").onclick = async () => { await signOut(auth); location.href = "index.html"; };
 function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toast._t); toast._t = setTimeout(() => (t.hidden = true), 2600); }

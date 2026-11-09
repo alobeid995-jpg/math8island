@@ -2,40 +2,84 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Math Island · Developer</title>
 <style>
-:root{--bg:#f6f4ee;--card:#fff;--ink:#1d1b16;--muted:#6b665a;--line:#e3ded0;--accent:#1f4fd8;--bad:#b3261e;--ok:#1e7a46}
-@media(prefers-color-scheme:dark){:root{--bg:#15140f;--card:#201e17;--ink:#f2efe6;--muted:#a49f90;--line:#37342a;--accent:#7da2ff;--bad:#ff8a80;--ok:#6fd49a}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
-.wrap{max-width:1000px;margin:0 auto;padding:16px}
-header{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
-h1{margin:0;font-size:24px}h2{margin:0;font-size:18px}
-button{font:inherit;font-weight:600;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:8px 12px;cursor:pointer}
-button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-button.warn{color:var(--bad)}button:disabled{opacity:.5}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px}
-.stat{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:12px}
-.stat b{display:block;font-size:26px}.stat span{color:var(--muted);font-size:13px}
-.box{background:var(--card);border:1.5px solid var(--line);border-radius:12px;margin-bottom:12px;overflow:hidden}
-.head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 14px;cursor:pointer}
-.head small{color:var(--muted);display:block;font-weight:400}
-.tag{font-size:12px;font-weight:700;padding:2px 8px;border-radius:99px;border:1.5px solid var(--line);margin-left:6px}
-.tag.ok{color:var(--ok)}.tag.bad{color:var(--bad)}
-.body{padding:0 14px 14px;overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:14px;min-width:560px}
-th{text-align:left;font-size:12px;color:var(--muted);padding:6px 8px;border-bottom:2px solid var(--line);cursor:pointer;white-space:nowrap}
-td{padding:6px 8px;border-bottom:1px solid var(--line)}td.n{text-align:right;font-variant-numeric:tabular-nums}
-.bar{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
-input[type=search]{font:inherit;padding:8px 10px;border:1.5px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);flex:1;min-width:160px}
-.msg{color:var(--muted);padding:20px;text-align:center}.msg.bad{color:var(--bad)}
+:root{--bg:#f5f6f8;--card:#fff;--ink:#14171f;--mut:#667085;--line:#e4e7ec;--soft:#f9fafb;--acc:#1f4fd8;--accbg:#eef3ff;--ok:#12a150;--okbg:#e7f7ee;--bad:#c4321f;--badbg:#fdecea;--warn:#b7791f;--warnbg:#fff6e0;--r:12px}
+@media(prefers-color-scheme:dark){:root{--bg:#0e1116;--card:#171b22;--ink:#edf0f5;--mut:#98a2b3;--line:#262c36;--soft:#1c212a;--acc:#7da2ff;--accbg:#1b2540;--ok:#43d17f;--okbg:#12301f;--bad:#ff8a7a;--badbg:#3a1a16;--warn:#f2c35b;--warnbg:#33290f}}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 "Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer}
+.top{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1120px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto}
+.logo{width:30px;height:30px;border-radius:8px;background:#f3b31c;display:grid;place-items:center;font:italic 700 17px/1 Georgia,serif;color:#14171f;transform:rotate(-6deg)}
+.brand b{font-size:15px;letter-spacing:-.01em}.brand small{display:block;color:var(--mut);font-size:12px;margin-top:-2px}
+.btn{border:1px solid var(--line);background:var(--card);border-radius:9px;padding:7px 12px;font-weight:600;font-size:13px}
+.btn:hover{background:var(--soft)}.btn.warn{color:var(--bad)}.btn:disabled{opacity:.5}
+.live{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--ok);background:var(--okbg);padding:5px 10px;border-radius:99px}
+.live i{width:7px;height:7px;border-radius:50%;background:var(--ok);animation:pulse 1.8s ease-out infinite}
+.live.off{color:var(--mut);background:var(--soft)}.live.off i{background:var(--mut);animation:none}
+@keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--ok) 55%,transparent)}100%{box-shadow:0 0 0 8px transparent}}
+@media(prefers-reduced-motion:reduce){.live i{animation:none}}
+.wrap{max-width:1120px;margin:0 auto;padding:16px}
+.tabs{display:inline-flex;background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:3px;gap:2px;margin:4px 0 14px;max-width:100%;overflow-x:auto}
+.tabs button{border:0;background:transparent;padding:7px 14px;border-radius:7px;font-weight:600;font-size:13px;color:var(--mut);white-space:nowrap}
+.tabs button[aria-selected=true]{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(16,24,40,.08)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.kpi span{color:var(--mut);font-size:12.5px;font-weight:500}.kpi b{display:block;font-size:28px;letter-spacing:-.02em;margin-top:2px;font-variant-numeric:tabular-nums}
+.kpi small{color:var(--mut);font-size:12px}
+.kpi.hot b{color:var(--ok)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);margin-bottom:14px;overflow:hidden}
+.card>h3{margin:0;padding:13px 16px;font-size:14px;font-weight:650;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;justify-content:space-between}
+.card>h3 small{color:var(--mut);font-weight:500}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:820px){.grid2{grid-template-columns:1fr}}
+.row{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--line)}.row:last-child{border-bottom:0}
+.row.click{cursor:pointer}.row.click:hover{background:var(--soft)}
+.av{width:32px;height:32px;border-radius:50%;background:var(--accbg);color:var(--acc);display:grid;place-items:center;font-weight:700;font-size:13px;flex:none;position:relative}
+.av.on::after{content:"";position:absolute;right:-1px;bottom:-1px;width:10px;height:10px;border-radius:50%;background:var(--ok);border:2px solid var(--card)}
+.grow{flex:1;min-width:0}.grow b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.grow small{color:var(--mut);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.when{color:var(--mut);font-size:12.5px;white-space:nowrap}
+.empty{padding:26px 16px;color:var(--mut);text-align:center}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:2px 9px;border-radius:99px;background:var(--soft);color:var(--mut);white-space:nowrap}
+.pill.on{background:var(--okbg);color:var(--ok)}.pill.day{background:var(--accbg);color:var(--acc)}.pill.never{background:var(--warnbg);color:var(--warn)}.pill.nolog{background:var(--badbg);color:var(--bad)}
+.tools{display:flex;gap:8px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--line);align-items:center}
+.tools input,.tools select{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:9px;padding:7px 10px;min-width:0}
+.tools input{flex:1;min-width:170px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}.chip{border:1px solid var(--line);background:var(--card);border-radius:99px;padding:5px 11px;font-size:12.5px;font-weight:600;color:var(--mut)}
+.chip[aria-pressed=true]{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.tbl{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:720px}
+th{text-align:left;font-size:12px;font-weight:600;color:var(--mut);padding:9px 12px;border-bottom:1px solid var(--line);background:var(--soft);cursor:pointer;white-space:nowrap;user-select:none}
+td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}tr.r{cursor:pointer}tr.r:hover td{background:var(--soft)}
+td.n{text-align:right;font-variant-numeric:tabular-nums}th.n{text-align:right}
+.nm{font-weight:600}.nm small{display:block;color:var(--mut);font-weight:400}
+.drawer{position:fixed;inset:0;z-index:20;display:none}.drawer.open{display:block}
+.drawer .bk{position:absolute;inset:0;background:rgba(10,14,22,.45)}
+.drawer .pn{position:absolute;right:0;top:0;bottom:0;width:min(460px,100%);background:var(--card);border-left:1px solid var(--line);overflow-y:auto;box-shadow:-12px 0 32px rgba(0,0,0,.18)}
+@media(max-width:620px){.drawer .pn{top:8%;border-radius:16px 16px 0 0;border-left:0}}
+.pn-h{display:flex;gap:12px;align-items:center;padding:16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--card);z-index:1}
+.pn h4{margin:0;padding:14px 16px 6px;font-size:12px;font-weight:650;color:var(--mut);letter-spacing:.02em}
+.mini{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 16px}
+.mini div{background:var(--soft);border-radius:10px;padding:9px 11px}.mini span{display:block;color:var(--mut);font-size:11.5px}.mini b{font-size:16px;font-variant-numeric:tabular-nums}
+.tl{padding:0 16px 8px}.tl div{display:flex;gap:10px;padding:7px 0;border-bottom:1px dashed var(--line)}.tl div:last-child{border:0}.tl time{color:var(--mut);font-size:12px;min-width:74px}
+.pos{color:var(--ok);font-weight:650}.neg{color:var(--bad);font-weight:650}
+.note{color:var(--mut);font-size:12.5px;padding:0 2px 12px}
+.msg{padding:40px 16px;text-align:center;color:var(--mut)}.msg.bad{color:var(--bad)}
+[hidden]{display:none!important}
 </style></head><body>
+<div class="top"><div class="top-in">
+  <div class="brand"><div class="logo">π</div><div><b>Math Island</b><small>Developer · owner only</small></div></div>
+  <span class="live off" id="live"><i></i><span id="liveTxt">Connecting…</span></span>
+  <button class="btn" id="reload" type="button">Refresh data</button>
+  <button class="btn" id="back" type="button">Back to my classes</button>
+</div></div>
 <div class="wrap">
-  <header><div><h1>Developer dashboard</h1><div style="color:var(--muted)">Everything on the site: every teacher, class and student. Only you can open this.</div></div>
-    <div class="bar" style="margin:0"><button id="back" type="button">Back to my classes</button><button id="reload" type="button">Refresh</button></div></header>
   <div id="out" class="msg">Loading…</div>
 </div>
+<div class="drawer" id="dr"><div class="bk" data-close="1"></div><div class="pn" id="pn"></div></div>
 <script type="module">
-import { fs, doc, updateDoc, collection, getDocs, whenUser, profileOf } from "./fb.js";
+import { fs, doc, updateDoc, collection, getDocs, onSnapshot, query, where, whenUser, profileOf } from "./fb.js";
 const $ = id => document.getElementById(id), out = $("out");
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const ONLINE = 6 * 60 * 1000, DAY = 24 * 60 * 60 * 1000;
 $("back").onclick = () => { location.href = "teacher.html"; };
 $("reload").onclick = () => load();
 
@@ -43,75 +87,170 @@ const u = await whenUser();
 const p = u && await profileOf(u.uid);
 if (!p || p.role !== "teacher" || p.admin !== true) { location.href = "index.html"; throw new Error("owner only"); }
 
-const rowOf = (id, d) => ({ id, name: d.name || id, cls: d.cls || "", enr: d.enrollment || "", xp: +d.xp || 0, wallet: (+d.xp || 0) + (+d.carry || 0) - (+d.spent || 0), spent: +d.spent || 0, owned: (d.owned || []).length, certs: (d.certs || []).length });
-let groups = [], sort = { k: "cls", dir: 1 }, q = "";
+let teachers = [], students = [], pres = new Map(), tab = "live", filter = "all", cls = "all", q = "", sort = { k: "seen", dir: -1 }, titles = null, liveOk = false;
+const key = (tid, sid) => (tid || "") + "/" + sid;
+const nameOfTeacher = tid => { const t = teachers.find(x => x.uid === tid); return t ? t.title : "—"; };
+
+function ago(t) {
+  if (!t) return "never";
+  const s = Math.max(0, (Date.now() - t) / 1000);
+  if (s < 45) return "just now"; if (s < 3600) return Math.round(s / 60) + " min ago";
+  if (s < 86400) return Math.round(s / 3600) + " h ago";
+  const d = Math.round(s / 86400); if (d < 8) return d + (d === 1 ? " day ago" : " days ago");
+  return new Date(t).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+}
+const clock = t => new Date(t).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+const initials = n => String(n || "?").trim().split(/\s+/).slice(0, 2).map(x => x[0]).join("").toUpperCase();
+function statusOf(s) {
+  const pr = pres.get(s.key);
+  if (pr && Date.now() - pr.last < ONLINE) return "on";
+  if (pr && Date.now() - pr.last < DAY) return "day";
+  if (pr) return "earlier";
+  return s.hasLogin ? "never" : "nolog";
+}
+const LABEL = { on: "Online now", day: "Today", earlier: "Earlier", never: "Not entered yet", nolog: "No login yet" };
+const pill = st => `<span class="pill ${st === "earlier" ? "" : st}">${st === "on" ? "● " : ""}${LABEL[st]}</span>`;
 
 async function load() {
   out.className = "msg"; out.textContent = "Loading…";
   try {
     const users = (await getDocs(collection(fs, "users"))).docs.map(d => ({ uid: d.id, ...d.data() }));
-    const teachers = users.filter(x => x.role === "teacher");
-    const students = users.filter(x => x.role === "student");
-    groups = [];
-    const mine = (await getDocs(collection(fs, "students"))).docs.map(d => rowOf(d.id, d.data()));
-    groups.push({ uid: u.uid, title: (p.name || "You") + " (owner)", me: true, role: "teacher", rows: mine });
-    for (const t of teachers) {
+    const tch = users.filter(x => x.role === "teacher" || x.role === "paused");
+    const logins = new Set(users.filter(x => x.role === "student").map(x => key(x.tid, x.sid)));
+    teachers = []; students = [];
+    const add = (uid, title, role, rows, me) => {
+      const g = { uid, title, role, me: !!me, n: rows.length };
+      teachers.push(g);
+      rows.forEach(d => students.push({ key: key(me ? "" : uid, d.id), id: d.id, tid: me ? "" : uid, name: d.data().name || d.id, cls: d.data().cls || "", enr: d.data().enrollment || "",
+        xp: +d.data().xp || 0, spent: +d.data().spent || 0, carry: +d.data().carry || 0, owned: (d.data().owned || []).length, log: d.data().log || [], sp: d.data().sp || [], hasLogin: logins.has(key(me ? "" : uid, d.id)) }));
+    };
+    add(u.uid, (p.name || "You") + " (owner)", "teacher", (await getDocs(collection(fs, "students"))).docs, true);
+    for (const t of tch) {
       if (t.uid === u.uid) continue;
-      let rows = [], err = "";
-      try { rows = (await getDocs(collection(fs, "teachers", t.uid, "students"))).docs.map(d => rowOf(d.id, d.data())); } catch (e) { err = e.code || e.message; }
-      groups.push({ uid: t.uid, title: t.name || "Teacher " + t.uid.slice(0, 6), role: "teacher", status: t.role, rows, err, logins: students.filter(s => s.tid === t.uid).length });
+      let rows = []; try { rows = (await getDocs(collection(fs, "teachers", t.uid, "students"))).docs; } catch {}
+      add(t.uid, t.name || "Teacher " + t.uid.slice(0, 6), t.role, rows, false);
     }
-    // teacher profiles that were paused
-    users.filter(x => x.role === "paused").forEach(t => groups.push({ uid: t.uid, title: (t.name || "Teacher " + t.uid.slice(0, 6)), paused: true, rows: [] }));
-    for (const g of groups) if (g.paused) { try { g.rows = (await getDocs(collection(fs, "teachers", g.uid, "students"))).docs.map(d => rowOf(d.id, d.data())); } catch {} }
-    render(users);
+    teachers.forEach(g => { g.logins = students.filter(s => s.tid === (g.me ? "" : g.uid) && s.hasLogin).length; });
+    out.className = ""; build(); watch();
   } catch (e) { out.className = "msg bad"; out.textContent = "Could not load: " + (e.code || e.message) + ". Check that the new rules are published."; }
 }
-
-function render(users) {
-  const all = groups.flatMap(g => g.rows);
-  const teachersN = groups.filter(g => !g.me).length;
-  const xp = all.reduce((a, r) => a + r.xp, 0);
-  out.className = "";
-  out.innerHTML = `<div class="stats">
-    <div class="stat"><b>${teachersN + 1}</b><span>teachers (including you)</span></div>
-    <div class="stat"><b>${all.length}</b><span>students in the trackers</span></div>
-    <div class="stat"><b>${users.filter(x => x.role === "student").length}</b><span>student logins</span></div>
-    <div class="stat"><b>${xp.toLocaleString()}</b><span>total XP, everyone</span></div></div>
-    <div class="bar"><input type="search" id="q" placeholder="Search a student name, ID or class across everyone" value="${esc(q)}"></div>
-    <div id="groups"></div>`;
-  $("q").oninput = e => { q = e.target.value; draw(); };
-  draw();
+let off = null;
+function watch() {
+  if (off) off();
+  off = onSnapshot(collection(fs, "presence"), snap => {
+    pres = new Map(snap.docs.map(d => { const v = d.data(); return [key(v.tid, v.sid), v]; }));
+    liveOk = true; paint();
+  }, err => { liveOk = false; $("live").className = "live off"; $("liveTxt").textContent = err.code === "permission-denied" ? "Publish the new rules to see live data" : "Offline"; });
 }
 
-function draw() {
+function build() {
+  out.innerHTML = `<div class="kpis" id="kpis"></div>
+    <div class="tabs" role="tablist">${[["live", "Live"], ["students", "Students"], ["teachers", "Teachers"]].map(([k, l]) => `<button role="tab" data-tab="${k}" aria-selected="${k === tab}">${l}</button>`).join("")}</div>
+    <div id="pane"></div>`;
+  paint();
+}
+function paint() {
+  if (!$("kpis")) return;
+  const st = students.map(s => ({ s, st: statusOf(s) }));
+  const c = k => st.filter(x => x.st === k).length;
+  const entered = st.filter(x => x.st === "on" || x.st === "day" || x.st === "earlier").length;
+  $("kpis").innerHTML = `<div class="kpi ${c("on") ? "hot" : ""}"><span>Online now</span><b>${c("on")}</b><small>seen in the last 6 minutes</small></div>
+    <div class="kpi"><span>Active in 24 hours</span><b>${c("on") + c("day")}</b><small>${students.length ? Math.round(100 * (c("on") + c("day")) / students.length) : 0}% of all students</small></div>
+    <div class="kpi"><span>Have logged in</span><b>${entered}</b><small>of ${students.length} students</small></div>
+    <div class="kpi"><span>Not entered yet</span><b>${c("never")}</b><small>have a login but have not used it</small></div>
+    <div class="kpi"><span>No login yet</span><b>${c("nolog")}</b><small>teacher has not created one</small></div>
+    <div class="kpi"><span>Teachers</span><b>${teachers.length}</b><small>${teachers.reduce((a, g) => a + g.n, 0)} students in total</small></div>`;
+  const lv = $("live");
+  if (liveOk) { lv.className = "live"; $("liveTxt").textContent = "Live"; }
+  document.querySelectorAll("[data-tab]").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === tab));
+  ({ live: paintLive, students: paintStudents, teachers: paintTeachers })[tab]();
+}
+
+function paintLive() {
+  const on = students.filter(s => statusOf(s) === "on").sort((a, b) => pres.get(b.key).last - pres.get(a.key).last);
+  const feed = [];
+  students.forEach(s => { const pr = pres.get(s.key); if (pr) (pr.ev || []).forEach(e => feed.push({ s, t: e.t, a: e.a })); });
+  feed.sort((a, b) => b.t - a.t);
+  $("pane").innerHTML = `<div class="grid2">
+    <div class="card"><h3>On the site now <small>${on.length}</small></h3>${on.length ? on.map(s => { const pr = pres.get(s.key), last = (pr.ev || []).slice(-1)[0];
+      return `<div class="row click" data-stu="${esc(s.key)}"><div class="av on">${esc(initials(s.name))}</div><div class="grow"><b>${esc(s.name)}</b><small>${esc(s.cls)} · ${esc(nameOfTeacher(s.tid))}${last ? " · " + esc(last.a) : ""}</small></div><span class="when">${ago(pr.last)}</span></div>`; }).join("")
+      : `<div class="empty">Nobody is on the site right now.</div>`}</div>
+    <div class="card"><h3>Latest activity <small>newest first</small></h3>${feed.length ? feed.slice(0, 30).map(f =>
+      `<div class="row click" data-stu="${esc(f.s.key)}"><div class="grow"><b>${esc(f.s.name)}</b><small>${esc(f.a)}</small></div><span class="when">${ago(f.t)}</span></div>`).join("")
+      : `<div class="empty">Activity appears here as students use the site.<br>Tracking starts from each student's next visit.</div>`}</div></div>`;
+}
+
+function paintStudents() {
+  const classes = [...new Set(students.map(s => s.cls))].sort();
+  let rows = students.map(s => ({ ...s, st: statusOf(s), seen: (pres.get(s.key) || {}).last || 0, n: (pres.get(s.key) || {}).n || 0 }));
+  const cnt = k => rows.filter(r => k === "all" || (k === "active" ? r.st === "on" || r.st === "day" : r.st === k)).length;
   const needle = q.trim().toLowerCase();
-  $("groups").innerHTML = groups.map((g, i) => {
-    let rows = g.rows.filter(r => !needle || (r.name + " " + r.enr + " " + r.cls).toLowerCase().includes(needle));
-    if (needle && !rows.length) return "";
-    rows = rows.slice().sort((a, b) => (typeof a[sort.k] === "number" ? a[sort.k] - b[sort.k] : String(a[sort.k]).localeCompare(String(b[sort.k]))) * sort.dir || a.name.localeCompare(b.name));
-    const clsList = [...new Set(g.rows.map(r => r.cls))].sort().join(", ") || "no classes yet";
-    const tag = g.paused ? '<span class="tag bad">paused</span>' : g.me ? '<span class="tag ok">owner</span>' : '<span class="tag ok">active</span>';
-    const act = g.me ? "" : g.paused ? `<button data-uid="${esc(g.uid)}" data-to="teacher" type="button">Restore access</button>` : `<button class="warn" data-uid="${esc(g.uid)}" data-to="paused" type="button">Pause access</button>`;
-    return `<div class="box"><div class="head" data-open="${i}"><div><h2>${esc(g.title)} ${tag}</h2><small>${g.rows.length} students · ${esc(clsList)}${g.logins != null ? " · " + g.logins + " logins" : ""} · ${esc(g.uid.slice(0, 8))}…</small></div>${act}</div>
-      <div class="body" id="b${i}" ${needle ? "" : "hidden"}>${g.err ? `<div class="msg bad">${esc(g.err)}</div>` : rows.length ? `<table><thead><tr>${[["name", "Name"], ["cls", "Class"], ["enr", "ID"], ["xp", "XP"], ["wallet", "Wallet"], ["spent", "Spent"], ["owned", "Items"], ["certs", "Certs"]].map(([k, l]) => `<th data-sort="${k}">${l}${sort.k === k ? (sort.dir > 0 ? " ▲" : " ▼") : ""}</th>`).join("")}</tr></thead><tbody>${rows.map(r => `<tr><td>${esc(r.name)}</td><td>${esc(r.cls)}</td><td>${esc(r.enr)}</td><td class="n">${r.xp}</td><td class="n">${r.wallet}</td><td class="n">${r.spent}</td><td class="n">${r.owned}</td><td class="n">${r.certs}</td></tr>`).join("")}</tbody></table>` : '<div class="msg">No students yet.</div>'}</div></div>`;
-  }).join("") || '<div class="msg">Nothing matches.</div>';
+  rows = rows.filter(r => (filter === "all" || (filter === "active" ? r.st === "on" || r.st === "day" : r.st === filter)) && (cls === "all" || r.cls === cls) && (!needle || (r.name + " " + r.enr + " " + r.cls + " " + nameOfTeacher(r.tid)).toLowerCase().includes(needle)));
+  const k = sort.k; rows.sort((a, b) => ((typeof a[k] === "number" ? a[k] - b[k] : String(a[k]).localeCompare(String(b[k]))) * sort.dir) || a.name.localeCompare(b.name));
+  const th = (key, l, n) => `<th class="${n ? "n" : ""}" data-sort="${key}">${l}${sort.k === key ? (sort.dir > 0 ? " ↑" : " ↓") : ""}</th>`;
+  $("pane").innerHTML = `<div class="card"><div class="tools"><input type="search" id="q" placeholder="Search name, ID, class or teacher" value="${esc(q)}">
+      <select id="cl"><option value="all">All classes</option>${classes.map(c => `<option ${c === cls ? "selected" : ""}>${esc(c)}</option>`).join("")}</select></div>
+    <div class="tools"><div class="chips">${[["all", "All"], ["on", "Online now"], ["active", "Active today"], ["never", "Not entered yet"], ["nolog", "No login yet"]].map(([f, l]) => `<button class="chip" data-f="${f}" aria-pressed="${f === filter}">${l} ${cnt(f)}</button>`).join("")}</div></div>
+    <div class="tbl"><table><thead><tr>${th("st", "Status")}${th("name", "Student")}${th("cls", "Class")}${th("seen", "Last seen")}${th("n", "Visits", 1)}${th("xp", "XP", 1)}<th>Teacher</th></tr></thead><tbody>${rows.map(r =>
+      `<tr class="r" data-stu="${esc(r.key)}"><td>${pill(r.st)}</td><td class="nm">${esc(r.name)}<small>${esc(r.enr || r.id)}</small></td><td>${esc(r.cls)}</td><td class="when">${r.seen ? ago(r.seen) : "—"}</td><td class="n">${r.n || "—"}</td><td class="n">${r.xp}</td><td class="when">${esc(nameOfTeacher(r.tid))}</td></tr>`).join("")}</tbody></table>
+    ${rows.length ? "" : `<div class="empty">No students match.</div>`}</div></div>
+    <p class="note">"Not entered yet" means the student has a login but has not opened the site since tracking began. Students who used the site before this update show up here until their next visit.</p>`;
+  $("q").oninput = e => { q = e.target.value; const pos = e.target.selectionStart; paintStudents(); const i = $("q"); i.focus(); i.setSelectionRange(pos, pos); };
+  $("cl").onchange = e => { cls = e.target.value; paintStudents(); };
+}
+
+function paintTeachers() {
+  $("pane").innerHTML = `<div class="card"><div class="tbl"><table><thead><tr><th>Teacher</th><th>Status</th><th class="n">Students</th><th class="n">Logins</th><th class="n">Online</th><th class="n">Active 24 h</th><th></th></tr></thead><tbody>${teachers.map(g => {
+    const mine = students.filter(s => s.tid === (g.me ? "" : g.uid)), on = mine.filter(s => statusOf(s) === "on").length, day = mine.filter(s => ["on", "day"].includes(statusOf(s))).length;
+    const act = g.me ? "" : g.role === "paused" ? `<button class="btn" data-uid="${esc(g.uid)}" data-to="teacher" type="button">Restore access</button>` : `<button class="btn warn" data-uid="${esc(g.uid)}" data-to="paused" type="button">Pause access</button>`;
+    return `<tr><td class="nm">${esc(g.title)}<small>${esc([...new Set(mine.map(s => s.cls))].sort().join(", ") || "no classes yet")}</small></td><td>${g.me ? '<span class="pill day">Owner</span>' : g.role === "paused" ? '<span class="pill nolog">Paused</span>' : '<span class="pill on">Active</span>'}</td><td class="n">${g.n}</td><td class="n">${g.logins}</td><td class="n">${on}</td><td class="n">${day}</td><td style="text-align:right">${act}</td></tr>`; }).join("")}</tbody></table></div></div>`;
+}
+
+async function gameTitles() {
+  if (titles) return titles; titles = {};
+  try { const t = await (await fetch("island9s.html", { cache: "no-cache" })).text(); for (const m of t.matchAll(/id: '([\w-]+)', sec: '[\w-]+', title: '([^']+)'/g)) titles[m[1]] = m[2]; } catch {}
+  return titles;
+}
+async function openStudent(k) {
+  const s = students.find(x => x.key === k); if (!s) return;
+  const pr = pres.get(k), st = statusOf(s), base = s.tid ? ["teachers", s.tid] : [];
+  $("pn").innerHTML = `<div class="pn-h"><div class="av ${st === "on" ? "on" : ""}">${esc(initials(s.name))}</div><div class="grow"><b>${esc(s.name)}</b><small>${esc(s.cls)} · ${esc(s.enr || s.id)} · ${esc(nameOfTeacher(s.tid))}</small></div>${pill(st)}<button class="btn" data-close="1" type="button">Close</button></div>
+    <div class="mini"><div><span>Last seen</span><b>${pr ? ago(pr.last) : "—"}</b></div><div><span>Visits</span><b>${pr ? pr.n : 0}</b></div><div><span>First visit</span><b>${pr ? new Date(pr.first).toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : "—"}</b></div>
+      <div><span>XP earned</span><b>${s.xp}</b></div><div><span>Spent</span><b>${s.spent}</b></div><div><span>Items owned</span><b>${s.owned}</b></div></div>
+    <h4>RECENT ACTIONS ON THE SITE</h4><div class="tl">${pr && (pr.ev || []).length ? pr.ev.slice().reverse().map(e => `<div><time>${clock(e.t)}</time><span>${esc(e.a)}</span></div>`).join("") : `<div class="when">Nothing recorded yet.</div>`}</div>
+    <h4>XP HISTORY</h4><div class="tl">${s.log.length ? s.log.slice(-12).reverse().map(e => `<div><time>${e.at ? clock(e.at) : ""}</time><span style="flex:1">${esc(e.title || "")}</span><span class="${e.xp >= 0 ? "pos" : "neg"}">${e.xp > 0 ? "+" : ""}${e.xp}</span></div>`).join("") : `<div class="when">No XP this week.</div>`}</div>
+    <div id="more"><h4>CLASSWORK AND GAMES</h4><div class="tl"><div class="when">Loading…</div></div></div>`;
+  $("dr").classList.add("open");
+  try {
+    const [subs, works, plays, T] = await Promise.all([
+      getDocs(query(collection(fs, ...base, "subs"), where("sid", "==", s.id))), getDocs(collection(fs, ...base, "work")),
+      getDocs(query(collection(fs, ...base, "plays"), where("sid", "==", s.id))), gameTitles()]);
+    const wt = new Map(works.docs.map(d => [d.id, d.data().title]));
+    const sb = subs.docs.map(d => d.data()).sort((a, b) => b.at - a.at);
+    const by = {}; plays.docs.forEach(d => { const v = d.data(), a = by[v.g] || (by[v.g] = { r: 0, w: 0, n: 0, last: 0 }); a.r += +v.r || 0; a.w += +v.w || 0; a.n++; a.last = Math.max(a.last, v.u || v.t || 0); });
+    const gl = Object.keys(by).sort((a, b) => by[b].last - by[a].last);
+    if ($("more")) $("more").innerHTML = `<h4>WORKSHEETS HANDED IN (${sb.length})</h4><div class="tl">${sb.length ? sb.map(x => `<div><time>${clock(x.at)}</time><span>${esc(wt.get(x.wid) || "Worksheet")}</span></div>`).join("") : `<div class="when">None yet.</div>`}</div>
+      <h4>GAMES PLAYED (${gl.length})</h4><div class="tl">${gl.length ? gl.map(g => { const a = by[g], pc = a.r + a.w ? Math.round(100 * a.r / (a.r + a.w)) : 0; return `<div><time>${clock(a.last)}</time><span style="flex:1">${esc(T[g] || g)}</span><span class="${pc >= 60 ? "pos" : "neg"}">${pc}%</span></div>`; }).join("") : `<div class="when">None yet.</div>`}</div>`;
+  } catch { if ($("more")) $("more").innerHTML = ""; }
 }
 
 document.addEventListener("click", async ev => {
-  const b = ev.target.closest("button[data-uid]");
+  const t = ev.target;
+  const b = t.closest("button[data-uid]");
   if (b) {
-    ev.stopPropagation();
     const to = b.dataset.to;
     if (!confirm(to === "paused" ? "Pause this teacher? He will not be able to open his classes until you restore him." : "Restore this teacher's access?")) return;
     b.disabled = true;
     try { await updateDoc(doc(fs, "users", b.dataset.uid), { role: to }); await load(); } catch (e) { alert("Could not change: " + (e.code || e.message)); b.disabled = false; }
     return;
   }
-  const th = ev.target.closest("th[data-sort]");
-  if (th) { const k = th.dataset.sort; sort = { k, dir: sort.k === k ? -sort.dir : 1 }; const open = [...document.querySelectorAll(".body:not([hidden])")].map(x => x.id); draw(); open.forEach(id => { const e = $(id); if (e) e.hidden = false; }); return; }
-  const h = ev.target.closest(".head[data-open]");
-  if (h) { const e = $("b" + h.dataset.open); e.hidden = !e.hidden; }
+  if (t.closest("[data-close]")) { $("dr").classList.remove("open"); return; }
+  const tb = t.closest("[data-tab]"); if (tb) { tab = tb.dataset.tab; paint(); return; }
+  const f = t.closest("[data-f]"); if (f) { filter = f.dataset.f; paint(); return; }
+  const th = t.closest("th[data-sort]"); if (th) { const k = th.dataset.sort; sort = { k, dir: sort.k === k ? -sort.dir : (k === "name" || k === "cls" || k === "st" ? 1 : -1) }; paint(); return; }
+  const r = t.closest("[data-stu]"); if (r) openStudent(r.dataset.stu);
 });
+document.addEventListener("keydown", e => { if (e.key === "Escape") $("dr").classList.remove("open"); });
+setInterval(() => { if (document.visibilityState === "visible" && $("kpis") && !$("dr").classList.contains("open") && document.activeElement !== $("q")) paint(); }, 30000);   // keeps "x min ago" fresh
 load();
 </script></body></html>

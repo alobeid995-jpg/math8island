@@ -1,6 +1,7 @@
 // "My classwork" on the student page: worksheets from the teacher, and (for the 9S boys) the lesson games.
 import { fs, doc, setDoc, collection, getDocs, query, where } from "./fb.js";
 import { playerOf, catalog } from "./islandmap.js";
+import { logEv } from "./presence.js";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -65,11 +66,12 @@ function drawSheet(box, w) {
     if (!empty && !confirm("Hand in now? You cannot change your answers after this.")) return;
     $("wkSend").disabled = true;
     const sub = { wid: w.id, sid: P.sid, name: me.name, cls: me.cls, answers, at: Date.now() };
-    try { await setDoc(doc(fs, ...base, "subs", w.id + "_" + P.sid), sub); mine.set(w.id, sub); openId = ""; toast("Handed in. Well done!"); draw(); }
+    try { await setDoc(doc(fs, ...base, "subs", w.id + "_" + P.sid), sub); mine.set(w.id, sub); logEv("Handed in: " + String(w.title || "worksheet").slice(0, 50)); openId = ""; toast("Handed in. Well done!"); draw(); }
     catch (er) { $("wkSend").disabled = false; $("wkNote").textContent = er && er.code === "permission-denied" ? "This worksheet is closed or was already handed in." : "Could not hand in. Check your internet and try again."; }
   };
 }
 function openGame(id) {
+  const gm = lessons.flatMap(l => l.games).find(g => g.id === id); logEv("Opened game: " + (gm ? gm.title : id));
   const ov = document.createElement("div"); ov.className = "wk-play"; ov.id = "wkPlay";
   ov.innerHTML = `<button class="wk-x" type="button" data-wkact="closegame" aria-label="Close the game">✕ Close</button><iframe src="island9s.html#g=${encodeURIComponent(id)}" title="Game" allow="autoplay"></iframe>`;
   document.body.appendChild(ov); document.body.classList.add("wk-noscroll");
