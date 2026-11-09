@@ -67,7 +67,7 @@ window.__owner = ADMIN;   // only the owner can change prices
   const all = () => Object.fromEntries(SHOP.map(i => [i.id, i.price]));
   if (ADMIN) setDoc(pref, { prices: all() }).catch(() => {});   // new items get their default price; his own prices stay
   window.__savePrices = async m => { await setDoc(pref, { prices: { ...all(), ...m } }); };
-  try { renderShopView(); } catch {}
+  try { if (view === "shop") renderShopView(); } catch {}
 }
 
 if (CLASSES.some(c => /^(9S|8G|8B|8Y|8S|8M)$/i.test(c))) {   // 9S games: progress of each boy, inside this page

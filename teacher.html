@@ -1004,6 +1004,14 @@ header.book .sync { z-index: 1; background: rgba(0,0,0,.4); border-color: rgba(2
 .girlshop .ttag { color: #b0306f; background: #ffe3f0; border-color: #ffb8d6; }
 .gs-sw { display: inline-flex; gap: 6px; margin: 0 0 12px; }
 @media (prefers-reduced-motion: reduce) { .c-g-aurora, .c-g-glitter { animation: none; } }
+/* ---------- Performance: only big avatars animate; long lists stay still and are painted only when on screen ---------- */
+.avw:not(.w-lg):not(.w-xl):not(.w-xxl), .avw:not(.w-lg):not(.w-xl):not(.w-xxl)::before, .avw:not(.w-lg):not(.w-xl):not(.w-xxl)::after { animation: none !important; }
+.avw:not(.w-lg):not(.w-xl):not(.w-xxl)::after { display: none; }
+.avw:not(.w-lg):not(.w-xl):not(.w-xxl) .spk, .avw:not(.w-lg):not(.w-xl):not(.w-xxl) .wg, .avw:not(.w-lg):not(.w-xl):not(.w-xxl) .wsp { animation: none !important; }
+.bdg.t-legendary svg { animation: none; }
+.nmx.fn { will-change: auto; }
+.item { content-visibility: auto; contain-intrinsic-size: auto 84px; }
+.sitem { contain: layout; }
 
 header.book .acct{position:relative;z-index:1;display:flex;gap:6px;flex-wrap:wrap;align-self:flex-start}
 #loginsModal .sheet{width:min(720px,100%)}
