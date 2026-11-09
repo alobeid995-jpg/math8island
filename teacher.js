@@ -16,16 +16,28 @@ if (!p || p.role !== "teacher") { location.href = "index.html"; throw new Error(
 const ADMIN = p.admin === true;
 startUsage(u, p);
 setBase(ADMIN ? [] : ["teachers", u.uid]);
+// Another teacher must never see the owner's four default classes while her own load: show her last-known classes (or none) at once.
+const CKEY = "mi_classes_" + u.uid;
+if (!ADMIN) {
+  let last = []; try { last = JSON.parse(localStorage.getItem(CKEY) || "[]"); } catch {}
+  CLASSES.splice(0, CLASSES.length, ...(Array.isArray(last) ? last.filter(x => typeof x === "string") : []));
+  cls = CLASSES.includes(cls) ? cls : (CLASSES[0] || "");
+  try { render(); } catch {}
+}
 
 /* ---------- this teacher's classes ---------- */
 // The owner starts with his four Grade 8 classes. Every other teacher starts empty and adds his own.
 const DEFAULT_CLASSES = ["8B", "8Y", "8M", "8S"];
 {
   let list = [];
-  try { const s = await getDoc(bdoc("meta", "classes")); if (s.exists()) list = (s.data().list || []).slice(); else if (ADMIN) list = DEFAULT_CLASSES.slice(); } catch {}
-  try { (await getDocs(bcol("students"))).docs.forEach(d => { const c = d.data().cls; if (c && !list.includes(c)) list.push(c); }); } catch {}   // never hide a class that has students
+  // meta, students and prices are fetched together instead of one after another
+  const [mS, sS, pS] = await Promise.all([getDoc(bdoc("meta", "classes")).catch(() => null), getDocs(bcol("students")).catch(() => null), getDoc(doc(fs, "shop", "prices")).catch(() => null)]);
+  if (mS && mS.exists()) list = (mS.data().list || []).slice(); else if (ADMIN) list = DEFAULT_CLASSES.slice();
+  if (sS) sS.docs.forEach(d => { const c = d.data().cls; if (c && !list.includes(c)) list.push(c); });   // never hide a class that has students
+  window.__pricesSnap = pS;
   CLASSES.splice(0, CLASSES.length, ...list);
   cls = CLASSES.includes(cls) ? cls : (CLASSES[0] || "");
+  try { localStorage.setItem(CKEY, JSON.stringify(CLASSES)); } catch {}
 }
 const saveClasses = () => setDoc(bdoc("meta", "classes"), { list: CLASSES.slice() });
 const clMsg = t => { $("clMsg").textContent = t; };
@@ -64,7 +76,7 @@ window.__resolveClaude({ use: async n => n === "db" ? db : n === "user" ? { can:
 window.__owner = ADMIN;   // only the owner can change prices
 {
   const pref = doc(fs, "shop", "prices"); let saved = {};
-  try { const s = await getDoc(pref); if (s.exists()) saved = s.data().prices || {}; } catch {}
+  try { const s = window.__pricesSnap || await getDoc(pref); if (s && s.exists()) saved = s.data().prices || {}; } catch {}
   applyPrices(saved);   // prices he has set win over the defaults in the code
   const all = () => Object.fromEntries(SHOP.map(i => [i.id, i.price]));
   if (ADMIN) setDoc(pref, { prices: all() }).catch(() => {});   // new items get their default price; his own prices stay

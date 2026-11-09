@@ -2,7 +2,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updatePassword }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc as _getDoc, setDoc as _setDoc, updateDoc as _updateDoc, deleteDoc as _deleteDoc, collection, getDocs as _getDocs, onSnapshot as _onSnapshot, runTransaction as _runTransaction, writeBatch as _writeBatch, query, where }
+import { doc, getDoc as _getDoc, setDoc as _setDoc, updateDoc as _updateDoc, deleteDoc as _deleteDoc, collection, getDocs as _getDocs, onSnapshot as _onSnapshot, runTransaction as _runTransaction, writeBatch as _writeBatch, query, where }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 export const firebaseConfig = {
@@ -16,7 +16,10 @@ export const firebaseConfig = {
 
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
-export const fs = getFirestore(app);
+import * as FSNS from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+// Many school networks block Firestore's default streaming connection, which then takes about a minute to give up.
+// Auto-detect switches to plain long-polling within seconds there; on normal networks nothing changes.
+export const fs = FSNS.initializeFirestore ? FSNS.initializeFirestore(app, { experimentalAutoDetectLongPolling: true }) : FSNS.getFirestore(app);
 export { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updatePassword,
   doc, collection, query, where, initializeApp, getAuth };
 
