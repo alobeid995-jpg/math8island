@@ -70,7 +70,7 @@ window.__owner = ADMIN;   // only the owner can change prices
   try { renderShopView(); } catch {}
 }
 
-if (CLASSES.some(c => /^9S$/i.test(c))) {   // 9S games: progress of each boy, inside this page
+if (CLASSES.some(c => /^(9S|AG)$/i.test(c))) {   // 9S games: progress of each boy, inside this page
   const ib = document.createElement("button"); ib.className = "ghost small"; ib.id = "islandBtn"; ib.type = "button"; ib.textContent = "Games progress";
   ib.onclick = () => openProgress();
   $("outBtn").before(ib);

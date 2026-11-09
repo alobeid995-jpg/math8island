@@ -9,7 +9,7 @@ let titles = null, plays = [], openSid = "";
 
 async function gameTitles() {
   if (titles) return titles;
-  titles = {};
+  titles = { "ag34-examples": "AG 3.4 · Examples", "ag34-tap": "AG 3.4 · Tap the numbers", "ag34-bound": "AG 3.4 · Bound builder", "ag34-ineq": "AG 3.4 · Inequality match", "ag34-ws": "AG 3.4 · Worksheet (multiple choice)" };
   try {   // game names come from the games page itself, so new lessons appear here without changes
     const t = await (await fetch("island9s.html", { cache: "no-cache" })).text();
     for (const m of t.matchAll(/id: '([\w-]+)', sec: '[\w-]+', title: '([^']+)'/g)) titles[m[1]] = m[2];
@@ -17,7 +17,7 @@ async function gameTitles() {
   return titles;
 }
 const title = g => (titles && titles[g]) || g;
-const kids = () => students.filter(s => /^9S$/i.test(s.cls)).sort((a, b) => a.name.localeCompare(b.name));
+const kids = () => students.filter(s => /^(9S|AG)$/i.test(s.cls)).sort((a, b) => a.name.localeCompare(b.name));
 
 function statsOf(sid) {
   const by = {};
@@ -30,7 +30,7 @@ function statsOf(sid) {
 }
 function render() {
   const b = $("pgBody"), list = kids();
-  b.innerHTML = `<h3>Games progress · 9S</h3>
+  b.innerHTML = `<h3>Games progress · 9S and AG</h3>
     <p class="noprint">Every time a boy plays a level in his games, it is saved here: how many he got right, and each mistake with the question.</p>
     <div class="lg-bar noprint"><button class="primary" type="button" data-pg="csv">Download Excel file</button><button class="ghost" type="button" data-pg="print">Print / save PDF</button><button class="ghost" type="button" data-pg="refresh">Refresh</button><button class="ghost" type="button" data-pg="close">Close</button></div>
     ${list.length ? list.map(s => {
@@ -44,7 +44,7 @@ function render() {
           return `<tr><td>${esc(title(g))}</td><td><b class="pg-pc ${p >= 80 ? "hi" : p >= 50 ? "mid" : "lo"}">${p}%</b></td><td>${a.r} / ${a.r + a.w}</td><td>${Object.keys(a.lv).sort((x, y) => x - y).map(l => `L${l} ${pct(a.lv[l].r, a.lv[l].w)}%`).join(" · ")}</td><td>${a.n}</td><td>${day(a.last)}</td></tr>`; }).join("")}</tbody></table>` : ""}
         ${mist.length ? `<details class="pg-mist" ${openSid === s.id ? "open" : ""} data-sid="${esc(s.id)}"><summary>Mistakes (${mist.length})</summary><table class="lg-tbl"><thead><tr><th>When</th><th>Game</th><th>Question</th><th>What he was told</th></tr></thead><tbody>${mist.map(x => `<tr><td>${day(x.at)}</td><td>${esc(title(x.g))}<br><small>Level ${x.l}</small></td><td>${esc(x.q)}</td><td>${esc(x.a)}</td></tr>`).join("")}</tbody></table></details>` : ""}
       </article>`;
-    }).join("") : `<p class="none">No students in 9S yet.</p>`}`;
+    }).join("") : `<p class="none">No students in 9S or AG yet.</p>`}`;
 }
 function csv() {
   const cell = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
@@ -55,7 +55,7 @@ function csv() {
     rows.push([s.name, s.enrollment || "", title(p.g), p.l, p.r, p.w, pct(+p.r || 0, +p.w || 0) ?? "", p.t ? new Date(p.t).toLocaleString("en-GB") : "", p.u ? new Date(p.u).toLocaleString("en-GB") : "", (p.m || []).map(x => x.q + " -> " + x.a).join(" | ")]);
   });
   const blob = new Blob(["﻿" + rows.map(r => r.map(cell).join(",")).join("\r\n")], { type: "text/csv;charset=utf-8" });
-  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "9S games progress.csv";
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "Games progress.csv";
   document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
 }
 async function load() { await gameTitles(); plays = (await getDocs(bcol("plays"))).docs.map(d => ({ id: d.id, ...d.data() })); }

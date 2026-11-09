@@ -7,7 +7,7 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const when = t => new Date(t).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 let P = null, base = [], works = [], mine = new Map(), openId = "", me = null, toast = () => {};
-let player = "", lessons = [], played = new Map(), showAll = false;
+let player = "", lessons = [], played = new Map(), showAll = false, agPlays = new Set(), isAG = false;
 
 export async function initWork(profile, getMe, toastFn) {
   P = profile; base = profile.tid ? ["teachers", profile.tid] : []; toast = toastFn || toast;
@@ -23,6 +23,8 @@ async function load() {
     mine = new Map(s.docs.map(d => [d.data().wid, d.data()]));
   } catch { works = []; }
   player = playerOf(me);
+  isAG = /^AG$/i.test(String(me.cls || "").trim());   // the AG lesson is only for the AG class
+  if (isAG) { try { const pl = await getDocs(query(collection(fs, ...base, "plays"), where("sid", "==", P.sid))); agPlays = new Set(pl.docs.map(d => d.data().g)); } catch {} }
   if (player) {
     try {
       const c = await catalog(), grp = (c.players.find(x => x.id === player) || {}).group;
@@ -45,11 +47,16 @@ function draw() {
   const games = shown.map((l, i) => `<div class="wk-lesson"><div class="wk-lh"><b>${esc(l.title)}</b><small>${esc(l.date)}</small></div>
       <div class="wk-games">${l.games.map(g => { const a = played.get(g.id), p = a && (a.r + a.w) ? Math.round(100 * a.r / (a.r + a.w)) : null;
         return `<button class="wk-game${a ? " done" : ""}" type="button" data-wkact="game" data-id="${esc(g.id)}"><b>${esc(g.title)}</b><small>${esc(g.desc)}</small>${a ? `<span class="wk-tick">${p}% ✓</span>` : ""}</button>`; }).join("")}</div></div>`).join("");
+  const agPart = (g, l) => `<span class="wk-tick" style="margin-left:6px;opacity:${agPlays.has(g) ? 1 : .35}">${agPlays.has(g) ? "✓ " : ""}${l}</span>`;
+  const agCard = isAG ? `<div class="wk-lesson"><div class="wk-lh"><b>Lesson 3.4: Upper and lower bounds</b><small>Mon 9 Nov 2026</small></div>
+      <div class="wk-games"><button class="wk-game${agPlays.has("ag34-ws") ? " done" : ""}" type="button" data-wkact="ag"><b>Examples, games and worksheet</b><small>Do the examples, play the games, then do the multiple choice worksheet.</small>
+      <span>${agPart("ag34-examples", "Examples")}${agPart("ag34-tap", "Game 1")}${agPart("ag34-bound", "Game 2")}${agPart("ag34-ineq", "Game 3")}${agPart("ag34-ws", "Worksheet")}</span></button></div></div>` : "";
   box.innerHTML = `<section class="card wk-box"><h3>My classwork</h3>
+    ${agCard}
     ${sheets ? `<div class="wk-list">${sheets}</div>` : ""}
     ${games}
     ${lessons.length > 3 ? `<button class="ghost small" type="button" data-wkact="more">${showAll ? "Show fewer lessons" : `Show older lessons (${lessons.length - 3})`}</button>` : ""}
-    ${!sheets && !games ? `<p class="none">Nothing to do right now. Your teacher's work will appear here.</p>` : ""}</section>`;
+    ${!sheets && !games && !agCard ? `<p class="none">Nothing to do right now. Your teacher's work will appear here.</p>` : ""}</section>`;
 }
 function drawSheet(box, w) {
   box.innerHTML = `<section class="card wk-do"><h3>${esc(w.title)}</h3>
@@ -70,6 +77,11 @@ function drawSheet(box, w) {
     catch (er) { $("wkSend").disabled = false; $("wkNote").textContent = er && er.code === "permission-denied" ? "This worksheet is closed or was already handed in." : "Could not hand in. Check your internet and try again."; }
   };
 }
+function openAG() {
+  const ov = document.createElement("div"); ov.className = "wk-play"; ov.id = "wkPlay";
+  ov.innerHTML = `<button class="wk-x" type="button" data-wkact="closegame" aria-label="Close the lesson">✕ Close</button><iframe src="ag34.html" title="Lesson 3.4"></iframe>`;
+  document.body.appendChild(ov); document.body.classList.add("wk-noscroll");
+}
 function openGame(id) {
   const gm = lessons.flatMap(l => l.games).find(g => g.id === id); logEv("Opened game: " + (gm ? gm.title : id));
   const ov = document.createElement("div"); ov.className = "wk-play"; ov.id = "wkPlay";
@@ -88,5 +100,6 @@ document.addEventListener("click", e => {
   if (a === "back") { openId = ""; draw(); }
   if (a === "more") { showAll = !showAll; draw(); }
   if (a === "game") openGame(b.dataset.id);
+  if (a === "ag") openAG();
   if (a === "closegame") closeGame();
 });

@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Lesson 3.4 · Upper and lower bounds · Math Island</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fffdf4;--ink:#151412;--mut:#5c574b;--line:#d9d2bd;--y:#f3b31c;--b:#1f4fd8;--r:#d8402b;--g:#1e7a46;--gbg:#e2f3e8;--rbg:#fbe3df;--bbg:#e6edff;--ybg:#fff1c9}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.5 "Archivo",system-ui,sans-serif;min-height:100vh;
+ background-image:radial-gradient(circle at 92% 6%,rgba(31,79,216,.06) 0 120px,transparent 121px),radial-gradient(circle at 4% 96%,rgba(243,179,28,.12) 0 150px,transparent 151px)}
+button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:900px;margin:0 auto;padding:14px 16px 90px}
+.top{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.logo{width:42px;height:42px;background:var(--y);border:3px solid var(--ink);display:grid;place-items:center;transform:rotate(-6deg);font:italic 26px/1 "Instrument Serif",serif;flex:none}
+.top h1{margin:0;font-size:22px;font-weight:900;line-height:1.15;letter-spacing:-.01em}.top small{display:block;color:var(--mut);font-weight:500;font-size:14px}
+.x{margin-left:auto;border:3px solid var(--ink);background:#fff;border-radius:10px;padding:8px 14px;font-weight:800;box-shadow:3px 3px 0 var(--ink)}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0 16px}
+.step{border:3px solid var(--ink);background:#fff;border-radius:10px;padding:9px 8px;font-weight:800;text-align:center;box-shadow:3px 3px 0 var(--ink);font-size:16px;line-height:1.2}
+.step small{display:block;font-weight:600;color:var(--mut);font-size:12.5px;margin-top:2px}
+.step[aria-current=true]{background:var(--y)}.step.done{background:var(--gbg)}.step.lock{opacity:.55;box-shadow:none;border-style:dashed}
+.card{background:#fff;border:3px solid var(--ink);border-radius:12px;box-shadow:5px 5px 0 var(--ink);padding:18px;margin-bottom:16px}
+.card h2{margin:0 0 6px;font-size:24px;font-weight:900;letter-spacing:-.01em}.card h3{margin:0 0 6px;font-size:19px;font-weight:800}
+.q{font-size:21px;font-weight:600;margin:6px 0 12px}
+.big{font-size:26px;font-weight:900}
+.btn{border:3px solid var(--ink);background:var(--b);color:#fff;border-radius:12px;padding:13px 22px;font-weight:800;font-size:19px;box-shadow:4px 4px 0 var(--ink);min-height:54px}
+.btn:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--ink)}.btn.alt{background:#fff;color:var(--ink)}.btn.go{background:var(--g)}.btn:disabled{opacity:.45;box-shadow:none}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.chips{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin:10px 0}
+@media(max-width:560px){.chips{grid-template-columns:repeat(4,1fr)}}
+.chip{border:3px solid var(--ink);background:#fff;border-radius:10px;padding:10px 4px;font-weight:800;font-size:19px;min-height:52px;font-variant-numeric:tabular-nums}
+.chip[aria-pressed=true]{background:var(--ybg);outline:3px solid var(--y)}
+.chip.ok{background:var(--gbg);border-color:var(--g)}.chip.no{background:var(--rbg);border-color:var(--r)}.chip.miss{background:var(--gbg);border-style:dashed;border-color:var(--g)}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0}@media(max-width:560px){.opts{grid-template-columns:1fr}}
+.opt{border:3px solid var(--ink);background:#fff;border-radius:12px;padding:14px;font-weight:800;font-size:21px;text-align:center;min-height:62px;font-variant-numeric:tabular-nums}
+.opt[aria-pressed=true]{background:var(--ybg);outline:3px solid var(--y)}.opt.ok{background:var(--gbg);border-color:var(--g)}.opt.no{background:var(--rbg);border-color:var(--r)}
+.fb{margin:12px 0;padding:12px 14px;border-radius:10px;border:3px solid var(--ink);font-weight:600}.fb.good{background:var(--gbg)}.fb.bad{background:var(--rbg)}.fb.info{background:var(--bbg)}
+.bar{height:14px;border:3px solid var(--ink);border-radius:99px;background:#fff;overflow:hidden;margin:6px 0 12px}.bar i{display:block;height:100%;background:var(--g);transition:width .3s}
+.tag{display:inline-block;border:2px solid var(--ink);border-radius:99px;padding:1px 10px;font-weight:800;font-size:14px;background:var(--ybg)}
+.nl{position:relative;height:96px;margin:16px 8px 6px}
+.nl .ln{position:absolute;left:0;right:0;top:46px;height:4px;background:var(--ink);border-radius:2px}
+.nl .rng{position:absolute;top:34px;height:28px;background:rgba(30,122,70,.28);border:3px solid var(--g);border-radius:6px}
+.nl .pt{position:absolute;top:36px;width:4px;height:24px;background:var(--ink);transform:translateX(-2px)}
+.nl .lb{position:absolute;top:70px;transform:translateX(-50%);font-weight:800;font-size:16px;white-space:nowrap}
+.nl .dot{position:absolute;top:38px;width:20px;height:20px;border-radius:50%;border:3px solid var(--ink);transform:translateX(-10px)}
+.nl .dot.in{background:var(--g)}.nl .dot.out{background:#fff}
+.ineq{font:italic 30px/1.2 "Instrument Serif",serif;text-align:center;margin:8px 0;font-variant-numeric:tabular-nums}
+.ineq b{font:900 30px "Archivo",sans-serif;font-style:normal}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.tab{border:3px solid var(--ink);background:#fff;border-radius:99px;padding:8px 16px;font-weight:800}.tab[aria-pressed=true]{background:var(--y)}.tab.ok{background:var(--gbg)}
+.gcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.gc{border:3px solid var(--ink);background:#fff;border-radius:12px;box-shadow:4px 4px 0 var(--ink);padding:14px;text-align:left}
+.gc b{display:block;font-size:20px;font-weight:900}.gc span{color:var(--mut);font-size:15px;display:block;margin:2px 0 6px}.gc.ok{background:var(--gbg)}
+.ws .wq{border-bottom:2px dashed var(--line);padding:14px 0}.ws .wq:last-of-type{border:0}
+.ws .num{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--y);border:3px solid var(--ink);font-weight:900;margin-right:8px;font-size:16px}
+.lockbox{text-align:center;padding:26px 12px}.lockbox .big{margin-bottom:6px}
+.pick{display:flex;gap:8px;margin:10px 0}.pick .tab{flex:1;text-align:center}
+.stepper{display:flex;align-items:center;gap:12px;justify-content:center;margin:8px 0}.stepper b{font-size:36px;min-width:130px;text-align:center;font-variant-numeric:tabular-nums}
+.stepper button{width:56px;height:56px;border:3px solid var(--ink);border-radius:12px;background:#fff;font-size:30px;font-weight:900;box-shadow:3px 3px 0 var(--ink)}
+[hidden]{display:none!important}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head><body>
+<div class="wrap" id="app"><p>Loading…</p></div>
+<script type="module">
+import { fs, doc, getDoc, setDoc, getDocs, collection, query, where, whenUser, profileOf } from "./fb.js";
+
+const $ = id => document.getElementById(id), app = $("app");
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fmt = n => String(Math.round(n * 100) / 100);
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const UNIT = { 1: "nearest whole number", 10: "nearest ten", 100: "nearest one hundred" };
+const G = { ex: "ag34-examples", tap: "ag34-tap", bound: "ag34-bound", ineq: "ag34-ineq", ws: "ag34-ws" };
+
+/* ---------- who is here ---------- */
+const u = await whenUser(), p = u && await profileOf(u.uid);
+if (!p) { location.href = "index.html"; throw new Error("not signed in"); }
+const mode = p.role === "teacher" ? "teacher" : "student";
+const base = mode === "teacher" ? [] : (p.tid ? ["teachers", p.tid] : []);
+const embedded = window.parent !== window;
+let myName = "", done = { ex: false, tap: false, bound: false, ineq: false }, wsRes = null;
+if (mode === "student") {
+  try { const s = await getDoc(doc(fs, ...base, "students", p.sid)); myName = s.exists() ? s.data().name || "" : ""; } catch {}
+  try {
+    const s = await getDocs(query(collection(fs, ...base, "plays"), where("sid", "==", p.sid)));
+    s.docs.forEach(d => { const v = d.data();
+      if (v.g === G.ex) done.ex = true; if (v.g === G.tap) done.tap = true; if (v.g === G.bound) done.bound = true; if (v.g === G.ineq) done.ineq = true;
+      if (v.g === G.ws) wsRes = { r: v.r, w: v.w, m: v.m || [] }; });
+  } catch {}
+}
+async function save(g, r, w, m) {
+  if (mode !== "student") return;   // a teacher can look around; nothing is saved for him
+  const t = Date.now();
+  try { await setDoc(doc(fs, ...base, "plays", `${p.sid}_${g}_${t}`), { s: "ag", g, l: 1, r, w, t, u: t, m: (m || []).slice(-20), sid: p.sid, name: myName }); } catch {}
+}
+const close = () => { if (embedded) { try { parent.postMessage("mi-close", location.origin); } catch {} } else location.href = mode === "teacher" ? "teacher.html" : "student.html"; };
+const unlocked = () => mode === "teacher" || (done.ex && done.tap && done.bound && done.ineq);
+
+/* ---------- shell ---------- */
+let view = "ex";
+function shell(inner) {
+  const st = (k, n, l, d) => `<button class="step ${d ? "done" : ""} ${k === "ws" && !unlocked() ? "lock" : ""}" data-go="${k}" aria-current="${view === k}"><span>${n}. ${l}</span><small>${k === "ws" ? (wsRes ? "done" : unlocked() ? "ready" : "after 1 and 2") : d ? "done ✓" : "to do"}</small></button>`;
+  app.innerHTML = `<div class="top"><div class="logo">π</div><h1>Lesson 3.4: Upper and lower bounds<small>Math Island · examples, games, then a worksheet</small></h1><button class="x" data-close="1" type="button">✕ Close</button></div>
+    <div class="steps">${st("ex", 1, "Examples", done.ex)}${st("games", 2, "Games", done.tap && done.bound && done.ineq)}${st("ws", 3, "Worksheet", !!wsRes)}</div>${inner}`;
+}
+document.addEventListener("click", e => {
+  const t = e.target;
+  if (t.closest("[data-close]")) return close();
+  const g = t.closest("[data-go]"); if (g) { view = g.dataset.go; render(); window.scrollTo({ top: 0, behavior: "smooth" }); }
+});
+function render() { ({ ex: renderEx, games: renderGames, ws: renderWs, tap: () => runGame("tap"), bound: () => runGame("bound"), ineq: () => runGame("ineq") })[view](); }
+
+/* ---------- number line helper ---------- */
+function numberLine(lo, hi, lb, ub, mark) {
+  const span = hi - lo, pos = v => ((v - lo) / span * 100).toFixed(2) + "%";
+  const ticks = []; const step = span <= 3 ? 0.5 : span <= 30 ? 5 : span <= 300 ? 50 : 500;
+  for (let v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) ticks.push(v);
+  return `<div class="nl" role="img" aria-label="Number line from ${fmt(lo)} to ${fmt(hi)}"><div class="ln"></div>
+    ${lb != null ? `<div class="rng" style="left:${pos(lb)};width:calc(${pos(ub)} - ${pos(lb)})"></div>` : ""}
+    ${ticks.map(v => `<div class="pt" style="left:${pos(v)}"></div><div class="lb" style="left:${pos(v)}">${fmt(v)}</div>`).join("")}
+    ${lb != null ? `<div class="dot in" style="left:${pos(lb)}" title="lower bound (included)"></div><div class="dot out" style="left:${pos(ub)}" title="upper bound (not included)"></div>` : ""}</div>`;
+}
+
+/* ---------- 1. Examples ---------- */
+const ex = { tab: 0, c: [null, null], units: new Set(), unit: 10, ans: 80 };
+const EXS = [
+  { title: "Example A · nearest 10", intro: "A whole number is rounded to the nearest 10. The answer is 80.", task: "Tap every whole number that rounds to 80.", vals: Array.from({ length: 21 }, (_, i) => 70 + i), ans: 80, half: 5, step: 1, why: n => `<b>75</b> is the lowest number that still rounds up to 80, so the <b>lower bound is 75</b>. <b>85</b> would round up to 90, so it is not included, but it is where the range stops: the <b>upper bound is 85</b>.`, lb: 75, ub: 85, lo: 70, hi: 90 },
+  { title: "Example B · one decimal place", intro: "A number with one decimal place is rounded to the nearest whole number. The answer is 25.", task: "Tap every number that rounds to 25.", vals: Array.from({ length: 21 }, (_, i) => Math.round((24 + i / 10) * 10) / 10), ans: 25, half: 0.5, step: 0.1, why: n => `<b>24.5</b> rounds up to 25, so the <b>lower bound is 24.5</b>. <b>25.5</b> would round up to 26, so the <b>upper bound is 25.5</b> and it is not included.`, lb: 24.5, ub: 25.5, lo: 24, hi: 26 }
+];
+function renderEx() {
+  const cur = ex.tab, tabs = `<div class="tabs">${[...EXS.map((e, i) => `<button class="tab ${ex.c[i] === "done" ? "ok" : ""}" data-etab="${i}" aria-pressed="${cur === i}">${e.title}</button>`), `<button class="tab ${ex.units.size === 3 ? "ok" : ""}" data-etab="2" aria-pressed="${cur === 2}">Example C · the rule</button>`].join("")}</div>`;
+  if (cur < 2) {
+    const e = EXS[cur], s = ex["sel" + cur] || (ex["sel" + cur] = new Set()), checked = ex.c[cur] === "done";
+    const right = new Set(e.vals.filter(v => v >= e.lb - 1e-9 && v < e.ub - 1e-9).map(fmt));
+    shell(`${tabs}<div class="card"><h2>${e.title}</h2><p class="q">${e.intro}</p><p><span class="tag">Your turn</span> ${e.task}</p>
+      <div class="chips">${e.vals.map(v => { const k = fmt(v), on = s.has(k); let c = "";
+        if (checked) c = right.has(k) ? (on ? "ok" : "miss") : (on ? "no" : ""); return `<button class="chip ${c}" data-chip="${k}" aria-pressed="${on}" ${checked ? "disabled" : ""}>${k}</button>`; }).join("")}</div>
+      ${checked ? `${numberLine(e.lo, e.hi, e.lb, e.ub)}<div class="fb info">${e.why()}</div><div class="ineq">${fmt(e.lb)} ≤ <b>x</b> &lt; ${fmt(e.ub)}</div>
+        <p class="q">Lower bound = <b>${fmt(e.lb)}</b> · Upper bound = <b>${fmt(e.ub)}</b></p>` : `<div class="row"><button class="btn go" data-echeck="${cur}" type="button">Check</button></div>`}
+      ${checked ? `<div class="row"><button class="btn" data-etab="${cur + 1}" type="button">Next example →</button></div>` : ""}</div>`);
+  } else {
+    const un = ex.unit, half = un / 2, a = ex.ans, lb = a - half, ub = a + half;
+    const sets = { 1: [7, 28, 135, 559], 10: [50, 420, 3740], 100: [800, 1200, 6700] };
+    shell(`${tabs}<div class="card"><h2>Example C · the rule</h2><p class="q">Pick how the number was rounded, then change the answer. Watch the bounds.</p>
+      <div class="pick">${[1, 10, 100].map(x => `<button class="tab" data-unit="${x}" aria-pressed="${un === x}">${x === 1 ? "nearest whole" : "nearest " + x}</button>`).join("")}</div>
+      <div class="stepper"><button data-ans="-1" aria-label="smaller">−</button><b>${fmt(a)}</b><button data-ans="1" aria-label="bigger">+</button></div>
+      ${numberLine(a - un, a + un, lb, ub)}
+      <div class="fb info">Half of ${un} is <b>${fmt(half)}</b>. Lower bound = ${fmt(a)} − ${fmt(half)} = <b>${fmt(lb)}</b>. Upper bound = ${fmt(a)} + ${fmt(half)} = <b>${fmt(ub)}</b>.</div>
+      <div class="ineq">${fmt(lb)} ≤ <b>x</b> &lt; ${fmt(ub)}</div>
+      <p class="q">Try all three ways of rounding (${ex.units.size} of 3 done).</p>
+      ${ex.units.size === 3 || done.ex ? `<div class="row"><button class="btn go" data-exfin="1" type="button">${done.ex ? "Go to the games →" : "I understand. Finish the examples ✓"}</button></div>` : ""}</div>`);
+  }
+}
+document.addEventListener("click", async e => {
+  if (view !== "ex") return; const t = e.target;
+  const tb = t.closest("[data-etab]"); if (tb) { ex.tab = +tb.dataset.etab; if (ex.tab === 2 && !ex.units.size) ex.units.add(ex.unit); return renderEx(); }
+  const ch = t.closest("[data-chip]"); if (ch) { const s = ex["sel" + ex.tab]; s.has(ch.dataset.chip) ? s.delete(ch.dataset.chip) : s.add(ch.dataset.chip); return renderEx(); }
+  const ck = t.closest("[data-echeck]"); if (ck) { ex.c[+ck.dataset.echeck] = "done"; return renderEx(); }
+  const un = t.closest("[data-unit]"); if (un) { ex.unit = +un.dataset.unit; ex.ans = { 1: 28, 10: 420, 100: 800 }[ex.unit]; ex.units.add(ex.unit); return renderEx(); }
+  const an = t.closest("[data-ans]"); if (an) { ex.ans = Math.max(ex.unit, ex.ans + (+an.dataset.ans) * ex.unit); return renderEx(); }
+  if (t.closest("[data-exfin]")) {
+    if (!done.ex) { done.ex = true; save(G.ex, 3, 0, []); }
+    view = "games"; render(); window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+});
+
+/* ---------- 2. Games ---------- */
+const GAMES = [
+  { id: "tap", gid: G.tap, title: "Tap the numbers", desc: "Tap every number that rounds to the answer." },
+  { id: "bound", gid: G.bound, title: "Bound builder", desc: "Pick the lower or upper bound." },
+  { id: "ineq", gid: G.ineq, title: "Inequality match", desc: "Choose the inequality that shows the range." }
+];
+function renderGames() {
+  shell(`<div class="card"><h2>Games</h2><p class="q">Play all three. They unlock the worksheet.</p>
+    <div class="gcards">${GAMES.map(g => `<button class="gc ${done[g.id] ? "ok" : ""}" data-game="${g.id}" type="button"><b>${g.title}</b><span>${g.desc}</span><span class="tag">${done[g.id] ? "Played ✓" : "Play"}</span></button>`).join("")}</div>
+    ${unlocked() ? `<div class="row" style="margin-top:16px"><button class="btn go" data-go="ws" type="button">Go to the worksheet →</button></div>` : ""}</div>`);
+}
+document.addEventListener("click", e => { const g = e.target.closest("[data-game]"); if (g && view === "games") { gs = null; view = g.dataset.game; render(); window.scrollTo({ top: 0, behavior: "smooth" }); } });
+
+const TAP = [{ a: 70, u: 10 }, { a: 120, u: 10 }, { a: 350, u: 10 }, { a: 25, u: 1 }, { a: 8, u: 1 }, { a: 14, u: 1 }];
+const BOUND = [{ a: 120, u: 10, k: "lower" }, { a: 70, u: 10, k: "upper" }, { a: 25, u: 1, k: "lower" }, { a: 8, u: 1, k: "upper" }, { a: 28, u: 1, k: "lower" }, { a: 135, u: 1, k: "upper" }, { a: 800, u: 100, k: "lower" }, { a: 6700, u: 100, k: "upper" }];
+const INEQ = [{ a: 7, u: 1 }, { a: 28, u: 1 }, { a: 50, u: 10 }, { a: 420, u: 10 }, { a: 3740, u: 10 }, { a: 800, u: 100 }, { a: 1200, u: 100 }, { a: 9100, u: 100 }];
+const lowerOf = r => r.a - r.u / 2, upperOf = r => r.a + r.u / 2;
+const sentence = r => `A decimal number is rounded to the ${UNIT[r.u]}. The answer is ${fmt(r.a)}.`;
+let gs = null;
+function runGame(id) {
+  const rounds = { tap: TAP, bound: BOUND, ineq: INEQ }[id];
+  if (!gs || gs.id !== id || gs.fresh) gs = { id, i: 0, r: 0, w: 0, m: [], sel: new Set(), shown: false, pick: null, fresh: false, opts: null };
+  drawGame(rounds);
+}
+function drawGame(rounds) {
+  const { id } = gs, g = GAMES.find(x => x.id === id);
+  if (gs.i >= rounds.length) {   // finished
+    const pc = Math.round(100 * gs.r / rounds.length);
+    done[id] = true; if (!gs.saved) { gs.saved = true; save(g.gid, gs.r, gs.w, gs.m); }
+    shell(`<div class="card"><h2>${g.title}: done!</h2><p class="big">${gs.r} of ${rounds.length} right (${pc}%)</p><div class="bar"><i style="width:${pc}%"></i></div>
+      <p class="q">${pc >= 80 ? "Excellent work." : pc >= 50 ? "Good. Play again to improve." : "Look at the examples again, then try once more."}</p>
+      <div class="row"><button class="btn alt" data-gagain="1" type="button">Play again</button><button class="btn go" data-go="games" type="button">Back to the games</button></div></div>`);
+    return;
+  }
+  const r = rounds[gs.i], head = `<div class="card"><h2>${g.title}</h2><div class="bar"><i style="width:${100 * gs.i / rounds.length}%"></i></div><p><span class="tag">Question ${gs.i + 1} of ${rounds.length}</span></p>`;
+  if (id === "tap") {
+    const vals = r.u === 1 ? Array.from({ length: 21 }, (_, i) => Math.round((r.a - 1 + i / 10) * 10) / 10) : Array.from({ length: 21 }, (_, i) => r.a - 10 + i);
+    const half = r.u === 1 ? 0.5 : 5, lo = r.a - half, hi = r.a + half, right = new Set(vals.filter(v => v >= lo - 1e-9 && v < hi - 1e-9).map(fmt));
+    shell(`${head}<p class="q">${r.u === 1 ? "A number with one decimal place is rounded to the nearest whole number." : "A whole number is rounded to the nearest " + r.u + "."} The answer is <b>${fmt(r.a)}</b>.</p><p>Tap every number that rounds to ${fmt(r.a)}.</p>
+      <div class="chips">${vals.map(v => { const k = fmt(v), on = gs.sel.has(k); let c = ""; if (gs.shown) c = right.has(k) ? (on ? "ok" : "miss") : (on ? "no" : ""); return `<button class="chip ${c}" data-gchip="${k}" aria-pressed="${on}" ${gs.shown ? "disabled" : ""}>${k}</button>`; }).join("")}</div>
+      ${gs.shown ? `<div class="fb ${gs.ok ? "good" : "bad"}">${gs.ok ? "Correct! " : "Not quite. "}The numbers are <b>${fmt(lo)}</b> up to <b>${fmt(hi - (r.u === 1 ? 0.1 : 1))}</b>. Lower bound ${fmt(lo)}, upper bound ${fmt(hi)}.</div><div class="row"><button class="btn" data-gnext="1" type="button">Next →</button></div>`
+        : `<div class="row"><button class="btn go" data-gcheck="1" type="button" ${gs.sel.size ? "" : "disabled"}>Check</button></div>`}</div>`);
+  } else {
+    let correct, opts, qtxt;
+    if (id === "bound") {
+      correct = fmt(r.k === "lower" ? lowerOf(r) : upperOf(r));
+      if (!gs.opts) { const c = new Set([correct, fmt(r.k === "lower" ? upperOf(r) : lowerOf(r)), fmt(r.a), fmt(r.k === "lower" ? r.a - r.u : r.a + r.u)]); gs.opts = shuffle([...c]); }
+      opts = gs.opts; qtxt = `${sentence(r)} What is the <b>${r.k} bound</b>?`;
+    } else {
+      const L = fmt(lowerOf(r)), U = fmt(upperOf(r)); correct = `${L} ≤ x < ${U}`;
+      if (!gs.opts) gs.opts = shuffle([correct, `${L} ≤ x ≤ ${U}`, `${L} < x ≤ ${U}`, `${fmt(r.a - r.u)} ≤ x < ${fmt(r.a + r.u)}`]);
+      opts = gs.opts; qtxt = `${sentence(r)} Which inequality shows the range of values the number can be?`;
+    }
+    shell(`${head}<p class="q">${qtxt}</p><div class="opts">${opts.map(o => `<button class="opt ${gs.shown ? (o === correct ? "ok" : o === gs.pick ? "no" : "") : ""}" data-gopt="${esc(o)}" ${gs.shown ? "disabled" : ""}>${esc(o)}</button>`).join("")}</div>
+      ${gs.shown ? `<div class="fb ${gs.ok ? "good" : "bad"}">${gs.ok ? "Correct! " : "The answer is <b>" + esc(correct) + "</b>. "}Half of ${r.u} is ${fmt(r.u / 2)}: ${fmt(r.a)} − ${fmt(r.u / 2)} = ${fmt(lowerOf(r))} and ${fmt(r.a)} + ${fmt(r.u / 2)} = ${fmt(upperOf(r))}.</div>${numberLine(r.a - r.u, r.a + r.u, lowerOf(r), upperOf(r))}<div class="row"><button class="btn" data-gnext="1" type="button">Next →</button></div>` : ""}</div>`);
+  }
+}
+document.addEventListener("click", e => {
+  if (!["tap", "bound", "ineq"].includes(view) || !gs) return; const t = e.target, id = gs.id;
+  const rounds = { tap: TAP, bound: BOUND, ineq: INEQ }[id], r = rounds[gs.i];
+  if (t.closest("[data-gagain]")) { gs = null; return runGame(id); }
+  const ch = t.closest("[data-gchip]"); if (ch && !gs.shown) { const k = ch.dataset.gchip; gs.sel.has(k) ? gs.sel.delete(k) : gs.sel.add(k); return drawGame(rounds); }
+  if (t.closest("[data-gcheck]") && !gs.shown) {
+    const vals = r.u === 1 ? Array.from({ length: 21 }, (_, i) => Math.round((r.a - 1 + i / 10) * 10) / 10) : Array.from({ length: 21 }, (_, i) => r.a - 10 + i);
+    const half = r.u === 1 ? 0.5 : 5, right = new Set(vals.filter(v => v >= r.a - half - 1e-9 && v < r.a + half - 1e-9).map(fmt));
+    gs.ok = right.size === gs.sel.size && [...right].every(k => gs.sel.has(k)); gs.shown = true;
+    gs.ok ? gs.r++ : (gs.w++, gs.m.push({ q: `${sentence({ a: r.a, u: r.u })} Tap the numbers that round to ${fmt(r.a)}`, a: "picked: " + ([...gs.sel].sort((x, y) => x - y).join(", ") || "none") + " | correct: " + fmt(r.a - half) + " to " + fmt(r.a + half - (r.u === 1 ? 0.1 : 1)), at: Date.now() }));
+    return drawGame(rounds);
+  }
+  const op = t.closest("[data-gopt]"); if (op && !gs.shown) {
+    const pick = op.dataset.gopt, correct = id === "bound" ? fmt(r.k === "lower" ? lowerOf(r) : upperOf(r)) : `${fmt(lowerOf(r))} ≤ x < ${fmt(upperOf(r))}`;
+    gs.pick = pick; gs.ok = pick === correct; gs.shown = true;
+    gs.ok ? gs.r++ : (gs.w++, gs.m.push({ q: id === "bound" ? `${sentence(r)} What is the ${r.k} bound?` : `${sentence(r)} Which inequality shows the range?`, a: "chose " + pick + " | correct " + correct, at: Date.now() }));
+    return drawGame(rounds);
+  }
+  if (t.closest("[data-gnext]")) { gs.i++; gs.sel = new Set(); gs.shown = false; gs.pick = null; gs.opts = null; return drawGame(rounds); }
+});
+
+/* ---------- 3. Worksheet (multiple choice) ---------- */
+const WS = [
+  { q: "A whole number is rounded to the nearest 10. The answer is 120. Which of these could the number be?", c: "115", w: ["114", "125", "126"] },
+  { q: "A whole number is rounded to the nearest 10. The answer is 120. What is the lower bound?", c: "115", w: ["110", "119", "120"] },
+  { q: "A whole number is rounded to the nearest 10. The answer is 120. What is the upper bound?", c: "125", w: ["124", "126", "130"] },
+  { q: "A number with one decimal place is rounded to the nearest whole number. The answer is 25. Which of these could the number be?", c: "24.5", w: ["24.4", "25.5", "25.6"] },
+  { q: "A number with one decimal place is rounded to the nearest whole number. The answer is 25. What is the lower bound?", c: "24.5", w: ["24", "24.9", "25"] },
+  { q: "A number with one decimal place is rounded to the nearest whole number. The answer is 25. What is the upper bound?", c: "25.5", w: ["25.4", "25.9", "26"] },
+  { q: "A decimal number is rounded to the nearest whole number. The answer is 8. Which inequality shows the range of values?", c: "7.5 ≤ x < 8.5", w: ["7.5 ≤ x ≤ 8.5", "7.5 < x ≤ 8.5", "7 ≤ x < 9"] },
+  { q: "A decimal number is rounded to the nearest whole number. The answer is 28. Which inequality shows the range of values?", c: "27.5 ≤ x < 28.5", w: ["27 ≤ x < 29", "27.5 < x ≤ 28.5", "27.5 ≤ x ≤ 28.5"] },
+  { q: "A decimal number is rounded to the nearest ten. The answer is 50. Which inequality shows the range of values?", c: "45 ≤ x < 55", w: ["40 ≤ x < 60", "45 < x ≤ 55", "50 ≤ x < 60"] },
+  { q: "A decimal number is rounded to the nearest ten. The answer is 3740. Which inequality shows the range of values?", c: "3735 ≤ x < 3745", w: ["3730 ≤ x < 3750", "3735 < x ≤ 3745", "3740 ≤ x < 3750"] },
+  { q: "A decimal number is rounded to the nearest one hundred. The answer is 800. Which inequality shows the range of values?", c: "750 ≤ x < 850", w: ["700 ≤ x < 900", "750 < x ≤ 850", "800 ≤ x < 900"] },
+  { q: "A decimal number is rounded to the nearest one hundred. The answer is 6700. Which inequality shows the range of values?", c: "6650 ≤ x < 6750", w: ["6600 ≤ x < 6800", "6650 < x ≤ 6750", "6700 ≤ x < 6800"] }
+];
+let wsOrder = null, wsPick = [];
+function renderWs() {
+  if (!unlocked()) {
+    const need = [!done.ex && "the examples", !(done.tap && done.bound && done.ineq) && "all three games"].filter(Boolean).join(" and ");
+    shell(`<div class="card lockbox"><div class="big">🔒 The worksheet opens soon</div><p class="q">First finish ${need}. Then come back here.</p><div class="row" style="justify-content:center"><button class="btn" data-go="${!done.ex ? "ex" : "games"}" type="button">${!done.ex ? "Go to the examples" : "Go to the games"}</button></div></div>`);
+    return;
+  }
+  if (wsRes) {
+    const n = wsRes.r + wsRes.w, pc = n ? Math.round(100 * wsRes.r / n) : 0;
+    shell(`<div class="card"><h2>Worksheet: handed in ✓</h2><p class="big">${wsRes.r} of ${n} right (${pc}%)</p><div class="bar"><i style="width:${pc}%"></i></div>
+      ${wsRes.m.length ? `<h3>Questions to look at again</h3>${wsRes.m.map(x => `<div class="fb bad"><b>${esc(x.q)}</b><br>${esc(x.a)}</div>`).join("")}` : `<p class="q">Every answer was right. Well done!</p>`}
+      <div class="row"><button class="btn go" data-close="1" type="button">Finish</button></div></div>`);
+    return;
+  }
+  if (!wsOrder) wsOrder = WS.map(q => ({ ...q, o: shuffle([q.c, ...q.w]) })), wsPick = WS.map(() => "");
+  const answered = wsPick.filter(Boolean).length;
+  shell(`<div class="card ws"><h2>Worksheet</h2><p class="q">Choose one answer for each question. You can hand in once.</p><div class="bar"><i style="width:${100 * answered / WS.length}%"></i></div>
+    ${wsOrder.map((q, i) => `<div class="wq"><p class="q"><span class="num">${i + 1}</span>${esc(q.q)}</p><div class="opts">${q.o.map(o => `<button class="opt" data-wq="${i}" data-wo="${esc(o)}" aria-pressed="${wsPick[i] === o}">${esc(o)}</button>`).join("")}</div></div>`).join("")}
+    <p class="fb info" id="wsNote">${answered} of ${WS.length} answered</p>
+    <div class="row"><button class="btn go" data-wsend="1" type="button" ${answered === WS.length ? "" : "disabled"}>Hand in</button></div></div>`);
+}
+document.addEventListener("click", async e => {
+  if (view !== "ws") return; const t = e.target;
+  const o = t.closest("[data-wq]"); if (o) { const y = window.scrollY; wsPick[+o.dataset.wq] = o.dataset.wo; renderWs(); window.scrollTo(0, y); return; }
+  if (t.closest("[data-wsend]")) {
+    if (!confirm("Hand in now? You cannot change your answers after this.")) return;
+    let r = 0, w = 0; const m = [];
+    wsOrder.forEach((q, i) => { if (wsPick[i] === q.c) r++; else { w++; m.push({ q: `${i + 1}. ${q.q}`, a: "chose " + wsPick[i] + " | correct " + q.c, at: Date.now() }); } });
+    wsRes = { r, w, m }; await save(G.ws, r, w, m); renderWs(); window.scrollTo({ top: 0 });
+  }
+});
+
+render();
+</script></body></html>
