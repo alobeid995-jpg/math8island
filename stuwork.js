@@ -23,7 +23,7 @@ async function load() {
     mine = new Map(s.docs.map(d => [d.data().wid, d.data()]));
   } catch { works = []; }
   player = playerOf(me);
-  isAG = /^AG$/i.test(String(me.cls || "").trim());   // the AG lesson is only for the AG class
+  isAG = /^8G$/i.test(String(me.cls || "").trim());   // this lesson is only for class 8G
   if (isAG) { try { const pl = await getDocs(query(collection(fs, ...base, "plays"), where("sid", "==", P.sid))); agPlays = new Set(pl.docs.map(d => d.data().g)); } catch {} }
   if (player) {
     try {
