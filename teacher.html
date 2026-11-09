@@ -899,14 +899,15 @@ header.book .sync { z-index: 1; background: rgba(0,0,0,.4); border-color: rgba(2
 
 /* 3D shop avatars */
 .a3d { display: inline-block; width: 96px; height: 96px; perspective: 520px; line-height: 0; filter: drop-shadow(0 10px 8px rgba(40,25,5,.35)); }
-.a3s { position: relative; display: block; width: 100%; height: 100%; transform-style: preserve-3d; transform: rotateX(-10deg) rotateY(-24deg); animation: a3sway 5.5s ease-in-out infinite alternate; }
+.a3s { position: relative; display: block; width: 100%; height: 100%; transform-style: preserve-3d; transform: rotateX(-10deg) rotateY(-24deg); }
+.sitem:hover .a3s, .sitem:focus-within .a3s { animation: a3sway 2.6s ease-in-out infinite alternate; }   /* moves only when touched, so a page of 34 avatars stays smooth */
+.sitem { content-visibility: auto; contain-intrinsic-size: auto 260px; }
 .a3s > i { position: absolute; inset: 0; display: block; }
 .a3s > i svg { width: 100%; height: 100%; display: block; overflow: visible; }
 .a3t { border-radius: 18px; transform: translateZ(-30px); box-shadow: 0 0 0 3px rgba(0,0,0,.2) inset; }
 .a3g { border-radius: 18px; transform: translateZ(4px); pointer-events: none; background: linear-gradient(135deg, rgba(255,255,255,.28), transparent 45%); }
 @keyframes a3sway { from { transform: rotateX(-10deg) rotateY(-30deg); } to { transform: rotateX(-4deg) rotateY(30deg); } }
 .sitem .prev:has(.a3d) { min-height: 112px; padding: 10px 0 14px; }
-.sitem:hover .a3s { animation-duration: 2.4s; }
 @media (prefers-reduced-motion: reduce) { .a3s { animation: none; } }
 
 .wpn { position: absolute; right: -16%; bottom: -8%; font-size: 22px; line-height: 1; transform: rotate(10deg); pointer-events: none; filter: drop-shadow(0 2px 2px rgba(0,0,0,.4)); }
@@ -1585,8 +1586,8 @@ function avatar3D(id) {
   const raw = enemyFig(id); if (!raw) return "";
   const bg = (raw.match(/<circle cx="50" cy="50" r="50" fill="([^"]+)"\/>/) || [, "#eee"])[1];
   const bare = raw.replace(/<circle cx="50" cy="50" r="50" fill="[^"]+"\/>/, "");
-  const N = 9, layers = [];
-  for (let i = N; i >= 1; i--) layers.push(`<i class="a3l" style="transform:translateZ(${-i * 2.4}px);filter:brightness(${(1 - i * 0.045).toFixed(2)})">${bare}</i>`);
+  const N = 5, layers = [];
+  for (let i = N; i >= 1; i--) layers.push(`<i class="a3l" style="transform:translateZ(${-i * 4.2}px);filter:brightness(${(1 - i * 0.08).toFixed(2)})">${bare}</i>`);
   const html = `<span class="a3d" role="img" aria-label="3D avatar"><span class="a3s"><i class="a3t" style="background:${bg}"></i>${layers.join("")}<i class="a3l a3f" style="transform:translateZ(3px)">${bare}</i><i class="a3g"></i></span></span>`;
   a3dCache.set(id, html); return html;
 }
