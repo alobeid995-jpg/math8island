@@ -94,8 +94,34 @@ async function listMissing() {
   const all = (await getDocs(bcol("students"))).docs.filter(d => d.data().cls === cl);
   const no = all.filter(d => !String(d.data().enrollment || "").trim()).sort((a, b) => String(a.data().name).localeCompare(String(b.data().name)));
   box.innerHTML = no.length
-    ? `<h4 style="margin:6px 0 2px">${no.length} student${no.length === 1 ? "" : "s"} in ${esc2(cl)} without a student ID</h4>` + no.map(d => `<div class="lg-bar" style="margin:4px 0"><span style="min-width:180px">${esc2(d.data().name)}</span><input data-idfor="${esc2(d.id)}" placeholder="e.g. 19-00047" style="width:140px"><button class="ghost small" data-saveid="${esc2(d.id)}" type="button">Save ID</button></div>`).join("")
+    ? `<h4 style="margin:6px 0 2px">${no.length} student${no.length === 1 ? "" : "s"} in ${esc2(cl)} without a student ID</h4>` + no.map(d => `<div class="lg-bar" style="margin:4px 0"><span style="min-width:180px">${esc2(d.data().name)}</span><input data-idfor="${esc2(d.id)}" placeholder="e.g. 19-00047" style="width:140px"><button class="ghost small" data-saveid="${esc2(d.id)}" type="button">Save ID</button></div>`).join("") + `<div style="margin:8px 0"><b>Or paste all IDs at once from Excel</b> (name + ID columns, any order)<br><textarea id="idPaste" rows="5" style="width:100%;max-width:520px" placeholder="ADAM AHMED JANAHI&#9;19-00047"></textarea><br><button class="primary small" id="idPasteGo" type="button">Match and save IDs</button></div>`
     : "";
+  const go = $("idPasteGo"); if (go) go.onclick = () => bulkIds(no);
+}
+const nameKey = n => String(n).toLowerCase().normalize("NFKD").replace(/[^\p{L}\s]/gu, " ").split(/\s+/).filter(Boolean);
+async function bulkIds(no) {
+  const rows = [];
+  for (const line of $("idPaste").value.split(/\r?\n/)) {
+    const cells = line.split(/\t|,|;/).map(x => x.trim()).filter(Boolean);
+    const id = cells.find(c => /^[\w-]*\d[\w-]*$/.test(c) && !/\s/.test(c)), nm = cells.filter(c => c !== id).join(" ");
+    if (id && nm) rows.push({ id, key: nameKey(nm), nm });
+  }
+  if (!rows.length) { msg("Paste the Excel columns first: each row needs a name and an ID."); return; }
+  const used = new Set((await getDocs(bcol("students"))).docs.map(d => String(d.data().enrollment || "").trim().toLowerCase()).filter(Boolean));
+  const left = [...no], done = [], bad = [];
+  for (const r of rows) {
+    const sameSet = d => { const k = nameKey(d.data().name); return k.length === r.key.length && k.every(w => r.key.includes(w)); };
+    const sub = d => { const k = nameKey(d.data().name); const [s, l] = k.length < r.key.length ? [k, r.key] : [r.key, k]; return s.length >= 2 && s.every(w => l.includes(w)); };
+    let m = left.filter(sameSet); if (m.length !== 1) m = m.length ? m : left.filter(sub);
+    if (m.length !== 1 || used.has(r.id.toLowerCase())) { bad.push(r.nm + (m.length > 1 ? " (more than one match)" : used.has(r.id.toLowerCase()) ? " (ID already used)" : " (not found)")); continue; }
+    left.splice(left.indexOf(m[0]), 1); used.add(r.id.toLowerCase()); done.push([m[0].id, r.id]);
+  }
+  if (!done.length) { msg("No names matched. " + bad.slice(0, 5).join(", ")); return; }
+  const btn = $("idPasteGo"); btn.disabled = true;
+  try {
+    for (const [sid, id] of done) await updateDoc(bdoc("students", sid), { enrollment: id });
+    msg(`Saved ${done.length} IDs.` + (bad.length ? ` ${bad.length} not matched: ${bad.slice(0, 8).join(", ")}${bad.length > 8 ? "…" : ""}` : "")); await listLogins();
+  } catch (e) { msg("Could not save: " + (e.code || e.message)); btn.disabled = false; }
 }
 document.addEventListener("click", async ev => {
   const b = ev.target.closest("[data-saveid]"); if (!b) return;
