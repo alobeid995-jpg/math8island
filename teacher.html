@@ -979,11 +979,13 @@ header.book .sync { z-index: 1; background: rgba(0,0,0,.4); border-color: rgba(2
 .f-g-peach { --fb: linear-gradient(135deg,#ffe0c2,#ff9d6c); --r1: #ffe0c2; --r2: #ff9d6c; --r3: #fff4e8; --r4: #c4552b; --r5: #ffb98a; --gem: #ffcc80; --gl: rgba(255,150,100,.85); --spd: 11s; }
 .f-g-heart { --fb: linear-gradient(135deg,#ff9ec7,#ff3f8e); --r1: #ff9ec7; --r2: #ff3f8e; --r3: #ffd9ea; --r4: #c2185b; --r5: #ff6fb1; --gem: #ff80ab; --gl: rgba(255,63,142,.9); --spd: 8s; }
 .f-g-star { --fb: linear-gradient(135deg,#fff3b0,#ffb3d9,#c06ad6); --r1: #fff3b0; --r2: #ffb3d9; --r3: #ffffff; --r4: #c06ad6; --r5: #ffe27a; --gem: #fff59d; --gl: rgba(255,200,120,.95); --spd: 7s; }
+.f-g-aurora { --fb: linear-gradient(135deg,#ffc2e6,#b57bff,#7fd3ff); --r1: #ffc2e6; --r2: #b57bff; --r3: #ffffff; --r4: #6a3fc4; --r5: #7fd3ff; --gem: #ffffff; --gl: rgba(181,123,255,.9); --spd: 6s; }
 .f-g-glitter { --fb: linear-gradient(135deg,#ffd1f0,#ff5cc8,#7be8ff); --r1: #ffd1f0; --r2: #ff5cc8; --r3: #ffffff; --r4: #8a2be2; --r5: #7be8ff; --gem: #ffffff; --gl: rgba(255,92,200,.95); --spd: 4s; animation: fspin var(--spd) linear infinite, fburn 1.4s ease-in-out infinite; }
-.f-g-pearl::before, .f-g-heart::before, .f-g-glitter::before, .f-g-rainbow::before, .f-g-mint::before { border-radius: 50%; }
+.f-g-pearl::before, .f-g-heart::before, .f-g-glitter::before, .f-g-aurora::before, .f-g-mint::before { border-radius: 50%; }
 .c-g-rose { color: #e0457b; } .c-g-lilac { color: #9b6bd6; } .c-g-mint { color: #12a083; } .c-g-sky { color: #2f93e8; } .c-g-peach { color: #ee7430; }
-.c-g-bubble, .c-g-rainbow, .c-g-glitter { -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
+.c-g-bubble, .c-g-aurora, .c-g-glitter { -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
 .c-g-bubble { background-image: linear-gradient(90deg, #ff4d94, #b36bff); }
+.c-g-aurora { background-image: linear-gradient(90deg, #ff6fb5, #b36bff, #4aa8ff, #b36bff, #ff6fb5); background-size: 200% 100%; animation: grbw 4s linear infinite; }
 .c-g-glitter { background-image: linear-gradient(90deg, #e6a8ff, #ff5cc8, #ffd166, #ff5cc8, #e6a8ff); background-size: 200% 100%; animation: grbw 3s linear infinite; }
 @keyframes grbw { to { background-position: -200% 0; } }
 .girlshop { --gp1: #ff7eb6; --gp2: #b57bff; font-family: "Fredoka", var(--f-display, sans-serif);
@@ -1001,7 +1003,7 @@ header.book .sync { z-index: 1; background: rgba(0,0,0,.4); border-color: rgba(2
 .girlshop .ghost { border-radius: 99px; border-color: #ffc2dc; color: #a23b7a; }
 .girlshop .ttag { color: #b0306f; background: #ffe3f0; border-color: #ffb8d6; }
 .gs-sw { display: inline-flex; gap: 6px; margin: 0 0 12px; }
-@media (prefers-reduced-motion: reduce) { .c-g-rainbow, .c-g-glitter { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .c-g-aurora, .c-g-glitter { animation: none; } }
 
 header.book .acct{position:relative;z-index:1;display:flex;gap:6px;flex-wrap:wrap;align-self:flex-start}
 #loginsModal .sheet{width:min(720px,100%)}
@@ -1578,7 +1580,7 @@ const GFIG = {
   "g-fairy": { bg: "#f1e6ff", hair: "#ff94d4", hs: 4, dress: "#c9a7ff", back: [["wings", "#d9f4ff", "#f4c6ff"]], front: [["star"]], sp: [[14, 20, 4], [88, 22, 3.4], [10, 50, 2.6]] },
   "g-witch": { bg: "#2e2252", hair: "#2a1b3d", hs: 0, dress: "#7e4bd0", trim: "#ffd54f", front: [["witch", "#4b2a8c"]], sp: [[14, 30, 3.4], [86, 44, 4], [18, 62, 2.6]] },
   "g-popstar": { bg: "#ffd9f3", hair: "#ff4fb2", hs: 4, dress: "#27d8e0", trim: "#ffffff", front: [["headset"], ["star", 28, 24]], sp: [[84, 22, 4], [14, 56, 3]], spc: "#ffffff" },
-  "g-unicorn": { bg: "#fde7ff", rainbow: 1, hs: 0, dress: "#f3e5ff", trim: "#ffb3e6", back: [["wings", "#ffffff", "#ffe0f6"]], front: [["horn"], ["flowers", ["#ff8fb8", "#ffd166", "#8be28b", "#7cc4ff", "#c39bff"]]], sp: [[12, 24, 4], [90, 18, 3.4], [88, 56, 3], [10, 56, 2.6]] },
+  "g-butterfly": { bg: "#f3e3ff", hair: "#c66bff", hs: 4, dress: "#ffb3e6", trim: "#ffffff", back: [["wings", "#ffc2e6", "#d2a8ff"]], front: [["tiara", "#ffd9f0", "#b36bff"], ["flowers", ["#ff8fb8", "#d2a8ff", "#ffffff"]]], sp: [[12, 24, 4], [90, 18, 3.4], [88, 56, 3], [10, 56, 2.6]] },
   "g-iceq": { bg: "#d4efff", hair: "#e6f6ff", hs: 0, dress: "#7fc8ff", trim: "#ffffff", cape: "#4aa3e8", front: [["crown", "#bfeaff", "#29b6f6"]], sp: [[14, 26, 4], [86, 28, 3.4], [90, 62, 3]], spc: "#ffffff" },
   "g-angel": { bg: "#fff6cc", hair: "#f6d36b", hs: 3, dress: "#ffffff", trim: "#ffd54f", back: [["wings", "#ffffff", "#fff0a8"]], front: [["halo"]], sp: [[12, 18, 3.4], [90, 14, 3]] },
   "g-galaxy": { bg: "#1a1040", hair: "#7a5cff", hs: 0, dress: "#3b2a8c", trim: "#ff9ee6", cape: "#5b3fd0", front: [["tiara", "#c6b3ff", "#ff9ee6"], ["star", 28, 26]], sp: [[12, 18, 3.4], [88, 20, 4], [8, 52, 2.6], [92, 56, 3], [20, 88, 2.4], [82, 86, 2.4]], spc: "#ffffff" },
@@ -1712,6 +1714,8 @@ const SHOP = [
   { id: "g-angel", cat: "skin", name: "Golden Angel", price: 900, g: 1 },
   { id: "g-galaxy", cat: "skin", name: "Galaxy Princess", price: 1000, g: 1 },
   { id: "g-rose", cat: "skin", name: "Rose Empress", price: 1100, g: 1 },
+  { id: "g-butterfly", cat: "skin", name: "Butterfly Queen", price: 1000, g: 1 },
+  { id: "f-g-aurora", cat: "frame", name: "✦ Aurora Glow", price: 450, g: 1 },
   { id: "f-g-rose", cat: "frame", name: "✿ Rose Petal", price: 200, g: 1 },
   { id: "f-g-lilac", cat: "frame", name: "✿ Lilac Dream", price: 200, g: 1 },
   { id: "f-g-mint", cat: "frame", name: "✿ Mint Pearl", price: 250, g: 1 },
@@ -1719,6 +1723,7 @@ const SHOP = [
   { id: "f-g-heart", cat: "frame", name: "♡ Candy Hearts", price: 350, g: 1 },
   { id: "f-g-star", cat: "frame", name: "✦ Starlight Tiara", price: 400, g: 1 },
   { id: "f-g-glitter", cat: "frame", name: "✦ Glitter Queen", price: 500, g: 1 },
+  { id: "c-g-aurora", cat: "color", name: "Aurora Pop", price: 350, g: 1 },
   { id: "c-g-rose", cat: "color", name: "Rose Quartz", price: 150, g: 1 },
   { id: "c-g-lilac", cat: "color", name: "Lavender", price: 150, g: 1 },
   { id: "c-g-mint", cat: "color", name: "Mint Fresh", price: 150, g: 1 },
@@ -1734,6 +1739,7 @@ const SHOP = [
   { id: "t-g-pi", cat: "title", name: "Pi Sparkle", price: 300, g: 1 },
   { id: "t-g-empress", cat: "title", name: "Equation Empress", price: 300, g: 1 },
   { id: "t-g-genius", cat: "title", name: "Sweet Genius", price: 300, g: 1 },
+  { id: "w-parasol", cat: "top", name: "✦ Blossom Parasol", icon: "🌂", price: 550, g: 1 },
   { id: "w-star", cat: "top", name: "✦ Star Wand", price: 300, icon: "🪄", g: 1 },
   { id: "w-heart", cat: "top", name: "✦ Heart Scepter", price: 350, icon: "💖", g: 1 },
   { id: "w-rose", cat: "top", name: "✦ Rose Bouquet", price: 400, icon: "💐", g: 1 },
@@ -1784,7 +1790,7 @@ function shopPreview(it, st) {
 // Avatars are split in three tiers so each tab stays short. The tier is fixed per avatar (prices can change).
 const AV_TIERS = [["basic", "Basic"], ["epic", "Epic"], ["legendary", "Legendary"]];
 const AV_TIER = {"e-slime": "basic", "e-zombie": "basic", "e-robot": "basic", "e-ghost": "basic", "e-skeleton": "basic", "e-vampire": "basic", "e-alien": "basic", "e-dragon": "basic", "e-pirate": "basic", "s-slime": "basic", "s-zombie": "basic", "s-robot": "basic", "e-knight": "epic", "e-golem": "epic", "e-frost": "epic", "e-wizard": "epic", "e-ninja": "epic", "e-pharaoh": "epic", "s-ghost": "epic", "s-bone": "epic", "s-bat": "epic", "s-alien": "epic", "s-wyvern": "epic", "s-knight": "epic", "s-pirate": "epic", "s-stone": "epic", "e-cosmic": "legendary", "e-phoenix": "legendary", "s-icedragon": "legendary", "s-sorcerer": "legendary", "s-ninja": "legendary", "s-pharaoh": "legendary", "s-astro": "legendary", "s-phoenix": "legendary"};
-Object.assign(AV_TIER, {"g-bow":"basic","g-bunny":"basic","g-kitty":"basic","g-flower":"basic","g-sweet":"basic","g-princess":"epic","g-mermaid":"epic","g-fairy":"epic","g-witch":"epic","g-popstar":"epic","g-iceq":"legendary","g-angel":"legendary","g-galaxy":"legendary","g-rose":"legendary"});
+Object.assign(AV_TIER, {"g-bow":"basic","g-bunny":"basic","g-kitty":"basic","g-flower":"basic","g-sweet":"basic","g-princess":"epic","g-mermaid":"epic","g-fairy":"epic","g-witch":"epic","g-popstar":"epic","g-iceq":"legendary","g-butterfly":"legendary","g-angel":"legendary","g-galaxy":"legendary","g-rose":"legendary"});
 let shopTier = "basic";
 const setTier = k => { shopTier = k; };
 const tierOf = it => AV_TIER[it.id] || "basic";
