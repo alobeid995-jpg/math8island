@@ -1,6 +1,6 @@
 // Lets the owner see who is on the site. One small record per student: when he came, when he was last here, and his last few actions.
 // Written rarely (every 4 minutes while the page is open and visible), so it stays far inside the free plan.
-import { fs, doc, getDoc, setDoc } from "./fb.js";
+import { fs, doc, getDoc, setDoc, meter } from "./fb.js";
 
 let ref = null, rec = null, ev = [], tmr = null, lastWrite = 0, getMe = () => null;
 const HEARTBEAT = 4 * 60 * 1000;
@@ -10,7 +10,7 @@ async function write() {
   clearTimeout(tmr); tmr = null; lastWrite = Date.now();
   const me = getMe() || {};
   const body = { sid: rec.sid, tid: rec.tid, name: String(me.name || rec.name || "").slice(0, 80), cls: String(me.cls || rec.cls || "").slice(0, 12),
-    first: rec.first, last: Date.now(), n: rec.n, ev: ev.slice(-15) };
+    first: rec.first, last: Date.now(), n: rec.n, ev: ev.slice(-15), use: meter() };
   try { await setDoc(ref, body); } catch {}
 }
 export function logEv(text) {

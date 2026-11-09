@@ -64,7 +64,7 @@ td.n{text-align:right;font-variant-numeric:tabular-nums}th.n{text-align:right}
 .note{color:var(--mut);font-size:12.5px;padding:0 2px 12px}
 .msg{padding:40px 16px;text-align:center;color:var(--mut)}.msg.bad{color:var(--bad)}
 [hidden]{display:none!important}
-</style></head><body>
+.ub{margin:10px 0}.ubh{display:flex;justify-content:space-between;gap:10px;font-size:14px}.ubh em{font-style:normal;font-weight:800}.ubar{height:14px;border:2px solid #151412;border-radius:99px;background:#fff;overflow:hidden;margin-top:4px}.ubar i{display:block;height:100%}.ubar i.ok{background:#1e7a46}.ubar i.mid{background:#f3b31c}.ubar i.bad{background:#d8402b}.sub{color:#5c574b;font-size:13px;margin:10px 0 0}</style></head><body>
 <div class="top"><div class="top-in">
   <div class="brand"><div class="logo">π</div><div><b>Math Island</b><small>Developer · owner only</small></div></div>
   <span class="live off" id="live"><i></i><span id="liveTxt">Connecting…</span></span>
@@ -77,6 +77,7 @@ td.n{text-align:right;font-variant-numeric:tabular-nums}th.n{text-align:right}
 <div class="drawer" id="dr"><div class="bk" data-close="1"></div><div class="pn" id="pn"></div></div>
 <script type="module">
 import { fs, doc, updateDoc, collection, getDocs, onSnapshot, query, where, whenUser, profileOf } from "./fb.js";
+import { startUsage } from "./usage.js";
 const $ = id => document.getElementById(id), out = $("out");
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const ONLINE = 6 * 60 * 1000, DAY = 24 * 60 * 60 * 1000;
@@ -86,6 +87,7 @@ $("reload").onclick = () => load();
 const u = await whenUser();
 const p = u && await profileOf(u.uid);
 if (!p || p.role !== "teacher" || p.admin !== true) { location.href = "index.html"; throw new Error("owner only"); }
+startUsage(u, p);
 
 let teachers = [], students = [], pres = new Map(), tab = "live", filter = "all", cls = "all", q = "", sort = { k: "seen", dir: -1 }, titles = null, liveOk = false;
 const key = (tid, sid) => (tid || "") + "/" + sid;
@@ -134,9 +136,11 @@ async function load() {
     out.className = ""; build(); watch();
   } catch (e) { out.className = "msg bad"; out.textContent = "Could not load: " + (e.code || e.message) + ". Check that the new rules are published."; }
 }
-let off = null;
+let off = null, offU = null, usageDocs = [];
 function watch() {
   if (off) off();
+  if (offU) offU();
+  offU = onSnapshot(collection(fs, "usage"), snap => { usageDocs = snap.docs.map(x => ({ id: x.id, ...x.data() })); if (tab === "usage") paint(); }, () => {});
   off = onSnapshot(collection(fs, "presence"), snap => {
     pres = new Map(snap.docs.map(d => { const v = d.data(); return [key(v.tid, v.sid), v]; }));
     liveOk = true; paint();
@@ -145,7 +149,7 @@ function watch() {
 
 function build() {
   out.innerHTML = `<div class="kpis" id="kpis"></div>
-    <div class="tabs" role="tablist">${[["live", "Live"], ["students", "Students"], ["teachers", "Teachers"]].map(([k, l]) => `<button role="tab" data-tab="${k}" aria-selected="${k === tab}">${l}</button>`).join("")}</div>
+    <div class="tabs" role="tablist">${[["live", "Live"], ["students", "Students"], ["teachers", "Teachers"], ["usage", "Usage"]].map(([k, l]) => `<button role="tab" data-tab="${k}" aria-selected="${k === tab}">${l}</button>`).join("")}</div>
     <div id="pane"></div>`;
   paint();
 }
@@ -163,9 +167,37 @@ function paint() {
   const lv = $("live");
   if (liveOk) { lv.className = "live"; $("liveTxt").textContent = "Live"; }
   document.querySelectorAll("[data-tab]").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === tab));
-  ({ live: paintLive, students: paintStudents, teachers: paintTeachers })[tab]();
+  ({ live: paintLive, students: paintStudents, teachers: paintTeachers, usage: paintUsage })[tab]();
 }
 
+/* ---------- Usage: estimate of reads and writes against the free daily limit ---------- */
+const FREE = { r: 50000, w: 20000 };   // Firebase free plan, per day
+const pacific = () => new Date().toLocaleDateString("en-CA", { timeZone: "America/Los_Angeles" });
+const fmtN = n => Math.round(n).toLocaleString("en-US");
+function meterBar(label, v, lim) {
+  const pc = lim ? Math.min(100, 100 * v / lim) : 0, tone = pc >= 85 ? "bad" : pc >= 60 ? "mid" : "ok";
+  return `<div class="ub"><div class="ubh"><b>${label}</b><span>${fmtN(v)} of ${fmtN(lim)} <em>${pc < 1 && v ? "<1" : Math.round(pc)}%</em></span></div><div class="ubar"><i class="${tone}" style="width:${pc}%"></i></div></div>`;
+}
+function paintUsage() {
+  const day = pacific(), mon = day.slice(0, 7), rows = [];
+  pres.forEach(v => { if (v.use) rows.push({ who: v.name || "Student", role: "Students", u: v.use }); });
+  usageDocs.forEach(v => rows.push({ who: (v.name || "Teacher") + (v.role === "owner" ? " (owner)" : ""), role: v.role === "owner" ? "Owner" : "Teachers", u: v }));
+  const tot = { dr: 0, dw: 0, mr: 0, mw: 0 }, by = {};
+  rows.forEach(x => { const t = by[x.role] || (by[x.role] = { dr: 0, dw: 0, mr: 0, mw: 0, n: 0 });
+    const dr = x.u.d === day ? +x.u.dr || 0 : 0, dw = x.u.d === day ? +x.u.dw || 0 : 0, mr = x.u.m === mon ? +x.u.mr || 0 : 0, mw = x.u.m === mon ? +x.u.mw || 0 : 0;
+    x.dr = dr; x.dw = dw; x.mr = mr; x.mw = mw; t.n++; [["dr", dr], ["dw", dw], ["mr", mr], ["mw", mw]].forEach(([k, v]) => { t[k] += v; tot[k] += v; }); });
+  const top = rows.slice().sort((a, b) => b.dr + b.dw - (a.dr + a.dw)).slice(0, 8);
+  $("pane").innerHTML = `<div class="card"><h3>Usage today <small>estimate</small></h3>
+      ${meterBar("Reads today", tot.dr, FREE.r)}${meterBar("Writes today", tot.dw, FREE.w)}
+      <p class="sub">The free plan counts a new day at midnight Pacific time (${day}), which is about 11 AM in Bahrain. This counts what each open page asked for, so it can be a little lower than Google's own number.</p></div>
+    <div class="card"><h3>This month <small>${mon}</small></h3>
+      <div class="kpis"><div class="kpi"><span>Reads</span><b>${fmtN(tot.mr)}</b><small>since this counter started</small></div><div class="kpi"><span>Writes</span><b>${fmtN(tot.mw)}</b><small>since this counter started</small></div>
+      <div class="kpi"><span>Devices counted</span><b>${rows.length}</b><small>students, teachers and you</small></div></div>
+      <p class="sub">The free plan limits reads and writes <b>per day</b>, not per month. Monthly totals here are for your information. The exact numbers are in the Firebase console: Firestore Database, then the Usage tab.</p></div>
+    <div class="card"><h3>Who uses the most</h3>
+      <table class="tbl"><thead><tr><th>Group</th><th>Devices</th><th>Reads today</th><th>Writes today</th><th>Reads this month</th><th>Writes this month</th></tr></thead><tbody>${Object.keys(by).map(k => { const t = by[k]; return `<tr><td>${k}</td><td>${t.n}</td><td>${fmtN(t.dr)}</td><td>${fmtN(t.dw)}</td><td>${fmtN(t.mr)}</td><td>${fmtN(t.mw)}</td></tr>`; }).join("") || `<tr><td colspan="6">No data yet. It appears after students and teachers use the new version.</td></tr>`}</tbody></table>
+      ${top.length ? `<table class="tbl" style="margin-top:12px"><thead><tr><th>Top today</th><th>Group</th><th>Reads</th><th>Writes</th></tr></thead><tbody>${top.map(x => `<tr><td>${esc(x.who)}</td><td>${x.role}</td><td>${fmtN(x.dr)}</td><td>${fmtN(x.dw)}</td></tr>`).join("")}</tbody></table>` : ""}</div>`;
+}
 function paintLive() {
   const on = students.filter(s => statusOf(s) === "on").sort((a, b) => pres.get(b.key).last - pres.get(a.key).last);
   const feed = [];

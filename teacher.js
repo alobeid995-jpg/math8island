@@ -1,6 +1,7 @@
 import { auth, fs, firebaseConfig, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, collection, query, where, writeBatch, setBase, bcol, bdoc, signOut, whenUser, profileOf, emailFor, pinKey,
   initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js";
 import { db } from "./fbdb.js";
+import { startUsage } from "./usage.js";
 import { openWork } from "./teacherwork.js";
 import { openProgress } from "./progress.js";
 
@@ -13,6 +14,7 @@ if (!p || p.role !== "teacher") { location.href = "index.html"; throw new Error(
 
 // The owner sees the original top-level data. Every other teacher gets a private folder of his own.
 const ADMIN = p.admin === true;
+startUsage(u, p);
 setBase(ADMIN ? [] : ["teachers", u.uid]);
 
 /* ---------- this teacher's classes ---------- */

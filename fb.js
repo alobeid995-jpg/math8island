@@ -2,7 +2,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updatePassword }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, getDocs, onSnapshot, runTransaction, writeBatch, query, where }
+import { getFirestore, doc, getDoc as _getDoc, setDoc as _setDoc, updateDoc as _updateDoc, deleteDoc as _deleteDoc, collection, getDocs as _getDocs, onSnapshot as _onSnapshot, runTransaction as _runTransaction, writeBatch as _writeBatch, query, where }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 export const firebaseConfig = {
@@ -18,7 +18,34 @@ export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const fs = getFirestore(app);
 export { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updatePassword,
-  doc, getDoc, setDoc, updateDoc, deleteDoc, collection, getDocs, onSnapshot, runTransaction, writeBatch, query, where, initializeApp, getAuth };
+  doc, collection, query, where, initializeApp, getAuth };
+
+// ---- Usage meter: counts the reads and writes THIS device makes, so the owner can see how close the site is to the free daily limit.
+// It is an estimate (it counts documents the page asked for), kept on the device and sent along with the "who is online" record.
+// The free quota day and month follow Pacific time, because that is when Google resets them.
+const pt = () => new Date().toLocaleDateString("en-CA", { timeZone: "America/Los_Angeles" });
+let M = { d: pt(), m: pt().slice(0, 7), dr: 0, dw: 0, mr: 0, mw: 0 };
+try { const o = JSON.parse(localStorage.getItem("mi_meter") || "null"); if (o && typeof o.dr === "number") M = o; } catch {}
+let mTimer = 0;
+function bump(r, w) {
+  const d = pt(); if (M.d !== d) { M.d = d; M.dr = 0; M.dw = 0; } if (M.m !== d.slice(0, 7)) { M.m = d.slice(0, 7); M.mr = 0; M.mw = 0; }
+  M.dr += r; M.mr += r; M.dw += w; M.mw += w;
+  if (!mTimer) mTimer = setTimeout(() => { mTimer = 0; try { localStorage.setItem("mi_meter", JSON.stringify(M)); } catch {} }, 3000);
+}
+export const meter = () => { bump(0, 0); return { d: M.d, dr: M.dr, dw: M.dw, m: M.m, mr: M.mr, mw: M.mw }; };
+export const getDoc = (...a) => { bump(1, 0); return _getDoc(...a); };
+export const getDocs = async (...a) => { const s = await _getDocs(...a); bump(Math.max(1, s.size), 0); return s; };
+export const setDoc = (...a) => { bump(0, 1); return _setDoc(...a); };
+export const updateDoc = (...a) => { bump(0, 1); return _updateDoc(...a); };
+export const deleteDoc = (...a) => { bump(0, 1); return _deleteDoc(...a); };
+export const runTransaction = (...a) => { bump(1, 1); return _runTransaction(...a); };
+export const writeBatch = (...a) => { const b = _writeBatch(...a); let n = 0; ["set", "update", "delete"].forEach(k => { if (typeof b[k] !== "function") return; const f = b[k].bind(b); b[k] = (...x) => { n++; return f(...x); }; });
+  const c = b.commit.bind(b); b.commit = () => { bump(0, n); return c(); }; return b; };
+export const onSnapshot = (...a) => {
+  const i = a.findIndex(x => typeof x === "function"); let first = true;
+  if (i >= 0) { const f = a[i]; a[i] = s => { try { bump(first ? Math.max(1, s.size || 1) : Math.max(1, (s.docChanges ? s.docChanges().length : 1)), 0); } catch { bump(1, 0); } first = false; return f(s); }; }
+  return _onSnapshot(...a);
+};
 
 // Each teacher works inside his own folder of the database: teachers/<his uid>/students, .../cup, and so on.
 // The owner (admin) keeps the original top-level folders, so his existing data needs no moving.
