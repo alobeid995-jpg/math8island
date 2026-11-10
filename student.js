@@ -1,6 +1,6 @@
-import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1110e";
-import { initWork } from "./stuwork.js?v=1110e";
-import { startPresence, logEv } from "./presence.js?v=1110e";
+import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1110j";
+import { initWork } from "./stuwork.js?v=1110j";
+import { startPresence, logEv } from "./presence.js?v=1110j";
 
 const sub = (t, n) => t.split("{n}").join(n);
 let me = null, ref = null, shopCat = "frame", confirmId = "", pickerOpen = false, seeds = [], loaded = false;
@@ -87,6 +87,7 @@ function bookNotes(st) {
 function render() {
   const app = $("app");
   if (!loaded) { app.innerHTML = `<div class="empty"><h2>Loading…</h2></div>`; return; }
+  document.documentElement.classList.remove("wait");
   if (!me) { app.innerHTML = `<div class="empty"><h2>Your record was not found</h2>Ask your teacher to check your login.</div>`; return; }
   const st = me, lv = level(st.xp), into = Math.max(0, st.xp - (lv - 1) * LEVEL_XP), pct = Math.min(100, into / LEVEL_XP * 100);
   const picker = pickerOpen ? `<section class="picker"><b>Pick a new look</b>
