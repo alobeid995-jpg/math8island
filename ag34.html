@@ -61,7 +61,7 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
 </style></head><body>
 <div class="wrap" id="app"><p>Loading…</p></div>
 <script type="module">
-import { fs, doc, getDoc, setDoc, getDocs, collection, query, where, whenUser, profileOf } from "./fb.js?v=1110d";
+import { fs, doc, getDoc, setDoc, getDocs, collection, query, where, whenUser, profileOf } from "./fb.js?v=1110e";
 
 const $ = id => document.getElementById(id), app = $("app");
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -76,14 +76,14 @@ if (!p) { location.href = "index.html"; throw new Error("not signed in"); }
 const mode = p.role === "teacher" ? "teacher" : "student";
 const base = mode === "teacher" ? [] : (p.tid ? ["teachers", p.tid] : []);
 const embedded = window.parent !== window;
-let myName = "", done = { ex: false, tap: false, bound: false, ineq: false }, wsRes = null;
+let retake = {}, myName = "", done = { ex: false, tap: false, bound: false, ineq: false }, wsRes = null;
 if (mode === "student") {
-  try { const s = await getDoc(doc(fs, ...base, "students", p.sid)); myName = s.exists() ? s.data().name || "" : ""; } catch {}
+  try { const s = await getDoc(doc(fs, ...base, "students", p.sid)); myName = s.exists() ? s.data().name || "" : ""; retake = s.exists() ? (s.data().rt || {}) : {}; } catch {}
   try {
     const s = await getDocs(query(collection(fs, ...base, "plays"), where("sid", "==", p.sid)));
     s.docs.forEach(d => { const v = d.data();
       if (v.g === G.ex) done.ex = true; if (v.g === G.tap) done.tap = true; if (v.g === G.bound) done.bound = true; if (v.g === G.ineq) done.ineq = true;
-      if (v.g === G.ws) wsRes = { r: v.r, w: v.w, m: v.m || [] }; });
+      if (v.g === G.ws && (v.u || v.t || 0) > (retake[G.ws] || 0)) wsRes = { r: v.r, w: v.w, m: v.m || [] }; });
   } catch {}
 }
 async function save(g, r, w, m) {

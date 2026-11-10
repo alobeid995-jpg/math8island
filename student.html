@@ -1834,6 +1834,7 @@ function readShop(v) {
     buys: Number(v.buys) || 0, lastBuy: String(v.lastBuy || ""),
     note: String(v.note || ""),
     certs: Array.isArray(v.certs) ? v.certs.filter(c => c && c.title) : [],
+    rt: Object.fromEntries(Object.entries(v.rt && typeof v.rt === "object" ? v.rt : {}).filter(([k, x]) => /^[\w-]+$/.test(k) && typeof x === "number")),
     books: Object.fromEntries(Object.entries(v.books && typeof v.books === "object" ? v.books : {}).filter(([d, x]) => /^\d{4}-\d{2}-\d{2}$/.test(d) && /^[ynl]$/.test(x))),
     hist: Array.isArray(v.hist) ? v.hist.filter(e => e && typeof e.xp === "number") : [],
     sp: Array.isArray(v.sp) ? v.sp.filter(e => e && shopItem(e.k)) : []
@@ -1904,5 +1905,5 @@ function applyPrices(m) { if (!m) return; SHOP.forEach(i => { const v = Number(m
 })();
 </script>
 
-<script type="module" src="student.js?v=1110d"></script>
+<script type="module" src="student.js?v=1110e"></script>
 </body></html>

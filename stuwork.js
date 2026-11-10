@@ -1,7 +1,7 @@
 // "My classwork" on the student page: worksheets from the teacher, and (for the 9S boys) the lesson games.
-import { fs, doc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1110d";
-import { playerOf, catalog } from "./islandmap.js?v=1110d";
-import { logEv } from "./presence.js?v=1110d";
+import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1110e";
+import { playerOf, catalog } from "./islandmap.js?v=1110e";
+import { logEv } from "./presence.js?v=1110e";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -25,7 +25,8 @@ async function load() {
   player = playerOf(me);
   isAG = /^8G$/i.test(String(me.cls || "").trim());   // this lesson is only for class 8G
   isEL = /^(8B|8Y|8S|8M)$/i.test(String(me.cls || "").trim());   // elimination lesson: only these four classes
-  if (isAG || isEL) { try { const pl = await getDocs(query(collection(fs, ...base, "plays"), where("sid", "==", P.sid))); agPlays = new Set(pl.docs.map(d => d.data().g)); } catch {} }
+  if (isAG || isEL) { try { const pl = await getDocs(query(collection(fs, ...base, "plays"), where("sid", "==", P.sid))); let rt = {}; try { const sd = await getDoc(doc(fs, ...base, "students", P.sid)); rt = (sd.exists() && sd.data().rt) || {}; } catch {}
+      agPlays = new Set(pl.docs.map(d => d.data()).filter(v => (v.u || v.t || 0) > (rt[v.g] || 0)).map(v => v.g)); } catch {} }
   if (player) {
     try {
       const c = await catalog(), grp = (c.players.find(x => x.id === player) || {}).group;

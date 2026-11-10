@@ -1770,6 +1770,7 @@ function readShop(v) {
     buys: Number(v.buys) || 0, lastBuy: String(v.lastBuy || ""),
     note: String(v.note || ""),
     certs: Array.isArray(v.certs) ? v.certs.filter(c => c && c.title) : [],
+    rt: Object.fromEntries(Object.entries(v.rt && typeof v.rt === "object" ? v.rt : {}).filter(([k, x]) => /^[\w-]+$/.test(k) && typeof x === "number")),
     books: Object.fromEntries(Object.entries(v.books && typeof v.books === "object" ? v.books : {}).filter(([d, x]) => /^\d{4}-\d{2}-\d{2}$/.test(d) && /^[ynl]$/.test(x))),
     hist: Array.isArray(v.hist) ? v.hist.filter(e => e && typeof e.xp === "number") : [],
     sp: Array.isArray(v.sp) ? v.sp.filter(e => e && shopItem(e.k)) : []
@@ -2102,7 +2103,7 @@ document.addEventListener("keydown", e => {
 const healedCls = new Set();
 async function save(st) {
   const body = { name: st.name, cls: st.cls, enrollment: st.enrollment || "", xp: st.xp, log: st.log, createdAt: st.createdAt || Date.now(), bonusWeek: st.bonusWeek || "", counts: { ...(st.counts || {}) },
-    spent: st.spent || 0, carry: st.carry || 0, owned: st.owned || [], eq: eqOf(st), reqs: st.reqs || [], buys: st.buys || 0, lastBuy: st.lastBuy || "", hist: (st.hist || []).slice(-600), sp: (st.sp || []).slice(-200), note: String(st.note || "").slice(0, 1500), certs: (st.certs || []).slice(-100), books: { ...(st.books || {}) } };
+    spent: st.spent || 0, carry: st.carry || 0, owned: st.owned || [], eq: eqOf(st), reqs: st.reqs || [], buys: st.buys || 0, lastBuy: st.lastBuy || "", hist: (st.hist || []).slice(-600), sp: (st.sp || []).slice(-200), note: String(st.note || "").slice(0, 1500), certs: (st.certs || []).slice(-100), books: { ...(st.books || {}) }, rt: { ...(st.rt || {}) } };
   if (typeof st.avatar === "number") body.avatar = st.avatar;
   if (!db) return;
   try { await db.collection("students").doc(st.id).set(body); }
@@ -4240,7 +4241,7 @@ header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !import
     <div class="acts noprint"><button class="ghost" id="lgPrint" type="button">Print this list</button><button class="ghost" id="lgClose" type="button">Close</button></div>
   </div>
 </div>
-<script type="module" src="teacher.js?v=1110d"></script>
+<script type="module" src="teacher.js?v=1110e"></script>
 <style>
 .cls-panel{margin:12px 0;padding:14px;border:2px solid var(--edge);border-radius:12px;background:var(--card);display:grid;gap:10px}
 .cls-panel h4{margin:0}.cls-panel p{margin:0;font-size:14px}

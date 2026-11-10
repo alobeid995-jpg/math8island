@@ -1,5 +1,5 @@
 // Students progress inside the teacher page: pick a class, then a lesson, then see each student's games and every mistake.
-import { getDocs, bcol } from "./fb.js?v=1110d";
+import { getDocs, bcol, bdoc, updateDoc } from "./fb.js?v=1110e";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -75,7 +75,7 @@ function render() {
       const mist = mine(s.id).flatMap(p => (p.m || []).map(x => ({ ...x, g: p.g, l: p.l }))).sort((a, b) => b.at - a.at);
       return `<article class="pg-card">
         <div class="pg-head"><div><b>${esc(s.name)}</b><small>${esc(s.enrollment || "")}</small></div>
-          <div class="pg-sum noprint"><button class="ghost small" type="button" data-pg="one" data-sid="${esc(s.id)}">Print this student</button></div><div class="pg-sum">${P === null ? "Not started" : `<span class="pg-pc ${pc(P)}">${P}%</span> right · ${R} of ${R + W} answers · ${mist.length} mistake${mist.length === 1 ? "" : "s"}`}</div></div>
+          <div class="pg-sum noprint">${(() => { const wg = les.id + "-ws", last = Math.max(0, ...plays.filter(p => p.sid === s.id && p.g === wg).map(p => p.u || p.t || 0)); return gs.has(wg) && last > ((s.rt || {})[wg] || 0) ? `<button class="primary small" type="button" data-pg="retake" data-sid="${esc(s.id)}" data-g="${wg}">Allow another worksheet attempt</button> ` : (gs.has(wg) && (s.rt || {})[wg] ? `<small>Another attempt allowed</small> ` : ""); })()}<button class="ghost small" type="button" data-pg="one" data-sid="${esc(s.id)}">Print this student</button></div><div class="pg-sum">${P === null ? "Not started" : `<span class="pg-pc ${pc(P)}">${P}%</span> right · ${R} of ${R + W} answers · ${mist.length} mistake${mist.length === 1 ? "" : "s"}`}</div></div>
         ${ids.length ? `<table class="lg-tbl"><thead><tr><th>Game</th><th>Right</th><th>Answers</th><th>Levels played</th><th>Plays</th><th>Last</th></tr></thead><tbody>${ids.map(g => { const a = by[g], p = pct(a.r, a.w);
           return `<tr><td>${esc(title(g))}</td><td><b class="pg-pc ${pc(p)}">${p}%</b></td><td>${a.r} / ${a.r + a.w}</td><td>${Object.keys(a.lv).sort((x, y) => x - y).map(l => `L${l} ${pct(a.lv[l].r, a.lv[l].w)}%`).join(" · ")}</td><td>${a.n}</td><td>${day(a.last)}</td></tr>`; }).join("")}</tbody></table>` : ""}
         ${mist.length ? `<details class="pg-mist" ${openSid === s.id ? "open" : ""} data-sid="${esc(s.id)}"><summary>Mistakes (${mist.length})</summary><table class="lg-tbl"><thead><tr><th>When</th><th>Game</th><th>Question</th><th>What he was told</th></tr></thead><tbody>${mist.map(x => `<tr><td>${day(x.at)}</td><td>${esc(title(x.g))}<br><small>Level ${x.l}</small></td><td>${esc(x.q)}</td><td>${esc(x.a)}</td></tr>`).join("")}</tbody></table></details>` : ""}
@@ -105,6 +105,13 @@ document.addEventListener("click", async e => {
   if (a === "close") $("progressModal").hidden = true;
   if (a === "home") { selCls = ""; selLes = ""; render(); }
   if (a === "cls") { selCls = b.dataset.c; selLes = ""; pick = new Set(inCls(selCls).map(s => s.id)); solo = ""; render(); const L = lessonsFor(selCls); if (L.length === 1) { selLes = L[0].id; render(); } }
+  if (a === "retake") {
+    const st = students.find(x => x.id === b.dataset.sid); if (!st) return;
+    if (!confirm("Let " + st.name + " do the worksheet again? His first result stays in the progress list.")) return;
+    b.disabled = true;
+    try { const rt = { ...(st.rt || {}), [b.dataset.g]: Date.now() }; await updateDoc(bdoc("students", st.id), { rt }); st.rt = rt; render(); }
+    catch (err) { b.disabled = false; alert("Could not save: " + (err.code || err.message)); }
+  }
   if (a === "all") { pick = new Set(inCls(selCls).map(s => s.id)); chooseOpen = true; render(); }
   if (a === "none") { pick = new Set(); chooseOpen = true; render(); }
   if (a === "one") { solo = b.dataset.sid; render(); document.body.classList.add("pg-printing"); window.print(); setTimeout(() => { document.body.classList.remove("pg-printing"); solo = ""; render(); }, 500); return; }
