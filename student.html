@@ -1,4 +1,5 @@
-<!doctype html><html lang="en"><head><style id="waitcss">html.wait body{visibility:hidden}</style><script>document.documentElement.classList.add("wait");setTimeout(function(){document.documentElement.classList.remove("wait")},7000)</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<!doctype html><html lang="en"><head><style id="waitcss">html.wait body{visibility:hidden}.wk-xpnote{display:block;margin-top:6px;font-weight:800;color:#b45309}
+</style><script>document.documentElement.classList.add("wait");setTimeout(function(){document.documentElement.classList.remove("wait")},7000)</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>My XP · Math Island</title>
 <link rel="icon" href="favicon.ico" sizes="48x48"><link rel="icon" type="image/svg+xml" href="logo.svg" sizes="any"><link rel="icon" type="image/png" sizes="96x96" href="fav-96.png"><link rel="icon" type="image/png" sizes="192x192" href="fav-192.png"><link rel="apple-touch-icon" href="logo-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1844,6 +1845,7 @@ function readShop(v) {
     buys: Number(v.buys) || 0, lastBuy: String(v.lastBuy || ""),
     note: String(v.note || ""),
     certs: Array.isArray(v.certs) ? v.certs.filter(c => c && c.title) : [],
+    lx: Object.fromEntries(Object.entries(v.lx && typeof v.lx === "object" ? v.lx : {}).filter(([k, x]) => /^[\w-]+$/.test(k) && x && typeof x === "object").map(([k, x]) => [k, { done: Number(x.done) || 0, perfect: Number(x.perfect) || 0 }])),
     rt: Object.fromEntries(Object.entries(v.rt && typeof v.rt === "object" ? v.rt : {}).filter(([k, x]) => /^[\w-]+$/.test(k) && typeof x === "number")),
     books: Object.fromEntries(Object.entries(v.books && typeof v.books === "object" ? v.books : {}).filter(([d, x]) => /^\d{4}-\d{2}-\d{2}$/.test(d) && /^[ynl]$/.test(x))),
     hist: Array.isArray(v.hist) ? v.hist.filter(e => e && typeof e.xp === "number") : [],
@@ -1905,5 +1907,5 @@ function applyPrices(m) { if (!m) return; SHOP.forEach(i => { const v = Number(m
 })();
 </script>
 
-<script type="module" src="student.js?v=1110k"></script>
+<script type="module" src="student.js?v=1110m"></script>
 </body></html>

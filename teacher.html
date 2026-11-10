@@ -2028,6 +2028,7 @@ function readShop(v) {
     buys: Number(v.buys) || 0, lastBuy: String(v.lastBuy || ""),
     note: String(v.note || ""),
     certs: Array.isArray(v.certs) ? v.certs.filter(c => c && c.title) : [],
+    lx: Object.fromEntries(Object.entries(v.lx && typeof v.lx === "object" ? v.lx : {}).filter(([k, x]) => /^[\w-]+$/.test(k) && x && typeof x === "object").map(([k, x]) => [k, { done: Number(x.done) || 0, perfect: Number(x.perfect) || 0 }])),
     rt: Object.fromEntries(Object.entries(v.rt && typeof v.rt === "object" ? v.rt : {}).filter(([k, x]) => /^[\w-]+$/.test(k) && typeof x === "number")),
     books: Object.fromEntries(Object.entries(v.books && typeof v.books === "object" ? v.books : {}).filter(([d, x]) => /^\d{4}-\d{2}-\d{2}$/.test(d) && /^[ynl]$/.test(x))),
     hist: Array.isArray(v.hist) ? v.hist.filter(e => e && typeof e.xp === "number") : [],
@@ -2361,7 +2362,7 @@ document.addEventListener("keydown", e => {
 const healedCls = new Set();
 async function save(st) {
   const body = { name: st.name, cls: st.cls, enrollment: st.enrollment || "", xp: st.xp, log: st.log, createdAt: st.createdAt || Date.now(), bonusWeek: st.bonusWeek || "", counts: { ...(st.counts || {}) },
-    spent: st.spent || 0, carry: st.carry || 0, owned: st.owned || [], eq: eqOf(st), reqs: st.reqs || [], buys: st.buys || 0, lastBuy: st.lastBuy || "", hist: (st.hist || []).slice(-600), sp: (st.sp || []).slice(-200), note: String(st.note || "").slice(0, 1500), certs: (st.certs || []).slice(-100), books: { ...(st.books || {}) }, rt: { ...(st.rt || {}) } };
+    spent: st.spent || 0, carry: st.carry || 0, owned: st.owned || [], eq: eqOf(st), reqs: st.reqs || [], buys: st.buys || 0, lastBuy: st.lastBuy || "", hist: (st.hist || []).slice(-600), sp: (st.sp || []).slice(-200), note: String(st.note || "").slice(0, 1500), certs: (st.certs || []).slice(-100), books: { ...(st.books || {}) }, rt: { ...(st.rt || {}) }, lx: { ...(st.lx || {}) } };
   if (typeof st.avatar === "number") body.avatar = st.avatar;
   if (!db) return;
   try { await db.collection("students").doc(st.id).set(body); }
@@ -4257,7 +4258,7 @@ document.getElementById("expBtn")?.addEventListener("click", async () => {
     <div class="acts noprint"><button class="ghost" id="lgPrint" type="button">Print this list</button><button class="ghost" id="lgClose" type="button">Close</button></div>
   </div>
 </div>
-<script type="module" src="teacher.js?v=1110k"></script>
+<script type="module" src="teacher.js?v=1110m"></script>
 
 <script>
 /* Post a certificate straight to Google Classroom.
