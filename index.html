@@ -86,7 +86,7 @@ button:focus-visible{outline:3px solid var(--sea-300);outline-offset:2px}
 .sig-card b{display:block;font-weight:400;font-size:15px;letter-spacing:.02em}.sig-card span{display:block;font-size:15px;direction:rtl;opacity:.7}
 @keyframes sigin{from{opacity:0;transform:translate(-50%,8px)}}
 @media (prefers-reduced-motion:reduce){.sig-card{animation:none}}
-</style><style id="handcss">.hand{font-family:"Caveat","Segoe Script","Bradley Hand",cursive;font-weight:600;font-size:23px;line-height:1;letter-spacing:.01em;transform:rotate(-3deg);transform-origin:left center;display:inline-block;margin:2px 0 4px 4px;opacity:.92}.hand::before{content:"by ";opacity:.75;font-size:.85em}.brand-sig{margin:6px 0 0 56px}.brand-sig .hand{color:#fff;font-size:22px}@media(max-width:640px){.hand{font-size:20px}.brand-sig{margin-left:46px}}</style></head>
+</style><style id="handcss">.hand{position:relative;display:inline-block;font-family:"Caveat","Segoe Script","Bradley Hand",cursive;font-weight:600;font-size:30px;line-height:1;letter-spacing:.01em;transform:rotate(-5deg);transform-origin:left bottom;white-space:nowrap;padding-bottom:6px}.hand::after{content:"";position:absolute;left:2%;right:-8%;bottom:0;height:6px;border-bottom:2.5px solid currentColor;border-radius:0 0 85% 25%/0 0 100% 70%;opacity:.8}.title-row{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap}.title-row h1{margin:0}.brand .hand{margin-left:10px;font-size:27px;color:#ffd27a}@media(max-width:640px){.hand{font-size:24px}.brand .hand{font-size:22px;margin-left:6px}}</style></head>
 <body>
 <div class="shell">
   <section class="scene" aria-label="Math Island">
@@ -99,8 +99,7 @@ button:focus-visible{outline:3px solid var(--sea-300);outline-offset:2px}
       </g>
     </svg>
     <div class="w w1" aria-hidden="true"></div><div class="w w2" aria-hidden="true"></div><div class="w w3" aria-hidden="true"></div>
-    <div class="brand"><img src="logo.svg" alt="" width="44" height="44"><span>Math Island</span></div>
-    <div class="brand-sig"><span class="hand">Khalid</span></div>
+    <div class="brand"><img src="logo.svg" alt="" width="44" height="44"><span>Math Island</span><span class="hand" aria-label="Khalid O">Khalid O</span></div>
     <div class="pitch">
       <h1>Maths you can level up.</h1>
       <p>Earn XP in class, play your lessons and build your own avatar.</p>
