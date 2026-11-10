@@ -1,6 +1,6 @@
-import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1110c";
-import { initWork } from "./stuwork.js?v=1110c";
-import { startPresence, logEv } from "./presence.js?v=1110c";
+import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1110d";
+import { initWork } from "./stuwork.js?v=1110d";
+import { startPresence, logEv } from "./presence.js?v=1110d";
 
 const sub = (t, n) => t.split("{n}").join(n);
 let me = null, ref = null, shopCat = "frame", confirmId = "", pickerOpen = false, seeds = [], loaded = false;
