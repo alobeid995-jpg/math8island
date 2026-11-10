@@ -95,7 +95,7 @@ input:focus-visible,button:focus-visible{outline:3px solid var(--yellow);outline
 </main>
 
 <script type="module">
-import { auth, fs, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, doc, setDoc, emailFor, loginVersion, profileOf, whenUser, friendlyError } from "./fb.js";
+import { auth, fs, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, doc, setDoc, emailFor, loginVersion, profileOf, whenUser, friendlyError } from "./fb.js?v=1110c";
 const $ = id => document.getElementById(id);
 let creating = false;
 const showErr = m => { $("err").textContent = m; $("err").hidden = !m; };
