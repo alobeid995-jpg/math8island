@@ -85,7 +85,7 @@ window.__owner = ADMIN;   // only the owner can change prices
 }
 
 if (CLASSES.some(c => /^(9S|8G|8B|8Y|8S|8M)$/i.test(c))) {   // 9S games: progress of each boy, inside this page
-  const ib = document.createElement("button"); ib.className = "ghost small"; ib.id = "islandBtn"; ib.type = "button"; ib.textContent = "Games progress";
+  const ib = document.createElement("button"); ib.className = "ghost small"; ib.id = "islandBtn"; ib.type = "button"; ib.textContent = "Students progress";
   ib.onclick = () => openProgress();
   $("outBtn").before(ib);
 }
