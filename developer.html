@@ -1,11 +1,12 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Math Island · Developer</title>
+<link rel="icon" type="image/svg+xml" href="logo.svg"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Lexend:wght@400;500;600&display=swap">
 <style>
-:root{--bg:#f5f6f8;--card:#fff;--ink:#14171f;--mut:#667085;--line:#e4e7ec;--soft:#f9fafb;--acc:#1f4fd8;--accbg:#eef3ff;--ok:#12a150;--okbg:#e7f7ee;--bad:#c4321f;--badbg:#fdecea;--warn:#b7791f;--warnbg:#fff6e0;--r:12px}
-@media(prefers-color-scheme:dark){:root{--bg:#0e1116;--card:#171b22;--ink:#edf0f5;--mut:#98a2b3;--line:#262c36;--soft:#1c212a;--acc:#7da2ff;--accbg:#1b2540;--ok:#43d17f;--okbg:#12301f;--bad:#ff8a7a;--badbg:#3a1a16;--warn:#f2c35b;--warnbg:#33290f}}
+:root{--bg:#f1f6ff;--card:#fff;--ink:#0f2a57;--mut:#5a6b8a;--line:#e1eaf8;--soft:#f6f9ff;--acc:#1f5bbd;--accbg:#e4eeff;--ok:#12a150;--okbg:#e7f7ee;--bad:#c4321f;--badbg:#fdecea;--warn:#b7791f;--warnbg:#fff6e0;--r:16px}
+@media(prefers-color-scheme:dark){:root{--bg:#071226;--card:#0f2040;--ink:#eaf2ff;--mut:#9fb3d6;--line:#1d3566;--soft:#0b1a36;--acc:#79b4ff;--accbg:#16305f;--ok:#43d17f;--okbg:#12301f;--bad:#ff8a7a;--badbg:#3a1a16;--warn:#f2c35b;--warnbg:#33290f}}
 *{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 "Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 "Lexend",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
 button{font:inherit;color:inherit;cursor:pointer}
 .top{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
 .top-in{max-width:1120px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
@@ -64,7 +65,8 @@ td.n{text-align:right;font-variant-numeric:tabular-nums}th.n{text-align:right}
 .note{color:var(--mut);font-size:12.5px;padding:0 2px 12px}
 .msg{padding:40px 16px;text-align:center;color:var(--mut)}.msg.bad{color:var(--bad)}
 [hidden]{display:none!important}
-.ub{margin:10px 0}.ubh{display:flex;justify-content:space-between;gap:10px;font-size:14px}.ubh em{font-style:normal;font-weight:800}.ubar{height:14px;border:2px solid #151412;border-radius:99px;background:#fff;overflow:hidden;margin-top:4px}.ubar i{display:block;height:100%}.ubar i.ok{background:#1e7a46}.ubar i.mid{background:#f3b31c}.ubar i.bad{background:#d8402b}.sub{color:#5c574b;font-size:13px;margin:10px 0 0}</style></head><body>
+.ub{margin:10px 0}.ubh{display:flex;justify-content:space-between;gap:10px;font-size:14px}.ubh em{font-style:normal;font-weight:800}.ubar{height:14px;border:2px solid #151412;border-radius:99px;background:#fff;overflow:hidden;margin-top:4px}.ubar i{display:block;height:100%}.ubar i.ok{background:#1e7a46}.ubar i.mid{background:#f3b31c}.ubar i.bad{background:#d8402b}.sub{color:#5c574b;font-size:13px;margin:10px 0 0}.logo{background:url(logo.svg) center/cover no-repeat!important;border:0!important;border-radius:22%!important;font-size:0!important;color:transparent!important;transform:none!important;box-shadow:0 4px 10px -4px rgba(12,42,94,.5)!important}.brand b,.card h3,.kpi b{font-family:"Fredoka","Lexend",sans-serif;font-weight:600}.card,.kpi{box-shadow:0 1px 2px rgba(12,42,94,.05),0 10px 28px -14px rgba(12,42,94,.22)}.btn{border-radius:999px}
+</style></head><body>
 <div class="top"><div class="top-in">
   <div class="brand"><div class="logo">π</div><div><b>Math Island</b><small>Developer · owner only</small></div></div>
   <span class="live off" id="live"><i></i><span id="liveTxt">Connecting…</span></span>

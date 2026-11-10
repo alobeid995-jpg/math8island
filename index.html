@@ -1,68 +1,103 @@
 <!doctype html>
 <html lang="en"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8"><meta name="theme-color" content="#1f5bbd"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Math Island · Log in</title>
 <link rel="icon" href="favicon.ico" sizes="48x48"><link rel="icon" type="image/svg+xml" href="logo.svg" sizes="any"><link rel="icon" type="image/png" sizes="96x96" href="fav-96.png"><link rel="icon" type="image/png" sizes="192x192" href="fav-192.png"><link rel="apple-touch-icon" href="logo-180.png">
 <meta name="description" content="Math Island: the maths classroom where students earn XP, level up and play lessons.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Instrument+Serif:ital@0;1&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Lexend:wght@400;500;600&display=swap">
 <style>
-:root{--red:#d8392b;--yellow:#f3b31b;--blue:#1d58b8;--edge:#151412;--paper:#f4eee2;--card:#fffcf5;--ink:#151412;--muted:#5f5848;--bad-soft:#f9e0dc}
-@media (prefers-color-scheme:dark){:root{--red:#ff5b49;--yellow:#ffc23a;--blue:#5b8dff;--edge:#f4eee2;--paper:#121214;--card:#1c1c20;--ink:#f4eee2;--muted:#b0a896;--bad-soft:#3f1d19;color-scheme:dark}}
+:root{--sea-900:#0c2a5e;--sea-700:#1f5bbd;--sea-500:#3d8bf0;--sea-300:#79b4ff;--sun:#f6b91c;--sand:#ffd27a;
+ --bg:#f2f7ff;--card:#fff;--ink:#0f2a57;--muted:#5a6b8a;--line:#d6e2f6;--field:#f6f9ff;--bad:#c9352b;--bad-soft:#fdebe9;
+ --f-d:"Fredoka","Trebuchet MS",system-ui,sans-serif;--f-b:"Lexend","Segoe UI",system-ui,sans-serif}
+@media (prefers-color-scheme:dark){:root{--bg:#081428;--card:#0f2040;--ink:#eaf2ff;--muted:#9fb3d6;--line:#24407a;--field:#0b1a36;--bad:#ff8f85;--bad-soft:#3b1a1c;color-scheme:dark}}
 *{box-sizing:border-box}
-body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px 18px 36px;font:16px/1.5 Archivo,system-ui,sans-serif;color:var(--ink);background-color:var(--paper);
- background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='520' viewBox='0 0 520 520'%3E%3Cg fill='none' stroke='%23857a62' stroke-opacity='.16' stroke-width='1.2'%3E%3Ccircle cx='130' cy='130' r='110'/%3E%3Ccircle cx='240' cy='130' r='110'/%3E%3Cpath d='M20 130H350M185 34 130 225 240 225Z' /%3E%3Cpath d='M300 470 470 300' stroke-dasharray='4 6'/%3E%3Ccircle cx='400' cy='400' r='70' stroke-dasharray='2 5'/%3E%3C/g%3E%3C/svg%3E");background-size:520px 520px}
-main{width:min(460px,100%);background:var(--card);border:3px solid var(--edge);border-radius:6px;box-shadow:10px 10px 0 var(--edge);overflow:hidden}
-.plate{position:relative;padding:24px 24px 22px;min-height:290px;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-start;border-bottom:3px solid var(--edge);overflow:hidden}
-.geo{position:absolute;right:8px;top:18px;width:74%;height:60%;pointer-events:none;color:var(--edge)}
-.geo-svg{width:100%;height:100%;display:block;overflow:visible}
-.geo .g-con{fill:none;stroke:currentColor;stroke-width:1.2;stroke-dasharray:3 6;opacity:.5}
-.geo .g1{fill:var(--blue)}.geo .g2{fill:var(--red);mix-blend-mode:multiply}.geo .g3{fill:var(--yellow);stroke:var(--edge);stroke-width:3}
-.geo .g4{fill:none;stroke:currentColor;stroke-width:3.5;stroke-linecap:round;stroke-dasharray:2400}
-.geo .g5{fill:currentColor}.geo .g5 text{font-family:"Instrument Serif",serif;font-style:italic;font-size:30px}
-@media (prefers-color-scheme:dark){.geo .g2{mix-blend-mode:screen}}
-@media (prefers-reduced-motion:no-preference){
- .geo .g1,.geo .g2,.geo .g3{transform-box:fill-box;transform-origin:center;animation:geoIn .9s cubic-bezier(.2,1.4,.35,1) both}
- .geo .g2{animation-delay:.12s}.geo .g3{animation-delay:.24s}
- .geo .g4{animation:geoDraw 2.2s .35s cubic-bezier(.6,0,.2,1) both}.geo .g5{animation:geoFade .6s 1.2s both}
- @keyframes geoIn{from{transform:scale(0) rotate(-40deg)}}@keyframes geoDraw{from{stroke-dashoffset:2400}}@keyframes geoFade{from{opacity:0}}}
-.mk{position:relative;z-index:1;width:56px;height:56px;border-radius:4px;display:grid;place-items:center;background:var(--yellow);border:3px solid var(--edge);box-shadow:3px 3px 0 var(--edge);transform:rotate(-6deg);
- font:italic 400 40px/1 "Instrument Serif",serif;color:#151412;position:absolute;left:24px;top:24px}
-h1{position:relative;z-index:1;font-family:Archivo,"Arial Black",sans-serif;font-weight:900;font-stretch:125%;font-variation-settings:"wdth" 125;font-size:clamp(48px,13vw,64px);line-height:.86;letter-spacing:-.035em;margin:0}
-.sub{position:relative;z-index:1;font:italic 400 24px "Instrument Serif",serif;color:var(--red);margin:8px 0 0}
-.body{padding:22px 24px 24px}
-.seg{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:5px;border:2.5px solid var(--edge);border-radius:6px;margin-bottom:4px}
-.seg button{border:2px solid transparent;border-radius:4px;padding:10px;font:800 15px Archivo,sans-serif;font-stretch:112%;background:transparent;color:var(--muted);cursor:pointer}
-.seg button[aria-pressed=true]{background:var(--yellow);color:#151412;border-color:var(--edge)}
-label{display:block;font:italic 400 19px "Instrument Serif",serif;color:var(--muted);margin:14px 0 4px}
-input{width:100%;font:inherit;font-size:17px;padding:12px 13px;border:2.5px solid var(--edge);border-radius:6px;background:var(--card);color:var(--ink)}
-input:focus-visible,button:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
-.go{width:100%;margin-top:20px;border:2.5px solid var(--edge);border-radius:6px;padding:14px;font:900 18px Archivo,sans-serif;font-stretch:118%;background:var(--blue);color:#fff;cursor:pointer;box-shadow:4px 4px 0 var(--edge)}
-.go:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--edge)}
-.go:disabled{opacity:.55;cursor:wait}
-.err{margin-top:14px;padding:10px 12px;border:2px solid var(--edge);border-radius:6px;background:var(--bad-soft);color:var(--red);font-size:14px;font-weight:600}
-.link{background:none;border:0;color:var(--ink);font:inherit;font-size:14px;font-weight:600;cursor:pointer;padding:0;margin-top:14px;text-decoration:underline;text-decoration-color:var(--red);text-decoration-thickness:2px;text-underline-offset:3px}
-.foot{margin-top:18px;font-size:13px;color:var(--muted)}
+html,body{height:100%}
+body{margin:0;font:16px/1.5 var(--f-b);color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased}
+.shell{min-height:100vh;min-height:100dvh;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(380px,.85fr)}
+
+/* ---- the island: the logo's own world, at full size ---- */
+.scene{position:relative;overflow:hidden;isolation:isolate;color:#fff;display:flex;flex-direction:column;justify-content:flex-start;padding:clamp(28px,5vw,64px);
+ background:linear-gradient(180deg,#17499c 0%,#1f5bbd 46%,#2f74dc 100%)}
+.scene .sun{position:absolute;right:7%;top:31%;width:clamp(110px,13vw,190px);aspect-ratio:1;border-radius:50%;background:var(--sun);z-index:-3;
+ box-shadow:0 0 0 clamp(18px,3vw,40px) rgba(246,185,28,.14),0 0 0 clamp(40px,7vw,96px) rgba(246,185,28,.07)}
+.scene .isle{position:absolute;left:56%;bottom:7%;width:min(118%,1000px);transform:translateX(-50%);z-index:-2;display:block}
+.scene .w{position:absolute;left:0;right:0;bottom:0;background-repeat:repeat-x;background-position:0 0;z-index:-1}
+.scene .w1{height:15%;background-size:528px 100%;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 264 120' preserveAspectRatio='none'%3E%3Cpath d='M0 16c44-21 88-21 132 0s88 21 132 0V120H0Z' fill='%233d8bf0'/%3E%3C/svg%3E")}
+.scene .w2{height:9.5%;background-size:440px 100%;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 264 120' preserveAspectRatio='none'%3E%3Cpath d='M0 22c44-28 88-28 132 0s88 28 132 0V120H0Z' fill='%2379b4ff'/%3E%3C/svg%3E")}
+.scene .w3{height:4.5%;background-size:360px 100%;opacity:.9;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 264 120' preserveAspectRatio='none'%3E%3Cpath d='M0 34c44-44 88-44 132 0s88 44 132 0V120H0Z' fill='%23b9d8ff'/%3E%3C/svg%3E")}
+.brand{display:flex;align-items:center;gap:12px;font:600 20px/1 var(--f-d);letter-spacing:.01em}
+.brand img{width:44px;height:44px;border-radius:22%;box-shadow:0 6px 18px rgba(8,26,64,.35)}
+.pitch{margin-top:clamp(28px,8vh,84px)}
+.pitch h1{margin:0;font:600 clamp(44px,5.6vw,84px)/.98 var(--f-d);letter-spacing:-.005em;max-width:9.5em;text-wrap:balance}
+.pitch p{margin:18px 0 0;font-size:clamp(16px,1.5vw,20px);line-height:1.5;color:#dbe9ff;max-width:30ch}
+
+/* ---- the form ---- */
+.panel{display:flex;flex-direction:column;justify-content:center;padding:clamp(24px,4vw,56px);background:var(--card)}
+.panel-in{width:min(400px,100%);margin:0 auto}
+.panel h2{margin:0;font:600 30px/1.15 var(--f-d)}
+.panel .lead{margin:6px 0 24px;color:var(--muted)}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border-radius:14px;background:var(--bg);border:1px solid var(--line);margin-bottom:6px}
+.seg button{border:0;border-radius:10px;padding:10px;font:500 15px var(--f-b);background:transparent;color:var(--muted);cursor:pointer;transition:background .18s,color .18s,box-shadow .18s}
+.seg button:hover{color:var(--ink)}
+.seg button[aria-pressed=true]{background:var(--card);color:var(--sea-700);font-weight:600;box-shadow:0 1px 2px rgba(12,42,94,.1),0 4px 12px -4px rgba(12,42,94,.2)}
+label{display:block;font:500 14px var(--f-b);color:var(--ink);margin:18px 0 6px}
+input{width:100%;font:400 16px var(--f-b);padding:13px 14px;border:1.5px solid var(--line);border-radius:12px;background:var(--field);color:var(--ink);transition:border-color .15s,box-shadow .15s,background .15s}
+input::placeholder{color:#8b9bb8}
+input:hover{border-color:#b9cdee}
+input:focus{outline:0;border-color:var(--sea-500);background:var(--card);box-shadow:0 0 0 4px rgba(61,139,240,.2)}
+button:focus-visible{outline:3px solid var(--sea-300);outline-offset:2px}
+.go{width:100%;margin-top:24px;border:0;border-radius:12px;padding:14px;font:600 17px var(--f-d);letter-spacing:.01em;background:var(--sea-700);color:#fff;cursor:pointer;
+ box-shadow:0 1px 0 rgba(255,255,255,.25) inset,0 8px 20px -8px rgba(31,91,189,.7);transition:transform .15s,box-shadow .15s,background .15s}
+.go:hover{background:#2566cf;transform:translateY(-1px);box-shadow:0 1px 0 rgba(255,255,255,.25) inset,0 12px 24px -8px rgba(31,91,189,.75)}
+.go:active{transform:translateY(0);box-shadow:0 2px 6px -2px rgba(31,91,189,.6)}
+.go:disabled{opacity:.6;cursor:wait;transform:none}
+.err{margin-top:16px;padding:11px 13px;border-radius:12px;background:var(--bad-soft);color:var(--bad);font-size:14px;font-weight:500}
+.link{display:block;background:none;border:0;color:var(--sea-700);font:500 14px var(--f-b);cursor:pointer;padding:0;margin:16px auto 0;text-decoration:underline;text-underline-offset:3px}
+@media (prefers-color-scheme:dark){.link,.seg button[aria-pressed=true]{color:var(--sea-300)}}
+.foot{margin-top:22px;font-size:13.5px;color:var(--muted);text-align:center}
 [hidden]{display:none!important}
-.mk{background:url(logo.svg) center/cover no-repeat!important;border:0!important;box-shadow:none!important;border-radius:22%!important;font-size:0!important;color:transparent!important}
+.panel .sig-foot{margin-top:18px}
+
+@media (prefers-reduced-motion:no-preference){
+ .scene .w1{animation:drift 26s linear infinite}.scene .w2{animation:drift2 17s linear infinite}.scene .w3{animation:drift3 11s linear infinite}
+ @keyframes drift{to{background-position-x:528px}}@keyframes drift2{to{background-position-x:-440px}}@keyframes drift3{to{background-position-x:360px}}
+ .scene .sun{animation:rise 1.4s cubic-bezier(.2,.8,.2,1) both}@keyframes rise{from{transform:translateY(60px);opacity:0}}
+ .panel-in{animation:in .6s .1s cubic-bezier(.2,.8,.2,1) both}@keyframes in{from{opacity:0;transform:translateY(10px)}}
+}
+@media (max-width:860px){
+ .shell{grid-template-columns:1fr;grid-template-rows:auto 1fr}
+ .scene{min-height:336px;padding:20px 20px 190px}
+ .scene .sun{right:9%;top:16%;width:64px}
+ .scene .isle{width:120%;left:50%;bottom:30px}
+ .scene .w1{height:60px}.scene .w2{height:44px}.scene .w3{height:33px}
+ .pitch{margin-top:18px}.pitch h1{font-size:34px;max-width:7em}.pitch p{display:none}
+ .brand{font-size:17px}.brand img{width:36px;height:36px}
+ .panel{justify-content:flex-start;border-radius:26px 26px 0 0;margin-top:-26px;position:relative;z-index:2;padding:26px 20px 28px}
+ .panel h2{font-size:26px}
+}
 </style></head>
 <body>
-<main>
-  <div class="plate">
-    <div class="geo" aria-hidden="true"><svg class="geo-svg" viewBox="0 0 600 300" preserveAspectRatio="xMaxYMid meet" aria-hidden="true" focusable="false">
-<g class="g-con"><circle cx="330" cy="172" r="124"/><path d="M96 286L586 26M190 268H596M432 18V292"/></g>
-<circle class="g1" cx="432" cy="150" r="98"/>
-<path class="g2" d="M244 268H420L332 92Z"/>
-<rect class="g3" x="470" y="30" width="96" height="96" transform="rotate(14 518 78)"/>
-<path class="g4" d="M429.7 153.1 L429.8 153.3 L430.0 153.4 L430.1 153.6 L430.3 153.7 L430.4 153.9 L430.6 154.0 L430.8 154.1 L431.0 154.3 L431.2 154.4 L431.4 154.5 L431.6 154.6 L431.8 154.6 L432.1 154.7 L432.3 154.8 L432.6 154.8 L432.8 154.9 L433.1 154.9 L433.3 154.9 L433.6 154.9 L433.9 154.9 L434.2 154.9 L434.4 154.8 L434.7 154.8 L435.0 154.7 L435.3 154.6 L435.5 154.5 L435.8 154.4 L436.1 154.3 L436.4 154.1 L436.6 154.0 L436.9 153.8 L437.2 153.6 L437.4 153.4 L437.7 153.2 L437.9 152.9 L438.1 152.7 L438.4 152.4 L438.6 152.1 L438.8 151.8 L439.0 151.5 L439.1 151.2 L439.3 150.8 L439.4 150.5 L439.6 150.1 L439.7 149.7 L439.8 149.3 L439.8 148.9 L439.9 148.5 L439.9 148.1 L440.0 147.7 L439.9 147.2 L439.9 146.8 L439.9 146.3 L439.8 145.9 L439.7 145.4 L439.6 145.0 L439.4 144.5 L439.3 144.1 L439.1 143.6 L438.8 143.2 L438.6 142.7 L438.3 142.3 L438.0 141.9 L437.7 141.5 L437.3 141.0 L437.0 140.7 L436.6 140.3 L436.1 139.9 L435.7 139.6 L435.2 139.2 L434.7 138.9 L434.2 138.6 L433.6 138.3 L433.1 138.1 L432.5 137.9 L431.9 137.7 L431.3 137.5 L430.6 137.4 L430.0 137.3 L429.3 137.2 L428.6 137.1 L427.9 137.1 L427.2 137.2 L426.5 137.2 L425.8 137.3 L425.0 137.5 L424.3 137.6 L423.6 137.8 L422.8 138.1 L422.1 138.4 L421.4 138.7 L420.7 139.1 L419.9 139.5 L419.3 140.0 L418.6 140.5 L417.9 141.0 L417.2 141.6 L416.6 142.2 L416.0 142.9 L415.4 143.6 L414.9 144.4 L414.3 145.2 L413.8 146.0 L413.4 146.8 L413.0 147.7 L412.6 148.7 L412.2 149.6 L411.9 150.6 L411.7 151.6 L411.5 152.7 L411.3 153.8 L411.2 154.9 L411.2 156.0 L411.2 157.1 L411.3 158.3 L411.4 159.4 L411.6 160.6 L411.8 161.8 L412.1 163.0 L412.5 164.1 L412.9 165.3 L413.4 166.5 L414.0 167.7 L414.6 168.8 L415.4 170.0 L416.1 171.1 L417.0 172.2 L417.9 173.3 L418.9 174.3 L419.9 175.3 L421.0 176.3 L422.2 177.2 L423.4 178.1 L424.7 178.9 L426.1 179.7 L427.5 180.4 L429.0 181.1 L430.5 181.7 L432.1 182.2 L433.7 182.6 L435.4 183.0 L437.1 183.3 L438.8 183.5 L440.6 183.7 L442.4 183.7 L444.3 183.6 L446.1 183.5 L448.0 183.3 L449.9 182.9 L451.9 182.5 L453.8 181.9 L455.7 181.3 L457.6 180.5 L459.5 179.7 L461.4 178.7 L463.3 177.6 L465.1 176.4 L466.9 175.1 L468.7 173.7 L470.4 172.2 L472.0 170.6 L473.6 168.8 L475.2 167.0 L476.6 165.1 L478.0 163.0 L479.3 160.9 L480.6 158.6 L481.7 156.3 L482.7 153.9 L483.6 151.4 L484.4 148.8 L485.1 146.1 L485.6 143.4 L486.1 140.6 L486.3 137.8 L486.5 134.8 L486.5 131.9 L486.4 128.9 L486.0 125.8 L485.6 122.8 L485.0 119.7 L484.2 116.6 L483.2 113.5 L482.1 110.4 L480.8 107.3 L479.3 104.2 L477.7 101.2 L475.9 98.2 L473.9 95.2 L471.7 92.3 L469.4 89.5 L466.8 86.8 L464.1 84.1 L461.3 81.6 L458.2 79.1 L455.0 76.8 L451.6 74.6 L448.1 72.6 L444.4 70.7 L440.6 68.9 L436.6 67.3 L432.5 65.9 L428.3 64.7 L423.9 63.7 L419.5 62.9 L414.9 62.3 L410.2 61.9 L405.5 61.8 L400.6 61.9 L395.7 62.2 L390.8 62.8 L385.8 63.7 L380.8 64.8 L375.8 66.2 L370.8 67.8 L365.7 69.8 L360.8 72.0 L355.8 74.5 L350.9 77.3 L346.1 80.3 L341.4 83.7 L336.8 87.3 L332.3 91.2 L327.9 95.4 L323.7 99.9 L319.6 104.7 L315.7 109.7 L312.1 115.0 L308.6 120.6 L305.4 126.4 L302.4 132.5 L299.7 138.8 L297.3 145.3 L295.1 152.0 L293.3 159.0 L291.8 166.1 L290.6 173.4 L289.8 180.9 L289.4 188.5 L289.3 196.2"/>
-<g class="g5"><circle cx="332" cy="92" r="5"/><circle cx="432" cy="150" r="5"/><circle cx="244" cy="268" r="5"/>
-<text x="314" y="80">A</text><text x="444" y="144">B</text><text x="222" y="262">C</text></g>
-</svg></div>
-    <div class="mk" aria-hidden="true">π</div>
-    <h1>Math Island</h1>
-    <p class="sub">Earn XP. Level up.</p>
-  </div>
-  <div class="body">
+<div class="shell">
+  <section class="scene" aria-label="Math Island">
+    <div class="sun" aria-hidden="true"></div>
+    <svg class="isle" viewBox="0 0 1100 420" aria-hidden="true" focusable="false">
+      <path d="M40 420Q550 96 1060 420Z" fill="#ffd27a"/>
+      <path d="M210 420Q560 196 930 420Z" fill="#ffdf9e" opacity=".55"/>
+      <g fill="none" stroke="#fff" stroke-width="30" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M452 150Q546 104 646 144"/><path d="M510 138V246Q510 276 484 284"/><path d="M584 134V252Q584 284 612 284"/>
+      </g>
+    </svg>
+    <div class="w w1" aria-hidden="true"></div><div class="w w2" aria-hidden="true"></div><div class="w w3" aria-hidden="true"></div>
+    <div class="brand"><img src="logo.svg" alt="" width="44" height="44"><span>Math Island</span></div>
+    <div class="pitch">
+      <h1>Maths you can level up.</h1>
+      <p>Earn XP in class, play your lessons and build your own avatar.</p>
+    </div>
+  </section>
+  <main class="panel"><div class="panel-in">
+  <h2>Log in</h2>
+  <p class="lead">Welcome back to the island.</p>
   <div class="seg" role="tablist">
     <button type="button" id="tabS" aria-pressed="true">Student</button>
     <button type="button" id="tabT" aria-pressed="false">Teacher</button>
@@ -91,8 +126,8 @@ input:focus-visible,button:focus-visible{outline:3px solid var(--yellow);outline
 
   <div class="err" id="err" role="alert" hidden></div>
   <div class="foot">Forgot your PIN? Ask your teacher.</div>
-  </div>
-</main>
+  </div></main>
+</div>
 
 <script type="module">
 import { auth, fs, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, doc, setDoc, emailFor, loginVersion, profileOf, whenUser, friendlyError } from "./fb.js?v=1110d";
