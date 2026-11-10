@@ -2970,7 +2970,7 @@ function resetCard() {
 }
 function hubTools() {
   const presets = [[60, "1 min"], [180, "3 min"], [300, "5 min"], [600, "10 min"], [900, "15 min"]];
-  return resetCard() + `<section class="card tmr"><h3>Lesson timer</h3><div id="tmDisp" class="tmdisp ${tm.left <= 10 ? "low" : ""}">${fmtT(tm.left)}</div>
+  return `<section class="card"><h3>Manage</h3><p class="rep-note">Classwork, student logins, importing old data and more.</p><div class="sbtns" id="hubMgmt" style="justify-content:flex-start"></div></section>` + resetCard() + `<section class="card tmr"><h3>Lesson timer</h3><div id="tmDisp" class="tmdisp ${tm.left <= 10 ? "low" : ""}">${fmtT(tm.left)}</div>
     <div class="sbtns">${presets.map(([s, l]) => `<button class="shop-tab" data-act="tmSet" data-s="${s}" aria-pressed="${tm.total === s}">${l}</button>`).join("")}<label class="mx"><input id="tmMin" type="number" inputmode="decimal" min="0.5" step="0.5" placeholder="min" style="width:70px"><button class="ghost small" data-act="tmCustom">Set</button></label></div>
     <div class="sbtns"><button class="primary" data-act="tmGo">${tm.run ? "Pause" : tm.left < tm.total && tm.left > 0 ? "Resume" : "Start"}</button><button class="ghost" data-act="tmReset">Reset</button></div>
     <p class="rep-note">Keeps running if you switch tabs. Plays a sound and says "Time is up" at zero (follows the sound setting).</p></section>

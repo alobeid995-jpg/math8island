@@ -97,6 +97,17 @@ if (ADMIN) { // the button is only created for the owner; other teachers' pages 
 $("workBtn").onclick = () => openWork();
 $("outBtn").onclick = async () => { await signOut(auth); location.href = "index.html"; };
 
+/* ---------- the header buttons live in Hub > Tools > Manage ---------- */
+{
+  const holder = document.createElement("div"); holder.hidden = true; document.body.appendChild(holder);
+  const btns = ["workBtn", "loginsBtn", "impBtn", "islandBtn", "devBtn"].map(id => $(id)).filter(Boolean);
+  btns.forEach(b => holder.appendChild(b));
+  const place = () => { const h = $("hubMgmt"); if (h && !btns.every(b => b.parentNode === h)) btns.forEach(b => h.appendChild(b)); };
+  const r0 = window.render;
+  window.render = function () { const out = r0.apply(this, arguments); place(); return out; };
+  place();
+}
+
 /* ---------- student logins ---------- */
 const msg = t => { $("lgMsg").textContent = t; };
 const pinOf = () => String(100000 + (crypto.getRandomValues(new Uint32Array(1))[0] % 900000));
