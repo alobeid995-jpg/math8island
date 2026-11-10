@@ -1,7 +1,7 @@
 // "My classwork" on the student page: worksheets from the teacher, and (for the 9S boys) the lesson games.
-import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1110j";
-import { playerOf, catalog } from "./islandmap.js?v=1110j";
-import { logEv } from "./presence.js?v=1110j";
+import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1110k";
+import { playerOf, catalog } from "./islandmap.js?v=1110k";
+import { logEv } from "./presence.js?v=1110k";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

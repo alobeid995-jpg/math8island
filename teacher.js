@@ -1,9 +1,9 @@
-import { auth, fs, firebaseConfig, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, collection, query, where, writeBatch, setBase, bcol, bdoc, signOut, whenUser, profileOf, emailFor, pinKey,
-  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1110j";
-import { db } from "./fbdb.js?v=1110j";
-import { startUsage } from "./usage.js?v=1110j";
-import { openWork } from "./teacherwork.js?v=1110j";
-import { openProgress } from "./progress.js?v=1110j";
+import { changeEmail, auth, fs, firebaseConfig, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, collection, query, where, writeBatch, setBase, bcol, bdoc, signOut, whenUser, profileOf, emailFor, pinKey,
+  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1110k";
+import { db } from "./fbdb.js?v=1110k";
+import { startUsage } from "./usage.js?v=1110k";
+import { openWork } from "./teacherwork.js?v=1110k";
+import { openProgress } from "./progress.js?v=1110k";
 
 const $ = id => document.getElementById(id);
 const esc2 = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -103,7 +103,16 @@ $("outBtn").onclick = async () => { await signOut(auth); location.href = "index.
 /* ---------- the header buttons live in Hub > Tools > Manage ---------- */
 {
   const holder = document.createElement("div"); holder.hidden = true; document.body.appendChild(holder);
-  const btns = ["workBtn", "loginsBtn", "impBtn", "islandBtn", "devBtn"].map(id => $(id)).filter(Boolean);
+  const eb = document.createElement("button"); eb.className = "ghost small"; eb.id = "emailBtn"; eb.type = "button"; eb.textContent = "My email & password reset";
+  eb.onclick = async () => {
+    const em = (prompt("Type your real email address. Firebase will send a link to it, and you can use it later to reset your password.") || "").trim();
+    if (!em) return; if (!/^\S+@\S+\.\S+$/.test(em)) { alert("That does not look like an email address."); return; }
+    const pw = prompt("Type your current password to confirm it is you.") || ""; if (!pw) return;
+    try { await changeEmail(em, pw); alert("Done. A link was sent to " + em + ". Open it to confirm. From then on, log in with that email, and use \"Forgot password?\" on the login page if you ever forget your password."); }
+    catch (er) { alert(er && er.code === "auth/invalid-credential" || er && er.code === "auth/wrong-password" ? "The password is not right." : "Could not do it: " + ((er && (er.code || er.message)) || "error")); }
+  };
+  document.body.appendChild(eb);
+  const btns = ["workBtn", "loginsBtn", "impBtn", "islandBtn", "devBtn", "emailBtn"].map(id => $(id)).filter(Boolean);
   btns.forEach(b => holder.appendChild(b));
   const place = () => { const h = $("hubMgmt"); if (h && !btns.every(b => b.parentNode === h)) btns.forEach(b => h.appendChild(b)); };
   const r0 = window.render;

@@ -131,6 +131,7 @@ button:focus-visible{outline:3px solid var(--sea-300);outline-offset:2px}
       <input id="inv" autocomplete="off">
     </div>
     <button class="go" type="submit" id="goT">Log in</button>
+    <button type="button" id="forgotT" class="link">Forgot password?</button>
     <button class="link" type="button" id="toggleNew">I am new: create a teacher account</button>
   </form>
 
@@ -140,7 +141,7 @@ button:focus-visible{outline:3px solid var(--sea-300);outline-offset:2px}
 </div>
 
 <script type="module">
-import { auth, fs, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, doc, setDoc, emailFor, loginVersion, profileOf, whenUser, friendlyError } from "./fb.js?v=1110j";
+import { resetPassword, auth, fs, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, doc, setDoc, emailFor, loginVersion, profileOf, whenUser, friendlyError } from "./fb.js?v=1110k";
 const $ = id => document.getElementById(id);
 let creating = false;
 const showErr = m => { $("err").textContent = m; $("err").hidden = !m; };
@@ -163,6 +164,12 @@ $("fS").onsubmit = async e => {
   catch (er) { showErr(er.code === "no-profile" ? "This login is not set up yet. Ask your teacher." : friendlyError(er)); b.disabled = false; }
 };
 const tEmail = () => { const v = $("em").value.trim(); return v.includes("@") ? v : v.toLowerCase().replace(/\s+/g, "") + "@math8island.app"; };   // a short username works like an email
+$("forgotT").onclick = async () => {
+  showErr(""); const v = $("em").value.trim();
+  if (!v.includes("@")) { showErr("Type your email address in the first box, then press Forgot password again. If you signed up with a username, ask the owner to help."); return; }
+  try { await resetPassword(v); showErr("If this email has an account, a reset link is on its way. Check your inbox and the spam folder."); }
+  catch (er) { showErr(friendlyError(er)); }
+};
 $("fT").onsubmit = async e => {
   e.preventDefault(); showErr(""); const b = $("goT"); b.disabled = true;
   try {

@@ -74,6 +74,15 @@ export async function profileOf(uid) {
 // Waits for the signed-in user (or null) once.
 export const whenUser = () => new Promise(res => { const off = onAuthStateChanged(auth, u => { off(); res(u); }); });
 
+import * as AUTHNS from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+// Password reset link: only reaches a real inbox when the account was made with a real email address.
+export const resetPassword = email => { if (!AUTHNS.sendPasswordResetEmail) throw new Error("not supported"); return AUTHNS.sendPasswordResetEmail(auth, email); };
+// A signed-in teacher adds or changes her real email. Firebase mails a link to the new address; once she opens it, the account uses that email.
+export async function changeEmail(newEmail, password) {
+  const u = auth.currentUser; if (!u || !AUTHNS.verifyBeforeUpdateEmail) throw new Error("not supported");
+  await AUTHNS.reauthenticateWithCredential(u, AUTHNS.EmailAuthProvider.credential(u.email, password));
+  await AUTHNS.verifyBeforeUpdateEmail(u, newEmail);
+}
 export function friendlyError(e) {
   const c = (e && e.code) || "";
   if (c.includes("invalid-credential") || c.includes("wrong-password") || c.includes("user-not-found") || c.includes("invalid-email")) return "ID or PIN is not correct.";
