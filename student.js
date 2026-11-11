@@ -1,6 +1,7 @@
-import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1110o";
-import { initWork } from "./stuwork.js?v=1110o";
-import { startPresence, logEv } from "./presence.js?v=1110o";
+import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1110p";
+import { initWork } from "./stuwork.js?v=1110p";
+import { initMsgs } from "./stumsg.js?v=1110p";
+import { startPresence, logEv } from "./presence.js?v=1110p";
 
 const sub = (t, n) => t.split("{n}").join(n);
 let me = null, ref = null, shopCat = "frame", confirmId = "", pickerOpen = false, seeds = [], loaded = false;
@@ -27,6 +28,7 @@ async function start() {
   onSnapshot(ref, snap => { loaded = true; me = snap.exists() ? fromDoc(snap) : null; render(); },
     () => { loaded = true; me = null; render(); });
   initWork(p, () => me, toast).catch(() => {});
+  initMsgs(p, () => me).catch(() => {});
   startPresence(u, p, () => me).catch(() => {});
 }
 

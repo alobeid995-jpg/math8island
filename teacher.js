@@ -1,11 +1,12 @@
 import { changeEmail, auth, fs, firebaseConfig, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, collection, query, where, writeBatch, setBase, bcol, bdoc, signOut, whenUser, profileOf, emailFor, pinKey,
-  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1110o";
-import { db } from "./fbdb.js?v=1110o";
-import { startUsage } from "./usage.js?v=1110o";
-import { openWork } from "./teacherwork.js?v=1110o";
+  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1110p";
+import { db } from "./fbdb.js?v=1110p";
+import { startUsage } from "./usage.js?v=1110p";
+import { openWork } from "./teacherwork.js?v=1110p";
 import "./lessonxp.js";
-import { openProgress } from "./progress.js?v=1110o";
-import { openMaterial } from "./material.js?v=1110o";
+import { openProgress } from "./progress.js?v=1110p";
+import { openMaterial } from "./material.js?v=1110p";
+import { openInbox } from "./inbox.js?v=1110p";
 
 const $ = id => document.getElementById(id);
 const esc2 = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -100,6 +101,7 @@ if (ADMIN) { // the button is only created for the owner; other teachers' pages 
   $("outBtn").before(dv);
 }
 $("workBtn").onclick = () => openWork();
+{ const ib2 = document.createElement("button"); ib2.className = "ghost small"; ib2.id = "inboxBtn"; ib2.type = "button"; ib2.textContent = "Messages & announcements"; ib2.onclick = () => openInbox(); $("outBtn").before(ib2); }
 { const mb = document.createElement("button"); mb.className = "ghost small"; mb.id = "matBtn"; mb.type = "button"; mb.textContent = "My material"; mb.onclick = () => openMaterial(); $("outBtn").before(mb); }
 $("outBtn").onclick = async () => { await signOut(auth); location.href = "index.html"; };
 
@@ -115,7 +117,7 @@ $("outBtn").onclick = async () => { await signOut(auth); location.href = "index.
     catch (er) { alert(er && er.code === "auth/invalid-credential" || er && er.code === "auth/wrong-password" ? "The password is not right." : "Could not do it: " + ((er && (er.code || er.message)) || "error")); }
   };
   document.body.appendChild(eb);
-  const btns = ["workBtn", "matBtn", "loginsBtn", "impBtn", "islandBtn", "devBtn", "emailBtn"].map(id => $(id)).filter(Boolean);
+  const btns = ["workBtn", "inboxBtn", "matBtn", "loginsBtn", "impBtn", "islandBtn", "devBtn", "emailBtn"].map(id => $(id)).filter(Boolean);
   btns.forEach(b => holder.appendChild(b));
   const place = () => { const h = $("hubMgmt"); if (h && !btns.every(b => b.parentNode === h)) btns.forEach(b => h.appendChild(b)); };
   const r0 = window.render;
