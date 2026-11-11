@@ -1286,7 +1286,7 @@ header.book .geo { max-height: 190px; }
 /* --- Math Island logo mark --- */
 header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !important; color: transparent !important; font-size: 0 !important; border: 0 !important; box-shadow: none !important; border-radius: 22% !important; }
 
-</style><link rel="stylesheet" href="island.css?v=1111d"><style>
+</style><link rel="stylesheet" href="island.css?v=1111e"><style>
 .cls-panel{margin:12px 0;padding:14px;border:2px solid var(--edge);border-radius:12px;background:var(--card);display:grid;gap:10px}
 .cls-panel h4{margin:0}.cls-panel p{margin:0;font-size:14px}
 .cls-panel label{display:grid;gap:4px;font-size:13px;font-weight:600}
@@ -1354,6 +1354,7 @@ header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !import
     <button class="view" type="button" data-act="view" data-view="shop" id="vShop" aria-pressed="false"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h16l-1.2 11a1 1 0 0 1-1 .9H6.2a1 1 0 0 1-1-.9Z"/><path d="M8.5 8V6.5a3.5 3.5 0 0 1 7 0V8"/></svg> Shop</button>
     <button class="view" type="button" data-act="view" data-view="board" id="vBoard" aria-pressed="false"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 16v-4M12 16V8M17 16v-6"/></svg> Dashboard</button>
     <button class="view" type="button" data-act="view" data-view="hub" id="vHub" aria-pressed="false"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 4v5M8 14h4M8 17h8"/></svg> Hub</button>
+    <button class="view" type="button" data-act="view" data-view="tools" id="vTools" aria-pressed="false"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5 5L3 18l3 3 6.7-6.7a4 4 0 0 0 5-5l-2.5 2.5-2.4-.6-.6-2.4z"/></svg> Tools</button>
   </nav>
 
   <div id="studentsView">
@@ -1398,6 +1399,7 @@ header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !import
   <section id="cupView" hidden aria-live="polite"></section>
   <section id="shopView" hidden></section>
   <section id="hubView" hidden></section>
+  <section id="toolsView" hidden></section>
   <section id="dashView" hidden></section>
 
   <footer class="endnote"><span class="formula">∴ every point counts</span><span>Math Island · XP for the maths classroom</span></footer>
@@ -1485,7 +1487,7 @@ let students = [];      // [{id, name, xp, log:[{title,xp,kind,at}]}]
 let pendingDelete = null, editNameId = null, moveId = null;
 let openId = null;      // the one student whose options are showing
 let view = "students";  // "students" or "cup"
-try { const v0 = localStorage.getItem("xp_view"); if (v0 === "cup" || v0 === "shop" || v0 === "hub" || v0 === "board") view = v0; } catch {}
+try { const v0 = localStorage.getItem("xp_view"); if (v0 === "cup" || v0 === "shop" || v0 === "hub" || v0 === "tools" || v0 === "board") view = v0; } catch {}
 const seenBatches = new Set();   // whole-class awards already announced on this screen
 let confirmWeek = false;
 let confirmReset = false, resetBusy = false;
@@ -3115,7 +3117,7 @@ function tmTick() {
   if (tm.left <= 0) {
     tm.run = false; clearInterval(tm.id); tm.left = 0;
     if (sndMode !== "off") { [0, 0.5, 1].forEach(t => [880, 1174.7].forEach((f, i) => tone(f, t + i * 0.15, 0.3, "square", 0.2))); if (sndMode === "voice") setTimeout(() => speak("Time is up!"), 1700); }
-    toast("Time is up!"); if (view === "hub" && hubTab === "tools") render();
+    toast("Time is up!"); if (view === "tools") render();
   }
 }
 function tmSet(sec) { clearInterval(tm.id); tm.run = false; tm.total = sec; tm.left = sec; render(); }
@@ -3135,9 +3137,13 @@ function makeGroups() {
 function groupsText() { return grp ? grp.groups.map((g, i) => `Group ${i + 1}: ` + g.map(id => (students.find(s => s.id === id) || {}).name).join(", ")).join("\n") : ""; }
 
 function hubStudentRow(st, right) { return `<div class="hrow"><span class="hn">${avatarHTML(st, "sm")}<span class="hnm">${esc(shortName(st.name))}</span></span>${right}</div>`; }
+function renderTools() {
+  const chips = `<div class="shop-tabs">${CLASSES.map(c => `<button class="shop-tab" data-act="hubCls" data-cls="${c}" aria-pressed="${c === cls}">${c} <small>${students.filter(s => s.cls === c).length}</small></button>`).join("")}</div>`;
+  $("toolsView").innerHTML = `<div class="shop-intro"><h2>Tools</h2><p>Classwork, student logins, announcements, material, reset, the lesson timer and the group maker.</p></div>${chips}<div class="hub-body">${hubTools()}</div>`;
+}
 function renderHub() {
   const el = $("hubView");
-  const tabs = [["insights", "Insights"], ["att", "Attendance"], ["hw", "Homework"], ["marks", "Marks"], ["books", "Notebooks"], ["seats", "Seat plan"], ["tools", "Tools"]];
+  const tabs = [["insights", "Insights"], ["att", "Attendance"], ["hw", "Homework"], ["marks", "Marks"], ["books", "Notebooks"], ["seats", "Seat plan"]];
   const chips = hubTab === "insights" ? "" : `<div class="shop-tabs">${CLASSES.map(c => `<button class="shop-tab" data-act="hubCls" data-cls="${c}" aria-pressed="${c === cls}">${c} <small>${students.filter(s => s.cls === c).length}</small></button>`).join("")}</div>`;
   let body = "";
   if (hubTab === "insights") body = hubInsights();
@@ -3146,7 +3152,7 @@ function renderHub() {
   else if (hubTab === "marks") body = hubMarks();
   else if (hubTab === "books") body = hubBooks();
   else if (hubTab === "seats") body = hubSeats();
-  else body = hubTools();
+  else body = hubInsights();
   el.innerHTML = `<div class="shop-intro"><h2>Teacher Hub</h2><p>Your classroom tools in one place: who needs attention, attendance, homework, test marks, a lesson timer and group maker.</p></div>
     <div class="shop-tabs hub-tabs">${tabs.map(([k, l]) => `<button class="shop-tab" data-act="hubTab" data-tab="${k}" aria-pressed="${k === hubTab}">${l}</button>`).join("")}</div>${chips}<div class="hub-body">${body}</div>`;
 }
@@ -3628,9 +3634,11 @@ function render() {
   $("vCup").setAttribute("aria-pressed", String(view === "cup"));
   $("vShop").setAttribute("aria-pressed", String(view === "shop"));
   $("vHub").setAttribute("aria-pressed", String(view === "hub"));
+  $("vTools").setAttribute("aria-pressed", String(view === "tools"));
   $("vBoard").setAttribute("aria-pressed", String(view === "board"));
   $("dashView").hidden = view !== "board";
   $("hubView").hidden = view !== "hub";
+  $("toolsView").hidden = view !== "tools";
   $("studentsView").hidden = view !== "students";
   $("cupView").hidden = view !== "cup";
   $("shopView").hidden = view !== "shop";
@@ -3639,6 +3647,7 @@ function render() {
   if (view === "cup") { renderCup(); return; }
   if (view === "shop") { renderShopView(); return; }
   if (view === "hub") { renderHub(); return; }
+  if (view === "tools") { renderTools(); return; }
   if (view === "board") { renderDash(); const ss = $("statsSec"); if (ss) { ss.hidden = false; $("dashView").appendChild(ss); } return; }
   const mmDone = closedMonths().find(m => monthWinners(m)), champ = mmDone ? monthWinners(mmDone) : null;
   $("tabs").innerHTML = CLASSES.map(c => {
@@ -3893,7 +3902,7 @@ document.addEventListener("click", e => {
       try { localStorage.setItem("xp_class", cls); } catch {}
       render(); showSotw(cls, false); break;
     case "view":
-      view = ["cup", "shop", "hub", "board"].includes(b.dataset.view) ? b.dataset.view : "students";
+      view = ["cup", "shop", "hub", "tools", "board"].includes(b.dataset.view) ? b.dataset.view : "students";
       try { localStorage.setItem("xp_view", view); } catch {}
       render(); break;
     case "shopOpen": shopFor = id; shopCat = "frame"; shopConfirm = ""; renderShop(); break;
@@ -3982,7 +3991,7 @@ document.addEventListener("click", e => {
     }
     case "cup": cupAward(b.dataset.cls, b.dataset.key, Number(b.dataset.pts)); break;
     case "cupUndo": cupUndo(b.dataset.cls); break;
-    case "goReset": view = "hub"; hubTab = "tools"; confirmReset = false; render(); window.scrollTo(0, 0); break;
+    case "goReset": view = "tools"; confirmReset = false; render(); window.scrollTo(0, 0); break;
     case "xpResetAsk": confirmReset = true; render(); break;
     case "xpResetNo": confirmReset = false; render(); break;
     case "xpResetYes": resetAllXP(); break;
@@ -4184,7 +4193,7 @@ render();
     const ids = new Set();
     snap.docs.forEach(d => { ids.add(d.id); const v = d.data() || {}; map.set(d.id, { ...v, ...(coll === "att" ? { m: v.m || {} } : coll === "hw" ? { done: v.done || {} } : { scores: v.scores || {} }) }); });
     [...map.keys()].forEach(k => { if (!ids.has(k)) map.delete(k); });
-    if (view === "hub" || reportFor) render();
+    if (view === "hub" || view === "tools" || reportFor) render();
   }, () => {}));
 
   // Student of the Week, live across devices
@@ -4260,7 +4269,7 @@ document.getElementById("expBtn")?.addEventListener("click", async () => {
     <div class="acts noprint"><button class="ghost" id="lgPrint" type="button">Print this list</button><button class="ghost" id="lgClose" type="button">Close</button></div>
   </div>
 </div>
-<script type="module" src="teacher.js?v=1111d"></script>
+<script type="module" src="teacher.js?v=1111e"></script>
 
 <script>
 /* Post a certificate straight to Google Classroom.
