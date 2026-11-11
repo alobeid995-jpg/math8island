@@ -1,12 +1,12 @@
 import { changeEmail, auth, fs, firebaseConfig, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, collection, query, where, writeBatch, setBase, bcol, bdoc, signOut, whenUser, profileOf, emailFor, pinKey,
-  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1111f";
-import { db } from "./fbdb.js?v=1111f";
-import { startUsage } from "./usage.js?v=1111f";
-import { openWork } from "./teacherwork.js?v=1111f";
+  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1111g";
+import { db } from "./fbdb.js?v=1111g";
+import { startUsage } from "./usage.js?v=1111g";
+import { openWork } from "./teacherwork.js?v=1111g";
 import "./lessonxp.js";
-import { openProgress } from "./progress.js?v=1111f";
-import { openMaterial } from "./material.js?v=1111f";
-import { openInbox } from "./inbox.js?v=1111f";
+import { openProgress } from "./progress.js?v=1111g";
+import { openMaterial } from "./material.js?v=1111g";
+import { openInbox } from "./inbox.js?v=1111g";
 
 const $ = id => document.getElementById(id);
 const esc2 = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
