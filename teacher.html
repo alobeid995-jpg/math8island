@@ -1474,7 +1474,8 @@ const NEGATIVE = [
   { title: "Incomplete Task / Homework", xp: -10 },
   { title: "Disrespectful Behavior / Language", xp: -15 }
 ];
-const SIGNATURE = "Mr. Khalid O\nMathematics Teacher";
+let TNAME = "Mr. Khalid O";   // the teacher's own name; other teachers type theirs once (saved in their folder)
+const sigOf = () => (TNAME ? TNAME + "\n" : "") + "Mathematics Teacher";
 const CLASSES = ["8B", "8Y", "8M", "8S"];
 let cls = "8B";
 try { const c = localStorage.getItem("xp_class"); if (CLASSES.includes(c)) cls = c; } catch {}
@@ -3435,7 +3436,8 @@ function certWrap(t, n) {
 function certSVG(c) {
   const st = students.find(s => s.id === c.sid); if (!st) return "";
   const G = "#b8860b", G2 = "#e0b43c", INK = "#17233b", SER = "Georgia, 'Times New Roman', serif";
-  const av = avatarSVG(avatarSeed(st)).replace(/^<svg[^>]*>/, "").replace(/<\/svg>$/, "");
+  const e0 = eqOf(st), seed = avatarSeed(st), wid = e0.top && shopItem(e0.top) ? e0.top : "", skid = e0.skin && shopItem(e0.skin) ? e0.skin : "";   // the same picture the student sees: equipped skin and top included
+  const av = (skid ? enemyFig(skid, wid) : isGirlCls(st.cls) ? girlBase(seed, wid) : avatarSVG(seed, wid)).replace(/^<svg[^>]*>/, "").replace(/<\/svg>$/, "");
   const fit = (t, base, maxW, min, k) => { const w = t.length * base * k; return w <= maxW ? { fs: base, tl: 0 } : (t.length * min * k <= maxW ? { fs: Math.floor(maxW / (t.length * k)), tl: 0 } : { fs: min, tl: maxW }); };
   const tla = f => f.tl ? ` textLength="${f.tl}" lengthAdjust="spacingAndGlyphs"` : "";
   const name = st.name, nF = fit(name, 62, 760, 26, .6), nfs = nF.fs;
@@ -3473,7 +3475,7 @@ function certSVG(c) {
 function openCert(id, force) {
   const st = students.find(s => s.id === id); if (!st) return;
   const type = force || (isSotw(st) ? "week" : "day"), d = certDefaults(type);
-  cert = { sid: id, type, title: d.title, reason: d.reason, date: todayStr(), teacher: (SIGNATURE.split("\n")[0] || "") };
+  cert = { sid: id, type, title: d.title, reason: d.reason, date: todayStr(), teacher: TNAME || "" };
   const m = $("certModal");
   m.innerHTML = `<div class="sheet cert-sheet" role="dialog" aria-modal="true" aria-labelledby="certHd">
     <h3 id="certHd">Certificate for ${esc(st.name)}</h3>
@@ -3593,7 +3595,7 @@ ${body}
 Thank you for your continued support. Please do not hesitate to contact me if you would like to discuss ${first}'s progress further.
 
 Kind regards,
-${SIGNATURE}`;
+${sigOf()}`;
 }
 const parentsMap = new Map();   // student id or enrollment -> { f, m }
 function parentEmails(st) {
@@ -3994,7 +3996,7 @@ document.addEventListener("input", e => {
   const t = e.target;
   if (cert && t.id && t.id.startsWith("cert")) {
     if (t.id === "certTitle") cert.title = t.value; else if (t.id === "certReason") cert.reason = t.value;
-    else if (t.id === "certDate") cert.date = t.value; else if (t.id === "certTeacher") cert.teacher = t.value;
+    else if (t.id === "certDate") cert.date = t.value; else if (t.id === "certTeacher") { cert.teacher = t.value; TNAME = t.value.trim(); clearTimeout(window.__tnT); window.__tnT = setTimeout(() => { try { window.__saveTName && window.__saveTName(TNAME); } catch {} }, 900); }
     updateCert(); return;
   } if (!t.dataset || !t.dataset.note || readOnly) return;
   const st = students.find(s => s.id === t.dataset.note); if (!st) return;
@@ -4258,7 +4260,7 @@ document.getElementById("expBtn")?.addEventListener("click", async () => {
     <div class="acts noprint"><button class="ghost" id="lgPrint" type="button">Print this list</button><button class="ghost" id="lgClose" type="button">Close</button></div>
   </div>
 </div>
-<script type="module" src="teacher.js?v=1110p"></script>
+<script type="module" src="teacher.js?v=1110q"></script>
 
 <script>
 /* Post a certificate straight to Google Classroom.

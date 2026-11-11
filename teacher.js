@@ -1,12 +1,12 @@
 import { changeEmail, auth, fs, firebaseConfig, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, collection, query, where, writeBatch, setBase, bcol, bdoc, signOut, whenUser, profileOf, emailFor, pinKey,
-  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1110p";
-import { db } from "./fbdb.js?v=1110p";
-import { startUsage } from "./usage.js?v=1110p";
-import { openWork } from "./teacherwork.js?v=1110p";
+  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1110q";
+import { db } from "./fbdb.js?v=1110q";
+import { startUsage } from "./usage.js?v=1110q";
+import { openWork } from "./teacherwork.js?v=1110q";
 import "./lessonxp.js";
-import { openProgress } from "./progress.js?v=1110p";
-import { openMaterial } from "./material.js?v=1110p";
-import { openInbox } from "./inbox.js?v=1110p";
+import { openProgress } from "./progress.js?v=1110q";
+import { openMaterial } from "./material.js?v=1110q";
+import { openInbox } from "./inbox.js?v=1110q";
 
 const $ = id => document.getElementById(id);
 const esc2 = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -19,6 +19,10 @@ if (!p || p.role !== "teacher") { location.href = "index.html"; throw new Error(
 const ADMIN = p.admin === true;
 startUsage(u, p);
 setBase(ADMIN ? [] : ["teachers", u.uid]);
+// The name printed on certificates and parent emails: the owner is Mr. Khalid O; every other teacher types her own once and it is kept.
+if (!ADMIN) TNAME = "";
+try { const ts = await getDoc(bdoc("settings", "profile")); if (ts.exists() && typeof ts.data().name === "string") TNAME = ts.data().name.slice(0, 40); } catch {}
+window.__saveTName = n => setDoc(bdoc("settings", "profile"), { name: String(n || "").slice(0, 40) });
 // Another teacher must never see the owner's four default classes while her own load: show her last-known classes (or none) at once.
 const CKEY = "mi_classes_" + u.uid;
 if (!ADMIN) {
