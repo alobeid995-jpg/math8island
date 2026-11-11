@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en"><head><style id="waitcss">html.wait body{visibility:hidden}</style><script>document.documentElement.classList.add("wait");setTimeout(function(){document.documentElement.classList.remove("wait")},7000)</script>
+<html lang="en"><head><script>try{var u=navigator.userAgent;if(/iPhone|iPad|iPod/.test(u)||(/Macintosh/.test(u)&&navigator.maxTouchPoints>1)||(/Safari/.test(u)&&!/Chrome|Chromium|Android|CriOS|FxiOS|Edg/.test(u)))document.documentElement.classList.add("apple")}catch(e){}</script><style id="waitcss">html.wait body{visibility:hidden}</style><script>document.documentElement.classList.add("wait");setTimeout(function(){document.documentElement.classList.remove("wait")},7000)</script>
 <meta charset="utf-8"><meta name="theme-color" content="#1f5bbd"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Math Island · Log in</title>
 <link rel="icon" href="favicon.ico" sizes="48x48"><link rel="icon" type="image/svg+xml" href="logo.svg" sizes="any"><link rel="icon" type="image/png" sizes="96x96" href="fav-96.png"><link rel="icon" type="image/png" sizes="192x192" href="fav-192.png"><link rel="apple-touch-icon" href="logo-180.png">
@@ -141,7 +141,7 @@ button:focus-visible{outline:3px solid var(--sea-300);outline-offset:2px}
 </div>
 
 <script type="module">
-import { resetPassword, auth, fs, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, doc, setDoc, emailFor, loginVersion, profileOf, whenUser, friendlyError } from "./fb.js?v=1111c";
+import { resetPassword, auth, fs, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, doc, setDoc, emailFor, loginVersion, profileOf, whenUser, friendlyError } from "./fb.js?v=1111d";
 const $ = id => document.getElementById(id);
 let creating = false;
 const showErr = m => { $("err").textContent = m; $("err").hidden = !m; };

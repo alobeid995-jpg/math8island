@@ -247,3 +247,7 @@ header.book { padding-bottom: 96px !important; }
   header.book .sync { bottom: 96px; }
   .views { border-radius: 18px; } .view { border-radius: 13px; font-size: 13px; padding-left: 4px; padding-right: 4px; }
 }
+
+/* Apple devices (Safari / iPhone / iPad / Mac): lighter effects so the pages stay smooth */
+html.apple *,html.apple *::before,html.apple *::after{animation-iteration-count:1!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+html.apple .avw,html.apple .bdg svg,html.apple .spk{filter:none!important}
