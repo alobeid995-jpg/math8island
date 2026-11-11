@@ -1,7 +1,7 @@
 // "My classwork" on the student page: worksheets from the teacher, and (for the 9S boys) the lesson games.
-import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1110n";
-import { playerOf, catalog } from "./islandmap.js?v=1110n";
-import { logEv } from "./presence.js?v=1110n";
+import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1110o";
+import { playerOf, catalog } from "./islandmap.js?v=1110o";
+import { logEv } from "./presence.js?v=1110o";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -56,6 +56,9 @@ function draw() {
   const agCard = isAG ? `<div class="wk-lesson"><div class="wk-lh"><b>Lesson 3.4: Upper and lower bounds</b><small>Mon 9 Nov 2026</small></div>
       <div class="wk-games"><button class="wk-game${agPlays.has("ag34-ws") ? " done" : ""}" type="button" data-wkact="ag"><b>Examples, games and worksheet</b><small>Do the examples, play the games, then do the multiple choice worksheet.</small>${xpNote("ag34")}
       <span>${agPart("ag34-examples", "Examples")}${agPart("ag34-tap", "Game 1")}${agPart("ag34-bound", "Game 2")}${agPart("ag34-ineq", "Game 3")}${agPart("ag34-ws", "Worksheet")}</span></button></div></div>` : "";
+  const suCard = isEL ? `<div class="wk-lesson"><div class="wk-lh"><b>Simultaneous equations: substitution</b><small>Exercise 4.2 · Day 2</small></div>
+      <div class="wk-games"><button class="wk-game${agPlays.has("su42-ws") ? " done" : ""}" type="button" data-wkact="su"><b>Worked examples, then a worksheet</b><small>Go through the worked examples first. Then the short worksheet opens (5 to 7 minutes).</small>${xpNote("su42")}
+      <span>${agPart("su42-examples", "Examples")}${agPart("su42-ws", "Worksheet")}</span></button></div></div>` : "";
   const elCard = isEL ? `<div class="wk-lesson"><div class="wk-lh"><b>Simultaneous equations: elimination</b><small>Exercise 4.2 · Day 1</small></div>
       <div class="wk-games"><button class="wk-game${agPlays.has("el42-ws") ? " done" : ""}" type="button" data-wkact="el"><b>Examples, games and worksheet</b><small>Do the examples, play the games, then do the multiple choice worksheet.</small>${xpNote("el42")}
       <span>${agPart("el42-examples", "Examples")}${agPart("el42-addsub", "Game 1")}${agPart("el42-solve", "Game 2")}${agPart("el42-spot", "Game 3")}${agPart("el42-ws", "Worksheet")}</span></button></div></div>` : "";
@@ -68,7 +71,7 @@ function draw() {
           return `<div class="mt-ls${L.length ? " ok" : ""}"><span class="mt-n">${esc(l.code)}</span><div><b>${esc(l.title)}</b>${L.length ? `<div class="mt-lk">${L.map(k => `<a class="mt-a" href="${esc(k.url)}" target="_blank" rel="noopener">${esc(k.label)}</a>`).join("")}</div>` : `<small>Coming soon</small>`}</div></div>`; }).join("")}`).join("")}</details>`; }).join("") + `</section>`;
   })();
   box.innerHTML = matCard + `<section class="card wk-box"><h3>My classwork</h3>
-    ${elCard}${agCard}
+    ${suCard}${elCard}${agCard}
     ${sheets ? `<div class="wk-list">${sheets}</div>` : ""}
     ${games}
     ${lessons.length > 3 ? `<button class="ghost small" type="button" data-wkact="more">${showAll ? "Show fewer lessons" : `Show older lessons (${lessons.length - 3})`}</button>` : ""}
@@ -118,6 +121,7 @@ document.addEventListener("click", e => {
   if (a === "game") openGame(b.dataset.id);
   if (a === "ag") openAG();
   if (a === "el") openAG("elim.html", "Elimination lesson");
+  if (a === "su") openAG("subst.html", "Substitution lesson");
   if (a === "closegame") closeGame();
 });
 

@@ -1,6 +1,6 @@
 // Teachers and the owner report their own reads and writes too, so the owner's usage counter is complete.
 // One small record per teacher, written every 10 minutes while the page is open and visible.
-import { fs, doc, setDoc, meter } from "./fb.js?v=1110n";
+import { fs, doc, setDoc, meter } from "./fb.js?v=1110o";
 
 let ref = null, name = "", role = "teacher", last = 0;
 async function write() {

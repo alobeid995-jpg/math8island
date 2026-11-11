@@ -1,7 +1,7 @@
 // "My material": each teacher keeps lists of lessons (one per quarter or term) and adds a link as each lesson is taught.
 // A list is one document, <base>/work/material-<id> (the folder students already read for classwork, so no new database rules).
 // Students see every lesson of every list; a lesson with links is "Available", the others are greyed as "Coming soon".
-import { getDocs, setDoc, deleteDoc, bcol, bdoc } from "./fb.js?v=1110n";
+import { getDocs, setDoc, deleteDoc, bcol, bdoc } from "./fb.js?v=1110o";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -84,7 +84,7 @@ function render() {
       return `<div class="mt-row${K.length ? "" : " soon"}"><div class="mt-h"><span class="mt-code">${esc(x.code)}</span><b>${esc(x.title)}</b><span class="mt-chip${K.length ? " ok" : ""}">${K.length ? "Available" : "Coming soon"}</span></div>
         ${K.length ? `<div class="mt-links">${K.map((k, i) => `<span class="mt-link"><a href="${esc(k.url)}" target="_blank" rel="noopener">${esc(k.label)}</a><button class="mt-x" type="button" data-mt="rmlink" data-l="${esc(x.id)}" data-i="${i}" aria-label="Remove link">✕</button></span>`).join("")}</div>` : ""}
         ${adding === x.id ? `<div class="mt-form"><input id="mtLabel" placeholder="Name (Slides, Worksheet…)" maxlength="40"><input id="mtUrl" placeholder="Paste the link" inputmode="url"><button class="primary small" type="button" data-mt="savelink" data-l="${esc(x.id)}">Add</button><button class="ghost small" type="button" data-mt="cancel">Cancel</button></div>`
-          : `<div class="mt-form"><button class="ghost small" type="button" data-mt="addlink" data-l="${esc(x.id)}">${K.length ? "+ Add another link" : "+ Add link"}</button><button class="ghost small" type="button" data-mt="rmlesson" data-l="${esc(x.id)}">Remove lesson</button></div>`}</div>`; }).join("")}
+          : `<div class="mt-form"><button class="ghost small" type="button" data-mt="addlink" data-l="${esc(x.id)}">+ Add link</button><button class="ghost small" type="button" data-mt="rmlesson" data-l="${esc(x.id)}">Remove lesson</button></div>`}</div>`; }).join("")}
       ${addUnit === u.id ? `<div class="mt-form"><input id="mtCode" placeholder="Number (e.g. 4.4)" maxlength="8" style="flex:0 1 120px"><input id="mtTitle" placeholder="Lesson name" maxlength="80"><button class="primary small" type="button" data-mt="savelesson" data-u="${esc(u.id)}">Add lesson</button><button class="ghost small" type="button" data-mt="cancel">Cancel</button></div>` : `<button class="ghost small" type="button" data-mt="addlesson" data-u="${esc(u.id)}">+ Add lesson to this unit</button>`}`).join("")}
     <h4 class="mt-unit">Add more units and lessons</h4>
     <textarea class="mt-ta" id="mtMore" placeholder="Paste more units and lessons here."></textarea>
