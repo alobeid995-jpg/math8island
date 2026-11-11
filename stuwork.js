@@ -1,7 +1,7 @@
 // "My classwork" on the student page: worksheets from the teacher, and (for the 9S boys) the lesson games.
-import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1111a";
-import { playerOf, catalog } from "./islandmap.js?v=1111a";
-import { logEv } from "./presence.js?v=1111a";
+import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1111b";
+import { playerOf, catalog } from "./islandmap.js?v=1111b";
+import { logEv } from "./presence.js?v=1111b";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -53,6 +53,9 @@ function draw() {
         return `<button class="wk-game${a ? " done" : ""}" type="button" data-wkact="game" data-id="${esc(g.id)}"><b>${esc(g.title)}</b><small>${esc(g.desc)}</small>${a ? `<span class="wk-tick">${p}% ✓</span>` : ""}</button>`; }).join("")}</div></div>`).join("");
   const xpNote = k => { const r = lxs[k] || {}; return `<small class="wk-xpnote">${r.perfect ? "⭐ +200 XP earned: all correct!" : r.done ? "✓ +100 XP earned. Get the worksheet 100% right for +100 more." : "Finish everything for +100 XP. Get the worksheet 100% right for +100 more."}</small>`; };
   const agPart = (g, l) => `<span class="wk-tick" style="margin-left:6px;opacity:${agPlays.has(g) ? 1 : .35}">${agPlays.has(g) ? "✓ " : ""}${l}</span>`;
+  const eqCard = isAG ? `<div class="wk-lesson"><div class="wk-lh"><b>Exercise 4.1: Solving equations</b><small>Easy version</small></div>
+      <div class="wk-games"><button class="wk-game${agPlays.has("eq41-ws") ? " done" : ""}" type="button" data-wkact="eq"><b>Worked examples, then a worksheet</b><small>Go through the worked examples first. Then the short worksheet opens.</small>${xpNote("eq41")}
+      <span>${agPart("eq41-examples", "Examples")}${agPart("eq41-ws", "Worksheet")}</span></button></div></div>` : "";
   const agCard = isAG ? `<div class="wk-lesson"><div class="wk-lh"><b>Lesson 3.4: Upper and lower bounds</b><small>Mon 9 Nov 2026</small></div>
       <div class="wk-games"><button class="wk-game${agPlays.has("ag34-ws") ? " done" : ""}" type="button" data-wkact="ag"><b>Examples, games and worksheet</b><small>Do the examples, play the games, then do the multiple choice worksheet.</small>${xpNote("ag34")}
       <span>${agPart("ag34-examples", "Examples")}${agPart("ag34-tap", "Game 1")}${agPart("ag34-bound", "Game 2")}${agPart("ag34-ineq", "Game 3")}${agPart("ag34-ws", "Worksheet")}</span></button></div></div>` : "";
@@ -71,7 +74,7 @@ function draw() {
           return `<div class="mt-ls${L.length ? " ok" : ""}"><span class="mt-n">${esc(l.code)}</span><div><b>${esc(l.title)}</b>${L.length ? `<div class="mt-lk">${L.map(k => `<a class="mt-a" href="${esc(k.url)}" target="_blank" rel="noopener">${esc(k.label)}</a>`).join("")}</div>` : `<small>Coming soon</small>`}</div></div>`; }).join("")}`).join("")}</details>`; }).join("") + `</section>`;
   })();
   box.innerHTML = matCard + `<section class="card wk-box"><h3>My classwork</h3>
-    ${suCard}${elCard}${agCard}
+    ${suCard}${elCard}${eqCard}${agCard}
     ${sheets ? `<div class="wk-list">${sheets}</div>` : ""}
     ${games}
     ${lessons.length > 3 ? `<button class="ghost small" type="button" data-wkact="more">${showAll ? "Show fewer lessons" : `Show older lessons (${lessons.length - 3})`}</button>` : ""}
@@ -122,6 +125,7 @@ document.addEventListener("click", e => {
   if (a === "ag") openAG();
   if (a === "el") openAG("elim.html", "Elimination lesson");
   if (a === "su") openAG("subst.html", "Substitution lesson");
+  if (a === "eq") openAG("eq41.html", "Solving equations");
   if (a === "closegame") closeGame();
 });
 
