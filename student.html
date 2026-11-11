@@ -1315,6 +1315,7 @@ body.wk-noscroll{overflow:hidden}
   <div id="app"></div>
 </div>
 <div class="toast" id="toast" hidden></div>
+<script src="hats.js?v=1111h"></script>
 <script>
 function isSotw(){return false}
 const $ = id => document.getElementById(id);
@@ -1594,7 +1595,7 @@ function libraryScene() {
 })();
 
 const avatarCache = new Map();
-function eqOf(st) { const e = (st && st.eq) || {}; return { frame: e.frame || "", color: e.color || "", title: e.title || "", top: e.top || "", skin: e.skin || "" }; }
+function eqOf(st) { const e = (st && st.eq) || {}; return { frame: e.frame || "", color: e.color || "", title: e.title || "", top: e.top || "", skin: e.skin || "", hat: e.hat || "" }; }
 /* ---------- Girls' shop (class 8G only): soft, rounded characters ---------- */
 const isGirlCls = c => /^8G$/i.test(String(c || "").trim());
 let GIRL = false;
@@ -1699,8 +1700,13 @@ function girlTop(id) {
 function avatarHTML(st, cls, over) {
   const seed = avatarSeed(st), e0 = over ? { ...eqOf(st), ...over } : eqOf(st);
   const wid = e0.top && shopItem(e0.top) ? e0.top : "", skid = e0.skin && shopItem(e0.skin) ? e0.skin : "";
-  const gl = isGirlCls(st.cls), key = (gl ? "g" : "") + (skid ? "s" + skid + "|" + wid : seed + "|" + wid);
-  if (!avatarCache.has(key)) avatarCache.set(key, skid ? enemyFig(skid, wid) : gl ? girlBase(seed, wid) : avatarSVG(seed, wid));
+  const hat = e0.hat && shopItem(e0.hat) ? e0.hat : "";
+  const gl = isGirlCls(st.cls), key = (gl ? "g" : "") + (skid ? "s" + skid + "|" + wid : seed + "|" + wid) + (hat ? "|" + hat : "");
+  if (!avatarCache.has(key)) {
+    let svg = skid ? enemyFig(skid, wid) : gl ? girlBase(seed, wid) : avatarSVG(seed, wid);
+    if (hat && typeof hatSVG === "function") svg = svg.replace(/<\/svg>\s*$/, hatSVG(hat, skid ? "e" : gl ? "g" : "b") + "</svg>");   // hat sits on top of the head (accessory slot)
+    avatarCache.set(key, svg);
+  }
   const inner = `<span class="av ${cls || ""}">${avatarCache.get(key)}</span>`;
   if (!over && st.id && isSotw(st)) return `<span class="avw sw w-${cls || "x"}"><span class="swring"></span>${inner}<span class="topper" aria-hidden="true">👑</span><span class="spk s1" aria-hidden="true">✦</span><span class="spk s2" aria-hidden="true">✦</span></span>`;
   const fr = e0.frame && shopItem(e0.frame) ? e0.frame : "";
@@ -1717,9 +1723,9 @@ function nameHTML(st, over) {
 function titleTag(st) { const t = eqOf(st).title, it = t && shopItem(t); return (st.id && isSotw(st) ? `<span class="ttag sw-tag">Student of the Week</span>` : "") + (it ? `<span class="ttag">${esc(it.name)}</span>` : ""); }
 const SHOP_CATS = [
   { key: "frame", label: "Frames" }, { key: "skin", label: "Avatars" }, { key: "color", label: "Name colours" }, { key: "title", label: "Titles" },
-  { key: "top", label: "Legendary weapons" }
+  { key: "top", label: "Legendary weapons" }, { key: "hat", label: "Accessories" }
 ];
-const GIRL_LABELS = { frame: "Pretty frames", skin: "Avatars", color: "Name colours", title: "Titles", top: "Magic accessories" };
+const GIRL_LABELS = { frame: "Pretty frames", skin: "Avatars", color: "Name colours", title: "Titles", top: "Magic accessories", hat: "Accessories" };
 const shopCats = () => SHOP_CATS.map(c => GIRL ? { ...c, label: GIRL_LABELS[c.key] } : c);
 // Which equipment slot an item goes into. Legendary avatars share the avatar slot ("skin") with the enemy avatars, so a boy wears one or the other.
 const slotOf = it => it.slot || it.cat;
@@ -1829,7 +1835,20 @@ const SHOP = [
   { id: "w-heart", cat: "top", name: "✦ Heart Scepter", price: 350, icon: "💖", g: 1 },
   { id: "w-rose", cat: "top", name: "✦ Rose Bouquet", price: 400, icon: "💐", g: 1 },
   { id: "w-crystal", cat: "top", name: "✦ Crystal Ball", price: 500, icon: "🔮", g: 1 },
-  { id: "w-mic", cat: "top", name: "✦ Sparkle Mic", price: 600, icon: "🎤", g: 1 }
+  { id: "w-mic", cat: "top", name: "✦ Sparkle Mic", price: 600, icon: "🎤", g: 1 },
+  /* Hats: accessories worn on the head, shown in both the boys' and the girls' shop (both: 1) */
+  { id: "hat-fedora", cat: "hat", name: "Gentleman's Fedora", price: 150, both: 1 },
+  { id: "hat-beret", cat: "hat", name: "Artist's Beret", price: 150, both: 1 },
+  { id: "hat-chef", cat: "hat", name: "Chef's Toque", price: 150, both: 1 },
+  { id: "hat-cap", cat: "hat", name: "Red Cap", price: 150, both: 1 },
+  { id: "hat-bowler", cat: "hat", name: "Bowler Hat", price: 200, both: 1 },
+  { id: "hat-captain", cat: "hat", name: "Captain's Cap", price: 200, both: 1 },
+  { id: "hat-cowboy", cat: "hat", name: "Cowboy Hat", price: 250, both: 1 },
+  { id: "hat-top", cat: "hat", name: "Top Hat", price: 250, both: 1 },
+  { id: "hat-party", cat: "hat", name: "Party Hat", price: 250, both: 1 },
+  { id: "hat-pirate", cat: "hat", name: "Pirate Hat", price: 300, both: 1 },
+  { id: "hat-sombrero", cat: "hat", name: "Sombrero", price: 300, both: 1 },
+  { id: "hat-jester", cat: "hat", name: "Jester Hat", price: 350, both: 1 }
 ];
 const shopItem = id => SHOP.find(x => x.id === id);
 const walletOf = st => Math.max(0, (st.xp || 0) + (st.carry || 0) - (st.spent || 0));
@@ -1840,7 +1859,7 @@ function readShop(v) {
     spent: Math.max(0, Number(v.spent) || 0),
     carry: Math.max(0, Number(v.carry) || 0),
     owned: Array.isArray(v.owned) ? v.owned.filter(x => typeof x === "string") : [],
-    eq: { frame: String(e.frame || ""), color: String(e.color || ""), title: String(e.title || ""), top: String(e.top || ""), skin: String(e.skin || "") },
+    eq: { frame: String(e.frame || ""), color: String(e.color || ""), title: String(e.title || ""), top: String(e.top || ""), skin: String(e.skin || ""), hat: String(e.hat || "") },
     reqs: Array.isArray(v.reqs) ? v.reqs.filter(r => r && shopItem(r.k)).map(r => ({ k: r.k, at: Number(r.at) || 0 })) : [],
     buys: Number(v.buys) || 0, lastBuy: String(v.lastBuy || ""),
     note: String(v.note || ""),
@@ -1872,6 +1891,7 @@ function shopPreview(it, st) {
     case "color": return nameHTML(st, { color: it.id });
     case "title": return `<span class="ttag">${esc(it.name)}</span>`;
     case "top": return avatarHTML(st, "md", { top: it.id });
+    case "hat": return avatarHTML(st, "md", { hat: it.id });
     default: return `<span class="picon">${it.icon}</span>`;
   }
 }
@@ -1882,7 +1902,7 @@ Object.assign(AV_TIER, {"g-bow":"basic","g-bunny":"basic","g-kitty":"basic","g-f
 let shopTier = "basic";
 const setTier = k => { shopTier = k; };
 const tierOf = it => AV_TIER[it.id] || "basic";
-const shopList = cat => SHOP.filter(x => !!x.g === GIRL && x.cat === cat && (cat !== "skin" || tierOf(x) === shopTier));
+const shopList = cat => SHOP.filter(x => (x.both || !!x.g === GIRL) && x.cat === cat && (cat !== "skin" || tierOf(x) === shopTier));
 const tierBar = act => `<div class="tier-tabs" role="tablist" aria-label="Avatar tiers">${AV_TIERS.map(([k, l]) => `<button class="tier-tab" type="button" data-act="${act}" data-tier="${k}" aria-pressed="${k === shopTier}">${l} <small>${SHOP.filter(x => !!x.g === GIRL && x.cat === "skin" && tierOf(x) === k).length}</small></button>`).join("")}</div>`;
 function applyPrices(m) { if (!m) return; SHOP.forEach(i => { const v = Number(m[i.id]); if (Number.isFinite(v) && v >= 0 && m[i.id] !== "") i.price = Math.round(v); }); }
 </script>

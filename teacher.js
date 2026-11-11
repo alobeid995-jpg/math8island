@@ -244,7 +244,7 @@ async function addDemo() {
   names.forEach((n, i) => {
     const id = "demo-" + String(i + 1).padStart(3, "0");
     b.set(bdoc("students", id), { name: n, cls: $("lgCls").value, enrollment: id.toUpperCase() + (ADMIN ? "" : "-" + u.uid.slice(0, 3).toUpperCase()), xp: 200, carry: 300 + i * 100, spent: 0, log: [], createdAt: Date.now(), bonusWeek: wk,
-      counts: {}, owned: [], eq: { frame: "", color: "", title: "", top: "", skin: "" }, reqs: [], buys: 0, lastBuy: "", hist: [], sp: [], avatar: (Math.random() * 4294967295) >>> 0 });
+      counts: {}, owned: [], eq: { frame: "", color: "", title: "", top: "", skin: "", hat: "" }, reqs: [], buys: 0, lastBuy: "", hist: [], sp: [], avatar: (Math.random() * 4294967295) >>> 0 });
   });
   try { await b.commit(); msg(`Added 8 demo students to ${$("lgCls").value}. Now press "Create logins".`); }
   catch (e) { msg("Could not add: " + (e.code || e.message)); }
