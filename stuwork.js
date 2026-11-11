@@ -1,12 +1,12 @@
 // "My classwork" on the student page: worksheets from the teacher, and (for the 9S boys) the lesson games.
-import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1110m";
-import { playerOf, catalog } from "./islandmap.js?v=1110m";
-import { logEv } from "./presence.js?v=1110m";
+import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1110n";
+import { playerOf, catalog } from "./islandmap.js?v=1110n";
+import { logEv } from "./presence.js?v=1110n";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const when = t => new Date(t).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
-let lxs = {}, P = null, base = [], works = [], mine = new Map(), openId = "", me = null, toast = () => {};
+let material = null, lxs = {}, P = null, base = [], works = [], mine = new Map(), openId = "", me = null, toast = () => {};
 let player = "", lessons = [], played = new Map(), showAll = false, agPlays = new Set(), isAG = false, isEL = false;
 
 export async function initWork(profile, getMe, toastFn) {
@@ -18,7 +18,9 @@ export async function initWork(profile, getMe, toastFn) {
 async function load() {
   try {
     const w = await getDocs(query(collection(fs, ...base, "work"), where("classes", "array-contains", me.cls)));
-    works = w.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (b.created || 0) - (a.created || 0));
+    const all = w.docs.map(d => ({ id: d.id, ...d.data() }));
+    material = all.find(x => x.kind === "material" && Array.isArray(x.units)) || null;
+    works = all.filter(x => x.kind !== "material").sort((a, b) => (b.created || 0) - (a.created || 0));
     const s = await getDocs(query(collection(fs, ...base, "subs"), where("sid", "==", P.sid)));
     mine = new Map(s.docs.map(d => [d.data().wid, d.data()]));
   } catch { works = []; }
@@ -57,7 +59,14 @@ function draw() {
   const elCard = isEL ? `<div class="wk-lesson"><div class="wk-lh"><b>Simultaneous equations: elimination</b><small>Exercise 4.2 · Day 1</small></div>
       <div class="wk-games"><button class="wk-game${agPlays.has("el42-ws") ? " done" : ""}" type="button" data-wkact="el"><b>Examples, games and worksheet</b><small>Do the examples, play the games, then do the multiple choice worksheet.</small>${xpNote("el42")}
       <span>${agPart("el42-examples", "Examples")}${agPart("el42-addsub", "Game 1")}${agPart("el42-solve", "Game 2")}${agPart("el42-spot", "Game 3")}${agPart("el42-ws", "Worksheet")}</span></button></div></div>` : "";
-  box.innerHTML = `<section class="card wk-box"><h3>My classwork</h3>
+  const matCard = (() => {
+    if (!material) return "";
+    const ls = material.units.flatMap(u => u.lessons || []), have = ls.filter(l => (l.links || []).length).length;
+    return `<section class="card wk-box mt-box"><h3>My material</h3><p class="mt-sum">${have} of ${ls.length} lessons ready. The grey ones are coming soon.</p>
+      ${material.units.map(u => `<h4 class="mt-un">${esc(u.title)}</h4>${(u.lessons || []).map(l => { const L = (l.links || []).filter(k => /^https?:\/\//i.test(k.url));
+        return `<div class="mt-ls${L.length ? " ok" : ""}"><span class="mt-n">${esc(l.code)}</span><div><b>${esc(l.title)}</b>${L.length ? `<div class="mt-lk">${L.map(k => `<a class="mt-a" href="${esc(k.url)}" target="_blank" rel="noopener">${esc(k.label)}</a>`).join("")}</div>` : `<small>Coming soon</small>`}</div></div>`; }).join("")}`).join("")}</section>`;
+  })();
+  box.innerHTML = matCard + `<section class="card wk-box"><h3>My classwork</h3>
     ${elCard}${agCard}
     ${sheets ? `<div class="wk-list">${sheets}</div>` : ""}
     ${games}
@@ -110,3 +119,5 @@ document.addEventListener("click", e => {
   if (a === "el") openAG("elim.html", "Elimination lesson");
   if (a === "closegame") closeGame();
 });
+
+{ const st = document.createElement("style"); st.textContent = ".mt-un{margin:14px 0 6px;font-size:16px}.mt-sum{margin:0 0 4px;opacity:.75}.mt-ls{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;border-radius:12px;margin:6px 0;background:#eef1f7;color:#6b7690}.mt-ls.ok{background:#e6f6ec;color:inherit}.mt-n{font-weight:800;min-width:2.3em}.mt-ls small{display:block;opacity:.8}.mt-lk{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}.mt-a{display:inline-block;padding:6px 12px;border-radius:99px;background:#1f5bbd;color:#fff;font-weight:700;text-decoration:none}"; document.head.appendChild(st); }

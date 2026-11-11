@@ -508,16 +508,6 @@ body.big .frames .frame{grid-template-columns:repeat(5,48px)}body.big .frames .f
 .bn-w{fill:var(--sun);stroke:var(--line);stroke-width:3.5}
 .bn-k{fill:var(--b1);stroke:var(--line);stroke-width:3.5}
 .bn-q{fill:var(--surface);stroke:var(--muted);stroke-width:3.5;stroke-dasharray:8 6}
-.tfr{display:grid;grid-template-columns:repeat(5,44px);border:3px solid var(--ink);border-radius:10px;background:var(--surface);overflow:hidden}
-.tc{display:block;width:44px;height:44px;padding:0;border:1.5px solid var(--ink);background:none;position:relative;box-sizing:border-box}
-.tc.has{cursor:pointer}
-.tc.has::before{content:'';position:absolute;inset:6px;border-radius:50%;background:var(--blue)}
-.tc.has.b::before{background:var(--coral)}
-.tc.gone::before{background:transparent;border:3px dashed var(--bad);opacity:.8}
-.stepq{margin:12px 0 8px;text-align:center;font-weight:800;font-size:20px;text-wrap:balance}
-.strike{text-decoration:line-through;text-decoration-color:var(--bad);text-decoration-thickness:4px;color:var(--muted)}
-.b10{font-size:.5em;color:var(--bad);align-self:start;margin-right:2px;line-height:1}
-.col .cd:has(.b10){display:flex;justify-content:center;align-items:center}
 @media (prefers-reduced-motion:reduce){.fcell.fill::after{animation:none}.fg{transition:none}}
 
 .agbtn{display:block;width:100%;margin:14px 0 0;font-size:22px}
@@ -571,7 +561,6 @@ const STUDENTS = [
   { id: 'saud', name: 'Saud', group: 'g4' }
 ];
 let curStudent = null;
-const LOCK = (typeof window !== 'undefined' && window.__LOCK_STUDENT) || null; /* a one-student file sets this before the script runs */
 const AVATARS = {
   ali: '<svg viewBox="0 0 100 100" aria-hidden="true"><g stroke="#12303F" stroke-width="3"><circle cx="22" cy="24" r="14" fill="#B9743F"/><circle cx="78" cy="24" r="14" fill="#B9743F"/><circle cx="50" cy="55" r="36" fill="#E2A25B"/><ellipse cx="50" cy="67" rx="16" ry="12" fill="#F6DDB5" stroke-width="2.5"/></g><ellipse cx="50" cy="60" rx="6" ry="4.5" fill="#12303F"/><circle cx="37" cy="46" r="5" fill="#12303F"/><circle cx="63" cy="46" r="5" fill="#12303F"/><circle cx="38.5" cy="44.5" r="1.7" fill="#fff"/><circle cx="64.5" cy="44.5" r="1.7" fill="#fff"/><path d="M42 72Q50 79 58 72" fill="none" stroke="#12303F" stroke-width="3" stroke-linecap="round"/></svg>',
   abood: '<svg viewBox="0 0 100 100" aria-hidden="true"><g stroke="#12303F" stroke-width="3" stroke-linejoin="round"><polygon points="16,42 22,8 45,26" fill="#2FB5AA"/><polygon points="84,42 78,8 55,26" fill="#2FB5AA"/><circle cx="50" cy="57" r="34" fill="#3CC6BA"/></g><ellipse cx="38" cy="50" rx="5" ry="6.5" fill="#12303F"/><ellipse cx="62" cy="50" rx="5" ry="6.5" fill="#12303F"/><circle cx="39.5" cy="47.5" r="1.8" fill="#fff"/><circle cx="63.5" cy="47.5" r="1.8" fill="#fff"/><polygon points="45,61 55,61 50,67" fill="#F2799A" stroke="#12303F" stroke-width="2" stroke-linejoin="round"/><path d="M43 72Q50 78 57 72" fill="none" stroke="#12303F" stroke-width="3" stroke-linecap="round"/><g stroke="#12303F" stroke-width="2" stroke-linecap="round"><path d="M12 58h16M13 66l14-3M88 58H72M87 66l-14-3"/></g></svg>',
@@ -802,14 +791,12 @@ const GROUPS = [
   { id: 'g4', short: 'Saud', title: 'Saud', sub: 'Adding, skip counting, fractions' }
 ];
 const SECTIONS = [
-  { id: 'sub3', group: 'g2', title: 'Subtracting: teen minus one digit', date: 'Wed 11 Nov 2026', blurb: 'Take away from numbers up to 20. Go back to 10 first.', cls: 'blue', today: true },
-  { id: 'sub1', group: 'g2', title: 'Subtracting: one digit minus one digit', date: 'Sun 8 Nov 2026', blurb: 'Take away. Count back. Cross out.', cls: 'blue' },
+  { id: 'sub1', group: 'g2', title: 'Subtracting: one digit minus one digit', date: 'Sun 8 Nov 2026', blurb: 'Take away. Count back. Cross out.', cls: 'blue', today: true },
   { id: 'a20', group: 'g2', title: 'Adding up to 20', date: 'Tue 3 Nov 2026', blurb: 'Count on. Make 10 first. Then add the rest.', cls: 'blue' },
   { id: 'm10', group: 'g2', title: 'Making 10', date: 'Mon 2 Nov 2026', blurb: 'Add up to 10. Count on your fingers.', cls: 'add' },
   { id: 'c1', group: 'g2', title: 'Counting by 1', date: 'Wed 21 Oct 2026', blurb: 'Count from 1 to 100.', cls: '' },
   { id: 'id', group: 'g2', title: 'Fractions: name the fraction', date: 'Mon 12 Oct 2026', blurb: 'Read it, paint it, build it, spot it.', cls: '' },
-  { id: 'sub4', group: 'g4', title: 'Subtracting with borrowing', date: 'Wed 11 Nov 2026', blurb: 'Two-digit minus one-digit. Borrow a ten. Use the column method.', cls: 'add', today: true },
-  { id: 'sub2', group: 'g4', title: 'Subtracting without borrowing', date: 'Sun 8 Nov 2026', blurb: 'Two-digit minus one-digit. The ones digit is big enough.', cls: 'add' },
+  { id: 'sub2', group: 'g4', title: 'Subtracting without borrowing', date: 'Sun 8 Nov 2026', blurb: 'Two-digit minus one-digit. The ones digit is big enough.', cls: 'add', today: true },
   { id: 'nc', group: 'g4', title: 'Adding without carrying', date: 'Tue 3 Nov 2026', blurb: 'Two-digit plus one-digit. The ones add to 9 or less.', cls: 'add' },
   { id: 'nc2', group: 'g4', title: 'Adding without carrying: set 2', date: 'Tue 3 Nov 2026', blurb: 'Same lesson. Five new games to practise.', cls: 'add' },
   { id: 'col', group: 'g4', title: 'Adding in columns', date: 'Mon 2 Nov 2026', blurb: 'Two-digit plus one-digit. Line up, add, carry.', cls: 'blue' },
@@ -820,7 +807,7 @@ const SECTIONS = [
 const AGENDA = {
   g2: [
     { q: 'Quarter 2', weeks: [
-      { week: 2, dates: '8 – 12 Nov 2026', items: ['Subtracting one-digit numbers from one-digit numbers', 'Subtracting a 1-digit number from a 2-digit number up to 20'] },
+      { week: 2, dates: '8 – 12 Nov 2026', items: ['Subtracting one-digit numbers from one-digit numbers'] },
       { week: 1, dates: '2 – 6 Nov 2026', items: ['Making 10', 'Adding up to 10, using fingers', 'Adding up to 20'] }
     ] },
     { q: 'Quarter 1', weeks: [
@@ -835,7 +822,7 @@ const AGENDA = {
   ],
   g4: [
     { q: 'Quarter 2', weeks: [
-      { week: 2, dates: '8 – 12 Nov 2026', items: ['Subtracting a 1-digit number from a 2-digit number without borrowing', 'Subtracting a 1-digit number from a 2-digit number with borrowing (column method)'] },
+      { week: 2, dates: '8 – 12 Nov 2026', items: ['Subtracting a 1-digit number from a 2-digit number without borrowing'] },
       { week: 1, dates: '2 – 6 Nov 2026', items: ['Adding in columns', 'Two-digit plus one-digit, column method', 'Adding 2-digit and 1-digit numbers without carrying'] }
     ] },
     { q: 'Quarter 1', weeks: [
@@ -856,7 +843,6 @@ function chooseStudent(id) {
 }
 function who() {
   hush(); setBack(null); curStudent = null; curPlay = null; document.body.classList.remove('big');
-  if (LOCK && location.hash !== '#teacher') { chooseStudent(LOCK); return; }
   const sec = html(`<section><p class="eyebrow">9S class games</p><h1>9S Island</h1><p class="lead">Tap your name to start.</p>
     <div class="whos">${STUDENTS.map(ST => `<button class="who" type="button" data-s="${ST.id}"><span class="av">${AVATARS[ST.id]}</span><b>${ST.name}</b></button>`).join('')}</div>
     <p class="foot"><button class="btn small alt" id="tbtn" type="button">Teacher results</button></p></section>`);
@@ -870,9 +856,9 @@ function home() {
   hush(); setBack(null);
   const ST = STUDENTS.find(x => x.id === curStudent), GR = GROUPS.find(x => x.id === curGroup);
   const sec = html(`<section><div class="hello"><span class="av">${AVATARS[ST.id]}</span><div><p class="eyebrow">9S class games</p><h1>Hi, ${ST.name}!</h1></div></div>
-    <p class="lead">Today's lesson is subtraction. Pick a game. Every game has ten levels.</p>${LOCK ? '' : '<div class="swrow"><button class="btn small alt" id="swbtn" type="button">Switch student</button></div>'}<div id="secs"></div>
+    <p class="lead">Today's lesson is subtraction. Pick a game. Every game has ten levels.</p><div class="swrow"><button class="btn small alt" id="swbtn" type="button">Switch student</button></div><div id="secs"></div>
     <p class="foot">Stars are saved on this device. Your answers go to your teacher. Every level is open, so start anywhere.</p></section>`);
-  if ($('#swbtn', sec)) $('#swbtn', sec).addEventListener('click', () => { sfx.pick(); who(); });
+  $('#swbtn', sec).addEventListener('click', () => { sfx.pick(); who(); });
   const host = $('#secs', sec);
   SECTIONS.filter(S => S.group === curGroup).forEach(S => {
     const wrap = html(`<div><div class="sechead ${S.cls}"><p class="sdate">Lesson${S.date ? ' · ' + S.date : ''}</p><h2>${S.title}${S.today ? '<span class="today">Today</span>' : ''}</h2><p>${S.blurb}</p></div><div class="glist"></div></div>`);
@@ -1961,7 +1947,7 @@ function colHTML(R, s = {}) {
   const row = (fill, cls) => { const cells = Array(n + 1).fill(''); Object.keys(fill).forEach(k => { cells[k] = fill[k]; }); return cells.map((x, j) => `<div class="cd ${cls || ''}${hl(j)}">${x}</div>`).join(''); };
   let out = `<div class="col" style="--n:${n}">`;
   if (s.labels) out += row(n === 3 ? { 1: 'Hundreds', 2: 'Tens', 3: 'Ones' } : { 1: 'Tens', 2: 'Ones' }, 'lab');
-  if (s.carryRow !== false) out += row({ [T]: s.c1 || '', ...(s.co ? { [O]: s.co } : {}), ...(H > 0 ? { [H]: s.c2 || '' } : {}) }, 'cr');
+  if (s.carryRow !== false) out += row({ [T]: s.c1 || '', ...(H > 0 ? { [H]: s.c2 || '' } : {}) }, 'cr');
   out += row({ [T]: s.top ? s.top[0] : Math.floor(R.a / 10), [O]: s.top ? s.top[1] : R.a % 10 });
   out += row({ 0: s.op || '+', [O]: s.bot !== undefined ? s.bot : R.b });
   out += '<div class="rule"></div>';
@@ -2873,194 +2859,6 @@ typeSubGame({
   hint: R => R.form === 'diff' ? `Take away the ones: ${R.o} ${MINUS} ${R.b}. Keep the tens: ${R.t}.` : R.form === 'm2' ? `Think about the ones first: ${R.o} ${MINUS} ? = ${R.so}.` : `Think about the ones first: ? ${MINUS} ${R.b} = ${R.so}. Count on from ${R.so}.`
 });
 
-/* ---- Lesson 5 (11 Nov 2026): Ali and Abood: teen minus one digit (up to 20). Saud: two digit minus one digit WITH borrowing ---- */
-/* Ali and Abood. a 11..20, b 1..9. L1-3 never cross 10, L4-6 always cross 10, L7-10 mixed */
-function teenGen(level) {
-  const maxA = [14, 15, 16, 17, 18, 19, 20, 20, 20, 20][level - 1], bridge = level <= 3 ? false : level <= 6 ? true : Math.random() < 0.7;
-  for (let t = 0; t < 2000; t++) {
-    const a = 11 + rand(maxA - 10), b = 1 + rand(9), o = a - 10;
-    if ((b > o) !== bridge) continue;
-    return { a, b, o, d: a - b };
-  }
-  return { a: 15, b: 7, o: 5, d: 8, fb: true };
-}
-/* crossing 10 only, a 11..18: used by Via Ten. r = how many are left to take after reaching 10 */
-function viaGen(level) {
-  const maxA = [14, 15, 16, 17, 18, 18, 18, 18, 18, 18][level - 1], maxR = [2, 2, 3, 3, 4, 5, 6, 7, 8, 8][level - 1];
-  for (let t = 0; t < 2000; t++) {
-    const a = 11 + rand(maxA - 10), o = a - 10, b = o + 1 + rand(9 - o), r = b - o;
-    if (r > maxR) continue;
-    return { a, b, o, r, d: a - b };
-  }
-  return { a: 15, b: 7, o: 5, r: 2, d: 8, fb: true };
-}
-/* Saud. a 20..99, the ones digit is smaller than b (borrow). Easy levels keep a non-zero ones digit */
-function borGen(level) {
-  const maxA = [39, 49, 59, 69, 79, 89, 99, 99, 99, 99][level - 1];
-  for (let t = 0; t < 3000; t++) {
-    const a = 20 + rand(maxA - 19), o = a % 10;
-    if (o > 8 || (o === 0 && level <= 4)) continue;
-    const b = o + 1 + rand(9 - o);
-    return { a, b, o, t: Math.floor(a / 10), o10: 10 + o, so: 10 + o - b, nt: Math.floor(a / 10) - 1, d: a - b };
-  }
-  return { a: 42, b: 7, o: 2, t: 4, o10: 12, so: 5, nt: 3, d: 35, fb: true };
-}
-const yesNo = (c, q, yesIsRight, goodText, badText, then) => {
-  const box = html(`<div><p class="stepq">${q}</p><div class="tf"><button class="tfb yes" type="button" data-v="1"><b>&#10003;</b>Yes</button><button class="tfb no" type="button" data-v="0"><b>&#10007;</b>No</button></div></div>`);
-  c.board.appendChild(box);
-  $$('.tfb', box).forEach(b => b.addEventListener('click', () => {
-    if (c.done) return;
-    if ((b.dataset.v === '1') === yesIsRight) { b.classList.add('right'); $$('.tfb', box).forEach(x => { x.disabled = true; }); c.info(goodText); setTimeout(() => { box.remove(); then(); }, 500); }
-    else { b.classList.add('wrong'); c.bad(badText); }
-  }));
-};
-/* one multiple-choice step inside a game. calls then() after a right pick */
-const stepPick = (c, host, q, ans, opts, goodText, badFn, then) => {
-  const box = html(`<div><p class="stepq">${q}</p><div class="opts">${opts.map(v => `<button class="ans num" type="button" data-v="${v}">${v}</button>`).join('')}</div></div>`);
-  host.appendChild(box);
-  $$('.ans', box).forEach(b => b.addEventListener('click', () => {
-    if (c.done) return;
-    const v = +b.dataset.v;
-    if (v === ans) { b.classList.add('right'); speak(String(v)); $$('.ans', box).forEach(x => { x.disabled = true; }); then(goodText, box); }
-    else { b.classList.add('wrong'); c.bad(badFn(v)); }
-  }));
-};
-const tenCells = (n, cls) => Array.from({ length: 10 }, (_, i) => i < n ? `<button class="tc has ${cls}" type="button" aria-label="Counter"></button>` : '<span class="tc"></span>').join('');
-
-/* ===== Ali and Abood: up to 20 ===== */
-/* 1. Take From the Frames */
-GAMES.push({
-  id: 'sbframes', sec: 'sub3', title: 'Take From the Frames', desc: 'Tap counters to take them away. Pick what is left.',
-  thumb: () => twoFrames(rowOf([[10, 'a']]), rowOf([[4, 'b']])).replace('class="frames"', 'class="frames mini2"').replace(/class="frame"/g, 'class="frame mini"'),
-  key: R => `${R.a}-${R.b}`,
-  make(level) { const g = teenGen(level); return { ...g, opts: numOptions(g.d, level <= 4 ? 3 : 4, [1, 2, 3, 10], 1, 20) }; },
-  prompt: R => [`${R.a} take away ${R.b}. Tap ${R.b} counters. How many are left?`, `${R.a} take away ${R.b}. Tap ${R.b} counters to take them away. How many are left?`],
-  view(c) {
-    const R = c.R, full = Math.min(10, R.a), rest = R.a - full;
-    c.board.innerHTML = eqHTML([R.a, MINUS, R.b, '=', '?']) + `<div class="frames"><div class="tfr">${tenCells(full, 'a')}</div>${rest ? `<div class="tfr">${tenCells(rest, 'b')}</div>` : ''}</div><p class="counter">Taken away: <b>0</b> of ${R.b}</p>`;
-    crossOut(c, '.tc.has', R.b);
-    numAnswers(c, R.opts, R.d, `Yes! ${R.a} ${MINUS} ${R.b} = ${R.d}.`, () => R.b > R.o ? `Take the ${R.o} from the small frame first. Then take the rest from the full frame.` : `Take ${R.b} from the small frame. Count what is left.`);
-  }
-});
-/* 2. Hop Back (teens) */
-GAMES.push({
-  id: 'sbteenhop', sec: 'sub3', title: 'Hop Back to 10', desc: 'The frog hops back past 10. Where does it land?',
-  thumb: () => FROG_THUMB,
-  key: R => `${R.a}-${R.b}`,
-  make(level) {
-    const g = teenGen(level), lo = Math.max(0, g.a - 10), ws = lo + rand(g.d - lo + 1);
-    return { ...g, ws, ai: g.a - ws, li: g.d - ws };
-  },
-  prompt: R => { const t = `The frog is on ${R.a}. It hops back ${R.b}. Where does it land?`; return [t, t]; },
-  view(c) { hopBackView(c, c.R, c.level <= 6); }
-});
-/* 3. Via Ten: go back to 10 first */
-GAMES.push({
-  id: 'sbvia', sec: 'sub3', title: 'Go to 10 First', desc: 'Take away to reach 10. Then take away the rest.',
-  thumb: () => '<span class="mini-seq"><i>15</i><i>10</i><i class="q">?</i></span>',
-  key: R => `${R.a}-${R.b}`,
-  make(level) { return viaGen(level); },
-  prompt: R => [`${R.a} minus ${R.b}. Go back to 10 first.`, `${R.a} minus ${R.b}. Go back to 10 first, then take away the rest.`],
-  view(c) {
-    const R = c.R; let stage = 0;
-    const holder = html('<div></div>'); c.board.appendChild(holder);
-    const chain = () => `<div class="chain"><span class="nbox">${R.a}</span><span class="chop">${MINUS}${stage >= 1 ? R.o : '?'}</span><span class="nbox${stage >= 1 ? '' : ' q'}">${stage >= 1 ? 10 : '?'}</span><span class="chop">${MINUS}${stage >= 2 ? R.r : '?'}</span><span class="nbox${stage >= 3 ? '' : ' q'}">${stage >= 3 ? R.d : '?'}</span></div>`;
-    const draw = () => { holder.innerHTML = `${eqHTML([R.a, MINUS, R.b, '=', stage >= 3 ? R.d : '?'])}${chain()}<div id="stg"></div>`; return $('#stg', holder); };
-    const run = () => {
-      const host = draw();
-      if (stage === 0) stepPick(c, host, `How many do you take away to get to <b>10</b>?`, R.o, numOptions(R.o, 3, [1, 2, 3], 1, 9), '', () => `${R.a} minus what is 10? Count back from ${R.a} to 10.`, () => { stage = 1; c.info(`${R.a} ${MINUS} ${R.o} = 10. Now take away the rest.`); run(); });
-      else if (stage === 1) stepPick(c, host, `You took away ${R.o}. You must take away ${R.b} in all. How many are left to take away?`, R.r, numOptions(R.r, 3, [1, 2, 3], 1, 9), '', () => `${R.b} ${MINUS} ${R.o} = ? That is the rest.`, () => { stage = 2; c.info(`${R.b} ${MINUS} ${R.o} = ${R.r}. Now go back ${R.r} from 10.`); run(); });
-      else stepPick(c, host, `What is 10 ${MINUS} ${R.r}?`, R.d, numOptions(R.d, 4, [1, 2, 3], 0, 10), '', () => `Count back ${R.r} from 10.`, () => { stage = 3; draw(); c.good(`Yes! ${R.a} ${MINUS} ${R.b} = ${R.d}.`); speak(`${R.a} minus ${R.b} equals ${R.d}`); });
-    };
-    run();
-  }
-});
-
-/* ===== Saud: borrowing ===== */
-/* 1. Break a Ten */
-GAMES.push({
-  id: 'nsrods', sec: 'sub4', title: 'Break a Ten', desc: 'Not enough ones? Tap a rod to break it into 10 cubes.',
-  thumb: () => '<svg class="ico" viewBox="0 0 44 32" aria-hidden="true"><g stroke="var(--line)" stroke-width="2"><rect x="5" y="3" width="6" height="24" rx="1.5" fill="var(--b1)"/><rect x="14" y="3" width="6" height="24" rx="1.5" fill="var(--b1)" opacity=".4" stroke-dasharray="3 2"/><rect x="26" y="17" width="7" height="7" fill="var(--coral)"/><rect x="26" y="8" width="7" height="7" fill="var(--coral)"/><rect x="35" y="17" width="7" height="7" fill="var(--blue)"/></g></svg>',
-  key: R => `${R.a}-${R.b}`,
-  make(level) { const g = borGen(level); return { ...g, opts: numOptions(g.d, level <= 4 ? 3 : 4, [1, 2, 10, 5], 10, 99) }; },
-  prompt: R => [`${R.a} minus ${R.b}. Break a ten if you need to. Then pick the answer.`, `${R.a} minus ${R.b}. There are not enough ones. Break a ten rod. Then take away ${R.b}.`],
-  view(c) {
-    const R = c.R; let broken = false, n = 0;
-    c.board.innerHTML = eqHTML([R.a, MINUS, R.b, '=', '?']) + `<div class="blocks"><div class="bgrp"><div class="rods">${Array.from({ length: R.t }, () => '<button class="rod" type="button" aria-label="Ten. Tap to break it"></button>').join('')}</div><div class="cubes">${Array.from({ length: R.o }, () => '<button class="cube a" type="button" aria-label="One"></button>').join('')}</div></div></div><p class="counter">Taken away: <b>0</b> of ${R.b}</p>`;
-    const cubes = $('.cubes', c.board), cnt = $('.counter b', c.board);
-    c.board.addEventListener('click', (e) => {
-      if (c.done) return;
-      const rod = e.target.closest('.rod'), cube = e.target.closest('.cube');
-      if (rod) {
-        if (broken) { c.info('You only need to break one ten.'); sfx.no(); return; }
-        broken = true; rod.remove(); sfx.pick();
-        cubes.insertAdjacentHTML('beforeend', Array.from({ length: 10 }, () => '<button class="cube b" type="button" aria-label="One"></button>').join(''));
-        c.info(`You broke a ten into 10 ones. Now you have ${R.o10} ones. Take away ${R.b}.`);
-      } else if (cube && !cube.classList.contains('gone')) {
-        if (n >= R.b) { c.info(`That is enough. You took away ${R.b}. Now count what is left.`); sfx.no(); return; }
-        cube.classList.add('gone'); n++; cnt.textContent = n; speak(String(n)); sfx.pick();
-        if (n === R.b) c.info(`You took away ${R.b}. Count the tens and the ones that are left.`);
-      }
-    });
-    c.board.addEventListener('click', (e) => { if (!c.done && n < R.b && !broken && e.target.closest('.cube') && $$('.cube:not(.gone)', c.board).length === 0) c.info('No more ones. Break a ten rod.'); });
-    numAnswers(c, R.opts, R.d, `Yes! ${R.a} ${MINUS} ${R.b} = ${R.d}. Break a ten: ${R.o10} ones ${MINUS} ${R.b} = ${R.so}. ${R.nt} tens are left.`, () => `${R.o} ones is not enough to take away ${R.b}. Break a ten into 10 ones. Then ${R.o10} ${MINUS} ${R.b}.`);
-  }
-});
-/* 2. Column Steps */
-GAMES.push({
-  id: 'nscolsteps', sec: 'sub4', title: 'Column Steps', desc: 'Borrow in the column. One step at a time.',
-  thumb: () => '<span class="mini-col"><b>4 2</b><b>&minus; 7</b><b class="q">35</b></span>',
-  key: R => `${R.a}-${R.b}`,
-  make(level) { return borGen(level); },
-  prompt: R => [`${R.a} minus ${R.b}. Use the column method.`, `${R.a} minus ${R.b}. Use the column method. Go one step at a time.`],
-  view(c) {
-    const R = c.R; let st = 0;
-    const holder = html('<div></div>'); c.board.appendChild(holder);
-    const col = () => {
-      const bor = st >= 1;
-      return `<div class="colwrap">${colHTML(R, { op: MINUS, labels: true, carryRow: true, c1: bor ? R.nt : '', top: [bor ? `<span class="strike">${R.t}</span>` : R.t, bor ? `<span class="b10">1</span>${R.o}` : R.o], ans: ['', st >= 3 ? R.nt : (st === 2 ? '<span class="qd">?</span>' : ''), st >= 2 ? R.so : (st === 1 ? '<span class="qd">?</span>' : '')] })}</div>`;
-    };
-    const run = () => {
-      holder.innerHTML = col() + '<div id="stg"></div>'; const host = $('#stg', holder);
-      if (st === 0) {
-        const box = html(`<div><p class="stepq">Can you take ${R.b} from ${R.o}?</p><div class="tf"><button class="tfb yes" type="button" data-v="1"><b>&#10003;</b>Yes</button><button class="tfb no" type="button" data-v="0"><b>&#10007;</b>No</button></div></div>`);
-        host.appendChild(box);
-        $$('.tfb', box).forEach(b => b.addEventListener('click', () => {
-          if (c.done) return;
-          if (b.dataset.v === '0') { b.classList.add('right'); st = 1; c.info(`${R.o} is smaller than ${R.b}. Borrow a ten: ${R.t} becomes ${R.nt}, and ${R.o} becomes ${R.o10}.`); run(); }
-          else { b.classList.add('wrong'); c.bad(`${R.o} is smaller than ${R.b}. You cannot take ${R.b} from ${R.o}. You must borrow.`); }
-        }));
-      } else if (st === 1) stepPick(c, host, `Ones: ${R.o10} ${MINUS} ${R.b} = ?`, R.so, numOptions(R.so, 4, [1, 2, 3], 0, 9), '', () => `Count back ${R.b} from ${R.o10}.`, () => { st = 2; c.info(`${R.o10} ${MINUS} ${R.b} = ${R.so}. Now the tens.`); run(); });
-      else stepPick(c, host, `Tens: you borrowed one. ${R.t} becomes? Write the tens.`, R.nt, numOptions(R.nt, 3, [1, 2], 1, 9), '', () => `You borrowed 1 from ${R.t}. ${R.t} ${MINUS} 1 = ?`, () => { st = 3; holder.innerHTML = col(); c.good(`Yes! ${R.a} ${MINUS} ${R.b} = ${R.d}.`); speak(`${R.a} minus ${R.b} equals ${R.d}`); });
-    };
-    run();
-  }
-});
-/* 3. Borrow or Not? */
-GAMES.push({
-  id: 'nsborrowq', sec: 'sub4', title: 'Borrow or Not?', desc: 'Do you need to borrow? Then solve it.',
-  thumb: () => '<span class="mini-seq"><i>&#10003;</i><i>&minus;</i><i class="q">?</i></span>',
-  key: R => `${R.a}-${R.b}`,
-  make(level) {
-    const needs = Math.random() < (level <= 3 ? 0.6 : 0.5);
-    if (needs) { const g = borGen(level); return { ...g, needs, opts: numOptions(g.d, 4, [1, 2, 10, 5], 10, 99) }; }
-    for (let t = 0; t < 2000; t++) {
-      const maxA = [39, 49, 59, 69, 79, 89, 99, 99, 99, 99][level - 1], a = 20 + rand(maxA - 19), o = a % 10;
-      if (o < 1) continue;
-      const b = 1 + rand(o);
-      return { a, b, o, t: Math.floor(a / 10), so: o - b, d: a - b, needs, opts: numOptions(a - b, 4, [1, 2, 10, 5], 10, 99) };
-    }
-    return { a: 47, b: 3, o: 7, t: 4, so: 4, d: 44, needs: false, opts: [44, 43, 54, 34] };
-  },
-  prompt: R => [`${R.a} minus ${R.b}. Do you need to borrow?`, `${R.a} minus ${R.b}. Do you need to borrow?`],
-  view(c) {
-    const R = c.R;
-    c.board.innerHTML = eqHTML([R.a, MINUS, R.b, '=', '?']) + `<div class="colwrap">${colHTML(R, { op: MINUS, labels: true, carryRow: false })}</div>`;
-    yesNo(c, `Do you need to borrow?`, R.needs, R.needs ? `Yes. ${R.o} is smaller than ${R.b}. Borrow a ten.` : `No. ${R.o} is big enough to take away ${R.b}.`, R.needs ? `Look at the ones. ${R.o} is smaller than ${R.b}. You cannot take ${R.b} from ${R.o}.` : `Look at the ones. ${R.o} is big enough to take away ${R.b}.`,
-      () => numAnswers(c, R.opts, R.d, `Yes! ${R.a} ${MINUS} ${R.b} = ${R.d}.`, () => R.needs ? `Borrow a ten. ${R.o10} ${MINUS} ${R.b} = ${R.so}. The tens: ${R.nt}.` : `Take away the ones: ${R.o} ${MINUS} ${R.b}. Keep the tens: ${R.t}.`));
-  }
-});
-
 /* ---------- wiring ---------- */
 screen.addEventListener('click', e => {
   const b = e.target.closest('[data-say]');
@@ -3082,5 +2880,5 @@ if (window.MI) mount(html('<section><p class="lead">Loading…</p></section>'));
 </script>
 
 <button class="btn small alt" id="miBack" type="button">Back to Math Island</button>
-<script type="module" src="island.js?v=1110m"></script>
+<script type="module" src="island.js?v=1110n"></script>
 </html>
