@@ -1,12 +1,12 @@
 import { changeEmail, auth, fs, firebaseConfig, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, collection, query, where, writeBatch, setBase, bcol, bdoc, signOut, whenUser, profileOf, emailFor, pinKey,
-  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1110q";
-import { db } from "./fbdb.js?v=1110q";
-import { startUsage } from "./usage.js?v=1110q";
-import { openWork } from "./teacherwork.js?v=1110q";
+  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1111a";
+import { db } from "./fbdb.js?v=1111a";
+import { startUsage } from "./usage.js?v=1111a";
+import { openWork } from "./teacherwork.js?v=1111a";
 import "./lessonxp.js";
-import { openProgress } from "./progress.js?v=1110q";
-import { openMaterial } from "./material.js?v=1110q";
-import { openInbox } from "./inbox.js?v=1110q";
+import { openProgress } from "./progress.js?v=1111a";
+import { openMaterial } from "./material.js?v=1111a";
+import { openInbox } from "./inbox.js?v=1111a";
 
 const $ = id => document.getElementById(id);
 const esc2 = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -194,6 +194,18 @@ async function listLogins() {
       `<h4 style="margin:6px 0 2px">Class ${esc2(cl)} · ${rows.length} logins · ${rows.filter(r => r.first === true).length} still on the starting PIN</h4><table class="lg-tbl"><thead><tr><th>Name</th><th>ID</th><th>PIN</th><th>Status</th></tr></thead><tbody>${rows.map(r => `<tr><td>${esc2(r.name)}</td><td>${esc2(r.username)}${stale.includes(r) ? ` <small class="lg-old">→ ${esc2(r.want)}</small>` : ""}</td><td class="pin">${esc2(r.pin)}</td><td>${r.first === true ? "Starting PIN · must change at first login" : "Own PIN"}</td></tr>`).join("")}</tbody></table>`
     : `<p class="none">No logins for ${esc2(cl)} yet.</p>`;
   if (stale.length) $("lgFixIds").onclick = () => fixIds(stale);
+  const todo = rows.filter(r => r.first === true);
+  if (rows.length) {
+    const box = document.createElement("div"); box.style.cssText = "margin-top:12px";
+    box.innerHTML = `<button class="primary small" id="lgAnn" type="button">Classroom announcement (${todo.length} not signed in)</button><div id="lgAnnBox" hidden><textarea id="lgAnnTx" rows="14" style="width:100%;margin-top:8px;box-sizing:border-box"></textarea><button class="small" id="lgAnnCp" type="button">Copy</button></div>`;
+    $("lgList").appendChild(box);
+    $("lgAnn").onclick = () => {
+      const names = todo.map(r => "• " + r.name).join("\n");
+      $("lgAnnTx").value = `Math Island – please sign in\n\nThe students below have not signed in to Math Island yet:\n${names || "(everyone has signed in – well done!)"}\n\nHow to sign in:\n1. Open mathkn.fun on your phone, tablet or computer.\n2. Type your student ID (for example 16-00014).\n3. Type the 6-digit starting PIN that I gave you in class. If you forgot it, ask me.\n4. The first time, the site asks you to choose your own new 6-digit PIN. Type it twice and remember it.\n5. From then on, log in with your ID and your own PIN.\n\nOnce you are in, you will find your classwork, games and XP. Please sign in before our next lesson.\n\nMr. Khalid`.replace("Mr. Khalid", (typeof TNAME === "string" && TNAME) || "Your maths teacher");
+      $("lgAnnBox").hidden = false;
+    };
+    $("lgAnnCp").onclick = async () => { const t = $("lgAnnTx"); t.select(); try { await navigator.clipboard.writeText(t.value); msg("Copied. Paste it in Google Classroom."); } catch { document.execCommand("copy"); } };
+  }
 }
 
 async function makeLogins() {
