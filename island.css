@@ -2,7 +2,7 @@
    Built from the logo: sea blues, a sun, sand, and round white strokes.
    Soft surfaces, real depth, round type. Loaded after the older layers and overrides their look. */
 :root {
-  --sea-900: #0c2a5e; --sea-700: #1f5bbd; --sea-500: #3d8bf0; --sea-300: #79b4ff; --sun: #f6b91c; --sand: #ffd27a;
+  --sea-900: #0c2a5e; --sea-700: var(--sea-700); --sea-500: #3d8bf0; --sea-300: #79b4ff; --sun: #f6b91c; --sand: #ffd27a;
   --red: #e0453a; --yellow: var(--sun); --blue: var(--sea-700); --edge: #d3e0f5;
   --paper: #f1f6ff; --card: #ffffff; --ink: #0f2a57; --muted: #5a6b8a; --line: #e1eaf8;
   --grid: #e9f0fb; --grid-major: #dbe6f7; --rule: #e1eaf8; --margin: var(--red); --chalk: var(--red);
@@ -132,7 +132,7 @@ input:focus, select:focus, textarea:focus { outline: 0; border-color: var(--sea-
 /* ===== Header: the island itself ===== */
 header.book {
   border: 0 !important; border-radius: 26px; padding: 22px 26px 64px !important; min-height: 0 !important; isolation: isolate; overflow: hidden;
-  background: linear-gradient(165deg, #17499c 0%, #1f5bbd 52%, #2f74dc 100%); color: #fff;
+  background: linear-gradient(165deg, color-mix(in srgb, var(--sea-700) 78%, #000) 0%, var(--sea-700) 52%, color-mix(in srgb, var(--sea-500) 88%, var(--sea-700)) 100%); color: #fff;
   box-shadow: 0 2px 4px rgba(12,42,94,.1), 0 24px 48px -22px rgba(31,91,189,.75);
 }
 header.book .geo { display: none; }
@@ -202,7 +202,7 @@ header.book { padding-bottom: 96px !important; }
 .topbar h1 { font-size: 22px !important; line-height: 1.1; letter-spacing: 0; }
 .topbar button.ghost { border-radius: 999px; box-shadow: none; }
 /* profile card: the student's own patch of sea */
-#app > section.card:first-of-type:not(.pinset) { border: 0; color: #fff; background: linear-gradient(160deg, #17499c 0%, #1f5bbd 55%, #2f74dc 100%);
+#app > section.card:first-of-type:not(.pinset) { border: 0; color: #fff; background: linear-gradient(160deg, color-mix(in srgb, var(--sea-700) 78%, #000) 0%, var(--sea-700) 55%, color-mix(in srgb, var(--sea-500) 88%, var(--sea-700)) 100%);
   box-shadow: 0 2px 4px rgba(12,42,94,.1), 0 24px 48px -22px rgba(31,91,189,.75); padding-bottom: 46px; border-radius: 24px; }
 #app > section.card:first-of-type:not(.pinset)::after { width: 96px; height: 96px; right: -30px; top: -30px; border: 0; background: var(--sun);
   box-shadow: 0 0 0 14px rgba(246,185,28,.14), 0 0 0 32px rgba(246,185,28,.07); }
@@ -232,8 +232,8 @@ header.book { padding-bottom: 96px !important; }
 /* Class Cup, dashboard boards, quick XP buttons, open student */
 .cup-hero .lbl { font-family: var(--f-body); font-size: 14px; font-weight: 600; color: #6b4a00; }
 .cup-hero .win { font-style: normal; font-weight: 600; color: #3b2a00; }
-.ds-star { border: 0; border-radius: var(--r); color: #fff; background: linear-gradient(160deg, #17499c, #1f5bbd 60%, #2f74dc); box-shadow: 0 20px 40px -22px rgba(31,91,189,.8); }
-.ds-star.day { background: linear-gradient(160deg, #0c2a5e, #17499c); }
+.ds-star { border: 0; border-radius: var(--r); color: #fff; background: linear-gradient(160deg, color-mix(in srgb, var(--sea-700) 78%, #000), var(--sea-700) 60%, color-mix(in srgb, var(--sea-500) 88%, var(--sea-700))); box-shadow: 0 20px 40px -22px rgba(31,91,189,.8); }
+.ds-star.day { background: linear-gradient(160deg, #0c2a5e, color-mix(in srgb, var(--sea-700) 78%, #000)); }
 .ds-k { font-family: var(--f-display); font-weight: 600; font-size: 20px; color: var(--sand); }
 .qb { border-radius: var(--r-s); border-width: 1px; transition: transform .12s, box-shadow .12s; }
 .qb:hover { transform: translateY(-1px); box-shadow: var(--pop-s); }
