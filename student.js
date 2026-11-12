@@ -1,19 +1,24 @@
-import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1111s";
-import { initWork } from "./stuwork.js?v=1111s";
-import { initMsgs } from "./stumsg.js?v=1111s";
-import { initLive } from "./livequiz.js?v=1111s";
-import { initChat } from "./chat.js?v=1111s";
-import { initFunpark } from "./funpark.js?v=1111s";
-import { startPresence, logEv } from "./presence.js?v=1111s";
+import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1111t";
+import { initWork } from "./stuwork.js?v=1111t";
+import { initMsgs } from "./stumsg.js?v=1111t";
+import { initLive } from "./livequiz.js?v=1111t";
+import { initChat } from "./chat.js?v=1111t";
+import { initFunpark } from "./funpark.js?v=1111t";
+import { startPresence, logEv } from "./presence.js?v=1111t";
 
 const sub = (t, n) => t.split("{n}").join(n);
 let me = null, ref = null, shopCat = "frame", confirmId = "", pickerOpen = false, seeds = [], loaded = false;
 const newSeeds = () => { seeds = Array.from({ length: 18 }, () => (Math.random() * 4294967295) >>> 0); };
 
+const THEMES = [["ocean", "Ocean", ["#0c2a5e", "#1f5bbd", "#3d8bf0", "#f6b91c"]],["sunset", "Sunset", ["#7a1f0b", "#d9480f", "#f97316", "#fde047"]],["forest", "Forest", ["#0b3b26", "#15803d", "#34d399", "#facc15"]],["galaxy", "Galaxy", ["#1e1b4b", "#6d28d9", "#8b5cf6", "#f472b6"]],["candy", "Candy", ["#831843", "#db2777", "#f472b6", "#fbbf24"]],["graphite", "Graphite", ["#1f2937", "#475569", "#64748b", "#f59e0b"]]];
+const lsT = { get: () => { try { return localStorage.getItem("mi_theme") || ""; } catch { return ""; } }, set: v => { try { localStorage.setItem("mi_theme", v); } catch {} } };
+const validT = id => THEMES.some(t => t[0] === id);
+function applyTheme(id) { if (id && id !== "ocean" && validT(id)) document.documentElement.dataset.mt = id; else delete document.documentElement.dataset.mt; }
+let themeOpen = false;
 function fromDoc(snap) {
   const v = snap.data() || {};
   return { id: snap.id, name: String(v.name || "Student"), cls: String(v.cls || ""), xp: Number(v.xp) || 0,
-    log: Array.isArray(v.log) ? v.log : [], avatar: typeof v.avatar === "number" ? v.avatar : undefined, ...readShop(v) };
+    log: Array.isArray(v.log) ? v.log : [], theme: typeof v.theme === "string" ? v.theme : "", avatar: typeof v.avatar === "number" ? v.avatar : undefined, ...readShop(v) };
 }
 
 async function start() {
@@ -28,7 +33,7 @@ async function start() {
   let lg = null; try { const s = await getDoc(lref); lg = s.exists() ? s.data() : null; } catch {}
   if (lg && lg.first === true) { await choosePin(u, lref, String(lg.pin || "")); }
   onSnapshot(doc(fs, "shop", "prices"), s => { if (s.exists()) { applyPrices(s.data().prices); render(); } }, () => {});   // prices the owner sets
-  onSnapshot(ref, snap => { loaded = true; me = snap.exists() ? fromDoc(snap) : null; render(); },
+  onSnapshot(ref, snap => { loaded = true; me = snap.exists() ? fromDoc(snap) : null; if (me) applyTheme(validT(me.theme) ? me.theme : lsT.get()); render(); },
     () => { loaded = true; me = null; render(); });
   initWork(p, () => me, toast).catch(() => {});
   initMsgs(p, () => me).catch(() => {});
@@ -73,6 +78,12 @@ async function save(patch, okMsg) {
   catch (e) { try { console.error("save failed", e && e.code, e && e.message); } catch {} toast(e && e.code === "permission-denied" ? "That did not work (the shop was refused). Tell your teacher." : "Could not save. Check your internet."); }
 }
 
+function themePicker() {
+  if (!themeOpen) return "";
+  const cur = validT(me && me.theme) ? me.theme : (validT(lsT.get()) ? lsT.get() : "ocean");
+  return `<section class="picker"><b>Pick your theme</b><div class="th-grid">${THEMES.map(([id, nm, cs]) => `<button class="th-pk" type="button" data-act="setTh" data-th="${id}" aria-pressed="${cur === id}"><span class="th-sw">${cs.map(c => `<i style="background:${c}"></i>`).join("")}</span>${nm}</button>`).join("")}</div>
+    <div class="pk-acts"><button class="ghost" data-act="openTh" type="button">Close</button></div></section>`;
+}
 function card(st, it) {
   const have = st.owned.includes(it.id), on = have && eqOf(st)[it.cat] === it.id, wallet = walletOf(st);
   let act;
@@ -110,9 +121,10 @@ function render() {
         <div class="nm2">${nameHTML(st)}${titleTag(st)}</div>
         <div class="lvl">Class ${esc(st.cls)} · Level ${lv}</div>
         <div class="wallet"><b>${walletOf(st)}</b> XP to spend<small>earned ${st.xp}${st.carry ? " · carried " + st.carry : ""} · spent ${st.spent || 0}</small></div>
-        <button class="primary small" data-act="openAv" type="button" style="margin-top:8px">Change my avatar</button>
+        <button class="primary small" data-act="openAv" type="button" style="margin-top:8px">Change my avatar</button> <button class="ghost small" data-act="openTh" type="button" style="margin-top:8px">Change my theme</button>
       </div></div>
       <div><div class="bar" aria-label="Progress to level ${lv + 1}"><i style="width:${pct}%"></i></div><div class="barlbl"><span>${into}/${LEVEL_XP} XP</span><span>Level ${lv + 1}</span></div></div>
+      ${themePicker()}
       ${picker}
     </section>
     <section class="card${GIRL ? " girlshop" : ""}"><h3>${GIRL ? "✨ Sparkle Boutique" : "XP Shop"}</h3>${GIRL ? `<p class="gs-sub">Dress up your avatar with pretty things. You pay with your XP.</p>` : ""}
@@ -140,6 +152,8 @@ document.addEventListener("click", e => {
     logEv("Bought " + it.name + " (" + it.price + " XP)");
   }
   else if (a === "eq" && it && me.owned.includes(it.id)) { logEv((b.dataset.off ? "Removed " : "Wearing ") + it.name); save({ eq: { ...eqOf(me), [it.cat]: b.dataset.off ? "" : it.id } }); }
+  else if (a === "openTh") { themeOpen = !themeOpen; render(); }
+  else if (a === "setTh") { const id = b.dataset.th; if (validT(id)) { applyTheme(id); lsT.set(id); me.theme = id; render(); updateDoc(ref, { theme: id }).catch(() => {}); } }
   else if (a === "openAv") { newSeeds(); pickerOpen = true; render(); }
   else if (a === "moreAv") { newSeeds(); render(); }
   else if (a === "closeAv") { pickerOpen = false; render(); }
