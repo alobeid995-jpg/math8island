@@ -281,3 +281,10 @@ html[data-mt="graphite"]:not([data-pt]) #app > section.card:first-of-type:not(.p
 :root[data-pt="horizon"][data-pt] #app > section.card:first-of-type:not(.pinset)::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 264 120' preserveAspectRatio='none'%3E%3Cpath d='M0 30c44-36 88-36 132 0s88 36 132 0V120H0Z' fill='%23a9d4ff'/%3E%3C/svg%3E")}
 html[data-pt] body{background-image:none;background-color:var(--paper);color:var(--ink)}
 html[data-pt] .card,html[data-pt] .sitem,html[data-pt] .topbar{background-color:var(--card);color:var(--ink);border-color:var(--edge)}
+
+/* Shop themes: the picture also shows in the header card and top bar */
+:root[data-pt="nebula"][data-pt] #app > section.card:first-of-type:not(.pinset){background:linear-gradient(160deg,rgba(42,15,56,0.25) 0%,rgba(142,47,158,0.38) 100%),url(themes/nebula.jpg) center/cover no-repeat}
+:root[data-pt="samurai"][data-pt] #app > section.card:first-of-type:not(.pinset){background:linear-gradient(160deg,rgba(74,15,8,0.25) 0%,rgba(184,40,15,0.38) 100%),url(themes/samurai.jpg) center/cover no-repeat}
+:root[data-pt="crimson"][data-pt] #app > section.card:first-of-type:not(.pinset){background:linear-gradient(160deg,rgba(42,10,58,0.25) 0%,rgba(176,30,90,0.38) 100%),url(themes/crimson.jpg) center/cover no-repeat}
+:root[data-pt="horizon"][data-pt] #app > section.card:first-of-type:not(.pinset){background:linear-gradient(160deg,rgba(10,26,61,0.25) 0%,rgba(42,98,214,0.38) 100%),url(themes/horizon.jpg) center/cover no-repeat}
+html[data-pt] .topbar{background-color:rgba(10,8,18,.45)!important;border-color:rgba(255,255,255,.18)}
