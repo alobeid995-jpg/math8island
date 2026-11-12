@@ -1,13 +1,13 @@
 // "My classwork" on the student page: worksheets from the teacher, and (for the 9S boys) the lesson games.
-import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1111r";
-import { playerOf, catalog } from "./islandmap.js?v=1111r";
-import { logEv } from "./presence.js?v=1111r";
+import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1111s";
+import { playerOf, catalog } from "./islandmap.js?v=1111s";
+import { logEv } from "./presence.js?v=1111s";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const when = t => new Date(t).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 let materials = [], lxs = {}, P = null, base = [], works = [], mine = new Map(), openId = "", me = null, toast = () => {};
-let player = "", lessons = [], played = new Map(), showAll = false, agPlays = new Set(), isAG = false, isEL = false;
+let player = "", lessons = [], played = new Map(), showAll = false, agPlays = new Set(), isAG = false, isEL = false, isSB = false;
 
 export async function initWork(profile, getMe, toastFn) {
   P = profile; base = profile.tid ? ["teachers", profile.tid] : []; toast = toastFn || toast;
@@ -26,8 +26,9 @@ async function load() {
   } catch { works = []; }
   player = playerOf(me);
   isAG = /^8G$/i.test(String(me.cls || "").trim());   // this lesson is only for class 8G
+  isSB = /^(8Y|8S|8M)$/i.test(String(me.cls || "").trim());   // extra substitution practice: 8Y, 8S, 8M
   isEL = /^(8B|8Y|8S|8M)$/i.test(String(me.cls || "").trim());   // elimination lesson: only these four classes
-  if (isAG || isEL) { try { const pl = await getDocs(query(collection(fs, ...base, "plays"), where("sid", "==", P.sid))); let rt = {}; try { const sd = await getDoc(doc(fs, ...base, "students", P.sid)); rt = (sd.exists() && sd.data().rt) || {}; lxs = (sd.exists() && sd.data().lx) || {}; } catch {}
+  if (isAG || isEL || isSB) { try { const pl = await getDocs(query(collection(fs, ...base, "plays"), where("sid", "==", P.sid))); let rt = {}; try { const sd = await getDoc(doc(fs, ...base, "students", P.sid)); rt = (sd.exists() && sd.data().rt) || {}; lxs = (sd.exists() && sd.data().lx) || {}; } catch {}
       agPlays = new Set(pl.docs.map(d => d.data()).filter(v => (v.u || v.t || 0) > (rt[v.g] || 0)).map(v => v.g)); } catch {} }
   if (player) {
     try {
@@ -62,6 +63,9 @@ function draw() {
   const suCard = isEL ? `<div class="wk-lesson"><div class="wk-lh"><b>Simultaneous equations: substitution</b><small>Exercise 4.2 · Day 2</small></div>
       <div class="wk-games"><button class="wk-game${agPlays.has("su42-ws") ? " done" : ""}" type="button" data-wkact="su"><b>Worked examples, then a worksheet</b><small>Go through the worked examples first. Then the short worksheet opens (5 to 7 minutes).</small>${xpNote("su42")}
       <span>${agPart("su42-examples", "Examples")}${agPart("su42-ws", "Worksheet")}</span></button></div></div>` : "";
+  const sbCard = isSB ? `<div class="wk-lesson"><div class="wk-lh"><b>Substitution method: extra practice</b><small>Exercise 4.2 · new questions</small></div>
+      <div class="wk-games"><button class="wk-game${agPlays.has("sb42-ws") ? " done" : ""}" type="button" data-wkact="sb"><b>Worked examples, then a worksheet</b><small>Put one equation into the other. Go through the examples first. Then the worksheet opens (6 to 8 minutes).</small>${xpNote("sb42")}
+      <span>${agPart("sb42-examples", "Examples")}${agPart("sb42-ws", "Worksheet")}</span></button></div></div>` : "";
   const elCard = isEL ? `<div class="wk-lesson"><div class="wk-lh"><b>Simultaneous equations: elimination</b><small>Exercise 4.2 · Day 1</small></div>
       <div class="wk-games"><button class="wk-game${agPlays.has("el42-ws") ? " done" : ""}" type="button" data-wkact="el"><b>Examples, games and worksheet</b><small>Do the examples, play the games, then do the multiple choice worksheet.</small>${xpNote("el42")}
       <span>${agPart("el42-examples", "Examples")}${agPart("el42-addsub", "Game 1")}${agPart("el42-solve", "Game 2")}${agPart("el42-spot", "Game 3")}${agPart("el42-ws", "Worksheet")}</span></button></div></div>` : "";
@@ -74,7 +78,7 @@ function draw() {
           return `<div class="mt-ls${L.length ? " ok" : ""}"><span class="mt-n">${esc(l.code)}</span><div><b>${esc(l.title)}</b>${L.length ? `<div class="mt-lk">${L.map(k => `<a class="mt-a" href="${esc(k.url)}" target="_blank" rel="noopener">${esc(k.label)}</a>`).join("")}</div>` : `<small>Coming soon</small>`}</div></div>`; }).join("")}`).join("")}</details>`; }).join("") + `</section>`;
   })();
   box.innerHTML = matCard + `<section class="card wk-box"><h3>My classwork</h3>
-    ${suCard}${elCard}${eqCard}${agCard}
+    ${sbCard}${suCard}${elCard}${eqCard}${agCard}
     ${sheets ? `<div class="wk-list">${sheets}</div>` : ""}
     ${games}
     ${lessons.length > 3 ? `<button class="ghost small" type="button" data-wkact="more">${showAll ? "Show fewer lessons" : `Show older lessons (${lessons.length - 3})`}</button>` : ""}
@@ -125,6 +129,7 @@ document.addEventListener("click", e => {
   if (a === "ag") openAG();
   if (a === "el") openAG("elim.html", "Elimination lesson");
   if (a === "su") openAG("subst.html", "Substitution lesson");
+  if (a === "sb") openAG("subst2.html", "Substitution: extra practice");
   if (a === "eq") openAG("eq41.html", "Solving equations");
   if (a === "closegame") closeGame();
 });

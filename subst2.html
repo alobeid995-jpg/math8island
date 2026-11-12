@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Substitution method, extra practice · Math Island</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fffdf4;--ink:#151412;--mut:#5c574b;--line:#d9d2bd;--y:#f3b31c;--b:#1f4fd8;--r:#d8402b;--g:#1e7a46;--gbg:#e2f3e8;--rbg:#fbe3df;--bbg:#e6edff;--ybg:#fff1c9}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.5 "Archivo",system-ui,sans-serif;min-height:100vh;
+ background-image:radial-gradient(circle at 92% 6%,rgba(31,79,216,.06) 0 120px,transparent 121px),radial-gradient(circle at 4% 96%,rgba(243,179,28,.12) 0 150px,transparent 151px)}
+button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:900px;margin:0 auto;padding:14px 16px 90px}
+.top{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.logo{width:42px;height:42px;background:var(--y);border:3px solid var(--ink);display:grid;place-items:center;transform:rotate(-6deg);font:italic 26px/1 "Instrument Serif",serif;flex:none}
+.top h1{margin:0;font-size:22px;font-weight:900;line-height:1.15;letter-spacing:-.01em}.top small{display:block;color:var(--mut);font-weight:500;font-size:14px}
+.x{margin-left:auto;border:3px solid var(--ink);background:#fff;border-radius:10px;padding:8px 14px;font-weight:800;box-shadow:3px 3px 0 var(--ink)}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0 16px}
+.step{border:3px solid var(--ink);background:#fff;border-radius:10px;padding:9px 8px;font-weight:800;text-align:center;box-shadow:3px 3px 0 var(--ink);font-size:16px;line-height:1.2}
+.step small{display:block;font-weight:600;color:var(--mut);font-size:12.5px;margin-top:2px}
+.step[aria-current=true]{background:var(--y)}.step.done{background:var(--gbg)}.step.lock{opacity:.55;box-shadow:none;border-style:dashed}
+.card{background:#fff;border:3px solid var(--ink);border-radius:12px;box-shadow:5px 5px 0 var(--ink);padding:18px;margin-bottom:16px}
+.card h2{margin:0 0 6px;font-size:24px;font-weight:900;letter-spacing:-.01em}.card h3{margin:0 0 6px;font-size:19px;font-weight:800}
+.q{font-size:21px;font-weight:600;margin:6px 0 12px}
+.big{font-size:26px;font-weight:900}
+.btn{border:3px solid var(--ink);background:var(--b);color:#fff;border-radius:12px;padding:13px 22px;font-weight:800;font-size:19px;box-shadow:4px 4px 0 var(--ink);min-height:54px}
+.btn:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--ink)}.btn.alt{background:#fff;color:var(--ink)}.btn.go{background:var(--g)}.btn:disabled{opacity:.45;box-shadow:none}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.chips{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin:10px 0}
+@media(max-width:560px){.chips{grid-template-columns:repeat(4,1fr)}}
+.chip{border:3px solid var(--ink);background:#fff;border-radius:10px;padding:10px 4px;font-weight:800;font-size:19px;min-height:52px;font-variant-numeric:tabular-nums}
+.chip[aria-pressed=true]{background:var(--ybg);outline:3px solid var(--y)}
+.chip.ok{background:var(--gbg);border-color:var(--g)}.chip.no{background:var(--rbg);border-color:var(--r)}.chip.miss{background:var(--gbg);border-style:dashed;border-color:var(--g)}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0}@media(max-width:560px){.opts{grid-template-columns:1fr}}
+.opt{border:3px solid var(--ink);background:#fff;border-radius:12px;padding:14px;font-weight:800;font-size:21px;text-align:center;min-height:62px;font-variant-numeric:tabular-nums}
+.opt[aria-pressed=true]{background:var(--ybg);outline:3px solid var(--y)}.opt.ok{background:var(--gbg);border-color:var(--g)}.opt.no{background:var(--rbg);border-color:var(--r)}
+.fb{margin:12px 0;padding:12px 14px;border-radius:10px;border:3px solid var(--ink);font-weight:600}.fb.good{background:var(--gbg)}.fb.bad{background:var(--rbg)}.fb.info{background:var(--bbg)}
+.bar{height:14px;border:3px solid var(--ink);border-radius:99px;background:#fff;overflow:hidden;margin:6px 0 12px}.bar i{display:block;height:100%;background:var(--g);transition:width .3s}
+.tag{display:inline-block;border:2px solid var(--ink);border-radius:99px;padding:1px 10px;font-weight:800;font-size:14px;background:var(--ybg)}
+.nl{position:relative;height:96px;margin:16px 8px 6px}
+.nl .ln{position:absolute;left:0;right:0;top:46px;height:4px;background:var(--ink);border-radius:2px}
+.nl .rng{position:absolute;top:34px;height:28px;background:rgba(30,122,70,.28);border:3px solid var(--g);border-radius:6px}
+.nl .pt{position:absolute;top:36px;width:4px;height:24px;background:var(--ink);transform:translateX(-2px)}
+.nl .lb{position:absolute;top:70px;transform:translateX(-50%);font-weight:800;font-size:16px;white-space:nowrap}
+.nl .dot{position:absolute;top:38px;width:20px;height:20px;border-radius:50%;border:3px solid var(--ink);transform:translateX(-10px)}
+.nl .dot.in{background:var(--g)}.nl .dot.out{background:#fff}
+.ineq{font:italic 30px/1.2 "Instrument Serif",serif;text-align:center;margin:8px 0;font-variant-numeric:tabular-nums}
+.ineq b{font:900 30px "Archivo",sans-serif;font-style:normal}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.tab{border:3px solid var(--ink);background:#fff;border-radius:99px;padding:8px 16px;font-weight:800}.tab[aria-pressed=true]{background:var(--y)}.tab.ok{background:var(--gbg)}
+.gcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.gc{border:3px solid var(--ink);background:#fff;border-radius:12px;box-shadow:4px 4px 0 var(--ink);padding:14px;text-align:left}
+.gc b{display:block;font-size:20px;font-weight:900}.gc span{color:var(--mut);font-size:15px;display:block;margin:2px 0 6px}.gc.ok{background:var(--gbg)}
+.ws .wq{border-bottom:2px dashed var(--line);padding:14px 0}.ws .wq:last-of-type{border:0}
+.ws .num{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--y);border:3px solid var(--ink);font-weight:900;margin-right:8px;font-size:16px}
+.lockbox{text-align:center;padding:26px 12px}.lockbox .big{margin-bottom:6px}
+.pick{display:flex;gap:8px;margin:10px 0}.pick .tab{flex:1;text-align:center}
+.stepper{display:flex;align-items:center;gap:12px;justify-content:center;margin:8px 0}.stepper b{font-size:36px;min-width:130px;text-align:center;font-variant-numeric:tabular-nums}
+.stepper button{width:56px;height:56px;border:3px solid var(--ink);border-radius:12px;background:#fff;font-size:30px;font-weight:900;box-shadow:3px 3px 0 var(--ink)}
+[hidden]{display:none!important}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style><style>
+.eqs{display:grid;gap:2px;justify-content:center;text-align:center;font:italic 30px/1.35 "Instrument Serif",serif;margin:10px 0;font-variant-numeric:tabular-nums}
+.work{border:3px solid var(--ink);border-radius:10px;background:var(--bbg);padding:10px 14px;margin:10px 0;font-weight:700}.wl{padding:3px 0;font-size:19px}
+.opts.one{grid-template-columns:1fr}.opt.left{text-align:left;font-size:19px}
+.steps{grid-template-columns:repeat(2,1fr)}
+</style></head><body>
+<div class="wrap" id="app"><p>Loading…</p></div>
+<script type="module">
+import { fs, doc, getDoc, setDoc, getDocs, collection, query, where, whenUser, profileOf } from "./fb.js?v=1111s";
+
+const $ = id => document.getElementById(id), app = $("app");
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const G = { ex: "sb42-examples", ws: "sb42-ws" };
+
+/* ---------- who is here ---------- */
+const u = await whenUser(), p = u && await profileOf(u.uid);
+if (!p) { location.href = "index.html"; throw new Error("not signed in"); }
+const mode = p.role === "teacher" ? "teacher" : "student";
+const base = mode === "teacher" ? [] : (p.tid ? ["teachers", p.tid] : []);
+const embedded = window.parent !== window;
+let retake = {}, myName = "", done = { ex: false }, wsRes = null;
+if (mode === "student") {
+  try { const s = await getDoc(doc(fs, ...base, "students", p.sid)); myName = s.exists() ? s.data().name || "" : ""; retake = s.exists() ? (s.data().rt || {}) : {}; } catch {}
+  try {
+    const s = await getDocs(query(collection(fs, ...base, "plays"), where("sid", "==", p.sid)));
+    s.docs.forEach(d => { const v = d.data();
+      if (v.g === G.ex) done.ex = true;
+      if (v.g === G.ws && (v.u || v.t || 0) > (retake[G.ws] || 0)) wsRes = { r: v.r, w: v.w, m: v.m || [] }; });
+  } catch {}
+}
+async function save(g, r, w, m) {
+  if (mode !== "student") return;   // a teacher can look around; nothing is saved for him
+  const t = Date.now();
+  try { await setDoc(doc(fs, ...base, "plays", `${p.sid}_${g}_${t}`), { s: "el", g, l: 1, r, w, t, u: t, m: (m || []).slice(-20), sid: p.sid, name: myName }); } catch {}
+}
+const close = () => { if (embedded) { try { parent.postMessage("mi-close", location.origin); } catch {} } else location.href = mode === "teacher" ? "teacher.html" : "student.html"; };
+const unlocked = () => mode === "teacher" || done.ex;
+
+/* ---------- shell ---------- */
+let view = "ex";
+function shell(inner) {
+  const st = (k, n, l, d) => `<button class="step ${d ? "done" : ""} ${k === "ws" && !unlocked() ? "lock" : ""}" data-go="${k}" aria-current="${view === k}"><span>${n}. ${l}</span><small>${k === "ws" ? (wsRes ? "done" : unlocked() ? "ready" : "after the examples") : d ? "done ✓" : ""}</small></button>`;
+  app.innerHTML = `<div class="top"><div class="logo">π</div><h1>Substitution method: extra practice<small>Exercise 4.2 · worked examples, then a short worksheet</small></h1><button class="x" data-close="1" type="button">✕ Close</button></div>
+    <div class="steps">${st("ex", 1, "Worked examples", done.ex)}${st("ws", 2, "Worksheet", !!wsRes)}</div>${inner}`;
+}
+document.addEventListener("click", e => {
+  const t = e.target;
+  if (t.closest("[data-close]")) return close();
+  const g = t.closest("[data-go]"); if (g) { view = g.dataset.go; render(); window.scrollTo({ top: 0, behavior: "smooth" }); }
+});
+function render() { ({ ex: renderEx, ws: renderWs })[view](); }
+const eqs = (a, b) => `<div class="eqs"><div>${a}</div><div>${b}</div></div>`;
+
+/* ---------- 1. Worked examples: step by step, each step is a question ---------- */
+const EXS = [
+  { title: "Example A", e: ["y = 2x", "x + y = 12"], intro: "The first equation tells us what y is: y = 2x. So wherever we see y in the other equation, we put 2x instead.", steps: [
+    { q: "Step 1. Put y = 2x into x + y = 12. What do you get?", o: ["x + 2x = 12", "x + 2 = 12", "2x + y = 12", "x + 2x = y"], c: "x + 2x = 12", line: "x + 2x = 12" },
+    { q: "Step 2. Collect the x's. x + 2x = ?", o: ["3x", "2x²", "3", "2x"], c: "3x", line: "3x = 12" },
+    { q: "Step 3. 3x = 12. What is x?", o: ["4", "36", "9", "3"], c: "4", line: "x = 12 ÷ 3 = 4" },
+    { q: "Step 4. Work out y. y = 2x = 2 × 4 = ?", o: ["8", "6", "16", "2"], c: "8", line: "y = 2 × 4 = 8" },
+    { q: "Step 5. Check in x + y = 12. 4 + 8 = ?", o: ["12", "32", "4", "16"], c: "12", line: "4 + 8 = 12 ✓" }], ans: "x = 4 and y = 8" },
+  { title: "Example B", e: ["y = x + 3", "2x + y = 15"], intro: "Again the first equation gives y. Put x + 3 in place of y. Use brackets if it helps.", steps: [
+    { q: "Step 1. Put y = x + 3 into 2x + y = 15. What do you get?", o: ["2x + x + 3 = 15", "2x + x = 15", "2x + 3 = 15", "2x + x − 3 = 15"], c: "2x + x + 3 = 15", line: "2x + x + 3 = 15" },
+    { q: "Step 2. Collect the x's. 2x + x + 3 = 15 becomes?", o: ["3x + 3 = 15", "2x² + 3 = 15", "3x = 15", "3x + 3 = 0"], c: "3x + 3 = 15", line: "3x + 3 = 15" },
+    { q: "Step 3. Move the +3 across. It changes sign. What do you get?", o: ["3x = 15 − 3", "3x = 15 + 3", "3x = 3 − 15", "x = 15 − 3"], c: "3x = 15 − 3", line: "3x = 15 − 3 = 12" },
+    { q: "Step 4. 3x = 12. What is x?", o: ["4", "36", "5", "9"], c: "4", line: "x = 12 ÷ 3 = 4" },
+    { q: "Step 5. Work out y. y = x + 3 = 4 + 3 = ?", o: ["7", "12", "1", "43"], c: "7", line: "y = 7. Check in 2x + y = 15: 8 + 7 = 15 ✓" }], ans: "x = 4 and y = 7" },
+  { title: "Example C · x is given", e: ["x = 3y", "x + y = 20"], intro: "This time the first equation gives x. Put 3y in place of x.", steps: [
+    { q: "Step 1. Put x = 3y into x + y = 20. What do you get?", o: ["3y + y = 20", "3 + y = 20", "x + 3y = 20", "3y + y = x"], c: "3y + y = 20", line: "3y + y = 20" },
+    { q: "Step 2. Collect the y's. 3y + y = ?", o: ["4y", "3y²", "4", "3y"], c: "4y", line: "4y = 20" },
+    { q: "Step 3. 4y = 20. What is y?", o: ["5", "80", "16", "4"], c: "5", line: "y = 20 ÷ 4 = 5" },
+    { q: "Step 4. Work out x. x = 3y = 3 × 5 = ?", o: ["15", "8", "35", "5"], c: "15", line: "x = 3 × 5 = 15" },
+    { q: "Step 5. Check in x + y = 20. 15 + 5 = ?", o: ["20", "75", "10", "15"], c: "20", line: "15 + 5 = 20 ✓" }], ans: "x = 15 and y = 5" },
+  { title: "Example D · with a minus", e: ["y = 3x − 2", "x + y = 10"], intro: "Careful with the minus sign. Put 3x − 2 in place of y.", steps: [
+    { q: "Step 1. Put y = 3x − 2 into x + y = 10. What do you get?", o: ["x + 3x − 2 = 10", "x + 3x + 2 = 10", "3x − 2 = 10", "x + 3 − 2 = 10"], c: "x + 3x − 2 = 10", line: "x + 3x − 2 = 10" },
+    { q: "Step 2. Collect the x's. x + 3x − 2 = 10 becomes?", o: ["4x − 2 = 10", "3x² − 2 = 10", "4x + 2 = 10", "4x = 10"], c: "4x − 2 = 10", line: "4x − 2 = 10" },
+    { q: "Step 3. Move the −2 across. It changes sign. What do you get?", o: ["4x = 10 + 2", "4x = 10 − 2", "4x = 2 − 10", "x = 10 + 2"], c: "4x = 10 + 2", line: "4x = 10 + 2 = 12" },
+    { q: "Step 4. 4x = 12. What is x?", o: ["3", "48", "8", "6"], c: "3", line: "x = 12 ÷ 4 = 3" },
+    { q: "Step 5. Work out y. y = 3x − 2 = 3 × 3 − 2 = ?", o: ["7", "11", "5", "1"], c: "7", line: "y = 9 − 2 = 7. Check in x + y = 10: 3 + 7 = 10 ✓" }], ans: "x = 3 and y = 7" }
+];
+const ex = { tab: 0, st: EXS.map(() => 0), wrong: "", fin: EXS.map(() => false) };
+function renderEx() {
+  const tabs = `<div class="tabs">${EXS.map((e, i) => `<button class="tab ${ex.fin[i] ? "ok" : ""}" data-etab="${i}" aria-pressed="${ex.tab === i}">${e.title}</button>`).join("")}</div>`;
+  const e = EXS[ex.tab], s = ex.st[ex.tab], fin = s >= e.steps.length;
+  const lines = e.steps.slice(0, s).map(x => `<div class="wl">${esc(x.line)}</div>`).join("");
+  const cur = e.steps[s];
+  shell(`${tabs}<div class="card"><h2>${e.title}</h2>${eqs(e.e[0], e.e[1])}<p class="q">${e.intro}</p>
+    <p class="fb info"><b>Substitution:</b> one equation gives y (or x). Put it into the other equation. Then solve. A term that moves across the equals sign changes its sign.</p>
+    ${lines ? `<div class="work">${lines}</div>` : ""}
+    ${fin ? `<div class="fb good"><b>Answers: ${e.ans}</b></div>
+      <div class="row">${ex.tab < EXS.length - 1 ? `<button class="btn" data-etab="${ex.tab + 1}" type="button">Next example →</button>` : ""}${ex.fin.every(Boolean) || done.ex ? `<button class="btn go" data-exfin="1" type="button">${done.ex ? "Go to the worksheet →" : "I understand. Open the worksheet ✓"}</button>` : ""}</div>`
+    : `<p class="q"><span class="tag">Step ${s + 1} of ${e.steps.length}</span> ${esc(cur.q)}</p>
+      <div class="opts">${cur.o.map(o => `<button class="opt" data-eopt="${esc(o)}">${esc(o)}</button>`).join("")}</div>
+      ${ex.wrong ? `<div class="fb bad">${esc(ex.wrong)}</div>` : ""}`}</div>`);
+}
+document.addEventListener("click", async e => {
+  if (view !== "ex") return; const t = e.target;
+  const tb = t.closest("[data-etab]"); if (tb) { ex.tab = +tb.dataset.etab; ex.wrong = ""; renderEx(); return window.scrollTo({ top: 0 }); }
+  const op = t.closest("[data-eopt]"); if (op) {
+    const E = EXS[ex.tab], st = E.steps[ex.st[ex.tab]];
+    if (op.dataset.eopt === st.c) { ex.st[ex.tab]++; ex.wrong = ""; if (ex.st[ex.tab] >= E.steps.length) ex.fin[ex.tab] = true; }
+    else ex.wrong = "Not quite. Read the step again. Put the expression in place of the letter, and a term that moves across the equals sign changes its sign. Try again.";
+    return renderEx();
+  }
+  if (t.closest("[data-exfin]")) {
+    if (!done.ex) { done.ex = true; save(G.ex, EXS.length, 0, []); }
+    view = "ws"; render(); window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+});
+
+/* ---------- 2. Worksheet (8 questions, about 6 to 8 minutes) ---------- */
+const WS = [
+  { q: "y = 3x and x + y = 16. Put y = 3x into x + y = 16. What do you get?", c: "x + 3x = 16", w: ["x + 3 = 16", "3x + y = 16", "x + 3x = 16y"] },
+  { q: "x + 3x = 16 gives 4x = 16. What is x?", c: "4", w: ["3", "8", "16"] },
+  { q: "Now use x = 4 in y = 3x. What is y?", c: "12", w: ["7", "16", "43"] },
+  { q: "Solve y = 2x and x + y = 18.", c: "x = 6, y = 12", w: ["x = 9, y = 18", "x = 6, y = 18", "x = 12, y = 6"] },
+  { q: "Solve y = x + 2 and 3x + y = 14.", c: "x = 3, y = 5", w: ["x = 4, y = 6", "x = 3, y = 3", "x = 5, y = 3"] },
+  { q: "Solve x = 2y and x + y = 15.", c: "x = 10, y = 5", w: ["x = 5, y = 10", "x = 10, y = 15", "x = 6, y = 9"] },
+  { q: "Solve y = 2x − 3 and x + y = 9.", c: "x = 4, y = 5", w: ["x = 4, y = 3", "x = 2, y = 1", "x = 12, y = −3"] },
+  { q: "Solve y = 4x + 1 and 2x + y = 13.", c: "x = 2, y = 9", w: ["x = 2, y = 5", "x = 3, y = 13", "x = 1, y = 5"] }
+];
+let wsOrder = null, wsPick = [];
+function renderWs() {
+  if (!unlocked()) {
+    shell(`<div class="card lockbox"><div class="big">🔒 The worksheet opens soon</div><p class="q">First finish the worked examples. Then come back here.</p><div class="row" style="justify-content:center"><button class="btn" data-go="ex" type="button">Go to the worked examples</button></div></div>`);
+    return;
+  }
+  if (wsRes) {
+    const n = wsRes.r + wsRes.w, pc = n ? Math.round(100 * wsRes.r / n) : 0;
+    shell(`<div class="card"><h2>Worksheet: handed in ✓</h2><p class="big">${wsRes.r} of ${n} right (${pc}%)</p><div class="bar"><i style="width:${pc}%"></i></div>
+      ${wsRes.m.length ? `<h3>Questions to look at again</h3>${wsRes.m.map(x => `<div class="fb bad"><b>${esc(x.q)}</b><br>${esc(x.a)}</div>`).join("")}` : `<p class="q">Every answer was right. Well done!</p>`}
+      <div class="row"><button class="btn go" data-close="1" type="button">Finish</button></div></div>`);
+    return;
+  }
+  if (!wsOrder) wsOrder = WS.map(q => ({ ...q, o: shuffle([q.c, ...q.w]) })), wsPick = WS.map(() => "");
+  const answered = wsPick.filter(Boolean).length;
+  shell(`<div class="card ws"><h2>Worksheet</h2><p class="q">Choose one answer for each question. It takes about 6 to 8 minutes. You can hand in once.</p><div class="bar"><i style="width:${100 * answered / WS.length}%"></i></div>
+    ${wsOrder.map((q, i) => `<div class="wq"><p class="q"><span class="num">${i + 1}</span>${esc(q.q)}</p><div class="opts">${q.o.map(o => `<button class="opt" data-wq="${i}" data-wo="${esc(o)}" aria-pressed="${wsPick[i] === o}">${esc(o)}</button>`).join("")}</div></div>`).join("")}
+    <p class="fb info" id="wsNote">${answered} of ${WS.length} answered</p>
+    <div class="row"><button class="btn go" data-wsend="1" type="button" ${answered === WS.length ? "" : "disabled"}>Hand in</button></div></div>`);
+}
+document.addEventListener("click", async e => {
+  if (view !== "ws") return; const t = e.target;
+  const o = t.closest("[data-wq]"); if (o) { const y = window.scrollY; wsPick[+o.dataset.wq] = o.dataset.wo; renderWs(); window.scrollTo(0, y); return; }
+  if (t.closest("[data-wsend]")) {
+    if (!confirm("Hand in now? You cannot change your answers after this.")) return;
+    let r = 0, w = 0; const m = [];
+    wsOrder.forEach((q, i) => { if (wsPick[i] === q.c) r++; else { w++; m.push({ q: `${i + 1}. ${q.q}`, a: "chose " + wsPick[i] + " | correct " + q.c, at: Date.now() }); } });
+    wsRes = { r, w, m }; await save(G.ws, r, w, m); renderWs(); window.scrollTo({ top: 0 });
+  }
+});
+
+render();
+</script></body></html>

@@ -1,5 +1,5 @@
 // Students progress inside the teacher page: pick a class, then a lesson, then see each student's games and every mistake.
-import { getDocs, bcol, bdoc, updateDoc } from "./fb.js?v=1111r";
+import { getDocs, bcol, bdoc, updateDoc } from "./fb.js?v=1111s";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -10,7 +10,7 @@ let titles = null, secOf = {}, secs = [], plays = [], openSid = "", selCls = "",
 
 async function gameTitles() {
   if (titles) return titles;
-  titles = { "eq41-examples": "8G 4.1 · Examples", "eq41-ws": "8G 4.1 · Worksheet", "ag34-examples": "8G 3.4 · Examples", "ag34-tap": "8G 3.4 · Tap the numbers", "ag34-bound": "8G 3.4 · Bound builder", "ag34-ineq": "8G 3.4 · Inequality match", "ag34-ws": "8G 3.4 · Worksheet (multiple choice)", "el42-examples": "Elimination · Examples", "el42-addsub": "Elimination · Add or subtract?", "el42-solve": "Elimination · Solve it", "el42-spot": "Elimination · Spot the mistake", "el42-ws": "Elimination · Worksheet (multiple choice)", "su42-examples": "Substitution · Worked examples", "su42-ws": "Substitution · Worksheet (multiple choice)" };
+  titles = { "sb42-examples": "Substitution practice · Examples", "sb42-ws": "Substitution practice · Worksheet", "eq41-examples": "8G 4.1 · Examples", "eq41-ws": "8G 4.1 · Worksheet", "ag34-examples": "8G 3.4 · Examples", "ag34-tap": "8G 3.4 · Tap the numbers", "ag34-bound": "8G 3.4 · Bound builder", "ag34-ineq": "8G 3.4 · Inequality match", "ag34-ws": "8G 3.4 · Worksheet (multiple choice)", "el42-examples": "Elimination · Examples", "el42-addsub": "Elimination · Add or subtract?", "el42-solve": "Elimination · Solve it", "el42-spot": "Elimination · Spot the mistake", "el42-ws": "Elimination · Worksheet (multiple choice)", "su42-examples": "Substitution · Worked examples", "su42-ws": "Substitution · Worksheet (multiple choice)" };
   try {   // game names come from the games page itself, so new lessons appear here without changes
     const t = await (await fetch("island9s.html", { cache: "no-cache" })).text();
     for (const m of t.matchAll(/id: '([\w-]+)', sec: '([\w-]+)', title: '([^']+)'/g)) { titles[m[1]] = m[3]; secOf[m[1]] = m[2]; }
@@ -34,7 +34,7 @@ const clsList = () => [...new Set(kids().map(s => s.cls))].sort();
 const inCls = c => kids().filter(s => s.cls === c);
 function lessonsFor(c) {
   if (/^8G$/i.test(c)) return [{ id: "eq41", title: "Exercise 4.1: solving equations (easy)", date: "", games: Object.keys(titles).filter(g => g.startsWith("eq41-")) }, { id: "ag34", title: "Unit 3.4: examples, games and worksheet", date: "", games: Object.keys(titles).filter(g => g.startsWith("ag34-")) }];
-  if (/^8[BYSM]$/i.test(c)) return [{ id: "su42", title: "Simultaneous equations: substitution (Exercise 4.2, Day 2)", date: "", games: Object.keys(titles).filter(g => g.startsWith("su42-")) }, { id: "el42", title: "Simultaneous equations: elimination (Exercise 4.2, Day 1)", date: "", games: Object.keys(titles).filter(g => g.startsWith("el42-")) }];
+  if (/^8[BYSM]$/i.test(c)) return [...(/^8[YSM]$/i.test(c) ? [{ id: "sb42", title: "Substitution method: extra practice (Exercise 4.2)", date: "", games: ["sb42-examples", "sb42-ws"] }] : []), { id: "su42", title: "Simultaneous equations: substitution (Exercise 4.2, Day 2)", date: "", games: Object.keys(titles).filter(g => g.startsWith("su42-")) }, { id: "el42", title: "Simultaneous equations: elimination (Exercise 4.2, Day 1)", date: "", games: Object.keys(titles).filter(g => g.startsWith("el42-")) }];
   if (/^9S$/i.test(c)) return secs.map(x => ({ id: x.id, title: x.title, date: x.date, tag: x.group === "g2" ? "Level 1–2" : "Level 5", games: Object.keys(secOf).filter(g => secOf[g] === x.id) }));
   return [];
 }
