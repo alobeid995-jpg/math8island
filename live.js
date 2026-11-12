@@ -1,7 +1,8 @@
 // Teacher side: Live quiz (a Kahoot-style game). The teacher builds or imports questions, opens a lobby, students join from their own
 // page, then every question is shown to all of them at the same time. After each question: the right answer and the ranking.
 // Data: <base>/live/<id>  kind "set" (saved questions) or "session" (a running game);  <base>/liveplayers/<session>_<sid>  one per joined student.
-import { getDocs, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, query, where, bcol, bdoc } from "./fb.js?v=1111n";
+import { PRESETS, toTsv } from "./presets.js?v=1111p";
+import { getDocs, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, query, where, bcol, bdoc } from "./fb.js?v=1111p";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -113,6 +114,7 @@ function draw() {
       <div class="lv-row"><input class="lv-in" id="lvTitle" placeholder="Quiz name, for example 4.1 Solving equations" maxlength="80" value="${esc(draft.title)}" style="flex:1;min-width:220px"><label>Seconds per question <input class="lv-in" id="lvDur" type="number" min="5" max="180" value="${draft.dur}" style="width:80px"></label></div>
       <div><b>Play with:</b><div class="lv-cls">${(typeof CLASSES !== "undefined" ? CLASSES : []).map(c => `<label><input type="checkbox" data-lvcls="${esc(c)}"${draft.cls.includes(c) ? " checked" : ""}> ${esc(c)}</label>`).join("")}</div></div>
       ${draft.setId ? "" : `<div class="lv-card"><b>Questions</b><p style="margin:4px 0">Columns: <code>Question, A, B, C, D, Correct, Time</code>. Correct is the letter. Time is optional.</p>
+        <div class="lv-row"><select class="lv-in" id="lvPre"><option value="">Ready-made sets…</option>${PRESETS.map((x, i) => `<option value="${i}">${esc(x.title)}</option>`).join("")}</select></div>
         <textarea class="lv-ta" id="lvText" placeholder="Paste the cells from Excel or Google Sheets here">${esc(draft.text)}</textarea>
         <div class="lv-row"><label class="ghost small" style="cursor:pointer;padding:8px 12px;border:1.5px solid var(--line,#cdd5e3);border-radius:10px">Upload Excel or CSV<input id="lvFile" type="file" accept=".csv,.txt,.xlsx,.xls" hidden></label>
         <input class="lv-in" id="lvLink" placeholder="or paste a Google Sheet link" style="flex:1;min-width:200px"><button class="ghost small" type="button" data-lv="link">Load link</button><button class="ghost small" type="button" data-lv="tpl">Download template</button></div></div>`}
@@ -249,6 +251,11 @@ modal.addEventListener("change", async e => {
   }
 });
 function syncDraftKeep() { draft.parsed = parseQuiz(draft.text); msg = ""; draw(); }
+modal.addEventListener("change", e => {
+  if (e.target.id !== "lvPre" || e.target.value === "") return;
+  const p = PRESETS[+e.target.value]; if (!p) return;
+  draft.text = toTsv(p); if (!draft.title) draft.title = p.title; draft.parsed = parseQuiz(draft.text); msg = ""; draw();
+});
 modal.addEventListener("input", e => {
   if (e.target.id === "lvText") { draft.text = e.target.value; draft.parsed = parseQuiz(draft.text); const p = $("lvPrev"); if (p) p.innerHTML = prevHtml(draft.parsed); }
 });

@@ -1,16 +1,16 @@
 import { changeEmail, auth, fs, firebaseConfig, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, collection, query, where, writeBatch, setBase, bcol, bdoc, signOut, whenUser, profileOf, emailFor, pinKey,
-  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1111n";
-import { db } from "./fbdb.js?v=1111n";
-import { startUsage } from "./usage.js?v=1111n";
-import { openWork } from "./teacherwork.js?v=1111n";
+  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1111p";
+import { db } from "./fbdb.js?v=1111p";
+import { startUsage } from "./usage.js?v=1111p";
+import { openWork } from "./teacherwork.js?v=1111p";
 import "./lessonxp.js";
-import { openProgress } from "./progress.js?v=1111n";
-import { openMaterial } from "./material.js?v=1111n";
-import { hasFunpark, openFunpark } from "./fpteacher.js?v=1111n";
-import { openCoconut } from "./coconut.js?v=1111n";
-import { initChat } from "./chat.js?v=1111n";
-import { openLive } from "./live.js?v=1111n";
-import { openInbox } from "./inbox.js?v=1111n";
+import { openProgress } from "./progress.js?v=1111p";
+import { openMaterial } from "./material.js?v=1111p";
+import { hasFunpark, openFunpark } from "./fpteacher.js?v=1111p";
+import { openCoconut } from "./coconut.js?v=1111p";
+import { initChat } from "./chat.js?v=1111p";
+import { openLive } from "./live.js?v=1111p";
+import { openInbox } from "./inbox.js?v=1111p";
 
 const $ = id => document.getElementById(id);
 const esc2 = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

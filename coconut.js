@@ -1,7 +1,8 @@
 // Coconut Crack: a team game for the whole class on one screen (the teacher's projector). Teams take turns to crack a coconut.
 // A coconut hides a question or a surprise. Questions come from the Live quiz sets (or pasted/imported cells). Nothing is saved to students.
-import { getDocs, bcol } from "./fb.js?v=1111n";
-import { parseQuiz } from "./live.js?v=1111n";
+import { getDocs, bcol } from "./fb.js?v=1111p";
+import { PRESETS } from "./presets.js?v=1111p";
+import { parseQuiz } from "./live.js?v=1111p";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -42,7 +43,7 @@ let ov = null;
 
 function ui() { if (!ov) { ov = document.createElement("div"); ov.id = "ccOv"; ov.hidden = true; document.body.appendChild(ov); ov.addEventListener("click", onClick); ov.addEventListener("input", e => { if (e.target.id === "ccText") text = e.target.value; if (e.target.id === "ccName") sname = e.target.value; }); ov.addEventListener("change", e => { if (e.target.id === "ccSet") pickSet(e.target.value); if (e.target.id === "ccN") nT = +e.target.value; if (e.target.id === "ccPts") pts = +e.target.value; }); } return ov; }
 const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
-function pickSet(id) { const s = sets.find(x => x.id === id); if (s) { qs = s.qs.slice(); sname = s.title || ""; note = `${qs.length} question${qs.length === 1 ? "" : "s"} ready.`; } else { qs = []; note = ""; } paint(); }
+function pickSet(id) { const s = id.startsWith("preset:") ? PRESETS[+id.slice(7)] : sets.find(x => x.id === id); if (s) { qs = s.qs.slice(); sname = s.title || ""; note = `${qs.length} question${qs.length === 1 ? "" : "s"} ready.`; } else { qs = []; note = ""; } paint(); }
 
 function build() {
   let q = shuffle(qs).slice(0, 24); if (!q.length) return;
@@ -65,7 +66,7 @@ function paint() {
   if (!tiles.length) {
     o.innerHTML = top + `<div class="cc-card"><h3 style="margin-top:0">Set up the game</h3>
       <p>Pick a saved question set (from Live quiz), or paste your questions below. Each coconut hides a question or a surprise.</p>
-      <select id="ccSet"><option value="">Choose a saved set…</option>${sets.map(s => `<option value="${esc(s.id)}">${esc(s.title || "Untitled")} (${(s.qs || []).length})</option>`).join("")}</select>
+      <select id="ccSet"><option value="">Choose a set…</option>${PRESETS.map((x, i) => `<option value="preset:${i}">⭐ ${esc(x.title)}</option>`).join("")}${sets.map(s => `<option value="${esc(s.id)}">${esc(s.title || "Untitled")} (${(s.qs || []).length})</option>`).join("")}</select>
       <p style="margin:10px 0 4px"><b>Or paste from Excel / Sheets</b> (columns: Question, A, B, C, D, Correct)</p>
       <textarea id="ccText" placeholder="Question\tA\tB\tC\tD\tCorrect">${esc(text)}</textarea>
       <div class="cc-row"><button class="cc-btn o" type="button" data-cc="parse">Use pasted questions</button>
