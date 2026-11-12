@@ -1,8 +1,8 @@
 // Coconut Crack: a team game for the whole class on one screen (the teacher's projector). Teams take turns to crack a coconut.
 // A coconut hides a question or a surprise. Questions come from the Live quiz sets (or pasted/imported cells). Nothing is saved to students.
-import { getDocs, bcol } from "./fb.js?v=1111p";
-import { PRESETS } from "./presets.js?v=1111p";
-import { parseQuiz } from "./live.js?v=1111p";
+import { getDocs, bcol } from "./fb.js?v=1111r";
+import { PRESETS } from "./presets.js?v=1111r";
+import { parseQuiz } from "./live.js?v=1111r";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -14,6 +14,7 @@ let sets = [], qs = [], tiles = [], teams = [], turn = 0, open = -1, step = "", 
 let ov = null;
 
 { const st = document.createElement("style"); st.textContent = `
+#ccOv.cc-board{overflow:hidden;height:100vh;height:100dvh}
 #ccOv{position:fixed;inset:0;z-index:3200;background:linear-gradient(180deg,#0e7490,#14b8a6 55%,#fde68a);color:#10222b;display:flex;flex-direction:column;padding:12px 16px;overflow:auto;font-family:inherit}
 #ccOv[hidden]{display:none}
 #ccOv .cc-top{display:flex;align-items:center;gap:10px;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap}
@@ -29,16 +30,17 @@ let ov = null;
 #ccOv .cc-score{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:10px}
 #ccOv .cc-team{min-width:120px;padding:8px 14px;border-radius:16px;background:#fff;border:4px solid transparent;text-align:center;box-shadow:0 4px 0 rgba(0,0,0,.2);font-weight:800}
 #ccOv .cc-team.on{border-color:#10222b;transform:scale(1.06);background:#fff7cc}#ccOv .cc-team b{display:block;font-size:clamp(24px,4vw,40px)}
-#ccOv .cc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(clamp(74px,11vw,120px),1fr));gap:12px;width:min(1100px,100%);margin:6px auto}
-#ccOv .cc-nut{aspect-ratio:1;border-radius:50%;border:4px solid #3f2a14;background:radial-gradient(circle at 35% 30%,#a9783f,#6b431b 70%);color:#fff;font:inherit;font-weight:900;font-size:clamp(22px,4vw,40px);cursor:pointer;box-shadow:0 6px 0 #3f2a14;display:flex;align-items:center;justify-content:center}
+#ccOv .cc-grid{display:grid;gap:10px;justify-content:center;align-content:center;flex:1;min-height:0;width:100%}
+#ccOv .cc-nut{width:100%;height:100%;aspect-ratio:1;border-radius:50%;border:4px solid #3f2a14;background:radial-gradient(circle at 35% 30%,#a9783f,#6b431b 70%);color:#fff;font:inherit;font-weight:900;font-size:var(--ns,32px);cursor:pointer;padding:0;box-shadow:0 5px 0 #3f2a14;display:flex;align-items:center;justify-content:center}
 #ccOv .cc-nut:active{transform:translateY(4px);box-shadow:0 2px 0 #3f2a14}
-#ccOv .cc-nut.done{background:#d9e6ea;border-color:#9bb0b9;color:#6a8793;box-shadow:none;cursor:default;font-size:clamp(20px,3.4vw,34px)}
+#ccOv .cc-nut.done{background:#d9e6ea;border-color:#9bb0b9;color:#6a8793;box-shadow:none;cursor:default;font-size:var(--ns,28px)}
 #ccOv .cc-q{font-size:clamp(24px,4.4vw,44px);font-weight:900;line-height:1.2;margin:6px 0 14px}
 #ccOv .cc-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 #ccOv .cc-opt{padding:14px;border-radius:14px;background:#e8f4f8;border:3px solid #b6d3de;font-weight:800;font-size:clamp(18px,3vw,30px)}#ccOv .cc-opt.ok{background:#bbf7d0;border-color:#16a34a}
 #ccOv .cc-big{font-size:clamp(60px,12vw,120px);text-align:center}#ccOv .cc-c{text-align:center}
 #ccOv .cc-msg{color:#b3261e;font-weight:700;min-height:1.2em}
 #ccOv .cc-pick{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:12px 0}
+@media (max-height:560px){#ccOv{padding:6px 10px}#ccOv h2{font-size:20px}#ccOv .cc-top{margin-bottom:2px}#ccOv .cc-x{padding:5px 10px}#ccOv .cc-team{min-width:70px;padding:3px 8px;border-width:3px}#ccOv .cc-team b{font-size:20px}#ccOv .cc-score{margin-bottom:4px;gap:6px}#ccOv .cc-pr{font-size:15px!important;margin:2px 0!important}}
 `; document.head.appendChild(st); }
 
 function ui() { if (!ov) { ov = document.createElement("div"); ov.id = "ccOv"; ov.hidden = true; document.body.appendChild(ov); ov.addEventListener("click", onClick); ov.addEventListener("input", e => { if (e.target.id === "ccText") text = e.target.value; if (e.target.id === "ccName") sname = e.target.value; }); ov.addEventListener("change", e => { if (e.target.id === "ccSet") pickSet(e.target.value); if (e.target.id === "ccN") nT = +e.target.value; if (e.target.id === "ccPts") pts = +e.target.value; }); } return ov; }
@@ -60,8 +62,18 @@ function nextTurn() { turn = (turn + 1) % teams.length; open = -1; step = ""; re
 function add(t, n) { t.s = Math.max(0, t.s + n); }
 
 function scoreBar() { return `<div class="cc-score">${teams.map((t, i) => `<div class="cc-team${i === turn && !over ? " on" : ""}" style="color:${t.c}">${t.icon} ${esc(t.name)}<b>${t.s}</b></div>`).join("")}</div>`; }
+function fit() {
+  const g = $("ccGrid"); if (!g || !ov || ov.hidden) return;
+  const W = g.clientWidth, H = g.clientHeight, n = tiles.length, gap = 10; if (W < 20) return;
+  let best = { s: 0, c: 1, sc: 0 };
+  for (let c = 1; c <= n; c++) { const r = Math.ceil(n / c), s = Math.min((W - gap * (c - 1)) / c, (Math.max(H, 60) - gap * (r - 1)) / r); const sc = s * (n % c === 0 ? 1.18 : 1); if (sc > best.sc) best = { s, c, sc }; }
+  const s = Math.floor(best.s);
+  g.style.gridTemplateColumns = `repeat(${best.c}, ${s}px)`; g.style.gridAutoRows = s + "px";
+  g.style.setProperty("--ns", Math.max(18, Math.floor(s * 0.42)) + "px");
+}
+window.addEventListener("resize", () => fit());
 function paint() {
-  const o = ui(); o.hidden = false;
+  const o = ui(); o.hidden = false; o.classList.remove("cc-board");
   const top = `<div class="cc-top"><h2>🥥 Coconut Crack</h2><button class="cc-x" type="button" data-cc="x">Close</button></div>`;
   if (!tiles.length) {
     o.innerHTML = top + `<div class="cc-card"><h3 style="margin-top:0">Set up the game</h3>
@@ -82,9 +94,10 @@ function paint() {
     return;
   }
   if (open < 0) {
-    o.innerHTML = top + scoreBar() + `<p style="text-align:center;color:#fff;font-weight:900;font-size:clamp(18px,3vw,28px);text-shadow:0 2px 0 rgba(0,0,0,.3)">${cur().icon} ${esc(cur().name)}, pick a coconut!</p>
-      <div class="cc-grid">${tiles.map((t, i) => `<button class="cc-nut${t.done ? " done" : ""}" type="button" data-cc="nut" data-i="${i}"${t.done ? " disabled" : ""}>${t.done ? t.icon : t.n}</button>`).join("")}</div>`;
-    return;
+    o.classList.add("cc-board");
+    o.innerHTML = top + scoreBar() + `<p class="cc-pr" style="text-align:center;color:#fff;font-weight:900;font-size:clamp(18px,3vw,28px);text-shadow:0 2px 0 rgba(0,0,0,.3);margin:6px 0">${cur().icon} ${esc(cur().name)}, pick a coconut!</p>
+      <div class="cc-grid" id="ccGrid">${tiles.map((t, i) => `<button class="cc-nut${t.done ? " done" : ""}" type="button" data-cc="nut" data-i="${i}"${t.done ? " disabled" : ""}>${t.done ? t.icon : t.n}</button>`).join("")}</div>`;
+    requestAnimationFrame(fit); return;
   }
   const t = tiles[open], tm = cur();
   let body = "";
