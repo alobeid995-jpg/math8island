@@ -1,7 +1,7 @@
 // Connects the 9S Island games page to Math Island: who is playing, and where the answers go.
-import { auth, fs, doc, getDoc, setDoc, collection, getDocs, query, where, whenUser, profileOf, signOut } from "./fb.js?v=1111g";
+import { auth, fs, doc, getDoc, setDoc, collection, getDocs, query, where, whenUser, profileOf, signOut } from "./fb.js?v=1111h";
 
-import { playerOf } from "./islandmap.js?v=1111g";
+import { playerOf } from "./islandmap.js?v=1111h";
 
 const u = await whenUser();
 const p = u && await profileOf(u.uid);

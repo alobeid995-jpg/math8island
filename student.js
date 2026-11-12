@@ -1,7 +1,7 @@
-import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1111g";
-import { initWork } from "./stuwork.js?v=1111g";
-import { initMsgs } from "./stumsg.js?v=1111g";
-import { startPresence, logEv } from "./presence.js?v=1111g";
+import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1111h";
+import { initWork } from "./stuwork.js?v=1111h";
+import { initMsgs } from "./stumsg.js?v=1111h";
+import { startPresence, logEv } from "./presence.js?v=1111h";
 
 const sub = (t, n) => t.split("{n}").join(n);
 let me = null, ref = null, shopCat = "frame", confirmId = "", pickerOpen = false, seeds = [], loaded = false;
@@ -64,7 +64,7 @@ function choosePin(u, lref, startPin) {
 
 async function save(patch, okMsg) {
   try { await updateDoc(ref, patch); if (okMsg) toast(okMsg); }
-  catch (e) { toast(e && e.code === "permission-denied" ? "That did not work. Ask your teacher if the shop is ready." : "Could not save. Check your internet."); }
+  catch (e) { try { console.error("save failed", e && e.code, e && e.message); } catch {} toast(e && e.code === "permission-denied" ? "That did not work (the shop was refused). Tell your teacher." : "Could not save. Check your internet."); }
 }
 
 function card(st, it) {
