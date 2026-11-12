@@ -1,7 +1,7 @@
 // Teacher side: Fun Park. The teacher opens or closes it for each of her classes (work/funpark, kind "funpark").
 // The button only exists for a teacher the owner has given Fun Park to (developer page -> Teachers -> Features; stored in shop/features).
-import { fs, doc, getDoc, setDoc, bdoc } from "./fb.js?v=1111k";
-import { GAMES } from "./fpgames.js?v=1111k";
+import { fs, doc, getDoc, setDoc, bdoc } from "./fb.js?v=1111m";
+import { GAMES } from "./fpgames.js?v=1111m";
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 let modal = null, openCls = [], msg = "";

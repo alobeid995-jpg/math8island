@@ -1,14 +1,15 @@
 import { changeEmail, auth, fs, firebaseConfig, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, collection, query, where, writeBatch, setBase, bcol, bdoc, signOut, whenUser, profileOf, emailFor, pinKey,
-  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1111k";
-import { db } from "./fbdb.js?v=1111k";
-import { startUsage } from "./usage.js?v=1111k";
-import { openWork } from "./teacherwork.js?v=1111k";
+  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1111m";
+import { db } from "./fbdb.js?v=1111m";
+import { startUsage } from "./usage.js?v=1111m";
+import { openWork } from "./teacherwork.js?v=1111m";
 import "./lessonxp.js";
-import { openProgress } from "./progress.js?v=1111k";
-import { openMaterial } from "./material.js?v=1111k";
-import { hasFunpark, openFunpark } from "./fpteacher.js?v=1111k";
-import { openLive } from "./live.js?v=1111k";
-import { openInbox } from "./inbox.js?v=1111k";
+import { openProgress } from "./progress.js?v=1111m";
+import { openMaterial } from "./material.js?v=1111m";
+import { hasFunpark, openFunpark } from "./fpteacher.js?v=1111m";
+import { initChat } from "./chat.js?v=1111m";
+import { openLive } from "./live.js?v=1111m";
+import { openInbox } from "./inbox.js?v=1111m";
 
 const $ = id => document.getElementById(id);
 const esc2 = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -107,10 +108,11 @@ if (ADMIN) { // the button is only created for the owner; other teachers' pages 
   $("outBtn").before(dv);
 }
 $("workBtn").onclick = () => openWork();
-{ const ib2 = document.createElement("button"); ib2.className = "ghost small"; ib2.id = "inboxBtn"; ib2.type = "button"; ib2.textContent = "Messages & announcements"; ib2.onclick = () => openInbox(); $("outBtn").before(ib2); }
+{ const ib2 = document.createElement("button"); ib2.className = "ghost small"; ib2.id = "inboxBtn"; ib2.type = "button"; ib2.textContent = "Announcements"; ib2.onclick = () => openInbox(); $("outBtn").before(ib2); }
 { const lb = document.createElement("button"); lb.className = "ghost small"; lb.id = "liveBtn"; lb.type = "button"; lb.textContent = "Live quiz"; lb.onclick = () => openLive(); $("outBtn").before(lb); }
 { const fb = document.createElement("button"); fb.className = "ghost small"; fb.id = "funBtn"; fb.type = "button"; fb.textContent = "Fun Park"; fb.style.display = "none"; fb.onclick = () => openFunpark(); $("outBtn").before(fb); hasFunpark(ADMIN, u.uid).then(ok => { if (ok) fb.style.display = ""; }).catch(() => {}); }
 { const mb = document.createElement("button"); mb.className = "ghost small"; mb.id = "matBtn"; mb.type = "button"; mb.textContent = "My material"; mb.onclick = () => openMaterial(); $("outBtn").before(mb); }
+initChat("teacher", { uid: u.uid, ...p }, null).catch(() => {});
 $("outBtn").onclick = async () => { await signOut(auth); location.href = "index.html"; };
 
 /* ---------- the header buttons live in Hub > Tools > Manage ---------- */

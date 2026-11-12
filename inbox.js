@@ -1,7 +1,7 @@
 // Teacher side: announcements (shown to chosen classes) and messages with students.
 // Announcements are documents in <base>/work (kind "announcement"), which students already read for their class.
 // Messages are documents in <base>/msgs; a student reads and writes only his own thread (see the rules block).
-import { getDocs, setDoc, updateDoc, deleteDoc, bcol, bdoc } from "./fb.js?v=1111k";
+import { getDocs, setDoc, updateDoc, deleteDoc, bcol, bdoc } from "./fb.js?v=1111m";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -17,19 +17,19 @@ document.body.appendChild(modal);
 
 const stu = id => (typeof students !== "undefined" ? students : []).find(s => s.id === id);
 const nameOf = (sid, m) => (stu(sid) || {}).name || (m && m.name) || sid;
-const unreadN = () => msgs.filter(x => x.from === "student" && !x.tread).length;
+const unreadN = () => 0;   // chat lives in chat.js now; this window is for announcements only
 async function load() {
   const [m, w] = await Promise.all([getDocs(bcol("msgs")), getDocs(bcol("work"))]);
   msgs = m.docs.map(d => ({ id: d.id, ...d.data() }));
   anns = w.docs.map(d => ({ id: d.id, ...d.data() })).filter(x => x.kind === "announcement").sort((a, b) => (b.created || 0) - (a.created || 0));
 }
-function badge() { const b = $("inboxBtn"); if (b) { const n = unreadN(); b.textContent = "Messages & announcements" + (n ? ` (${n} new)` : ""); } }
+function badge() { const b = $("inboxBtn"); if (b) { const n = unreadN(); b.textContent = "Announcements"; } }
 const convs = () => { const by = new Map(); msgs.forEach(x => { (by.get(x.sid) || by.set(x.sid, []).get(x.sid)).push(x); }); return [...by.entries()].map(([sid, l]) => { l.sort((a, b) => a.at - b.at); return { sid, l, last: l[l.length - 1], un: l.filter(x => x.from === "student" && !x.tread).length }; }).sort((a, b) => (b.un > 0) - (a.un > 0) || b.last.at - a.last.at); };
 
 function render() {
   const b = $("inBody"); if (!b) return;
   const n = unreadN();
-  const head = `<h3>Messages & announcements</h3><div class="ib-tabs"><button class="${tab === "ann" ? "primary" : "ghost"} small" type="button" data-ib="tab" data-t="ann">Announcements</button><button class="${tab === "msg" ? "primary" : "ghost"} small" type="button" data-ib="tab" data-t="msg">Messages${n ? ` (${n} new)` : ""}</button></div>`;
+  const head = `<h3>Announcements</h3>`;
   const foot = `<p class="lg-msg" id="ibMsg">${esc(msg)}</p><div class="lg-bar"><button class="ghost" type="button" data-ib="close">Close</button></div>`;
   if (tab === "ann") {
     if (!draft.classes) draft.classes = [...CLASSES];
@@ -98,9 +98,9 @@ document.addEventListener("click", async e => {
 modal.addEventListener("click", e => { if (e.target === modal) { modal.hidden = true; badge(); } });
 
 export async function openInbox(t) {
-  modal.hidden = false; tab = t || (unreadN() ? "msg" : "ann"); sel = ""; newOpen = false; msg = ""; $("inBody").innerHTML = "<p>Loading…</p>";
+  modal.hidden = false; tab = "ann"; sel = ""; newOpen = false; msg = ""; $("inBody").innerHTML = "<p>Loading…</p>";
   try { await load(); } catch (e) { $("inBody").innerHTML = `<p class="lg-msg">Could not load (${esc(e.code || e.message)}).</p><button class="ghost" data-ib="close">Close</button>`; return; }
-  if (!t && unreadN()) tab = "msg"; render(); badge();
+  render(); badge();
 }
 let told = 0;
 export async function checkInbox() {

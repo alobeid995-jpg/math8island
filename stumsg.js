@@ -1,6 +1,6 @@
 // Student side: announcements from the teacher (top of the page) and a message box to write to the teacher.
 // Announcements are documents in <base>/work (kind "announcement"). Messages are documents in <base>/msgs.
-import { fs, doc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1111k";
+import { fs, doc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1111m";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -22,10 +22,7 @@ async function load() {
     const lim = Date.now() - 21 * 864e5;
     anns = w.docs.map(d => ({ id: d.id, ...d.data() })).filter(x => x.kind === "announcement" && (x.created || 0) > lim).sort((a, b) => (b.created || 0) - (a.created || 0)).slice(0, 4);
   } catch { anns = []; }
-  try {
-    const m = await getDocs(query(collection(fs, ...base, "msgs"), where("sid", "==", P.sid)));
-    msgs = m.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => a.at - b.at); canMsg = true;
-  } catch (e) { msgs = []; canMsg = !(e && e.code === "permission-denied"); }
+  msgs = []; canMsg = false;   // messages moved to the chat panel (chat.js)
 }
 function draw() {
   const seen = ls.get(key("mi_news_seen")), un = unreadT();

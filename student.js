@@ -1,9 +1,10 @@
-import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1111k";
-import { initWork } from "./stuwork.js?v=1111k";
-import { initMsgs } from "./stumsg.js?v=1111k";
-import { initLive } from "./livequiz.js?v=1111k";
-import { initFunpark } from "./funpark.js?v=1111k";
-import { startPresence, logEv } from "./presence.js?v=1111k";
+import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1111m";
+import { initWork } from "./stuwork.js?v=1111m";
+import { initMsgs } from "./stumsg.js?v=1111m";
+import { initLive } from "./livequiz.js?v=1111m";
+import { initChat } from "./chat.js?v=1111m";
+import { initFunpark } from "./funpark.js?v=1111m";
+import { startPresence, logEv } from "./presence.js?v=1111m";
 
 const sub = (t, n) => t.split("{n}").join(n);
 let me = null, ref = null, shopCat = "frame", confirmId = "", pickerOpen = false, seeds = [], loaded = false;
@@ -33,6 +34,7 @@ async function start() {
   initMsgs(p, () => me).catch(() => {});
   initLive(p, () => me).catch(() => {});
   initFunpark(p, () => me).catch(() => {});
+  initChat("student", p, () => me).catch(() => {});
   startPresence(u, p, () => me).catch(() => {});
 }
 
