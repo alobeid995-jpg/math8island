@@ -2,7 +2,7 @@
    Built from the logo: sea blues, a sun, sand, and round white strokes.
    Soft surfaces, real depth, round type. Loaded after the older layers and overrides their look. */
 :root {
-  --sea-900: #0c2a5e; --sea-700: var(--sea-700); --sea-500: #3d8bf0; --sea-300: #79b4ff; --sun: #f6b91c; --sand: #ffd27a;
+  --sea-900: #0c2a5e; --sea-700: #1f5bbd; --sea-500: #3d8bf0; --sea-300: #79b4ff; --sun: #f6b91c; --sand: #ffd27a;
   --red: #e0453a; --yellow: var(--sun); --blue: var(--sea-700); --edge: #d3e0f5;
   --paper: #f1f6ff; --card: #ffffff; --ink: #0f2a57; --muted: #5a6b8a; --line: #e1eaf8;
   --grid: #e9f0fb; --grid-major: #dbe6f7; --rule: #e1eaf8; --margin: var(--red); --chalk: var(--red);
@@ -259,3 +259,25 @@ html.apple .avw,html.apple .bdg svg,html.apple .spk{filter:none!important}
 :root[data-mt="candy"]{--sea-900:#831843;--sea-700:#db2777;--sea-500:#f472b6;--sea-300:#f9a8d4;--sun:#fbbf24;--sand:#fde68a;--board2:#be185d;--accent-soft:#fce7f3;--edge:#f6cfe3;--blue:#db2777;--accent:#db2777;--board:#831843;--wood:#db2777;--wood2:#831843;--crystal:#f472b6;--chalk-y:#fde68a}
 :root[data-mt="graphite"]{--sea-900:#1f2937;--sea-700:#475569;--sea-500:#64748b;--sea-300:#cbd5e1;--sun:#f59e0b;--sand:#fcd34d;--board2:#334155;--accent-soft:#e2e8f0;--edge:#d5dde8;--blue:#475569;--accent:#475569;--board:#1f2937;--wood:#475569;--wood2:#1f2937;--crystal:#64748b;--chalk-y:#fcd34d}
 .th-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin:10px 0}.th-pk{border:3px solid var(--edge,#d3e0f5);background:#fff;border-radius:14px;padding:8px;font:inherit;font-weight:700;cursor:pointer;color:inherit;display:flex;flex-direction:column;gap:6px;align-items:center}.th-pk[aria-pressed="true"]{border-color:var(--sea-700);box-shadow:0 0 0 3px color-mix(in srgb,var(--sea-500) 35%,transparent)}.th-sw{display:flex;width:100%;height:30px;border-radius:9px;overflow:hidden}.th-sw i{flex:1}
+
+/* theme text, page and wave colours */
+:root[data-mt="sunset"]{--ink:#3d1608;--muted:#8a5a45;--paper:#fff7f0;--line:#f3e1d3;--rule:#f3e1d3;--grid:#f3e1d3}
+:root[data-mt="sunset"] header.book::after{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 264 120' preserveAspectRatio='none'%3E%3Cpath d='M0 26c44-30 88-30 132 0s88 30 132 0V120H0Z' fill='%23fdba74'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 264 120' preserveAspectRatio='none'%3E%3Cpath d='M0 30c44-36 88-36 132 0s88 36 132 0V120H0Z' fill='%23ffe3c2'/%3E%3C/svg%3E")}
+:root[data-mt="sunset"] ::selection{background:#ffe3c2;color:#3d1608}
+:root[data-mt="forest"]{--ink:#0b2e1e;--muted:#456a58;--paper:#f3fbf6;--line:#d4eadb;--rule:#d4eadb;--grid:#d4eadb}
+:root[data-mt="forest"] header.book::after{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 264 120' preserveAspectRatio='none'%3E%3Cpath d='M0 26c44-30 88-30 132 0s88 30 132 0V120H0Z' fill='%2386efac'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 264 120' preserveAspectRatio='none'%3E%3Cpath d='M0 30c44-36 88-36 132 0s88 36 132 0V120H0Z' fill='%23c9f5d9'/%3E%3C/svg%3E")}
+:root[data-mt="forest"] ::selection{background:#c9f5d9;color:#0b2e1e}
+:root[data-mt="galaxy"]{--ink:#1e1445;--muted:#5e5683;--paper:#f6f3ff;--line:#e0d9f5;--rule:#e0d9f5;--grid:#e0d9f5}
+:root[data-mt="galaxy"] header.book::after{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 264 120' preserveAspectRatio='none'%3E%3Cpath d='M0 26c44-30 88-30 132 0s88 30 132 0V120H0Z' fill='%23c4b5fd'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 264 120' preserveAspectRatio='none'%3E%3Cpath d='M0 30c44-36 88-36 132 0s88 36 132 0V120H0Z' fill='%23e4dcff'/%3E%3C/svg%3E")}
+:root[data-mt="galaxy"] ::selection{background:#e4dcff;color:#1e1445}
+:root[data-mt="candy"]{--ink:#4a0f2c;--muted:#85506b;--paper:#fff4fa;--line:#f5d9e8;--rule:#f5d9e8;--grid:#f5d9e8}
+:root[data-mt="candy"] header.book::after{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 264 120' preserveAspectRatio='none'%3E%3Cpath d='M0 26c44-30 88-30 132 0s88 30 132 0V120H0Z' fill='%23f9a8d4'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 264 120' preserveAspectRatio='none'%3E%3Cpath d='M0 30c44-36 88-36 132 0s88 36 132 0V120H0Z' fill='%23fcd9ea'/%3E%3C/svg%3E")}
+:root[data-mt="candy"] ::selection{background:#fcd9ea;color:#4a0f2c}
+:root[data-mt="graphite"]{--ink:#111827;--muted:#566070;--paper:#f4f6f9;--line:#dde3ec;--rule:#dde3ec;--grid:#dde3ec}
+:root[data-mt="graphite"] header.book::after{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 264 120' preserveAspectRatio='none'%3E%3Cpath d='M0 26c44-30 88-30 132 0s88 30 132 0V120H0Z' fill='%23cbd5e1'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 264 120' preserveAspectRatio='none'%3E%3Cpath d='M0 30c44-36 88-36 132 0s88 36 132 0V120H0Z' fill='%23e5eaf1'/%3E%3C/svg%3E")}
+:root[data-mt="graphite"] ::selection{background:#e5eaf1;color:#111827}
+:root[data-mt="sunset"] #app > section.card:first-of-type:not(.pinset)::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 264 120' preserveAspectRatio='none'%3E%3Cpath d='M0 30c44-36 88-36 132 0s88 36 132 0V120H0Z' fill='%23fdba74'/%3E%3C/svg%3E")}
+:root[data-mt="forest"] #app > section.card:first-of-type:not(.pinset)::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 264 120' preserveAspectRatio='none'%3E%3Cpath d='M0 30c44-36 88-36 132 0s88 36 132 0V120H0Z' fill='%2386efac'/%3E%3C/svg%3E")}
+:root[data-mt="galaxy"] #app > section.card:first-of-type:not(.pinset)::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 264 120' preserveAspectRatio='none'%3E%3Cpath d='M0 30c44-36 88-36 132 0s88 36 132 0V120H0Z' fill='%23c4b5fd'/%3E%3C/svg%3E")}
+:root[data-mt="candy"] #app > section.card:first-of-type:not(.pinset)::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 264 120' preserveAspectRatio='none'%3E%3Cpath d='M0 30c44-36 88-36 132 0s88 36 132 0V120H0Z' fill='%23f9a8d4'/%3E%3C/svg%3E")}
+:root[data-mt="graphite"] #app > section.card:first-of-type:not(.pinset)::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 264 120' preserveAspectRatio='none'%3E%3Cpath d='M0 30c44-36 88-36 132 0s88 36 132 0V120H0Z' fill='%23cbd5e1'/%3E%3C/svg%3E")}

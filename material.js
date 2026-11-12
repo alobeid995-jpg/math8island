@@ -1,7 +1,7 @@
 // "My material": each teacher keeps lists of lessons (one per quarter or term) and adds a link as each lesson is taught.
 // A list is one document, <base>/work/material-<id> (the folder students already read for classwork, so no new database rules).
 // Students see every lesson of every list; a lesson with links is "Available", the others are greyed as "Coming soon".
-import { getDocs, setDoc, deleteDoc, bcol, bdoc } from "./fb.js?v=1111u";
+import { getDocs, setDoc, deleteDoc, bcol, bdoc } from "./fb.js?v=1111w";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
