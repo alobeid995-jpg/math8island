@@ -1,7 +1,7 @@
 // "My classwork" on the student page: worksheets from the teacher, and (for the 9S boys) the lesson games.
-import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1111j";
-import { playerOf, catalog } from "./islandmap.js?v=1111j";
-import { logEv } from "./presence.js?v=1111j";
+import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1111k";
+import { playerOf, catalog } from "./islandmap.js?v=1111k";
+import { logEv } from "./presence.js?v=1111k";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -20,7 +20,7 @@ async function load() {
     const w = await getDocs(query(collection(fs, ...base, "work"), where("classes", "array-contains", me.cls)));
     const all = w.docs.map(d => ({ id: d.id, ...d.data() }));
     materials = all.filter(x => x.kind === "material" && Array.isArray(x.units)).sort((a, b) => (b.created || 0) - (a.created || 0));
-    works = all.filter(x => x.kind !== "material" && x.kind !== "announcement").sort((a, b) => (b.created || 0) - (a.created || 0));
+    works = all.filter(x => x.kind !== "material" && x.kind !== "announcement" && x.kind !== "funpark").sort((a, b) => (b.created || 0) - (a.created || 0));
     const s = await getDocs(query(collection(fs, ...base, "subs"), where("sid", "==", P.sid)));
     mine = new Map(s.docs.map(d => [d.data().wid, d.data()]));
   } catch { works = []; }

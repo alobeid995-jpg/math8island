@@ -78,8 +78,8 @@ td.n{text-align:right;font-variant-numeric:tabular-nums}th.n{text-align:right}
 </div>
 <div class="drawer" id="dr"><div class="bk" data-close="1"></div><div class="pn" id="pn"></div></div>
 <script type="module">
-import { fs, doc, updateDoc, collection, getDocs, onSnapshot, query, where, whenUser, profileOf } from "./fb.js?v=1111j";
-import { startUsage } from "./usage.js?v=1111j";
+import { fs, doc, getDoc, setDoc, updateDoc, collection, getDocs, onSnapshot, query, where, whenUser, profileOf } from "./fb.js?v=1111k";
+import { startUsage } from "./usage.js?v=1111k";
 const $ = id => document.getElementById(id), out = $("out");
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const ONLINE = 6 * 60 * 1000, DAY = 24 * 60 * 60 * 1000;
@@ -118,6 +118,7 @@ const pill = st => `<span class="pill ${st === "earlier" ? "" : st}">${st === "o
 async function load() {
   out.className = "msg"; out.textContent = "Loading…";
   try {
+    await loadFeat();
     const users = (await getDocs(collection(fs, "users"))).docs.map(d => ({ uid: d.id, ...d.data() }));
     const tch = users.filter(x => x.role === "teacher" || x.role === "paused");
     const logins = new Set(users.filter(x => x.role === "student").map(x => key(x.tid, x.sid)));
@@ -237,7 +238,30 @@ function paintTeachers() {
   $("pane").innerHTML = `<div class="card"><div class="tbl"><table><thead><tr><th>Teacher</th><th>Status</th><th class="n">Students</th><th class="n">Logins</th><th class="n">Online</th><th class="n">Active 24 h</th><th></th></tr></thead><tbody>${teachers.map(g => {
     const mine = students.filter(s => s.tid === (g.me ? "" : g.uid)), on = mine.filter(s => statusOf(s) === "on").length, day = mine.filter(s => ["on", "day"].includes(statusOf(s))).length;
     const act = g.me ? "" : g.role === "paused" ? `<button class="btn" data-uid="${esc(g.uid)}" data-to="teacher" type="button">Restore access</button>` : `<button class="btn warn" data-uid="${esc(g.uid)}" data-to="paused" type="button">Pause access</button>`;
-    return `<tr><td class="nm">${esc(g.title)}<small>${esc([...new Set(mine.map(s => s.cls))].sort().join(", ") || "no classes yet")}</small></td><td>${g.me ? '<span class="pill day">Owner</span>' : g.role === "paused" ? '<span class="pill nolog">Paused</span>' : '<span class="pill on">Active</span>'}</td><td class="n">${g.n}</td><td class="n">${g.logins}</td><td class="n">${on}</td><td class="n">${day}</td><td style="text-align:right">${act}</td></tr>`; }).join("")}</tbody></table></div></div>`;
+    return `<tr><td class="nm">${esc(g.title)}<small>${esc([...new Set(mine.map(s => s.cls))].sort().join(", ") || "no classes yet")}</small></td><td>${g.me ? '<span class="pill day">Owner</span>' : g.role === "paused" ? '<span class="pill nolog">Paused</span>' : '<span class="pill on">Active</span>'}</td><td class="n">${g.n}</td><td class="n">${g.logins}</td><td class="n">${on}</td><td class="n">${day}</td><td style="text-align:right">${act}</td></tr>`; }).join("")}</tbody></table></div></div>` + featCard();
+  const fc = $("featCard"); if (fc) fc.onclick = featClick;
+}
+/* ---------- features the owner gives to teachers (shop/features: { funpark: { all, uids[] } }) ---------- */
+let feat = { funpark: { all: false, uids: [] } };
+async function loadFeat() { try { const d = await getDoc(doc(fs, "shop", "features")); const f = d.exists() && d.data().funpark; feat.funpark = { all: !!(f && f.all), uids: (f && Array.isArray(f.uids)) ? f.uids : [] }; } catch {} }
+function featCard() {
+  const f = feat.funpark, others = teachers.filter(g => !g.me);
+  return `<div class="card" id="featCard" style="margin-top:14px"><h3 style="margin:0 0 4px">Features for teachers</h3>
+    <p class="note">You always have every feature. Choose who else gets it. A teacher who loses a feature stops seeing it, and her students stop seeing it too.</p>
+    <b>Fun Park</b> <small>(games students play after their work)</small>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0">
+      <button class="btn${f.all ? "" : " warn"}" type="button" data-fm="all">${f.all ? "✓ " : ""}All teachers</button>
+      <button class="btn" type="button" data-fm="none">Only me (remove from everyone)</button></div>
+    ${others.length ? `<div style="display:grid;gap:6px;margin:6px 0">${others.map(g => `<label style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-fu="${esc(g.uid)}"${f.all || f.uids.includes(g.uid) ? " checked" : ""}${f.all ? " disabled" : ""}> ${esc(g.title)}</label>`).join("")}</div>` : '<p class="note">No other teachers yet.</p>'}
+    <p class="note" id="featMsg">${f.all ? "Every teacher has Fun Park." : f.uids.length ? f.uids.length + " selected teacher(s) have Fun Park." : "Only you have Fun Park."}</p></div>`;
+}
+async function featClick(e) {
+  const m = e.target.closest("[data-fm]"), u = e.target.closest("[data-fu]"); if (!m && !u) return;
+  const f = feat.funpark;
+  if (m) { if (m.dataset.fm === "all") f.all = !f.all; else { f.all = false; f.uids = []; } }
+  if (u) { const id = u.dataset.fu; f.uids = u.checked ? [...new Set([...f.uids, id])] : f.uids.filter(x => x !== id); }
+  try { await setDoc(doc(fs, "shop", "features"), { funpark: { all: f.all, uids: f.uids } }, { merge: true }); } catch { alert("Could not save. Check your connection."); }
+  paintTeachers();
 }
 
 async function gameTitles() {
