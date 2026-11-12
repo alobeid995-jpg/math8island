@@ -1,14 +1,14 @@
 // Teacher side: Fun Park. The teacher opens or closes it for each of her classes (work/funpark, kind "funpark").
 // The button only exists for a teacher the owner has given Fun Park to (developer page -> Teachers -> Features; stored in shop/features).
-import { fs, doc, getDoc, setDoc, bdoc } from "./fb.js?v=1111m";
-import { GAMES } from "./fpgames.js?v=1111m";
+import { fs, doc, getDoc, setDoc, bdoc } from "./fb.js?v=1111n";
+import { GAMES } from "./fpgames.js?v=1111n";
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 let modal = null, openCls = [], msg = "";
 
-export async function hasFunpark(admin, uid) {
+export async function hasFunpark(admin, uid, key = "funpark") {
   if (admin) return true;
-  try { const s = await getDoc(doc(fs, "shop", "features")); const f = s.exists() && s.data().funpark; return !!f && (f.all === true || (Array.isArray(f.uids) && f.uids.includes(uid))); } catch { return false; }
+  try { const s = await getDoc(doc(fs, "shop", "features")); const f = s.exists() && s.data()[key]; return !!f && (f.all === true || (Array.isArray(f.uids) && f.uids.includes(uid))); } catch { return false; }
 }
 function ui() {
   if (modal) return;
