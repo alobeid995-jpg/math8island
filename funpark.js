@@ -1,7 +1,7 @@
 // Student side: Fun Park. When the teacher opens it for the class, a button appears; it shows the games, each one opens inside the page.
 // Open/closed state: work/funpark (kind "funpark", classes = the classes it is open for). Allowed teachers: shop/features.funpark ({all, uids}).
-import { fs, doc, getDoc } from "./fb.js?v=1112a";
-import { GAMES } from "./fpgames.js?v=1112a";
+import { fs, doc, getDoc } from "./fb.js?v=1112b";
+import { GAMES } from "./fpgames.js?v=1112b";
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 let P = null, base = [], me = null, open = false, ov = null, pill = null, cur = "";
