@@ -1,10 +1,10 @@
-import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1111w";
-import { initWork } from "./stuwork.js?v=1111w";
-import { initMsgs } from "./stumsg.js?v=1111w";
-import { initLive } from "./livequiz.js?v=1111w";
-import { initChat } from "./chat.js?v=1111w";
-import { initFunpark } from "./funpark.js?v=1111w";
-import { startPresence, logEv } from "./presence.js?v=1111w";
+import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1111y";
+import { initWork } from "./stuwork.js?v=1111y";
+import { initMsgs } from "./stumsg.js?v=1111y";
+import { initLive } from "./livequiz.js?v=1111y";
+import { initChat } from "./chat.js?v=1111y";
+import { initFunpark } from "./funpark.js?v=1111y";
+import { startPresence, logEv } from "./presence.js?v=1111y";
 
 const sub = (t, n) => t.split("{n}").join(n);
 let me = null, ref = null, shopCat = "frame", confirmId = "", pickerOpen = false, seeds = [], loaded = false;
@@ -13,6 +13,8 @@ const newSeeds = () => { seeds = Array.from({ length: 18 }, () => (Math.random()
 const THEMES = [["ocean", "Ocean", ["#0c2a5e", "#1f5bbd", "#3d8bf0", "#f6b91c"]],["sunset", "Sunset", ["#7a1f0b", "#d9480f", "#f97316", "#fde047"]],["forest", "Forest", ["#0b3b26", "#15803d", "#34d399", "#facc15"]],["galaxy", "Galaxy", ["#1e1b4b", "#6d28d9", "#8b5cf6", "#f472b6"]],["candy", "Candy", ["#831843", "#db2777", "#f472b6", "#fbbf24"]],["graphite", "Graphite", ["#1f2937", "#475569", "#64748b", "#f59e0b"]]];
 const lsT = { get: () => { try { return localStorage.getItem("mi_theme") || ""; } catch { return ""; } }, set: v => { try { localStorage.setItem("mi_theme", v); } catch {} } };
 const validT = id => THEMES.some(t => t[0] === id);
+const PTS = ["nebula", "samurai", "crimson", "horizon"];
+function applyPT(st) { const id = st && st.owned && st.eq ? String(st.eq.theme || "").replace(/^th-/, "") : ""; const ok = PTS.includes(id) && st.owned.includes("th-" + id); if (ok) document.documentElement.dataset.pt = id; else delete document.documentElement.dataset.pt; try { if (ok) localStorage.setItem("mi_pt", id); else localStorage.removeItem("mi_pt"); } catch {} }
 function applyTheme(id) { if (id && id !== "ocean" && validT(id)) document.documentElement.dataset.mt = id; else delete document.documentElement.dataset.mt; }
 let themeOpen = false;
 function fromDoc(snap) {
@@ -104,6 +106,7 @@ function bookNotes(st) {
   }).join("");
 }
 function render() {
+  if (me) applyPT(me);
   const app = $("app");
   if (!loaded) { app.innerHTML = `<div class="empty"><h2>Loading…</h2></div>`; return; }
   document.documentElement.classList.remove("wait");

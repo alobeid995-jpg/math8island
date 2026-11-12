@@ -1286,7 +1286,7 @@ header.book .geo { max-height: 190px; }
 /* --- Math Island logo mark --- */
 header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !important; color: transparent !important; font-size: 0 !important; border: 0 !important; box-shadow: none !important; border-radius: 22% !important; }
 
-</style><link rel="stylesheet" href="island.css?v=1111w"><style>
+</style><link rel="stylesheet" href="island.css?v=1111y"><style>
 .cls-panel{margin:12px 0;padding:14px;border:2px solid var(--edge);border-radius:12px;background:var(--card);display:grid;gap:10px}
 .cls-panel h4{margin:0}.cls-panel p{margin:0;font-size:14px}
 .cls-panel label{display:grid;gap:4px;font-size:13px;font-weight:600}
@@ -1457,7 +1457,7 @@ header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !import
 window.__ready = new Promise(r => { window.__resolveClaude = r; });
 window.claude = { use: async n => (await window.__ready).use(n) };
 </script>
-<script src="hats.js?v=1111w"></script>
+<script src="hats.js?v=1111y"></script>
 <script>
 const POSITIVE = [
   { title: "Active Participation", xp: 10 },
@@ -1772,7 +1772,7 @@ function libraryScene() {
 })();
 
 const avatarCache = new Map();
-function eqOf(st) { const e = (st && st.eq) || {}; return { frame: e.frame || "", color: e.color || "", title: e.title || "", top: e.top || "", skin: e.skin || "", hat: e.hat || "" }; }
+function eqOf(st) { const e = (st && st.eq) || {}; return { frame: e.frame || "", color: e.color || "", title: e.title || "", top: e.top || "", skin: e.skin || "", hat: e.hat || "", theme: e.theme || "" }; }
 /* ---------- Girls' shop (class 8G only): soft, rounded characters ---------- */
 const isGirlCls = c => /^8G$/i.test(String(c || "").trim());
 let GIRL = false;
@@ -1909,14 +1909,18 @@ async function setAvatar(id, seed) {
 /* ---------- XP shop: students spend XP on cosmetics and weapons ---------- */
 const SHOP_CATS = [
   { key: "frame", label: "Frames" }, { key: "skin", label: "Avatars" }, { key: "color", label: "Name colours" }, { key: "title", label: "Titles" },
-  { key: "top", label: "Legendary weapons" }, { key: "hat", label: "Accessories" }
+  { key: "top", label: "Legendary weapons" }, { key: "hat", label: "Accessories" }, { key: "theme", label: "Themes" }
 ];
-const GIRL_LABELS = { frame: "Pretty frames", skin: "Avatars", color: "Name colours", title: "Titles", top: "Magic accessories", hat: "Accessories" };
+const GIRL_LABELS = { frame: "Pretty frames", skin: "Avatars", color: "Name colours", title: "Titles", top: "Magic accessories", hat: "Accessories", theme: "Themes" };
 const shopCats = () => SHOP_CATS.map(c => GIRL ? { ...c, label: GIRL_LABELS[c.key] } : c);
 // Which equipment slot an item goes into. Legendary avatars share the avatar slot ("skin") with the enemy avatars, so a boy wears one or the other.
 const slotOf = it => it.slot || it.cat;
 // Edit prices here. Frames: 200 basic, 500 premium.
 const SHOP = [
+  { id: "th-nebula", cat: "theme", name: "Lost Astronaut", price: 500, both: 1 },
+  { id: "th-samurai", cat: "theme", name: "Samurai Sunset", price: 500, both: 1 },
+  { id: "th-crimson", cat: "theme", name: "Crimson Shore", price: 500, both: 1 },
+  { id: "th-horizon", cat: "theme", name: "Event Horizon", price: 500, both: 1 },
   { id: "f-chalk", cat: "frame", name: "✦ Silver Knight", price: 200 },
   { id: "f-pencil", cat: "frame", name: "✦ Bronze Sunburst", price: 200 },
   { id: "f-blue", cat: "frame", name: "✦ Sapphire Crown", price: 250 },
@@ -2045,7 +2049,7 @@ function readShop(v) {
     spent: Math.max(0, Number(v.spent) || 0),
     carry: Math.max(0, Number(v.carry) || 0),
     owned: Array.isArray(v.owned) ? v.owned.filter(x => typeof x === "string") : [],
-    eq: { frame: String(e.frame || ""), color: String(e.color || ""), title: String(e.title || ""), top: String(e.top || ""), skin: String(e.skin || ""), hat: String(e.hat || "") },
+    eq: { frame: String(e.frame || ""), color: String(e.color || ""), title: String(e.title || ""), top: String(e.top || ""), skin: String(e.skin || ""), hat: String(e.hat || ""), theme: String(e.theme || "") },
     reqs: Array.isArray(v.reqs) ? v.reqs.filter(r => r && shopItem(r.k)).map(r => ({ k: r.k, at: Number(r.at) || 0 })) : [],
     buys: Number(v.buys) || 0, lastBuy: String(v.lastBuy || ""),
     note: String(v.note || ""),
@@ -2078,6 +2082,7 @@ function shopPreview(it, st) {
     case "title": return `<span class="ttag">${esc(it.name)}</span>`;
     case "top": return avatarHTML(st, "md", { top: it.id });
     case "hat": return avatarHTML(st, "md", { hat: it.id });
+    case "theme": return `<span class="thp" style="background-image:url(themes/${it.id.slice(3)}.jpg)"></span>`;
     default: return `<span class="picon">${it.icon}</span>`;
   }
 }
@@ -4289,7 +4294,7 @@ document.getElementById("expBtn")?.addEventListener("click", async () => {
     <div class="acts noprint"><button class="ghost" id="lgPrint" type="button">Print this list</button><button class="ghost" id="lgClose" type="button">Close</button></div>
   </div>
 </div>
-<script type="module" src="teacher.js?v=1111w"></script>
+<script type="module" src="teacher.js?v=1111y"></script>
 
 <script>
 /* Post a certificate straight to Google Classroom.
