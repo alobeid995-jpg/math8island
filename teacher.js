@@ -1,16 +1,16 @@
 import { changeEmail, auth, fs, firebaseConfig, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, collection, query, where, writeBatch, setBase, bcol, bdoc, signOut, whenUser, profileOf, emailFor, pinKey,
-  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1111z";
-import { db } from "./fbdb.js?v=1111z";
-import { startUsage } from "./usage.js?v=1111z";
-import { openWork } from "./teacherwork.js?v=1111z";
+  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1112a";
+import { db } from "./fbdb.js?v=1112a";
+import { startUsage } from "./usage.js?v=1112a";
+import { openWork } from "./teacherwork.js?v=1112a";
 import "./lessonxp.js";
-import { openProgress } from "./progress.js?v=1111z";
-import { openMaterial } from "./material.js?v=1111z";
-import { hasFunpark, openFunpark } from "./fpteacher.js?v=1111z";
-import { openCoconut } from "./coconut.js?v=1111z";
-import { initChat } from "./chat.js?v=1111z";
-import { openLive } from "./live.js?v=1111z";
-import { openInbox } from "./inbox.js?v=1111z";
+import { openProgress } from "./progress.js?v=1112a";
+import { openMaterial } from "./material.js?v=1112a";
+import { hasFunpark, openFunpark } from "./fpteacher.js?v=1112a";
+import { openCoconut } from "./coconut.js?v=1112a";
+import { initChat } from "./chat.js?v=1112a";
+import { openLive } from "./live.js?v=1112a";
+import { openInbox } from "./inbox.js?v=1112a";
 
 const $ = id => document.getElementById(id);
 const esc2 = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -96,6 +96,7 @@ window.__owner = ADMIN;   // only the owner can change prices
   if (ADMIN) setDoc(pref, { prices: all() }).catch(() => {});   // new items get their default price; his own prices stay
   window.__savePrices = async m => { await setDoc(pref, { prices: { ...all(), ...m } }); };
   try { if (view === "shop") renderShopView(); } catch {}
+  if (!ADMIN) onSnapshot(pref, sn => { if (sn.exists()) { applyPrices(sn.data().prices || {}); try { if (view === "shop") renderShopView(); } catch {} } }, () => {});   // the owner's price changes reach other teachers live
 }
 
 if (CLASSES.some(c => /^(9S|8G|8B|8Y|8S|8M)$/i.test(c))) {   // 9S games: progress of each boy, inside this page
