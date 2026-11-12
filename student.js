@@ -1,7 +1,8 @@
-import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1111h";
-import { initWork } from "./stuwork.js?v=1111h";
-import { initMsgs } from "./stumsg.js?v=1111h";
-import { startPresence, logEv } from "./presence.js?v=1111h";
+import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1111i";
+import { initWork } from "./stuwork.js?v=1111i";
+import { initMsgs } from "./stumsg.js?v=1111i";
+import { initLive } from "./livequiz.js?v=1111i";
+import { startPresence, logEv } from "./presence.js?v=1111i";
 
 const sub = (t, n) => t.split("{n}").join(n);
 let me = null, ref = null, shopCat = "frame", confirmId = "", pickerOpen = false, seeds = [], loaded = false;
@@ -29,6 +30,7 @@ async function start() {
     () => { loaded = true; me = null; render(); });
   initWork(p, () => me, toast).catch(() => {});
   initMsgs(p, () => me).catch(() => {});
+  initLive(p, () => me).catch(() => {});
   startPresence(u, p, () => me).catch(() => {});
 }
 
