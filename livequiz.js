@@ -1,6 +1,6 @@
 // Student side: Live quiz. A teacher opens a game for the class; the student taps Join, waits in the lobby, then answers each question
 // on the big coloured buttons. After every question he sees if he was right and his place; at the end, the winners' podium.
-import { fs, doc, setDoc, collection, onSnapshot, query, where } from "./fb.js?v=1111i";
+import { fs, doc, setDoc, collection, onSnapshot, query, where } from "./fb.js?v=1111j";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -25,6 +25,7 @@ let P = null, base = [], me = null, cur = null, joined = false, hidden = false, 
 #liveOv .lq-list{display:grid;gap:6px;text-align:left}#liveOv .lq-list div{display:grid;grid-template-columns:2em 1fr auto;gap:8px;background:rgba(255,255,255,.14);padding:8px 12px;border-radius:12px;font-weight:700}
 #liveOv .lq-list .me{background:#ffd84a;color:#151412}
 #liveOv .lq-pod{display:flex;gap:10px;align-items:flex-end;justify-content:center;min-height:250px}#liveOv .lq-pod>div{width:30%;max-width:190px}
+#liveOv .lq-n{display:flex;align-items:center;gap:8px}#liveOv .lq-pod .av{display:flex;justify-content:center;margin-bottom:6px;opacity:0;animation:lqfade .5s forwards}#liveOv .p3 .av{animation-delay:.9s}#liveOv .p2 .av{animation-delay:2.2s}#liveOv .p1 .av{animation-delay:3.5s}
 #liveOv .lq-pod .nm{font-weight:800;opacity:0;animation:lqfade .5s forwards}#liveOv .lq-pod .sc{font-weight:700;opacity:0;animation:lqfade .5s forwards}
 #liveOv .lq-pod .bl{border-radius:12px 12px 0 0;color:#fff;font-weight:900;font-size:44px;padding-top:8px;transform-origin:bottom;transform:scaleY(0);animation:lqrise .8s cubic-bezier(.2,.9,.3,1.2) forwards}
 #liveOv .p3 .bl{height:90px;background:#b3733a;animation-delay:.2s}#liveOv .p3 .nm,#liveOv .p3 .sc{animation-delay:.9s}
@@ -37,6 +38,7 @@ const pill = document.createElement("button"); pill.id = "livePill"; pill.type =
 
 const durOf = i => (cur.qs[i] && cur.qs[i].t) || cur.dur || 20;
 const key = () => `mi_live_${P.sid}_${cur.id}`;
+const av = (r, sz) => { try { return avatarHTML({ id: r.sid, name: r.name || "", avatar: r.a || 0, eq: r.e || {}, cls: r.c || "" }, sz); } catch { return ""; } };
 const myRow = () => (cur.board || []).find(r => r.sid === P.sid);
 
 function show() {
@@ -47,7 +49,7 @@ function show() {
   if (!joined) {
     mid = `<h2>🎮 Live quiz</h2><p class="lq-q" style="font-size:22px">${esc(cur.title)}</p><button class="lq-btn" type="button" data-lq="join">Join the game</button>`;
   } else if (cur.status === "lobby") {
-    mid = `<h2>You are in, ${esc((me && me.name || "").split(" ")[0])}!</h2><p class="lq-q" style="font-size:22px">Look at the screen. Your teacher will start the game soon.</p>`;
+    mid = `<div style="display:flex;justify-content:center">${av({ sid: P.sid, name: me && me.name, a: me && me.avatar, e: me && me.eq, c: me && me.cls }, "xl")}</div><h2>You are in, ${esc((me && me.name || "").split(" ")[0])}!</h2><p class="lq-q" style="font-size:22px">Look at the screen. Your teacher will start the game soon.</p>`;
   } else if (cur.status === "q") {
     const q = cur.qs[cur.qi], a = answers[cur.qi];
     mid = `<div class="lq-timer"><i id="lqTb" style="width:100%"></i></div><div class="lq-q">${esc(q.q)}</div>
@@ -61,11 +63,11 @@ function show() {
       mid = `<div class="lq-big">${ok ? "✓" : a === undefined ? "⏱" : "✗"}</div><h2>${ok ? "Correct!" : a === undefined ? "Time ran out" : "Not this time"}</h2>
         ${ok ? `<div class="lq-pts">+${r.gain} points</div>` : `<div class="lq-pts">The answer: ${esc(q.o[q.c])}</div>`}
         <div class="lq-pts">You are number ${pos} of ${cur.board.length} · ${r.score} points</div>
-        <div class="lq-list">${cur.board.slice(0, 5).map((x, i) => `<div class="${x.sid === P.sid ? "me" : ""}"><span>${i + 1}</span><span>${esc(x.name)}</span><span>${x.score}</span></div>`).join("")}</div>`;
+        <div class="lq-list">${cur.board.slice(0, 5).map((x, i) => `<div class="${x.sid === P.sid ? "me" : ""}"><span>${i + 1}</span><span class="lq-n">${av(x, "xs")}${esc(x.name)}</span><span>${x.score}</span></div>`).join("")}</div>`;
     }
   } else {
     const t = (cur.board || []).slice(0, 3), r = myRow(), pos = r ? cur.board.indexOf(r) + 1 : 0;
-    mid = `<h2>Winners</h2><div class="lq-pod">${[2, 1, 0].map(i => t[i] ? `<div class="p${i + 1}"><div class="nm">${esc(t[i].name)}</div><div class="bl">${i + 1}</div><div class="sc">${t[i].score}</div></div>` : "").join("")}</div>
+    mid = `<h2>Winners</h2><div class="lq-pod">${[2, 1, 0].map(i => t[i] ? `<div class="p${i + 1}"><div class="av">${av(t[i], "lg")}</div><div class="nm">${esc(t[i].name)}</div><div class="bl">${i + 1}</div><div class="sc">${t[i].score}</div></div>` : "").join("")}</div>
       ${r ? `<div class="lq-pts">You finished number ${pos} with ${r.score} points</div>` : ""}`;
   }
   ov.innerHTML = top + `<div class="lq-mid">${mid}</div>`;

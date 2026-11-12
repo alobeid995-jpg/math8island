@@ -1,8 +1,8 @@
-import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1111i";
-import { initWork } from "./stuwork.js?v=1111i";
-import { initMsgs } from "./stumsg.js?v=1111i";
-import { initLive } from "./livequiz.js?v=1111i";
-import { startPresence, logEv } from "./presence.js?v=1111i";
+import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1111j";
+import { initWork } from "./stuwork.js?v=1111j";
+import { initMsgs } from "./stumsg.js?v=1111j";
+import { initLive } from "./livequiz.js?v=1111j";
+import { startPresence, logEv } from "./presence.js?v=1111j";
 
 const sub = (t, n) => t.split("{n}").join(n);
 let me = null, ref = null, shopCat = "frame", confirmId = "", pickerOpen = false, seeds = [], loaded = false;

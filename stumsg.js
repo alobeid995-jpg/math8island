@@ -1,6 +1,6 @@
 // Student side: announcements from the teacher (top of the page) and a message box to write to the teacher.
 // Announcements are documents in <base>/work (kind "announcement"). Messages are documents in <base>/msgs.
-import { fs, doc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1111i";
+import { fs, doc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1111j";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

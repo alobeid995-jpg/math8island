@@ -1,7 +1,7 @@
 // Teacher side: Live quiz (a Kahoot-style game). The teacher builds or imports questions, opens a lobby, students join from their own
 // page, then every question is shown to all of them at the same time. After each question: the right answer and the ranking.
 // Data: <base>/live/<id>  kind "set" (saved questions) or "session" (a running game);  <base>/liveplayers/<session>_<sid>  one per joined student.
-import { getDocs, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, query, where, bcol, bdoc } from "./fb.js?v=1111i";
+import { getDocs, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, query, where, bcol, bdoc } from "./fb.js?v=1111j";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -26,7 +26,7 @@ document.body.appendChild(modal);
 .lv-opt i{font-style:normal;font-size:1.3em}.lv-opt.dim{opacity:.35}.lv-opt b{margin-left:auto;font-size:1.2em}
 .lv-timer{height:12px;border-radius:8px;background:#dfe6f4;overflow:hidden}.lv-timer i{display:block;height:100%;background:#2f6fe0;transition:width .25s linear}
 .lv-count{font-size:clamp(34px,7vw,72px);font-weight:900;color:#1f3d8f}
-.lv-pl{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.lv-pl span{padding:7px 12px;border-radius:999px;background:#eaf1ff;font-weight:700}
+.lv-pl{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.lv-pl .lv-chip{display:flex;align-items:center;gap:8px;padding:6px 14px 6px 8px;border-radius:999px;background:#eaf1ff;font-weight:700}.lv-rn{display:flex;align-items:center;gap:8px}.lv-pod .av{display:flex;justify-content:center;margin-bottom:6px;opacity:0;animation:lvfade .5s forwards}.lv-pod .p3 .av{animation-delay:.9s}.lv-pod .p2 .av{animation-delay:2.2s}.lv-pod .p1 .av{animation-delay:3.5s}
 .lv-rank{display:grid;grid-template-columns:2.2em 1fr auto auto;gap:8px;align-items:center;padding:8px 12px;border-radius:12px;background:#f3f6fd;margin:6px 0;font-weight:700}
 .lv-rank:nth-child(1){background:#fff1b8}.lv-rank small{font-weight:600;color:#3a8a4f}.lv-rank .no{color:#c0392b}
 .lv-msg{min-height:1.3em;color:#b3261e;font-weight:600}.lv-bar{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:12px}
@@ -90,6 +90,8 @@ async function load() {
   sets = all.filter(x => x.kind === "set").sort((a, b) => (b.created || 0) - (a.created || 0));
   sessions = all.filter(x => x.kind === "session").sort((a, b) => (b.created || 0) - (a.created || 0));
 }
+const avOf = (sid, name) => { const st = stuOf(sid); try { return avatarHTML(st || { id: sid, name: name || "", avatar: 0, eq: {} }, "sm"); } catch { return ""; } };
+const avBig = (sid, name, sz) => { const st = stuOf(sid); try { return avatarHTML(st || { id: sid, name: name || "", avatar: 0, eq: {} }, sz); } catch { return ""; } };
 const wait = ms => new Promise(r => setTimeout(r, ms));
 const durOf = i => (S.qs[i] && S.qs[i].t) || S.dur || 20;
 
@@ -121,7 +123,7 @@ function draw() {
   const n = players.length, qn = S.qs.length;
   if (S.status === "lobby") {
     b.innerHTML = `<h3>${esc(S.title)}</h3><p>Classes: <b>${S.cls.join(", ")}</b>. Ask the students to open their Math Island page. A Live quiz button appears for them.</p>
-      <div class="lv-count">${n}</div><p style="margin-top:-8px">joined</p><div class="lv-pl">${players.map(p => `<span>${esc(p.name)}</span>`).join("") || "<small>Waiting for students…</small>"}</div>` + foot(`<button class="ghost" type="button" data-lv="end">Cancel quiz</button><button class="primary" type="button" data-lv="start"${n ? "" : " disabled"}>Start the game</button>`);
+      <div class="lv-count">${n}</div><p style="margin-top:-8px">joined</p><div class="lv-pl">${players.map(p => `<span class="lv-chip">${avOf(p.sid, p.name)}<b>${esc(p.name)}</b></span>`).join("") || "<small>Waiting for students…</small>"}</div>` + foot(`<button class="ghost" type="button" data-lv="end">Cancel quiz</button><button class="primary" type="button" data-lv="start"${n ? "" : " disabled"}>Start the game</button>`);
     return;
   }
   if (S.status === "q") {
@@ -140,7 +142,7 @@ function draw() {
   }
   // end: winners
   const top = (S.board || []).slice(0, 3);
-  b.innerHTML = `<h3 style="text-align:center">${esc(S.title)}</h3><div class="lv-pod">${[2, 1, 0].map(i => top[i] ? `<div class="p${i + 1}"><div class="nm">${esc(top[i].name)}</div><div class="bl">${i + 1}</div><div class="sc">${top[i].score} points</div></div>` : "").join("")}</div>
+  b.innerHTML = `<h3 style="text-align:center">${esc(S.title)}</h3><div class="lv-pod">${[2, 1, 0].map(i => top[i] ? `<div class="p${i + 1}"><div class="av">${avBig(top[i].sid, top[i].name, "xl")}</div><div class="nm">${esc(top[i].name)}</div><div class="bl">${i + 1}</div><div class="sc">${top[i].score} points</div></div>` : "").join("")}</div>
     <h4>All players</h4>${rankHtml(40)}
     <div class="lv-card"><b>Give XP to the winners</b><div class="lv-row">${xp3.map((v, i) => `<label>${i + 1}${["st", "nd", "rd"][i]} <input class="lv-in" data-lvxp="${i}" type="number" min="0" max="500" value="${v}" style="width:80px"></label>`).join("")}<button class="primary small" type="button" data-lv="xp"${xpGiven || !top.length ? " disabled" : ""}>${xpGiven ? "XP given ✓" : "Give XP"}</button></div></div>` + foot();
   if (!b.dataset.conf) { b.dataset.conf = "1"; setTimeout(confetti, 3600); }
@@ -148,7 +150,7 @@ function draw() {
 const prevHtml = pv => !pv ? "" : pv.qs.length || pv.errs.length ? `<div class="lv-card"><b>${pv.qs.length} question${pv.qs.length === 1 ? "" : "s"} ready</b>${pv.qs.slice(0, 3).map(q => `<div><small>${esc(q.q)} — answer: ${esc(q.o[q.c])}</small></div>`).join("")}${pv.errs.map(e => `<div class="lv-msg">${esc(e)}</div>`).join("")}</div>` : "";
 function rankHtml(max) {
   const bd = S.board || []; if (!bd.length) return "<p class='none'>No answers yet.</p>";
-  return bd.slice(0, max).map((r, i) => `<div class="lv-rank"><span>${i + 1}</span><span>${esc(r.name)}</span><small class="${r.gain ? "" : "no"}">${r.gain ? "+" + r.gain : "0"}</small><span>${r.score}</span></div>`).join("");
+  return bd.slice(0, max).map((r, i) => `<div class="lv-rank"><span>${i + 1}</span><span class="lv-rn">${avBig(r.sid, r.name, "xs")}${esc(r.name)}</span><small class="${r.gain ? "" : "no"}">${r.gain ? "+" + r.gain : "0"}</small><span>${r.score}</span></div>`).join("");
 }
 function confetti() {
   const w = document.createElement("div"); w.className = "lv-conf";
@@ -192,7 +194,8 @@ async function endQ(early) {
       counts[a.c]++;
       if (a.c === q.c) { const ms = Math.min(total, Math.max(0, Number(a.ms) || 0)); gain = Math.round(1000 * (1 - (ms / total) / 2)); right++; }
     }
-    return { sid: p.sid, name: p.name, score: (old.score || 0) + gain, gain, right };
+    const st = stuOf(p.sid) || {};
+    return { sid: p.sid, name: p.name, score: (old.score || 0) + gain, gain, right, a: st.avatar || 0, e: st.eq || {}, c: st.cls || "" };
   }).sort((a, b) => b.score - a.score || b.right - a.right || String(a.name).localeCompare(String(b.name)));
   await saveS({ status: "result", counts, board: rows });
   busy = false; draw();
