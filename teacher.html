@@ -1286,7 +1286,7 @@ header.book .geo { max-height: 190px; }
 /* --- Math Island logo mark --- */
 header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !important; color: transparent !important; font-size: 0 !important; border: 0 !important; box-shadow: none !important; border-radius: 22% !important; }
 
-</style><link rel="stylesheet" href="island.css?v=1112i"><style>
+</style><link rel="stylesheet" href="island.css?v=1112j"><style>
 .cls-panel{margin:12px 0;padding:14px;border:2px solid var(--edge);border-radius:12px;background:var(--card);display:grid;gap:10px}
 .cls-panel h4{margin:0}.cls-panel p{margin:0;font-size:14px}
 .cls-panel label{display:grid;gap:4px;font-size:13px;font-weight:600}
@@ -1457,7 +1457,7 @@ header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !import
 window.__ready = new Promise(r => { window.__resolveClaude = r; });
 window.claude = { use: async n => (await window.__ready).use(n) };
 </script>
-<script src="hats.js?v=1112i"></script>
+<script src="hats.js?v=1112j"></script>
 <script>
 const POSITIVE = [
   { title: "Active Participation", xp: 10 },
@@ -3172,13 +3172,14 @@ function renderTools() {
 }
 function renderHub() {
   const el = $("hubView");
-  const tabs = [["insights", "Insights"], ["att", "Attendance"], ["hw", "Homework"], ["marks", "Marks"], ["books", "Notebooks"], ["seats", "Seat plan"]];
+  const tabs = [["insights", "Insights"], ["att", "Attendance"], ["hw", "Homework"], ["marks", "Marks"], ["grades", "Grades /10"], ["books", "Notebooks"], ["seats", "Seat plan"]];
   const chips = hubTab === "insights" ? "" : `<div class="shop-tabs">${CLASSES.map(c => `<button class="shop-tab" data-act="hubCls" data-cls="${c}" aria-pressed="${c === cls}">${c} <small>${students.filter(s => s.cls === c).length}</small></button>`).join("")}</div>`;
   let body = "";
   if (hubTab === "insights") body = hubInsights();
   else if (hubTab === "att") body = hubAtt();
   else if (hubTab === "hw") body = hubHw();
   else if (hubTab === "marks") body = hubMarks();
+  else if (hubTab === "grades") body = hubGrades();
   else if (hubTab === "books") body = hubBooks();
   else if (hubTab === "seats") body = hubSeats();
   else body = hubInsights();
@@ -3222,6 +3223,74 @@ function hubHw() {
   return `<section class="card"><h3>New task for ${cls}</h3>${readOnly ? "" : `<div class="hub-bar"><input id="hwTitle" placeholder="e.g. Worksheet: Pythagoras" maxlength="80"><input type="date" id="hwDue" value="${todayStr()}"><button class="primary" data-act="hwAdd">Add task</button></div>`}
     ${list.length ? `<div class="tlist">${list.map(([id, d]) => { const t = hwStats(d); return `<button class="titem" data-act="hwOpen" data-h="${id}" aria-pressed="${id === open}"><b>${esc(d.title)}</b><span>due ${shortDay(d.due)} · ${t.done + t.late}/${t.total - t.exc} handed in${d.xpDone ? " · XP applied" : ""}</span></button>`; }).join("")}</div>` : `<div class="none">No tasks yet for ${cls}.</div>`}</section>${det}`;
 }
+
+/* ---------- Grades /10: participation, behaviour, classwork (teacher only) ---------- */
+let grCfg = { from: "", to: "", total: 0, pTarget: 10, perMiss: 0.5 };
+const GR_PART = ["Active Participation", "Great Mathematical Reasoning", "Helping Peer / Teamwork"];
+const GR_BEH = NEGATIVE.map(n => n.title).filter(t => t !== "Incomplete Task / Homework");
+const gr1 = n => (Math.round(n * 10) / 10).toString();
+function grRows() {
+  const c = grCfg, inR = e => { const d = (e.at || "").slice(0, 10); return (!c.from || d >= c.from) && (!c.to || d <= c.to); };
+  const list = clsStu(cls);
+  const rows = list.map(st => {
+    const ev = (st.hist || []).concat(st.log || []).filter(e => e && e.title && inR(e) && !e.reset);
+    const part = ev.filter(e => e.xp > 0 && GR_PART.includes(e.title)).length;
+    const pen = ev.filter(e => e.xp < 0 && GR_BEH.includes(e.title)).length;
+    const done = ev.filter(e => e.xp > 0 && e.title === "Task Completed On Time").length;
+    const miss = ev.filter(e => e.xp < 0 && e.title === "Incomplete Task / Homework").length;
+    return { st, part, pen, done, miss };
+  });
+  const hwN = [...hw.values()].filter(d => d.cls === cls && (!c.from || (d.due || "") >= c.from) && (!c.to || (d.due || "") <= c.to)).length;
+  const total = c.total > 0 ? c.total : Math.max(1, hwN, ...rows.map(r => r.done + r.miss), ...rows.map(r => r.done));
+  rows.forEach(r => {
+    r.p = Math.min(10, 10 * r.part / Math.max(1, c.pTarget));
+    r.b = Math.max(0, 10 - r.pen * c.perMiss);
+    r.w = Math.min(10, 10 * r.done / total);
+    r.t = r.p + r.b + r.w;
+  });
+  return { rows, total };
+}
+const grAvg = (rows, k) => rows.length ? rows.reduce((a, r) => a + r[k], 0) / rows.length : 0;
+function hubGrades() {
+  const { rows, total } = grRows(), c = grCfg;
+  const cell = v => `<td class="xpc" style="color:${v >= 8 ? "var(--ok,#0a7a3d)" : v >= 5 ? "inherit" : "var(--bad,#c0392b)"};font-weight:800">${gr1(v)}</td>`;
+  const bins = [0, 0, 0, 0, 0]; rows.forEach(r => { const a = r.t / 3; bins[a >= 9 ? 4 : a >= 8 ? 3 : a >= 7 ? 2 : a >= 5 ? 1 : 0]++; });
+  const mx = Math.max(1, ...bins), lab = ["Below 5", "5 – 6.9", "7 – 7.9", "8 – 8.9", "9 – 10"];
+  const best = rows.slice().sort((a, b) => b.t - a.t)[0], low = rows.slice().sort((a, b) => a.t - b.t)[0];
+  return `<section class="card"><h3>Grades out of 10 · ${esc(cls)}</h3>
+    <p class="rep-note">Only you see these. Participation: ${c.pTarget} good moments (participation, great reasoning, helping a peer) = 10. Behaviour: starts at 10, each deduction takes off ${c.perMiss}. Classwork: every "Task Completed On Time" counts as classwork done; mark = done ÷ classworks held × 10.</p>
+    <div class="hub-bar" style="flex-wrap:wrap;gap:8px">
+      <label>From <input type="date" id="grFrom" value="${c.from}"></label><label>To <input type="date" id="grTo" value="${c.to}"></label>
+      <label>Classworks held <input type="number" id="grTotal" min="0" max="200" style="width:70px" value="${c.total || ""}" placeholder="${total}"></label>
+      <label>Participation target <input type="number" id="grPT" min="1" max="100" style="width:70px" value="${c.pTarget}"></label>
+      <label>Per deduction <input type="number" id="grPM" min="0" max="10" step="0.25" style="width:70px" value="${c.perMiss}"></label>
+      <button class="ghost small" data-act="grReset">Reset</button></div>
+    <p class="rep-note">Classworks held used: <b>${total}</b>${c.total ? "" : " (automatic: homework tasks you added, or the most any student has)"}. Leave the dates empty to count everything.</p>
+    <div style="overflow:auto"><table class="rep-tbl" id="grTbl"><thead><tr><th>Student</th><th>Participation</th><th>Behaviour</th><th>Deductions</th><th>Classwork</th><th>Done / held</th><th>Total /30</th></tr></thead><tbody>
+    ${rows.map(r => `<tr><td>${esc(r.st.name)}</td>${cell(r.p)}${cell(r.b)}<td class="xpc">${r.pen}</td>${cell(r.w)}<td class="xpc">${r.done} / ${total}</td><td class="xpc"><b>${gr1(r.t)}</b></td></tr>`).join("") || `<tr><td colspan="7">No students.</td></tr>`}
+    </tbody><tfoot><tr><td><b>Class average</b></td><td class="xpc"><b>${gr1(grAvg(rows, "p"))}</b></td><td class="xpc"><b>${gr1(grAvg(rows, "b"))}</b></td><td></td><td class="xpc"><b>${gr1(grAvg(rows, "w"))}</b></td><td></td><td class="xpc"><b>${gr1(grAvg(rows, "t"))}</b></td></tr></tfoot></table></div>
+    <div class="sbtns" style="justify-content:flex-start"><button class="primary small" data-act="grCsv">Download as Excel (CSV)</button><button class="ghost small" data-act="grPrint">Print</button></div></section>
+    <section class="card"><h3>Statistics · average of the three (out of 10)</h3>
+    <div class="rep-sum"><div class="g"><b>${gr1(grAvg(rows, "t") / 3)}</b><span>class average</span></div><div><b>${best ? gr1(best.t / 3) : "–"}</b><span>highest${best ? " · " + esc(shortName(best.st.name)) : ""}</span></div><div class="r"><b>${low ? gr1(low.t / 3) : "–"}</b><span>lowest${low ? " · " + esc(shortName(low.st.name)) : ""}</span></div></div>
+    <div class="bars">${bins.map((n, i) => `<div style="display:grid;grid-template-columns:80px 1fr 28px;gap:8px;align-items:center;margin:4px 0"><span>${lab[i]}</span><span style="background:var(--sea-100,#dbe8ff);border-radius:6px;height:14px"><span style="display:block;height:14px;border-radius:6px;background:var(--sea-600,#2f6fdd);width:${n / mx * 100}%"></span></span><b>${n}</b></div>`).join("")}</div></section>`;
+}
+function grCsv() {
+  const { rows, total } = grRows();
+  const q = v => '"' + String(v).replace(/"/g, '""') + '"';
+  const out = [["Student", "Class", "Participation /10", "Behaviour /10", "Deductions", "Classwork /10", "Classworks done", "Classworks held", "Total /30"].map(q).join(",")]
+    .concat(rows.map(r => [r.st.name, cls, gr1(r.p), gr1(r.b), r.pen, gr1(r.w), r.done, total, gr1(r.t)].map(q).join(",")));
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["﻿" + out.join("\n")], { type: "text/csv;charset=utf-8" }));
+  a.download = "grades-" + cls + "-" + todayStr() + ".csv"; document.body.appendChild(a); a.click(); a.remove();
+}
+document.addEventListener("change", e => {
+  const id = e.target && e.target.id; if (!/^gr(From|To|Total|PT|PM)$/.test(id || "")) return;
+  const v = e.target.value;
+  if (id === "grFrom") grCfg.from = v; else if (id === "grTo") grCfg.to = v;
+  else if (id === "grTotal") grCfg.total = Math.max(0, +v || 0);
+  else if (id === "grPT") grCfg.pTarget = Math.max(1, +v || 10);
+  else grCfg.perMiss = Math.max(0, +v || 0);
+  render();
+});
 function bkOwing(st) { return Object.entries(st.books || {}).filter(([, v]) => v === "n").map(([d]) => d).sort(); }
 function hubBooks() {
   const list = clsStu(cls), isT = bkDate === todayStr(), val = st => (st.books || {})[bkDate] || "";
@@ -3962,6 +4031,9 @@ document.addEventListener("click", e => {
     case "repCopy": copyReport(); break;
     case "repPrint": try { window.print(); } catch { toast("Printing is blocked here. Use Copy as text."); } break;
     case "seatCell": case "seatPool": case "seatUnseat": case "seatAlpha": case "seatShuffle": case "seatClear": case "seatPic": seatClick(b); break;
+    case "grCsv": grCsv(); break;
+    case "grPrint": window.print(); break;
+    case "grReset": grCfg = { from: "", to: "", total: 0, pTarget: 10, perMiss: 0.5 }; render(); break;
     case "hubTab": hubTab = b.dataset.tab; hubConf = ""; render(); break;
     case "hubCls": cls = b.dataset.cls; try { localStorage.setItem("xp_class", cls); } catch {} hubConf = ""; render(); break;
     case "hubNo": hubConf = ""; render(); break;
@@ -4298,7 +4370,7 @@ document.getElementById("expBtn")?.addEventListener("click", async () => {
     <div class="acts noprint"><button class="ghost" id="lgPrint" type="button">Print this list</button><button class="ghost" id="lgClose" type="button">Close</button></div>
   </div>
 </div>
-<script type="module" src="teacher.js?v=1112i"></script>
+<script type="module" src="teacher.js?v=1112j"></script>
 
 <script>
 /* Post a certificate straight to Google Classroom.

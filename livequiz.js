@@ -1,6 +1,6 @@
 // Student side: Live quiz. A teacher opens a game for the class; the student taps Join, waits in the lobby, then answers each question
 // on the big coloured buttons. After every question he sees if he was right and his place; at the end, the winners' podium.
-import { fs, doc, setDoc, collection, onSnapshot, query, where } from "./fb.js?v=1112i";
+import { fs, doc, setDoc, collection, onSnapshot, query, where } from "./fb.js?v=1112j";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
