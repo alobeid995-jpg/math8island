@@ -1,7 +1,7 @@
 // Classwork for the teacher: make a worksheet, send it to classes, collect and export the answers.
 // Worksheets live in <base>/work, the answer key in <base>/workkey (students never read it),
 // and each student's submission in <base>/subs/<worksheet>_<student>.
-import { getDocs, setDoc, updateDoc, deleteDoc, getDoc, bcol, bdoc } from "./fb.js?v=1112j";
+import { getDocs, setDoc, updateDoc, deleteDoc, getDoc, bcol, bdoc } from "./fb.js?v=1112k";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -34,8 +34,8 @@ function render() {
       <div class="lg-bar"><button class="primary" type="button" data-wk="new">+ New worksheet</button><button class="ghost" type="button" data-wk="close">Close</button></div>
       ${works.length ? `<table class="lg-tbl wk-list"><thead><tr><th>Worksheet</th><th>Classes</th><th>Handed in</th><th></th></tr></thead><tbody>${works.map(w => {
         const all = stuOf(w), done = all.filter(s => subOf(w, s.id)).length;
-        return `<tr><td><b>${esc(w.title)}</b><br><small>${(w.questions || []).length} questions · ${esc(when(w.created))}${w.open === false ? " · <b>closed</b>" : ""}</small></td><td>${esc((w.classes || []).join(", "))}</td><td>${done} / ${all.length}</td>
-          <td class="wk-acts"><button class="primary small" type="button" data-wk="res" data-id="${w.id}">Answers</button><button class="ghost small" type="button" data-wk="toggle" data-id="${w.id}">${w.open === false ? "Open again" : "Close it"}</button><button class="ghost small" type="button" data-wk="del" data-id="${w.id}">Delete</button></td></tr>`;
+        return `<tr><td><b>${esc(w.title)}</b><br><small>${(w.questions || []).length} questions · ${esc(when(w.created))}${w.open === false ? " · <b>closed</b>" : ""}${w.graded ? " · <b>GRADED WORKSHEET</b>" : ""}</small></td><td>${esc((w.classes || []).join(", "))}</td><td>${done} / ${all.length}</td>
+          <td class="wk-acts"><button class="primary small" type="button" data-wk="res" data-id="${w.id}">Answers</button><button class="${w.graded ? "primary" : "ghost"} small" type="button" data-wk="graded" data-id="${w.id}" title="The final assessment: its mark goes in the Grades sheet as Graded worksheet, not as classwork">${w.graded ? "Graded ✓" : "Make graded"}</button><button class="ghost small" type="button" data-wk="toggle" data-id="${w.id}">${w.open === false ? "Open again" : "Close it"}</button><button class="ghost small" type="button" data-wk="del" data-id="${w.id}">Delete</button></td></tr>`;
       }).join("")}</tbody></table>` : `<p class="none">No worksheets yet. Tap "New worksheet" to make the first one.</p>`}`;
   } else if (view === "edit") {
     const d = draft;
@@ -122,6 +122,7 @@ document.addEventListener("click", async e => {
   if (a === "delq") { readDraft(); draft.questions.splice(+b.dataset.i, 1); if (!draft.questions.length) draft.questions.push({ q: "", type: "text", opts: "", key: "" }); return render(); }
   if (a === "save") { b.disabled = true; await saveDraft(); b.disabled = false; return; }
   if (a === "res" && w) { cur = w.id; view = "res"; await load(); return render(); }
+  if (a === "graded" && w) { await updateDoc(bdoc("work", w.id), { graded: !w.graded }); await load(); return render(); }
   if (a === "toggle" && w) { await updateDoc(bdoc("work", w.id), { open: w.open === false }); await load(); return render(); }
   if (a === "del" && w) {
     const n = subs.filter(x => x.wid === w.id).length;
@@ -137,4 +138,11 @@ export async function openWork() {
   $("workModal").hidden = false; view = "list"; $("wkBody").innerHTML = "<p>Loading…</p>";
   try { await load(); } catch (e) { $("wkBody").innerHTML = `<p class="lg-msg">Could not load classwork (${esc(e.code || e.message)}). Check that the new Firebase rules are published.</p><button class="ghost" data-wk="close">Close</button>`; return; }
   render();
+}
+
+/* data for the Grades sheet in the Teacher Hub */
+export async function gradeData() {
+  await load();
+  return { works: works.map(w => ({ id: w.id, classes: w.classes || [], graded: !!w.graded, created: w.created || 0, title: w.title })),
+    subs: subs.map(x => { const w = works.find(y => y.id === x.wid); const sc = w && x.answers ? score(w, x) : null; return { wid: x.wid, sid: x.sid, right: sc ? sc.right : 0, n: sc ? sc.n : 0 }; }) };
 }

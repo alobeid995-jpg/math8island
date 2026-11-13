@@ -1,6 +1,6 @@
 // The owner's 6-digit PIN. It is kept (salted and hashed, never in plain text) in ownersec/pin, which only the owner can read.
 // Used before adding a lot of XP and before opening the Developer page. It is a screen lock for a signed-in browser.
-import { fs, doc, getDoc, setDoc } from "./fb.js?v=1112j";
+import { fs, doc, getDoc, setDoc } from "./fb.js?v=1112k";
 const ref = () => doc(fs, "ownersec", "pin");
 const b64 = u => btoa(String.fromCharCode(...u)), unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
 async function derive(pin, salt, iter) {
