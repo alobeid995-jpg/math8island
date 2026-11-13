@@ -1298,7 +1298,7 @@ body.wk-noscroll{overflow:hidden}
 .topbar .mk { background: url(logo.svg) center/cover no-repeat !important; border: 0 !important; box-shadow: none !important; border-radius: 22% !important; } .topbar .mk::before { content: none !important; }
 
 </style>
-<link rel="stylesheet" href="island.css?v=1112f"><style>
+<link rel="stylesheet" href="island.css?v=1112g"><style>
 .sig{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;padding:0;margin:0;border:0;background:none;color:inherit;opacity:.32;cursor:default;-webkit-tap-highlight-color:transparent;transition:opacity .2s}
 .sig:hover,.sig:focus-visible{opacity:.8}
 .sig svg{width:24px;height:24px}
@@ -1315,7 +1315,7 @@ body.wk-noscroll{overflow:hidden}
   <div id="app"></div>
 </div>
 <div class="toast" id="toast" hidden></div>
-<script src="hats.js?v=1112f"></script>
+<script src="hats.js?v=1112g"></script>
 <script>
 function isSotw(){return false}
 const $ = id => document.getElementById(id);
@@ -1868,6 +1868,7 @@ function readShop(v) {
     buys: Number(v.buys) || 0, lastBuy: String(v.lastBuy || ""),
     note: String(v.note || ""),
     certs: Array.isArray(v.certs) ? v.certs.filter(c => c && c.title) : [],
+    counts: Object.fromEntries(Object.entries(v.counts && typeof v.counts === "object" ? v.counts : {}).filter(([k, x]) => Number(x) > 0).map(([k, x]) => [k, Number(x)])),
     lx: Object.fromEntries(Object.entries(v.lx && typeof v.lx === "object" ? v.lx : {}).filter(([k, x]) => /^[\w-]+$/.test(k) && x && typeof x === "object").map(([k, x]) => [k, { done: Number(x.done) || 0, perfect: Number(x.perfect) || 0 }])),
     rt: Object.fromEntries(Object.entries(v.rt && typeof v.rt === "object" ? v.rt : {}).filter(([k, x]) => /^[\w-]+$/.test(k) && typeof x === "number")),
     books: Object.fromEntries(Object.entries(v.books && typeof v.books === "object" ? v.books : {}).filter(([d, x]) => /^\d{4}-\d{2}-\d{2}$/.test(d) && /^[ynl]$/.test(x))),
@@ -1932,5 +1933,5 @@ function applyPrices(m) { if (!m) return; SHOP.forEach(i => { const v = Number(m
 })();
 </script>
 
-<script type="module" src="student.js?v=1112f"></script>
+<script type="module" src="student.js?v=1112g"></script>
 </body></html>

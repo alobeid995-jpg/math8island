@@ -1286,7 +1286,7 @@ header.book .geo { max-height: 190px; }
 /* --- Math Island logo mark --- */
 header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !important; color: transparent !important; font-size: 0 !important; border: 0 !important; box-shadow: none !important; border-radius: 22% !important; }
 
-</style><link rel="stylesheet" href="island.css?v=1112f"><style>
+</style><link rel="stylesheet" href="island.css?v=1112g"><style>
 .cls-panel{margin:12px 0;padding:14px;border:2px solid var(--edge);border-radius:12px;background:var(--card);display:grid;gap:10px}
 .cls-panel h4{margin:0}.cls-panel p{margin:0;font-size:14px}
 .cls-panel label{display:grid;gap:4px;font-size:13px;font-weight:600}
@@ -1457,7 +1457,7 @@ header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !import
 window.__ready = new Promise(r => { window.__resolveClaude = r; });
 window.claude = { use: async n => (await window.__ready).use(n) };
 </script>
-<script src="hats.js?v=1112f"></script>
+<script src="hats.js?v=1112g"></script>
 <script>
 const POSITIVE = [
   { title: "Active Participation", xp: 10 },
@@ -3521,7 +3521,7 @@ function openCert(id, force) {
 function updateCert() { const p = $("certPrev"); if (p && cert) p.innerHTML = certSVG(cert); }
 function issueCert() {
   const st = students.find(s => s.id === (cert || {}).sid); if (!st) return;
-  st.certs = [...(st.certs || []), { title: cert.title, at: Date.now() }].slice(-100);
+  st.certs = [...(st.certs || []), { title: cert.title, at: Date.now(), reason: cert.reason || "", date: cert.date || "", teacher: cert.teacher || "", type: cert.type || "" }].slice(-100);
   save(st); toast("Saved in " + shortName(st.name) + "'s record");
 }
 function printCert() {
@@ -4294,7 +4294,7 @@ document.getElementById("expBtn")?.addEventListener("click", async () => {
     <div class="acts noprint"><button class="ghost" id="lgPrint" type="button">Print this list</button><button class="ghost" id="lgClose" type="button">Close</button></div>
   </div>
 </div>
-<script type="module" src="teacher.js?v=1112f"></script>
+<script type="module" src="teacher.js?v=1112g"></script>
 
 <script>
 /* Post a certificate straight to Google Classroom.

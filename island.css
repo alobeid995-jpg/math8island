@@ -294,3 +294,17 @@ html[data-pt] .wk-game .wk-tick:not([style*="opacity:1"]):not(.wk-game > .wk-tic
 html[data-pt] .plus,html[data-pt] button.plus{color:#04210f}
 html[data-pt] .picker,html[data-pt] .th-pk{background:var(--card);color:var(--ink);border-color:var(--edge)}
 html[data-pt] .th-pk[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+
+/* My achievements (badges, progress, certificates) */
+.ach-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin-top:10px}
+.ach-b{display:flex;gap:12px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:color-mix(in srgb,var(--accent) 5%,var(--card))}
+.ach-b.lock{opacity:.6}.ach-b b{display:block}.ach-b small{display:block;color:var(--muted);margin:2px 0 6px}
+.ach-bar{display:block;height:6px;border-radius:99px;background:var(--line);overflow:hidden}.ach-bar u{display:block;height:100%;background:var(--accent);border-radius:99px}
+.ach-stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;margin:10px 0}
+.ach-stats div{padding:10px;border:1px solid var(--line);border-radius:14px;text-align:center;background:color-mix(in srgb,var(--accent) 5%,var(--card))}.ach-stats b{display:block;font-size:24px}.ach-stats small{color:var(--muted)}
+.ach-list{display:grid;gap:8px;margin-top:8px}.ach-r{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px}.ach-r small{display:block;color:var(--muted)}
+.ach-t{font-weight:700;color:var(--good)}.ach-t.gold{color:var(--gold)}
+.ach-cv{position:fixed;inset:0;z-index:99990;background:rgba(0,0,0,.72);display:grid;place-items:center;padding:14px;overflow:auto}
+.ach-sheet{width:min(920px,100%);background:#fffdf4;border-radius:14px;padding:12px;color:#17233b}.ach-svg svg{display:block;width:100%;height:auto}
+.ach-acts{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:10px}.ach-acts .ghost{color:#17233b;border-color:#c9bfa4;background:#fff}
+@media print{body.pc>*:not(.ach-cv){display:none!important}body.pc .ach-cv{position:static;background:none;padding:0;display:block}body.pc .ach-sheet{padding:0;width:100%}body.pc .ach-acts{display:none}@page{size:landscape;margin:8mm}}

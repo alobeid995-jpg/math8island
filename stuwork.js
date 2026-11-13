@@ -1,7 +1,7 @@
 // "My classwork" on the student page: worksheets from the teacher, and (for the 9S boys) the lesson games.
-import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1112f";
-import { playerOf, catalog } from "./islandmap.js?v=1112f";
-import { logEv } from "./presence.js?v=1112f";
+import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1112g";
+import { playerOf, catalog } from "./islandmap.js?v=1112g";
+import { logEv } from "./presence.js?v=1112g";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -77,10 +77,14 @@ function draw() {
         ${m.units.map(u => `<h4 class="mt-un">${esc(u.title)}</h4>${(u.lessons || []).map(l => { const L = (l.links || []).filter(k => /^https?:\/\//i.test(k.url));
           return `<div class="mt-ls${L.length ? " ok" : ""}"><span class="mt-n">${esc(l.code)}</span><div><b>${esc(l.title)}</b>${L.length ? `<div class="mt-lk">${L.map(k => `<a class="mt-a" href="${esc(k.url)}" target="_blank" rel="noopener">${esc(k.label)}</a>`).join("")}</div>` : `<small>Coming soon</small>`}</div></div>`; }).join("")}`).join("")}</details>`; }).join("") + `</section>`;
   })();
-  box.innerHTML = matCard + `<section class="card wk-box"><h3>My classwork</h3>
-    ${sbCard}${suCard}${elCard}${eqCard}${agCard}
+  const pend = list.filter(x => !mine.has(x.id)).length + (isSB && !agPlays.has("sb42-ws") ? 1 : 0) + (isEL && !agPlays.has("su42-ws") ? 1 : 0) + (isEL && !agPlays.has("el42-ws") ? 1 : 0)
+    + (isAG && !agPlays.has("eq41-ws") ? 1 : 0) + (isAG && !agPlays.has("ag34-ws") ? 1 : 0) + shown.filter(l => l.games.some(g => !played.has(g.id))).length;
+  const cwN = (sheets ? 1 : 0) + (isSB ? 1 : 0) + (isEL ? 2 : 0) + (isAG ? 2 : 0) + shown.length;
+  const nudge = pend ? `<button class="cw-nudge" type="button" data-wkact="jump"><span class="cw-dot">${pend}</span> You still have ${pend === 1 ? "1 classwork" : pend + " classwork"} to do. Tap to open it.</button>` : "";
+  box.innerHTML = nudge + matCard + `<section class="card wk-box cw-box" id="cwBox"><h3>My classwork${pend ? ` <span class="cw-badge">${pend} to do</span>` : cwN ? ` <span class="cw-badge ok">All done ✓</span>` : ""}</h3>
+    <div class="cw-scroll">${sbCard}${suCard}${elCard}${eqCard}${agCard}
     ${sheets ? `<div class="wk-list">${sheets}</div>` : ""}
-    ${games}
+    ${games}</div>${cwN > 1 ? `<small class="cw-hint">Scroll down inside the box to see more ↓</small>` : ""}
     ${lessons.length > 3 ? `<button class="ghost small" type="button" data-wkact="more">${showAll ? "Show fewer lessons" : `Show older lessons (${lessons.length - 3})`}</button>` : ""}
     ${!sheets && !games && !agCard && !elCard ? `<p class="none">Nothing to do right now. Your teacher's work will appear here.</p>` : ""}</section>`;
 }
@@ -125,6 +129,7 @@ document.addEventListener("click", e => {
   if (a === "open") { openId = b.dataset.id; draw(); window.scrollTo({ top: 0, behavior: "smooth" }); }
   if (a === "back") { openId = ""; draw(); }
   if (a === "more") { showAll = !showAll; draw(); }
+  if (a === "jump") { const c = $("cwBox"); if (c) c.scrollIntoView({ behavior: "smooth", block: "center" }); }
   if (a === "game") openGame(b.dataset.id);
   if (a === "ag") openAG();
   if (a === "el") openAG("elim.html", "Elimination lesson");
@@ -135,5 +140,5 @@ document.addEventListener("click", e => {
 });
 
 { const st = document.createElement("style"); st.textContent = ".mt-un{margin:14px 0 6px;font-size:16px}.mt-list{margin:8px 0;border-top:1px solid var(--line);padding-top:8px}.mt-list summary{cursor:pointer;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;font-size:16px}.mt-list summary small{opacity:.7}.mt-ls{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;border-radius:12px;margin:6px 0;background:color-mix(in srgb,var(--accent) 7%,var(--card));color:var(--muted)}.mt-ls.ok{background:color-mix(in srgb,var(--good) 18%,var(--card));color:var(--ink)}.mt-n{font-weight:800;min-width:2.3em}.mt-ls small{display:block;opacity:.8}.mt-lk{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}.mt-a{display:inline-block;padding:6px 12px;border-radius:99px;background:var(--sea-700);color:#fff;font-weight:700;text-decoration:none}"; document.head.appendChild(st); }
-{ const st = document.createElement("style"); st.textContent = "@media(min-width:860px){#work{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}#work>section:only-child{grid-column:1/-1}#work>section{margin:0}}"; document.head.appendChild(st); }
+{ const st = document.createElement("style"); st.textContent = ".cw-scroll{max-height:340px;overflow-y:auto;padding-right:6px;scroll-snap-type:y proximity;overscroll-behavior:contain}.cw-scroll>*{scroll-snap-align:start}.cw-hint{display:block;margin-top:6px;opacity:.75}.cw-badge{display:inline-block;margin-left:8px;padding:2px 10px;border-radius:99px;background:#d8392b;color:#fff;font-size:13px;font-weight:800;vertical-align:middle}.cw-badge.ok{background:var(--good,#1f7a4a)}.cw-nudge{grid-column:1/-1;display:flex;align-items:center;gap:10px;width:100%;margin:0 0 4px;padding:10px 14px;border:0;border-radius:14px;background:#d8392b;color:#fff;font:inherit;font-weight:700;cursor:pointer;text-align:left}.cw-dot{display:inline-grid;place-items:center;min-width:26px;height:26px;border-radius:99px;background:#fff;color:#d8392b;font-weight:800}@media(min-width:860px){#work{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}#work>section:only-child{grid-column:1/-1}#work>section{margin:0}}"; document.head.appendChild(st); }
 { const st = document.createElement("style"); st.textContent = "#work .wk-box{padding:14px 16px!important}#work .wk-box h3{margin:0 0 6px!important;font-size:18px!important;line-height:1.2}#work .mt-un{font-size:14px;margin:10px 0 4px}#work .mt-ls{padding:7px 10px;margin:4px 0;font-size:14px;gap:8px}#work .mt-n{min-width:2em}#work .mt-list{margin:6px 0;padding-top:6px}#work .mt-list summary{font-size:15px}#work .mt-a{padding:4px 10px;font-size:13px}#work .wk-lh b{font-size:15px}#work .wk-game{padding:10px 12px}#work .wk-game b{font-size:15px}#work .wk-game small{font-size:12.5px}@media(min-width:860px){#work .mt-box{max-height:560px;overflow:auto}}"; document.head.appendChild(st); }

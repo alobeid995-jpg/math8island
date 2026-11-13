@@ -1,10 +1,11 @@
-import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1112f";
-import { initWork } from "./stuwork.js?v=1112f";
-import { initMsgs } from "./stumsg.js?v=1112f";
-import { initLive } from "./livequiz.js?v=1112f";
-import { initChat } from "./chat.js?v=1112f";
-import { initFunpark } from "./funpark.js?v=1112f";
-import { startPresence, logEv } from "./presence.js?v=1112f";
+import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1112g";
+import { initWork } from "./stuwork.js?v=1112g";
+import { initMsgs } from "./stumsg.js?v=1112g";
+import { initLive } from "./livequiz.js?v=1112g";
+import { initChat } from "./chat.js?v=1112g";
+import { initFunpark } from "./funpark.js?v=1112g";
+import { startPresence, logEv } from "./presence.js?v=1112g";
+import { achCard, initAch } from "./achieve.js?v=1112g";
 
 const sub = (t, n) => t.split("{n}").join(n);
 let me = null, ref = null, shopCat = "frame", confirmId = "", pickerOpen = false, seeds = [], loaded = false;
@@ -37,6 +38,7 @@ async function start() {
   onSnapshot(doc(fs, "shop", "prices"), s => { if (s.exists()) { applyPrices(s.data().prices); render(); } }, () => {});   // prices the owner sets
   onSnapshot(ref, snap => { loaded = true; me = snap.exists() ? fromDoc(snap) : null; if (me) applyTheme(validT(me.theme) ? me.theme : lsT.get()); render(); },
     () => { loaded = true; me = null; render(); });
+  initAch(() => render(), () => me);
   initWork(p, () => me, toast).catch(() => {});
   initMsgs(p, () => me).catch(() => {});
   initLive(p, () => me).catch(() => {});
@@ -130,6 +132,7 @@ function render() {
       ${themePicker()}
       ${picker}
     </section>
+    ${achCard(st)}
     <section class="card${GIRL ? " girlshop" : ""}"><h3>${GIRL ? "✨ Sparkle Boutique" : "XP Shop"}</h3>${GIRL ? `<p class="gs-sub">Dress up your avatar with pretty things. You pay with your XP.</p>` : ""}
       <div class="shop-tabs">${shopCats().map(c => `<button class="shop-tab" data-act="cat" data-cat="${c.key}" aria-pressed="${c.key === shopCat}">${c.label}</button>`).join("")}</div>
       ${shopCat === "skin" ? tierBar("tier") : ""}
