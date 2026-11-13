@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Math Island · Developer</title>
+<style id="pinlockcss">html.pinlock body>*:not(.pin-ov){visibility:hidden!important}</style><script>document.documentElement.classList.add("pinlock")</script>
 <link rel="icon" type="image/svg+xml" href="logo.svg"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Lexend:wght@400;500;600&display=swap">
 <style>
 :root{--bg:#f1f6ff;--card:#fff;--ink:#0f2a57;--mut:#5a6b8a;--line:#e1eaf8;--soft:#f6f9ff;--acc:#1f5bbd;--accbg:#e4eeff;--ok:#12a150;--okbg:#e7f7ee;--bad:#c4321f;--badbg:#fdecea;--warn:#b7791f;--warnbg:#fff6e0;--r:16px}
@@ -78,8 +79,9 @@ td.n{text-align:right;font-variant-numeric:tabular-nums}th.n{text-align:right}
 </div>
 <div class="drawer" id="dr"><div class="bk" data-close="1"></div><div class="pn" id="pn"></div></div>
 <script type="module">
-import { fs, doc, getDoc, setDoc, updateDoc, collection, getDocs, onSnapshot, query, where, whenUser, profileOf } from "./fb.js?v=1112h";
-import { startUsage } from "./usage.js?v=1112h";
+import { fs, doc, getDoc, setDoc, updateDoc, collection, getDocs, onSnapshot, query, where, whenUser, profileOf } from "./fb.js?v=1112i";
+import { startUsage } from "./usage.js?v=1112i";
+import { loadPin, hasPin, askPin, savePin, checkPin } from "./ownerpin.js?v=1112i";
 const $ = id => document.getElementById(id), out = $("out");
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const ONLINE = 6 * 60 * 1000, DAY = 24 * 60 * 60 * 1000;
@@ -90,6 +92,15 @@ const u = await whenUser();
 const p = u && await profileOf(u.uid);
 if (!p || p.role !== "teacher" || p.admin !== true) { location.href = "index.html"; throw new Error("owner only"); }
 startUsage(u, p);
+{ // the Developer page asks for the owner's PIN every time it opens (when he has switched that on)
+  const pc = await loadPin(true);
+  if (pc.err) { alert("Could not check your PIN. Check your connection and open this page again."); location.href = "teacher.html"; throw new Error("pin check failed"); }
+  if (hasPin(pc) && pc.devOn !== false) {
+    const ok = await askPin("Developer PIN", "This page is locked. Type your 6-digit PIN.", { cancel: "Back" });
+    if (!ok) { location.href = "teacher.html"; throw new Error("locked"); }
+  }
+  document.documentElement.classList.remove("pinlock");
+}
 
 let teachers = [], students = [], pres = new Map(), tab = "live", filter = "all", cls = "all", q = "", sort = { k: "seen", dir: -1 }, titles = null, liveOk = false;
 const key = (tid, sid) => (tid || "") + "/" + sid;
@@ -152,7 +163,7 @@ function watch() {
 
 function build() {
   out.innerHTML = `<div class="kpis" id="kpis"></div>
-    <div class="tabs" role="tablist">${[["live", "Live"], ["students", "Students"], ["teachers", "Teachers"], ["usage", "Usage"]].map(([k, l]) => `<button role="tab" data-tab="${k}" aria-selected="${k === tab}">${l}</button>`).join("")}</div>
+    <div class="tabs" role="tablist">${[["live", "Live"], ["students", "Students"], ["teachers", "Teachers"], ["usage", "Usage"], ["security", "Security"]].map(([k, l]) => `<button role="tab" data-tab="${k}" aria-selected="${k === tab}">${l}</button>`).join("")}</div>
     <div id="pane"></div>`;
   paint();
 }
@@ -170,7 +181,39 @@ function paint() {
   const lv = $("live");
   if (liveOk) { lv.className = "live"; $("liveTxt").textContent = "Live"; }
   document.querySelectorAll("[data-tab]").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === tab));
-  ({ live: paintLive, students: paintStudents, teachers: paintTeachers, usage: paintUsage })[tab]();
+  ({ live: paintLive, students: paintStudents, teachers: paintTeachers, usage: paintUsage, security: paintSecurity })[tab]();
+}
+
+
+/* ---------- Security: the owner's PIN ---------- */
+async function paintSecurity() {
+  const pc = await loadPin(true), on = hasPin(pc);
+  $("pane").innerHTML = `<div class="card" id="secCard"><h3 style="margin:0 0 4px">Your PIN</h3>
+    <p class="note">A 6-digit PIN only you know. It protects adding a lot of XP and this Developer page, even when your account is already signed in on a screen.</p>
+    <div style="display:grid;gap:8px;max-width:340px;margin:10px 0">
+      ${on ? `<input id="pinOld" type="password" inputmode="numeric" maxlength="6" placeholder="Current PIN" autocomplete="off">` : ""}
+      <input id="pinNew" type="password" inputmode="numeric" maxlength="6" placeholder="${on ? "New PIN (6 digits)" : "Choose a PIN (6 digits)"}" autocomplete="off">
+      <input id="pinNew2" type="password" inputmode="numeric" maxlength="6" placeholder="Type it again" autocomplete="off">
+      <button class="btn" id="pinSave" type="button">${on ? "Change PIN" : "Save PIN"}</button><small id="pinMsg" class="note"></small></div>
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line);${on ? "" : "opacity:.5;pointer-events:none"}"><b>What the PIN protects</b>
+      <label style="display:flex;gap:8px;align-items:center;margin:10px 0"><input type="checkbox" id="pinXp"${pc.xpOn !== false ? " checked" : ""}> Ask for the PIN when I add or take more than <input id="pinMin" type="number" min="1" step="1" value="${Number(pc.xpMin) || 500}" style="width:90px"> XP</label>
+      <label style="display:flex;gap:8px;align-items:center;margin:10px 0"><input type="checkbox" id="pinDev"${pc.devOn !== false ? " checked" : ""}> Ask for the PIN every time the Developer page opens</label>
+      <button class="btn" id="pinSet" type="button">Save these choices</button></div>
+    <p class="note">If you forget the PIN, open the Firebase console, go to Firestore, and delete the document <b>ownersec / pin</b>. Then set a new one here.</p></div>`;
+  const msg = (t, bad) => { const m = $("pinMsg"); m.textContent = t; m.style.color = bad ? "var(--bad)" : "var(--ok)"; };
+  $("pinSave").onclick = async () => {
+    const a = $("pinNew").value, b = $("pinNew2").value;
+    if (!/^\d{6}$/.test(a)) return msg("The PIN must be exactly 6 digits.", 1);
+    if (a !== b) return msg("The two PINs are different.", 1);
+    if (on && !(await checkPin($("pinOld").value))) return msg("The current PIN is wrong.", 1);
+    try { await savePin(a); msg("PIN saved."); setTimeout(paintSecurity, 900); } catch { msg("Could not save. Check your connection.", 1); }
+  };
+  $("pinSet").onclick = async () => {
+    const min = Math.max(1, Math.round(Number($("pinMin").value) || 500));
+    const changing = (pc.xpOn !== false && !$("pinXp").checked) || (pc.devOn !== false && !$("pinDev").checked);
+    if (changing && !(await askPin("Your PIN", "Type your PIN to switch protection off."))) return;
+    try { await savePin("", { xpOn: $("pinXp").checked, devOn: $("pinDev").checked, xpMin: min }); alert("Saved."); paintSecurity(); } catch { alert("Could not save. Check your connection."); }
+  };
 }
 
 /* ---------- Usage: estimate of reads and writes against the free daily limit ---------- */
@@ -311,6 +354,6 @@ document.addEventListener("click", async ev => {
   const r = t.closest("[data-stu]"); if (r) openStudent(r.dataset.stu);
 });
 document.addEventListener("keydown", e => { if (e.key === "Escape") $("dr").classList.remove("open"); });
-setInterval(() => { if (document.visibilityState === "visible" && $("kpis") && !$("dr").classList.contains("open") && document.activeElement !== $("q")) paint(); }, 30000);   // keeps "x min ago" fresh
+setInterval(() => { if (tab !== "security" && document.visibilityState === "visible" && $("kpis") && !$("dr").classList.contains("open") && document.activeElement !== $("q")) paint(); }, 30000);   // keeps "x min ago" fresh
 load();
 </script></body></html>

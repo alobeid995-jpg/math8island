@@ -1286,7 +1286,7 @@ header.book .geo { max-height: 190px; }
 /* --- Math Island logo mark --- */
 header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !important; color: transparent !important; font-size: 0 !important; border: 0 !important; box-shadow: none !important; border-radius: 22% !important; }
 
-</style><link rel="stylesheet" href="island.css?v=1112h"><style>
+</style><link rel="stylesheet" href="island.css?v=1112i"><style>
 .cls-panel{margin:12px 0;padding:14px;border:2px solid var(--edge);border-radius:12px;background:var(--card);display:grid;gap:10px}
 .cls-panel h4{margin:0}.cls-panel p{margin:0;font-size:14px}
 .cls-panel label{display:grid;gap:4px;font-size:13px;font-weight:600}
@@ -1457,7 +1457,7 @@ header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !import
 window.__ready = new Promise(r => { window.__resolveClaude = r; });
 window.claude = { use: async n => (await window.__ready).use(n) };
 </script>
-<script src="hats.js?v=1112h"></script>
+<script src="hats.js?v=1112i"></script>
 <script>
 const POSITIVE = [
   { title: "Active Participation", xp: 10 },
@@ -2432,7 +2432,11 @@ function customXp(id) {
   const st = students.find(s => s.id === id); if (!st || readOnly) return;
   const inp = $("cx-" + id), n = Math.round(Number(inp && inp.value));
   if (!inp || !inp.value.trim() || !Number.isFinite(n) || n === 0) { toast("Type an XP amount first, like 25 or -10."); if (inp) inp.focus(); return; }
-  if (Math.abs(n) > 1000) { toast("Keep it to 1000 XP or less at a time."); return; }
+  if (!window.__owner && Math.abs(n) > 1000) { toast("Keep it to 1000 XP or less at a time."); return; }
+  if (window.__owner && Math.abs(n) > 500) { xpGate(n).then(ok => { if (ok) customXpGo(st, n, id); }); return; }
+  customXpGo(st, n, id);
+}
+function customXpGo(st, n, id) {
   const why = (($("cr-" + id) || {}).value || "").trim().slice(0, 60);
   giveEntry(st, { title: why || (n > 0 ? "Bonus XP" : "XP adjustment"), xp: n });
 }
@@ -3845,8 +3849,8 @@ function renderClass(students) {
       <div><div class="bar"><i style="width:${pct}%"></i></div>
         <div class="barlbl"><span>L${lv}</span><span>${st.xp < 0 ? "below zero" : (base + LEVEL_XP - st.xp) + " XP to L" + (lv + 1)}</span></div></div>
       ${readOnly ? "" : `<div class="cxp"><label for="cx-${st.id}">Custom XP</label>
-        <div class="cxr"><input id="cx-${st.id}" type="number" inputmode="numeric" step="1" min="-1000" max="1000" placeholder="e.g. 35 or -10" aria-label="XP amount"><input id="cr-${st.id}" type="text" maxlength="60" placeholder="Reason (optional)" aria-label="Reason"><button class="plus" data-act="customXp" data-id="${st.id}">Give XP</button></div>
-        <small>Type any whole number up to 1000. Use a minus sign to take XP away.</small></div>`}
+        <div class="cxr"><input id="cx-${st.id}" type="number" inputmode="numeric" step="1" placeholder="e.g. 35 or -10" aria-label="XP amount"><input id="cr-${st.id}" type="text" maxlength="60" placeholder="Reason (optional)" aria-label="Reason"><button class="plus" data-act="customXp" data-id="${st.id}">Give XP</button></div>
+        <small>${window.__owner ? "Type any whole number. Over 500 asks for your PIN." : "Type any whole number up to 1000."} Use a minus sign to take XP away.</small></div>`}
       <div class="ctls">
       ${readOnly ? "" : bullyConf && bullyConf.id === st.id
         ? `<div class="row"><label>Bullying</label><div class="confirm">Take ${BULLY_XP} XP from ${esc(st.name)} and give it to ${esc((students.find(o => o.id === bullyConf.vid) || {}).name || "")}? <button class="danger small" data-act="bullyYes" data-id="${st.id}">Yes, move XP</button><button class="ghost small" data-act="bullyNo">Cancel</button></div></div>`
@@ -4294,7 +4298,7 @@ document.getElementById("expBtn")?.addEventListener("click", async () => {
     <div class="acts noprint"><button class="ghost" id="lgPrint" type="button">Print this list</button><button class="ghost" id="lgClose" type="button">Close</button></div>
   </div>
 </div>
-<script type="module" src="teacher.js?v=1112h"></script>
+<script type="module" src="teacher.js?v=1112i"></script>
 
 <script>
 /* Post a certificate straight to Google Classroom.
