@@ -1,7 +1,7 @@
 // "My classwork" on the student page: worksheets from the teacher, and (for the 9S boys) the lesson games.
-import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1112d";
-import { playerOf, catalog } from "./islandmap.js?v=1112d";
-import { logEv } from "./presence.js?v=1112d";
+import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1112f";
+import { playerOf, catalog } from "./islandmap.js?v=1112f";
+import { logEv } from "./presence.js?v=1112f";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -134,6 +134,6 @@ document.addEventListener("click", e => {
   if (a === "closegame") closeGame();
 });
 
-{ const st = document.createElement("style"); st.textContent = ".mt-un{margin:14px 0 6px;font-size:16px}.mt-list{margin:8px 0;border-top:1px solid #e3e7f0;padding-top:8px}.mt-list summary{cursor:pointer;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;font-size:16px}.mt-list summary small{opacity:.7}.mt-ls{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;border-radius:12px;margin:6px 0;background:#eef1f7;color:#6b7690}.mt-ls.ok{background:#e6f6ec;color:inherit}.mt-n{font-weight:800;min-width:2.3em}.mt-ls small{display:block;opacity:.8}.mt-lk{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}.mt-a{display:inline-block;padding:6px 12px;border-radius:99px;background:#1f5bbd;color:#fff;font-weight:700;text-decoration:none}"; document.head.appendChild(st); }
+{ const st = document.createElement("style"); st.textContent = ".mt-un{margin:14px 0 6px;font-size:16px}.mt-list{margin:8px 0;border-top:1px solid var(--line);padding-top:8px}.mt-list summary{cursor:pointer;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;font-size:16px}.mt-list summary small{opacity:.7}.mt-ls{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;border-radius:12px;margin:6px 0;background:color-mix(in srgb,var(--accent) 7%,var(--card));color:var(--muted)}.mt-ls.ok{background:color-mix(in srgb,var(--good) 18%,var(--card));color:var(--ink)}.mt-n{font-weight:800;min-width:2.3em}.mt-ls small{display:block;opacity:.8}.mt-lk{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}.mt-a{display:inline-block;padding:6px 12px;border-radius:99px;background:var(--sea-700);color:#fff;font-weight:700;text-decoration:none}"; document.head.appendChild(st); }
 { const st = document.createElement("style"); st.textContent = "@media(min-width:860px){#work{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}#work>section:only-child{grid-column:1/-1}#work>section{margin:0}}"; document.head.appendChild(st); }
 { const st = document.createElement("style"); st.textContent = "#work .wk-box{padding:14px 16px!important}#work .wk-box h3{margin:0 0 6px!important;font-size:18px!important;line-height:1.2}#work .mt-un{font-size:14px;margin:10px 0 4px}#work .mt-ls{padding:7px 10px;margin:4px 0;font-size:14px;gap:8px}#work .mt-n{min-width:2em}#work .mt-list{margin:6px 0;padding-top:6px}#work .mt-list summary{font-size:15px}#work .mt-a{padding:4px 10px;font-size:13px}#work .wk-lh b{font-size:15px}#work .wk-game{padding:10px 12px}#work .wk-game b{font-size:15px}#work .wk-game small{font-size:12.5px}@media(min-width:860px){#work .mt-box{max-height:560px;overflow:auto}}"; document.head.appendChild(st); }
