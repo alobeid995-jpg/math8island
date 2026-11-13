@@ -1,11 +1,12 @@
-import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1112l";
-import { initWork } from "./stuwork.js?v=1112l";
-import { initMsgs } from "./stumsg.js?v=1112l";
-import { initLive } from "./livequiz.js?v=1112l";
-import { initChat } from "./chat.js?v=1112l";
-import { initFunpark } from "./funpark.js?v=1112l";
-import { startPresence, logEv } from "./presence.js?v=1112l";
-import { achCard, initAch } from "./achieve.js?v=1112l";
+import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1112n";
+import { initWork } from "./stuwork.js?v=1112n";
+import { initMsgs } from "./stumsg.js?v=1112n";
+import { initLive } from "./livequiz.js?v=1112n";
+import { initChat } from "./chat.js?v=1112n";
+import { initFunpark } from "./funpark.js?v=1112n";
+import { startPresence, logEv } from "./presence.js?v=1112n";
+import { studentTT, keepStudentTT } from "./timetable.js?v=1112n";
+import { achCard, initAch } from "./achieve.js?v=1112n";
 
 const sub = (t, n) => t.split("{n}").join(n);
 let me = null, ref = null, shopCat = "frame", confirmId = "", pickerOpen = false, seeds = [], loaded = false;
@@ -38,6 +39,7 @@ async function start() {
   onSnapshot(doc(fs, "shop", "prices"), s => { if (s.exists()) { applyPrices(s.data().prices); render(); } }, () => {});   // prices the owner sets
   onSnapshot(ref, snap => { loaded = true; me = snap.exists() ? fromDoc(snap) : null; if (me) applyTheme(validT(me.theme) ? me.theme : lsT.get()); render(); },
     () => { loaded = true; me = null; render(); });
+  keepStudentTT();
   initAch(() => render(), () => me);
   initWork(p, () => me, toast).catch(() => {});
   initMsgs(p, () => me).catch(() => {});
@@ -132,6 +134,7 @@ function render() {
       ${themePicker()}
       ${picker}
     </section>
+    ${studentTT(st.cls)}
     ${achCard(st)}
     <section class="card${GIRL ? " girlshop" : ""}"><h3>${GIRL ? "✨ Sparkle Boutique" : "XP Shop"}</h3>${GIRL ? `<p class="gs-sub">Dress up your avatar with pretty things. You pay with your XP.</p>` : ""}
       <div class="shop-tabs">${shopCats().map(c => `<button class="shop-tab" data-act="cat" data-cat="${c.key}" aria-pressed="${c.key === shopCat}">${c.label}</button>`).join("")}</div>

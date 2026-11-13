@@ -308,3 +308,13 @@ html[data-pt] .th-pk[aria-pressed="true"]{border-color:var(--accent);background:
 .ach-sheet{width:min(920px,100%);background:#fffdf4;border-radius:14px;padding:12px;color:#17233b}.ach-svg svg{display:block;width:100%;height:auto}
 .ach-acts{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:10px}.ach-acts .ghost{color:#17233b;border-color:#c9bfa4;background:#fff}
 @media print{body.pc>*:not(.ach-cv){display:none!important}body.pc .ach-cv{position:static;background:none;padding:0;display:block}body.pc .ach-sheet{padding:0;width:100%}body.pc .ach-acts{display:none}@page{size:landscape;margin:8mm}}
+
+/* next maths lesson card (student) */
+.tt-card{display:grid;gap:4px}
+.tt-h{font-weight:700;font-size:.8rem;color:var(--muted)}
+.tt-live{color:var(--good)}
+.tt-big{font-family:var(--f-display);font-weight:800;font-size:1.7rem;color:var(--ink);line-height:1.1}
+.tt-sub{color:var(--ink);font-weight:600}
+.tt-week{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tt-chip{font-size:.78rem;padding:4px 9px;border-radius:999px;border:1.5px solid var(--line);background:var(--card);color:var(--ink)}
+.tt-chip.tt-td{border-color:var(--accent);background:var(--accent-soft)}

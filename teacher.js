@@ -1,18 +1,19 @@
 import { onSnapshot, changeEmail, auth, fs, firebaseConfig, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, collection, query, where, writeBatch, setBase, bcol, bdoc, signOut, whenUser, profileOf, emailFor, pinKey,
-  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1112l";
-import { db } from "./fbdb.js?v=1112l";
-import { startUsage } from "./usage.js?v=1112l";
-import { openWork, gradeData } from "./teacherwork.js?v=1112l";
+  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1112n";
+import { db } from "./fbdb.js?v=1112n";
+import { startUsage } from "./usage.js?v=1112n";
+import { mountTeacherTT } from "./timetable.js?v=1112n";
+import { openWork, gradeData } from "./teacherwork.js?v=1112n";
 import "./lessonxp.js";
-import { openProgress } from "./progress.js?v=1112l";
-import { openMaterial } from "./material.js?v=1112l";
-import { hasFunpark, openFunpark } from "./fpteacher.js?v=1112l";
-import { openCoconut } from "./coconut.js?v=1112l";
-import { xpAllowed } from "./ownerpin.js?v=1112l";
+import { openProgress } from "./progress.js?v=1112n";
+import { openMaterial } from "./material.js?v=1112n";
+import { hasFunpark, openFunpark } from "./fpteacher.js?v=1112n";
+import { openCoconut } from "./coconut.js?v=1112n";
+import { xpAllowed } from "./ownerpin.js?v=1112n";
 window.xpGate = n => xpAllowed(n); window.wkGradeData = gradeData;
-import { initChat } from "./chat.js?v=1112l";
-import { openLive } from "./live.js?v=1112l";
-import { openInbox } from "./inbox.js?v=1112l";
+import { initChat } from "./chat.js?v=1112n";
+import { openLive } from "./live.js?v=1112n";
+import { openInbox } from "./inbox.js?v=1112n";
 
 const $ = id => document.getElementById(id);
 const esc2 = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -89,7 +90,7 @@ document.addEventListener("click", async ev => {
 window.__resolveClaude({ use: async n => n === "db" ? db : n === "user" ? { can: async () => true, isOwner: () => true, canEdit: () => true } : null });
 
 // Students may only spend what the shop price list allows, so the list lives in the database.
-window.__owner = ADMIN;   // only the owner can change prices
+window.__owner = ADMIN; if (ADMIN) mountTeacherTT();   // only the owner can change prices
 {
   const pref = doc(fs, "shop", "prices"); let saved = {};
   try { const s = window.__pricesSnap || await getDoc(pref); if (s && s.exists()) saved = s.data().prices || {}; } catch {}
