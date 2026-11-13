@@ -1,7 +1,7 @@
 // Teacher side: announcements (shown to chosen classes) and messages with students.
 // Announcements are documents in <base>/work (kind "announcement"), which students already read for their class.
 // Messages are documents in <base>/msgs; a student reads and writes only his own thread (see the rules block).
-import { getDocs, setDoc, updateDoc, deleteDoc, bcol, bdoc } from "./fb.js?v=1112s";
+import { getDocs, setDoc, updateDoc, deleteDoc, bcol, bdoc } from "./fb.js?v=1112t";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -26,6 +26,13 @@ async function load() {
 function badge() { const b = $("inboxBtn"); if (b) { const n = unreadN(); b.textContent = "Announcements"; } }
 const convs = () => { const by = new Map(); msgs.forEach(x => { (by.get(x.sid) || by.set(x.sid, []).get(x.sid)).push(x); }); return [...by.entries()].map(([sid, l]) => { l.sort((a, b) => a.at - b.at); return { sid, l, last: l[l.length - 1], un: l.filter(x => x.from === "student" && !x.tread).length }; }).sort((a, b) => (b.un > 0) - (a.un > 0) || b.last.at - a.last.at); };
 
+
+/* Quarter 2 quiz notices: one per class, each with that class's own day and lesson time (from the timetable) */
+const QZ_TOPICS = "Topics:\n4.1 Constructing and solving equations\n4.2 Simultaneous equations – substitution method only";
+const QZ = [["8M", "Wednesday, 18 Nov", "12:25 pm – 1:10 pm"], ["8B", "Thursday, 19 Nov", "11:00 am – 11:40 am"], ["8Y", "Thursday, 19 Nov", "9:25 am – 10:05 am"], ["8S", "Thursday, 19 Nov", "10:10 am – 10:55 am"], ["8D", "Thursday, 19 Nov", "10:10 am – 10:55 am"]];
+const qzDone = () => QZ.every(([c]) => anns.some(a => a.id === "ann-quiz-q2-" + c));
+const qzCard = () => (window.__owner ? `<div class="ib-card"><b>Ready to post: Quarter 2 quiz (${QZ.length} classes)</b><div style="font-size:.9rem;margin:6px 0">${QZ.map(([c, d, t]) => `<div><b>${c}</b> · ${d} · ${t}</div>`).join("")}</div>${qzDone() ? `<small>Already posted to every class.</small>` : `<button class="primary small" type="button" data-ib="quiz">Post the quiz notice to every class</button>`}</div>` : "");
+
 function render() {
   const b = $("inBody"); if (!b) return;
   const n = unreadN();
@@ -33,7 +40,7 @@ function render() {
   const foot = `<p class="lg-msg" id="ibMsg">${esc(msg)}</p><div class="lg-bar"><button class="ghost" type="button" data-ib="close">Close</button></div>`;
   if (tab === "ann") {
     if (!draft.classes) draft.classes = [...CLASSES];
-    b.innerHTML = head + `<p>Write a notice. It shows at the top of the student page for the classes you choose.</p>
+    b.innerHTML = head + `${qzCard()}<p>Write a notice. It shows at the top of the student page for the classes you choose.</p>
       <input class="ib-in" id="ibTitle" placeholder="Title (optional)" maxlength="80" value="${esc(draft.title)}">
       <textarea class="ib-ta" id="ibText" maxlength="1000" placeholder="Your announcement">${esc(draft.text)}</textarea>
       <div><b>Show to:</b><div class="ib-cls">${CLASSES.map(c => `<label><input type="checkbox" data-ibcls="${esc(c)}"${draft.classes.includes(c) ? " checked" : ""}> ${esc(c)}</label>`).join("")}</div></div>
@@ -84,6 +91,14 @@ document.addEventListener("click", async e => {
     busy = true; msg = "Posting…"; render();
     try { const id = "ann-" + Date.now().toString(36); const d = { kind: "announcement", open: false, title, text, classes: [...draft.classes], created: Date.now() }; await setDoc(bdoc("work", id), d); anns.unshift({ id, ...d }); draft = { title: "", text: "", classes: null }; msg = "Posted. Students see it now."; }
     catch (er) { msg = "Could not post (" + (er.code || er.message) + ")."; }
+    busy = false; render(); return;
+  }
+  if (a === "quiz") {
+    busy = true; msg = "Posting…"; render();
+    try {
+      for (const [c, d, t] of QZ) { const id = "ann-quiz-q2-" + c, doc = { kind: "announcement", open: false, title: "Math Quarter 2 – Quiz", text: `Quiz\n${d}\nYour maths lesson: ${t}\n${QZ_TOPICS}`, classes: [c], created: Date.now() }; await setDoc(bdoc("work", id), doc); anns = anns.filter(x => x.id !== id); anns.unshift({ id, ...doc }); }
+      msg = "Posted to " + QZ.map(x => x[0]).join(", ") + ".";
+    } catch (er) { msg = "Could not post (" + (er.code || er.message) + ")."; }
     busy = false; render(); return;
   }
   if (a === "delann") { if (!confirm("Delete this announcement? Students will no longer see it.")) return; try { await deleteDoc(bdoc("work", b.dataset.id)); anns = anns.filter(x => x.id !== b.dataset.id); msg = "Deleted."; } catch (er) { msg = "Could not delete (" + (er.code || er.message) + ")."; } render(); return; }
