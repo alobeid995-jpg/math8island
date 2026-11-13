@@ -1,16 +1,16 @@
 import { onSnapshot, changeEmail, auth, fs, firebaseConfig, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, collection, query, where, writeBatch, setBase, bcol, bdoc, signOut, whenUser, profileOf, emailFor, pinKey,
-  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1112b";
-import { db } from "./fbdb.js?v=1112b";
-import { startUsage } from "./usage.js?v=1112b";
-import { openWork } from "./teacherwork.js?v=1112b";
+  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1112c";
+import { db } from "./fbdb.js?v=1112c";
+import { startUsage } from "./usage.js?v=1112c";
+import { openWork } from "./teacherwork.js?v=1112c";
 import "./lessonxp.js";
-import { openProgress } from "./progress.js?v=1112b";
-import { openMaterial } from "./material.js?v=1112b";
-import { hasFunpark, openFunpark } from "./fpteacher.js?v=1112b";
-import { openCoconut } from "./coconut.js?v=1112b";
-import { initChat } from "./chat.js?v=1112b";
-import { openLive } from "./live.js?v=1112b";
-import { openInbox } from "./inbox.js?v=1112b";
+import { openProgress } from "./progress.js?v=1112c";
+import { openMaterial } from "./material.js?v=1112c";
+import { hasFunpark, openFunpark } from "./fpteacher.js?v=1112c";
+import { openCoconut } from "./coconut.js?v=1112c";
+import { initChat } from "./chat.js?v=1112c";
+import { openLive } from "./live.js?v=1112c";
+import { openInbox } from "./inbox.js?v=1112c";
 
 const $ = id => document.getElementById(id);
 const esc2 = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -99,7 +99,7 @@ window.__owner = ADMIN;   // only the owner can change prices
   if (!ADMIN) onSnapshot(pref, sn => { if (sn.exists()) { applyPrices(sn.data().prices || {}); try { if (view === "shop") renderShopView(); } catch {} } }, () => {});   // the owner's price changes reach other teachers live
 }
 
-if (CLASSES.some(c => /^(9S|8G|8B|8Y|8S|8M)$/i.test(c))) {   // 9S games: progress of each boy, inside this page
+if (CLASSES.some(c => /^(9S|8G|8B|8Y|8S|8M|8D)$/i.test(c))) {   // 9S games: progress of each boy, inside this page
   const ib = document.createElement("button"); ib.className = "ghost small"; ib.id = "islandBtn"; ib.type = "button"; ib.textContent = "Students progress";
   ib.onclick = () => openProgress();
   $("outBtn").before(ib);

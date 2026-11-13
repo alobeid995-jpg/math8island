@@ -1,10 +1,10 @@
-import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1112b";
-import { initWork } from "./stuwork.js?v=1112b";
-import { initMsgs } from "./stumsg.js?v=1112b";
-import { initLive } from "./livequiz.js?v=1112b";
-import { initChat } from "./chat.js?v=1112b";
-import { initFunpark } from "./funpark.js?v=1112b";
-import { startPresence, logEv } from "./presence.js?v=1112b";
+import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1112c";
+import { initWork } from "./stuwork.js?v=1112c";
+import { initMsgs } from "./stumsg.js?v=1112c";
+import { initLive } from "./livequiz.js?v=1112c";
+import { initChat } from "./chat.js?v=1112c";
+import { initFunpark } from "./funpark.js?v=1112c";
+import { startPresence, logEv } from "./presence.js?v=1112c";
 
 const sub = (t, n) => t.split("{n}").join(n);
 let me = null, ref = null, shopCat = "frame", confirmId = "", pickerOpen = false, seeds = [], loaded = false;

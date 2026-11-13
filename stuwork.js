@@ -1,7 +1,7 @@
 // "My classwork" on the student page: worksheets from the teacher, and (for the 9S boys) the lesson games.
-import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1112b";
-import { playerOf, catalog } from "./islandmap.js?v=1112b";
-import { logEv } from "./presence.js?v=1112b";
+import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1112c";
+import { playerOf, catalog } from "./islandmap.js?v=1112c";
+import { logEv } from "./presence.js?v=1112c";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -26,8 +26,8 @@ async function load() {
   } catch { works = []; }
   player = playerOf(me);
   isAG = /^8G$/i.test(String(me.cls || "").trim());   // this lesson is only for class 8G
-  isSB = /^(8Y|8S|8M)$/i.test(String(me.cls || "").trim());   // extra substitution practice: 8Y, 8S, 8M
-  isEL = /^(8B|8Y|8S|8M)$/i.test(String(me.cls || "").trim());   // elimination lesson: only these four classes
+  isSB = /^(8Y|8S|8M|8D)$/i.test(String(me.cls || "").trim());   // extra substitution practice: 8Y, 8S, 8M, 8D
+  isEL = /^(8B|8Y|8S|8M|8D)$/i.test(String(me.cls || "").trim());   // elimination lesson: only these four classes
   if (isAG || isEL || isSB) { try { const pl = await getDocs(query(collection(fs, ...base, "plays"), where("sid", "==", P.sid))); let rt = {}; try { const sd = await getDoc(doc(fs, ...base, "students", P.sid)); rt = (sd.exists() && sd.data().rt) || {}; lxs = (sd.exists() && sd.data().lx) || {}; } catch {}
       agPlays = new Set(pl.docs.map(d => d.data()).filter(v => (v.u || v.t || 0) > (rt[v.g] || 0)).map(v => v.g)); } catch {} }
   if (player) {

@@ -1,5 +1,5 @@
 // Students progress inside the teacher page: pick a class, then a lesson, then see each student's games and every mistake.
-import { getDocs, bcol, bdoc, updateDoc } from "./fb.js?v=1112b";
+import { getDocs, bcol, bdoc, updateDoc } from "./fb.js?v=1112c";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -19,7 +19,7 @@ async function gameTitles() {
   return titles;
 }
 const title = g => (titles && titles[g]) || g;
-const kids = () => students.filter(s => /^(9S|8G|8B|8Y|8S|8M)$/i.test(s.cls)).sort((a, b) => a.name.localeCompare(b.name));
+const kids = () => students.filter(s => /^(9S|8G|8B|8Y|8S|8M|8D)$/i.test(s.cls)).sort((a, b) => a.name.localeCompare(b.name));
 
 function statsOf(sid) {
   const by = {};
