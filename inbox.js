@@ -1,7 +1,7 @@
 // Teacher side: announcements (shown to chosen classes) and messages with students.
 // Announcements are documents in <base>/work (kind "announcement"), which students already read for their class.
 // Messages are documents in <base>/msgs; a student reads and writes only his own thread (see the rules block).
-import { getDocs, setDoc, updateDoc, deleteDoc, bcol, bdoc } from "./fb.js?v=1112t";
+import { getDocs, setDoc, updateDoc, deleteDoc, bcol, bdoc } from "./fb.js?v=1112u";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -96,8 +96,10 @@ document.addEventListener("click", async e => {
   if (a === "quiz") {
     busy = true; msg = "Posting…"; render();
     try {
+      const old = anns.filter(x => /Math Quarter 2\s*[-–]\s*Quiz/i.test(x.title || "") && !String(x.id).startsWith("ann-quiz-q2-"));   // the earlier test notice
+      for (const x of old) { await deleteDoc(bdoc("work", x.id)); anns = anns.filter(y => y.id !== x.id); }
       for (const [c, d, t] of QZ) { const id = "ann-quiz-q2-" + c, doc = { kind: "announcement", open: false, title: "Math Quarter 2 – Quiz", text: `Quiz\n${d}\nYour maths lesson: ${t}\n${QZ_TOPICS}`, classes: [c], created: Date.now() }; await setDoc(bdoc("work", id), doc); anns = anns.filter(x => x.id !== id); anns.unshift({ id, ...doc }); }
-      msg = "Posted to " + QZ.map(x => x[0]).join(", ") + ".";
+      msg = "Posted to " + QZ.map(x => x[0]).join(", ") + (old.length ? ". The old notice was removed." : ".");
     } catch (er) { msg = "Could not post (" + (er.code || er.message) + ")."; }
     busy = false; render(); return;
   }
