@@ -67,7 +67,7 @@ export function mountStudentTT(getMe) {
 
 /* ---------- teacher ---------- */
 const css = `
-#ttT{position:fixed;left:12px;bottom:12px;z-index:60;max-width:min(340px,calc(100vw - 24px));font-family:system-ui,sans-serif}
+#ttT{position:fixed;left:12px;bottom:12px;z-index:8;max-width:min(340px,calc(100vw - 24px));font-family:system-ui,sans-serif}
 #ttT .tt-pill{display:flex;align-items:center;gap:8px;background:#13213f;color:#fff;border:0;border-radius:999px;padding:9px 14px;font-weight:700;font-size:.86rem;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.3)}
 #ttT .tt-pill.on{background:#0a7a3d}#ttT .tt-pill.warn{background:#c0392b;animation:ttp 1s infinite alternate}
 @keyframes ttp{to{transform:scale(1.05)}}
