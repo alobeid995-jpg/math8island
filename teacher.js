@@ -1,18 +1,18 @@
 import { onSnapshot, changeEmail, auth, fs, firebaseConfig, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, collection, query, where, writeBatch, setBase, bcol, bdoc, signOut, whenUser, profileOf, emailFor, pinKey,
-  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1112k";
-import { db } from "./fbdb.js?v=1112k";
-import { startUsage } from "./usage.js?v=1112k";
-import { openWork, gradeData } from "./teacherwork.js?v=1112k";
+  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1112l";
+import { db } from "./fbdb.js?v=1112l";
+import { startUsage } from "./usage.js?v=1112l";
+import { openWork, gradeData } from "./teacherwork.js?v=1112l";
 import "./lessonxp.js";
-import { openProgress } from "./progress.js?v=1112k";
-import { openMaterial } from "./material.js?v=1112k";
-import { hasFunpark, openFunpark } from "./fpteacher.js?v=1112k";
-import { openCoconut } from "./coconut.js?v=1112k";
-import { xpAllowed } from "./ownerpin.js?v=1112k";
+import { openProgress } from "./progress.js?v=1112l";
+import { openMaterial } from "./material.js?v=1112l";
+import { hasFunpark, openFunpark } from "./fpteacher.js?v=1112l";
+import { openCoconut } from "./coconut.js?v=1112l";
+import { xpAllowed } from "./ownerpin.js?v=1112l";
 window.xpGate = n => xpAllowed(n); window.wkGradeData = gradeData;
-import { initChat } from "./chat.js?v=1112k";
-import { openLive } from "./live.js?v=1112k";
-import { openInbox } from "./inbox.js?v=1112k";
+import { initChat } from "./chat.js?v=1112l";
+import { openLive } from "./live.js?v=1112l";
+import { openInbox } from "./inbox.js?v=1112l";
 
 const $ = id => document.getElementById(id);
 const esc2 = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

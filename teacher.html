@@ -1286,7 +1286,7 @@ header.book .geo { max-height: 190px; }
 /* --- Math Island logo mark --- */
 header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !important; color: transparent !important; font-size: 0 !important; border: 0 !important; box-shadow: none !important; border-radius: 22% !important; }
 
-</style><link rel="stylesheet" href="island.css?v=1112k"><style>
+</style><link rel="stylesheet" href="island.css?v=1112l"><style>
 .cls-panel{margin:12px 0;padding:14px;border:2px solid var(--edge);border-radius:12px;background:var(--card);display:grid;gap:10px}
 .cls-panel h4{margin:0}.cls-panel p{margin:0;font-size:14px}
 .cls-panel label{display:grid;gap:4px;font-size:13px;font-weight:600}
@@ -1457,7 +1457,7 @@ header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !import
 window.__ready = new Promise(r => { window.__resolveClaude = r; });
 window.claude = { use: async n => (await window.__ready).use(n) };
 </script>
-<script src="hats.js?v=1112k"></script>
+<script src="hats.js?v=1112l"></script>
 <script>
 const POSITIVE = [
   { title: "Active Participation", xp: 10 },
@@ -3278,10 +3278,83 @@ function hubGrades() {
     <div style="overflow:auto"><table class="rep-tbl" id="grTbl"><thead><tr><th>Student</th><th>Participation</th><th>Behaviour</th><th>Deductions</th><th>Classwork</th><th>Done / held</th><th>Graded worksheet</th><th>Total /${comps * 10}</th></tr></thead><tbody>
     ${rows.map(r => `<tr><td>${esc(r.st.name)}</td>${cell(r.p)}${cell(r.b)}<td class="xpc">${r.pen}</td>${cell(r.w)}<td class="xpc">${r.done} / ${total}</td>${cell(r.g)}<td class="xpc"><b>${gr1(r.t)}</b></td></tr>`).join("") || `<tr><td colspan="8">No students.</td></tr>`}
     </tbody><tfoot><tr><td><b>Class average</b></td><td class="xpc"><b>${gr1(grAvg(rows, "p"))}</b></td><td class="xpc"><b>${gr1(grAvg(rows, "b"))}</b></td><td></td><td class="xpc"><b>${gr1(grAvg(rows, "w"))}</b></td><td></td><td class="xpc"><b>${hasG ? gr1(grAvg(rows, "g")) : "–"}</b></td><td class="xpc"><b>${gr1(grAvg(rows, "t"))}</b></td></tr></tfoot></table></div>
-    <div class="sbtns" style="justify-content:flex-start"><button class="primary small" data-act="grCsv">Download as Excel (CSV)</button><button class="ghost small" data-act="grPrint">Print</button></div></section>
+    <div class="sbtns" style="justify-content:flex-start"><button class="primary small" data-act="grXlsx" id="grXlsx">Download Excel report (all classes)</button><button class="ghost small" data-act="grPrint">Print</button></div></section>
     <section class="card"><h3>Statistics · average of the ${comps} marks (out of 10)</h3>
     <div class="rep-sum"><div class="g"><b>${gr1(grAvg(rows, "t") / comps)}</b><span>class average</span></div><div><b>${best ? gr1(best.t / comps) : "–"}</b><span>highest${best ? " · " + esc(shortName(best.st.name)) : ""}</span></div><div class="r"><b>${low ? gr1(low.t / comps) : "–"}</b><span>lowest${low ? " · " + esc(shortName(low.st.name)) : ""}</span></div></div>
     <div class="bars">${bins.map((n, i) => `<div style="display:grid;grid-template-columns:80px 1fr 28px;gap:8px;align-items:center;margin:4px 0"><span>${lab[i]}</span><span style="background:var(--sea-100,#dbe8ff);border-radius:6px;height:14px"><span style="display:block;height:14px;border-radius:6px;background:var(--sea-600,#2f6fdd);width:${n / mx * 100}%"></span></span><b>${n}</b></div>`).join("")}</div></section>`;
+}
+
+function grLoadLib() {
+  if (window.ExcelJS) return Promise.resolve();
+  return new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1112l"; sc.onload = res; sc.onerror = () => rej(new Error("lib")); document.head.appendChild(sc); });
+}
+async function grXlsx(btn) {
+  const keep = cls;
+  if (btn) { btn.disabled = true; btn.textContent = "Preparing…"; }
+  try {
+    await grLoadLib();
+    const c = grCfg, wb = new ExcelJS.Workbook();
+    wb.creator = TNAME || "Mathematics Teacher"; wb.created = new Date();
+    const NAVY = "FF1F3A6E", GREY = "FFF3F5FA", GOOD = "FFC6EFCE", MID = "FFFFEB9C", BAD = "FFFFC7CE", LINE = { style: "thin", color: { argb: "FFB8C2D6" } };
+    const box = { top: LINE, left: LINE, bottom: LINE, right: LINE };
+    const fillOf = v => ({ type: "pattern", pattern: "solid", fgColor: { argb: v >= 8 ? GOOD : v >= 5 ? MID : BAD } });
+    const period = (c.from || c.to) ? `${c.from || "start"} to ${c.to || "today"}` : "All dates";
+    const today = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+    const summary = [];
+    const sheets = CLASSES.filter(k => students.some(s => s.cls === k));
+    for (const k of sheets) {
+      cls = k; const { rows, total, hasG, comps } = grRows();
+      const ws = wb.addWorksheet(k, { views: [{ state: "frozen", ySplit: 5, showGridLines: false }], pageSetup: { orientation: "landscape", fitToPage: true, fitToWidth: 1, fitToHeight: 0, paperSize: 9, margins: { left: .4, right: .4, top: .5, bottom: .5, header: .2, footer: .2 } } });
+      const heads = ["#", "Student", "Participation /10", "Behaviour /10", "Deductions", "Classwork done", "Classwork /10"].concat(hasG ? ["Graded worksheet /10"] : [], ["Total /" + comps * 10, "Average /10"]);
+      const N = heads.length;
+      ws.columns = heads.map((h, i) => ({ width: i === 0 ? 5 : i === 1 ? 30 : 16 }));
+      ws.mergeCells(1, 1, 1, N); const t = ws.getCell(1, 1); t.value = "Hawar International School · Grade 8 Mathematics"; t.font = { name: "Calibri", size: 16, bold: true, color: { argb: "FFFFFFFF" } }; t.fill = { type: "pattern", pattern: "solid", fgColor: { argb: NAVY } }; t.alignment = { vertical: "middle", indent: 1 }; ws.getRow(1).height = 30;
+      ws.mergeCells(2, 1, 2, N); const t2 = ws.getCell(2, 1); t2.value = `Class ${k} · Student assessment marks out of 10`; t2.font = { size: 13, bold: true, color: { argb: NAVY } }; t2.alignment = { indent: 1 }; ws.getRow(2).height = 22;
+      ws.mergeCells(3, 1, 3, N); const t3 = ws.getCell(3, 1); t3.value = `Period: ${period} · Prepared by ${TNAME || "Mathematics Teacher"} · ${today}`; t3.font = { size: 10, italic: true, color: { argb: "FF55607A" } }; t3.alignment = { indent: 1 };
+      ws.getRow(4).height = 6;
+      const hr = ws.getRow(5); heads.forEach((h, i) => { const x = hr.getCell(i + 1); x.value = h; x.font = { bold: true, color: { argb: "FFFFFFFF" } }; x.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF2F5BA8" } }; x.alignment = { horizontal: i === 1 ? "left" : "center", vertical: "middle", wrapText: true }; x.border = box; }); hr.height = 34;
+      const r0 = 6;
+      rows.forEach((r, i) => {
+        const row = ws.getRow(r0 + i), n = r0 + i;
+        const vals = [i + 1, r.st.name, +gr1(r.p), +gr1(r.b), r.pen, `${r.done} / ${total}`, +gr1(r.w)].concat(hasG ? [+gr1(r.g || 0)] : []);
+        vals.forEach((v, j) => { const x = row.getCell(j + 1); x.value = v; x.border = box; x.alignment = { horizontal: j === 1 ? "left" : "center", vertical: "middle" }; });
+        [3, 4, 7].concat(hasG ? [8] : []).forEach(j => { const x = row.getCell(j); x.fill = fillOf(x.value); x.numFmt = "0.0"; });
+        const cols = [3, 4, 7].concat(hasG ? [8] : []).map(j => ws.getColumn(j).letter + n);
+        const tc = row.getCell(N - 1); tc.value = { formula: "SUM(" + cols.join(",") + ")", result: +gr1(r.t) }; tc.numFmt = "0.0"; tc.font = { bold: true }; tc.border = box; tc.alignment = { horizontal: "center" };
+        const ac = row.getCell(N); ac.value = { formula: `ROUND(${ws.getColumn(N - 1).letter}${n}/${comps},1)`, result: +gr1(r.t / comps) }; ac.numFmt = "0.0"; ac.font = { bold: true }; ac.fill = fillOf(r.t / comps); ac.border = box; ac.alignment = { horizontal: "center" };
+        row.height = 20; if (i % 2) [1, 2, 5, 6].forEach(j => { row.getCell(j).fill = { type: "pattern", pattern: "solid", fgColor: { argb: GREY } }; });
+      });
+      const last = r0 + rows.length - 1, fr = last + 1;
+      const stat = (label, fn, pos) => {
+        const row = ws.getRow(pos); row.getCell(2).value = label; row.getCell(2).font = { bold: true, color: { argb: NAVY } };
+        for (let j = 3; j <= N; j++) { if (j === 5 || j === 6) continue; const L = ws.getColumn(j).letter, x = row.getCell(j); x.value = { formula: `${fn}(${L}${r0}:${L}${last})` }; x.numFmt = "0.0"; x.alignment = { horizontal: "center" }; x.font = { bold: true, color: { argb: NAVY } }; }
+        for (let j = 1; j <= N; j++) { const x = row.getCell(j); x.border = box; if (!x.fill || !x.fill.fgColor) x.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFE6ECF8" } }; } row.height = 20;
+      };
+      if (rows.length) { stat("Class average", "AVERAGE", fr); stat("Highest", "MAX", fr + 1); stat("Lowest", "MIN", fr + 2); }
+      const nr = fr + 4;
+      const notes = ["How the marks are worked out",
+        `Participation: ${c.pTarget} good moments in class (participation, great reasoning, helping a peer) = 10.`,
+        `Behaviour: starts at 10; each behaviour deduction takes off ${c.perMiss}.`,
+        `Classwork: worksheets completed in class out of ${total} sent to the class, scaled to 10.`]
+        .concat(hasG ? ["Graded worksheet: the auto-marked score of the final assessment worksheet, scaled to 10."] : []).concat(["Colours: green 8 and above · yellow 5 to 7.9 · red below 5."]);
+      notes.forEach((tx, i) => { ws.mergeCells(nr + i, 1, nr + i, N); const x = ws.getCell(nr + i, 1); x.value = tx; x.font = i ? { size: 10, color: { argb: "FF55607A" } } : { bold: true, size: 11, color: { argb: NAVY } }; x.alignment = { indent: 1 }; });
+      summary.push([k, rows.length, grAvg(rows, "p"), grAvg(rows, "b"), grAvg(rows, "w"), hasG ? grAvg(rows, "g") : null, grAvg(rows, "t") / comps]);
+    }
+    cls = keep;
+    if (summary.length) {
+      const ws = wb.addWorksheet("Summary", { views: [{ showGridLines: false }], pageSetup: { orientation: "landscape", fitToPage: true, fitToWidth: 1, fitToHeight: 0, paperSize: 9 } });
+      ws.columns = [{ width: 12 }, { width: 12 }, { width: 18 }, { width: 18 }, { width: 18 }, { width: 22 }, { width: 18 }];
+      ws.mergeCells("A1:G1"); const t = ws.getCell("A1"); t.value = "Hawar International School · Grade 8 Mathematics · Class summary"; t.font = { size: 16, bold: true, color: { argb: "FFFFFFFF" } }; t.fill = { type: "pattern", pattern: "solid", fgColor: { argb: NAVY } }; t.alignment = { vertical: "middle", indent: 1 }; ws.getRow(1).height = 30;
+      ws.mergeCells("A2:G2"); ws.getCell("A2").value = `Class averages out of 10 · ${period} · ${today}`; ws.getCell("A2").font = { italic: true, size: 10, color: { argb: "FF55607A" } }; ws.getCell("A2").alignment = { indent: 1 };
+      const hr = ws.getRow(4); ["Class", "Students", "Participation", "Behaviour", "Classwork", "Graded worksheet", "Overall average"].forEach((h, i) => { const x = hr.getCell(i + 1); x.value = h; x.font = { bold: true, color: { argb: "FFFFFFFF" } }; x.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF2F5BA8" } }; x.alignment = { horizontal: "center", vertical: "middle", wrapText: true }; x.border = box; }); hr.height = 30;
+      summary.forEach((r, i) => { const row = ws.getRow(5 + i); r.forEach((v, j) => { const x = row.getCell(j + 1); x.value = j >= 2 ? (v === null ? "–" : +gr1(v)) : v; x.border = box; x.alignment = { horizontal: "center", vertical: "middle" }; if (j >= 2 && v !== null) { x.fill = fillOf(v); x.numFmt = "0.0"; } }); row.getCell(1).font = { bold: true }; row.height = 20; });
+    }
+    const buf = await wb.xlsx.writeBuffer();
+    const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }));
+    a.download = "Grade-8-Maths-Grades-" + todayStr() + ".xlsx"; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+    window.__xlsxOk = (window.__xlsxOk || 0) + 1;
+  } catch (e) { cls = keep; alert("Could not make the Excel file: " + (e.message || e)); }
+  if (btn) { btn.disabled = false; btn.textContent = "Download Excel report (all classes)"; }
 }
 function grCsv() {
   const { rows, total, hasG, comps } = grRows();
@@ -4040,7 +4113,7 @@ document.addEventListener("click", e => {
     case "repCopy": copyReport(); break;
     case "repPrint": try { window.print(); } catch { toast("Printing is blocked here. Use Copy as text."); } break;
     case "seatCell": case "seatPool": case "seatUnseat": case "seatAlpha": case "seatShuffle": case "seatClear": case "seatPic": seatClick(b); break;
-    case "grCsv": grCsv(); break;
+    case "grXlsx": grXlsx(b); break;
     case "grPrint": window.print(); break;
     case "grReset": grCfg = { from: "", to: "", total: 0, pTarget: 10, perMiss: 0.5 }; render(); break;
     case "hubTab": hubTab = b.dataset.tab; if (hubTab === "grades") { grData = null; } hubConf = ""; render(); break;
@@ -4379,7 +4452,7 @@ document.getElementById("expBtn")?.addEventListener("click", async () => {
     <div class="acts noprint"><button class="ghost" id="lgPrint" type="button">Print this list</button><button class="ghost" id="lgClose" type="button">Close</button></div>
   </div>
 </div>
-<script type="module" src="teacher.js?v=1112k"></script>
+<script type="module" src="teacher.js?v=1112l"></script>
 
 <script>
 /* Post a certificate straight to Google Classroom.

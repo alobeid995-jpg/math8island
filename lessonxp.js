@@ -1,7 +1,7 @@
 // Lesson XP: +100 XP when a student finishes a whole lesson (examples, 3 games and the worksheet),
 // and another +100 XP when the worksheet is 100% correct. Runs inside the teacher page; each award is saved on the student
 // (lx), so nobody is paid twice, even if several screens are open.
-import { getDocs, query, where, bcol, bdoc, getDoc } from "./fb.js?v=1112k";
+import { getDocs, query, where, bcol, bdoc, getDoc } from "./fb.js?v=1112l";
 
 const LES = {
   ag34: { cls: /^8G$/i, name: "Unit 3.4 lesson", parts: ["ag34-examples", "ag34-tap", "ag34-bound", "ag34-ineq", "ag34-ws"], ws: "ag34-ws" },
