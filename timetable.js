@@ -40,28 +40,33 @@ export function nextMath(c, t = Date.now()) {
 export function studentTT(c) {
   if (!c || !L.some(l => l.cls === teach(c))) return "";
   const r = nextMath(c); if (!r) return "";
-  const week = [0, 1, 2, 3, 4].map(d => dayList(d, c).map(l => `<span class="tt-chip${r.n.d === d ? " tt-td" : ""}"><b>${DAYS[d].slice(0, 3)}</b> ${fmt(l.s)}–${fmt(l.e)}</span>`).join("")).join("");
+  const n = r.n, items = [0, 1, 2, 3, 4].flatMap(d => dayList(d, c));
   const head = r.state === "now" ? `<span class="tt-live">● Maths is on now</span>` : `<span>Next maths lesson</span>`;
   const big = r.state === "now" ? `${r.mins} min left` : r.state === "next" ? `in ${dur(r.mins)}` : r.dayName + " " + fmt(r.l.s);
-  const sub = r.state === "now" ? `Ends at ${fmt(r.l.e)}` : `${r.dayName === "Today" ? "Today" : r.dayName} · ${fmt(r.l.s)} to ${fmt(r.l.e)}${r.state === "later" ? " · in " + dur(r.mins) : ""}`;
-  return `<section class="card tt-card" id="ttBox" data-cls="${c}"><div class="tt-h">${head}</div><div class="tt-big">${big}</div><div class="tt-sub">${sub}</div><div class="tt-week">${week}</div></section>`;
+  const sub = r.state === "now" ? `Ends at ${fmt(r.l.e)}` : `${r.dayName} · ${fmt(r.l.s)} to ${fmt(r.l.e)}${r.state === "later" ? " · in " + dur(r.mins) : ""}`;
+  const pct = r.state === "now" ? Math.min(100, Math.round(100 * (n.m - r.l.sm) / (r.l.em - r.l.sm))) : 0;
+  const tl = items.map(l => {
+    const past = l.d < n.d || (l.d === n.d && n.m >= l.em), cur = l.d === n.d && n.m >= l.sm && n.m < l.em, nx = r.l === l;
+    return `<li class="tt-i${past ? " tt-past" : ""}${cur ? " tt-cur" : ""}${nx && !cur ? " tt-nx" : ""}"><i></i><b>${DAYS[l.d].slice(0, 3)}${l.d === n.d ? " · today" : ""}</b><span>${fmt(l.s)} – ${fmt(l.e)}</span></li>`;
+  }).join("");
+  return `<section class="card tt-card" id="ttBox" data-cls="${c}"><div class="tt-h">${head}</div><div class="tt-big">${big}</div><div class="tt-sub">${sub}</div>${r.state === "now" ? `<div class="tt-bar"><i style="width:${pct}%"></i></div>` : ""}<div class="tt-h" style="margin-top:8px">This week</div><ul class="tt-tl">${tl}</ul></section>`;
 }
 let stuTimer = 0;
-export function keepStudentTT() {
-  if (stuTimer) return;
-  stuTimer = setInterval(() => { const b = document.getElementById("ttBox"); if (!b) return; const h = studentTT(b.dataset.cls); if (h) { const t = document.createElement("div"); t.innerHTML = h; b.replaceWith(t.firstElementChild); } }, 20000);
+export function mountStudentTT(getMe) {
+  const go = () => {
+    const g = getMe(), me = typeof g === "string" ? g : g && g.cls, news = document.getElementById("stuNews"); if (!me || !news) return false;
+    let top = document.getElementById("stuTop");
+    if (!top) { top = document.createElement("div"); top.id = "stuTop"; news.before(top); top.appendChild(news); const t = document.createElement("div"); t.id = "stuTT"; top.appendChild(t); }
+    const t = document.getElementById("stuTT"), h = studentTT(me);
+    t.innerHTML = h; top.classList.toggle("tt-none", !h);
+    return !!h;
+  };
+  let tries = 0; const w = setInterval(() => { if (go() || ++tries > 60) clearInterval(w); }, 500);
+  if (!stuTimer) stuTimer = setInterval(go, 20000);
 }
 
 /* ---------- teacher ---------- */
 const css = `
-.tt-card{display:grid;gap:4px}
-.tt-h{font:700 .8rem var(--f-body,system-ui);color:var(--muted,#55607a)}
-.tt-live{color:var(--good,#0a7a3d)}
-.tt-big{font:800 1.7rem var(--f-display,system-ui);color:var(--ink,#13213f);line-height:1.1}
-.tt-sub{color:var(--ink,#13213f);font-weight:600}
-.tt-week{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.tt-chip{font-size:.78rem;padding:4px 9px;border-radius:999px;border:1.5px solid var(--line,#c9d3e6);background:var(--card,#fff);color:var(--ink,#13213f)}
-.tt-chip.tt-td{border-color:var(--accent,#2f6fdd);background:var(--accent-soft,#e5eeff)}
 #ttT{position:fixed;left:12px;bottom:12px;z-index:60;max-width:min(340px,calc(100vw - 24px));font-family:system-ui,sans-serif}
 #ttT .tt-pill{display:flex;align-items:center;gap:8px;background:#13213f;color:#fff;border:0;border-radius:999px;padding:9px 14px;font-weight:700;font-size:.86rem;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.3)}
 #ttT .tt-pill.on{background:#0a7a3d}#ttT .tt-pill.warn{background:#c0392b;animation:ttp 1s infinite alternate}

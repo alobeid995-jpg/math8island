@@ -309,12 +309,29 @@ html[data-pt] .th-pk[aria-pressed="true"]{border-color:var(--accent);background:
 .ach-acts{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:10px}.ach-acts .ghost{color:#17233b;border-color:#c9bfa4;background:#fff}
 @media print{body.pc>*:not(.ach-cv){display:none!important}body.pc .ach-cv{position:static;background:none;padding:0;display:block}body.pc .ach-sheet{padding:0;width:100%}body.pc .ach-acts{display:none}@page{size:landscape;margin:8mm}}
 
-/* next maths lesson card (student) */
-.tt-card{display:grid;gap:4px}
+/* next maths lesson: sits beside the announcement */
+#stuTop{order:1;display:grid;grid-template-columns:minmax(0,1fr) minmax(250px,340px);gap:14px;align-items:stretch}
+#stuTop.tt-none{grid-template-columns:1fr}
+#stuTop #stuNews:empty{display:none}
+#stuTop:has(#stuNews:empty){grid-template-columns:1fr}
+@media(max-width:760px){#stuTop{grid-template-columns:1fr}}
+#stuTop #stuNews{align-content:start}
+#stuTop #stuTT{order:2}
+.tt-card{display:grid;gap:4px;align-content:start;margin:0}
 .tt-h{font-weight:700;font-size:.8rem;color:var(--muted)}
 .tt-live{color:var(--good)}
-.tt-big{font-family:var(--f-display);font-weight:800;font-size:1.7rem;color:var(--ink);line-height:1.1}
+.tt-big{font-family:var(--f-display);font-weight:800;font-size:1.8rem;color:var(--ink);line-height:1.1}
 .tt-sub{color:var(--ink);font-weight:600}
-.tt-week{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.tt-chip{font-size:.78rem;padding:4px 9px;border-radius:999px;border:1.5px solid var(--line);background:var(--card);color:var(--ink)}
-.tt-chip.tt-td{border-color:var(--accent);background:var(--accent-soft)}
+.tt-bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:6px}
+.tt-bar i{display:block;height:100%;background:var(--good);border-radius:99px}
+.tt-tl{list-style:none;margin:6px 0 0;padding:0 0 0 4px;display:grid;gap:0}
+.tt-i{position:relative;display:grid;grid-template-columns:82px 1fr;gap:6px;padding:5px 0 5px 20px;font-size:.84rem;color:var(--ink)}
+.tt-i::before{content:"";position:absolute;left:5px;top:0;bottom:0;width:2px;background:var(--line)}
+.tt-i:first-child::before{top:50%}.tt-i:last-child::before{bottom:50%}
+.tt-i i{position:absolute;left:0;top:50%;width:12px;height:12px;margin-top:-6px;border-radius:50%;border:2.5px solid var(--accent);background:var(--card);box-sizing:border-box}
+.tt-i b{font-weight:800}
+.tt-past{opacity:.55}.tt-past i{background:var(--accent)}
+.tt-cur i{background:var(--good);border-color:var(--good);box-shadow:0 0 0 4px var(--accent-soft)}
+.tt-cur{font-weight:800}
+.tt-nx i{border-color:var(--good)}
+.tt-nx{font-weight:800}
