@@ -1,7 +1,7 @@
 // "My material": each teacher keeps lists of lessons (one per quarter or term) and adds a link as each lesson is taught.
 // A list is one document, <base>/work/material-<id> (the folder students already read for classwork, so no new database rules).
 // Students see every lesson of every list; a lesson with links is "Available", the others are greyed as "Coming soon".
-import { getDocs, setDoc, deleteDoc, bcol, bdoc } from "./fb.js?v=1112c";
+import { getDocs, setDoc, deleteDoc, bcol, bdoc } from "./fb.js?v=1112d";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -45,7 +45,9 @@ document.body.appendChild(modal);
 { const st = document.createElement("style"); st.textContent = ".mt-unit{margin:16px 0 6px;font-size:17px}.mt-row{display:grid;gap:6px;padding:10px 12px;border:1px solid var(--line,#dde);border-radius:12px;margin:8px 0;background:var(--card,#fff)}.mt-row.soon{opacity:.8}.mt-h{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}.mt-code{font-weight:800;min-width:2.4em}.mt-chip{font-size:12px;padding:2px 9px;border-radius:99px;background:#e8eefc;color:#27418a;font-weight:700}.mt-chip.ok{background:#dcf5e5;color:#13683a}.mt-links{display:flex;gap:8px;flex-wrap:wrap}.mt-link{display:inline-flex;gap:6px;align-items:center;padding:4px 10px;border:1px solid var(--line,#dde);border-radius:99px;font-size:13px}.mt-link a{color:inherit;font-weight:700}.mt-x{border:0;background:none;cursor:pointer;font-size:15px;padding:0 2px;color:#a33}.mt-form{display:flex;gap:8px;flex-wrap:wrap}.mt-form input{flex:1 1 150px;min-width:0}.mt-cls{display:flex;gap:12px;flex-wrap:wrap;margin:8px 0}.mt-cls label{display:flex;gap:6px;align-items:center}.mt-ta{width:100%;min-height:130px;box-sizing:border-box;font:inherit;padding:10px;border-radius:10px;border:1px solid var(--line,#ccd)}.mt-card{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:12px 14px;border:1px solid var(--line,#dde);border-radius:12px;margin:8px 0;background:var(--card,#fff)}"; document.head.appendChild(st); }
 
 const cleanUrl = u => { u = String(u || "").trim(); if (u && !/^https?:\/\//i.test(u)) u = "https://" + u; try { const x = new URL(u); return /^https?:$/.test(x.protocol) ? x.href : ""; } catch { return ""; } };
-const saveList = l => setDoc(bdoc("work", l.id), { kind: "material", open: false, title: l.title, classes: l.classes, units: l.units, created: l.created || Date.now(), updated: Date.now() });
+const G8 = /^8[BYMS]$/i;   // 8D (the demo class) always sees what the other Grade 8 classes see
+const withD = l => { const cs = Array.isArray(l.classes) ? l.classes : []; return (cs.some(c => G8.test(c)) && !cs.some(c => /^8D$/i.test(c)) && CLASSES.some(c => /^8D$/i.test(c))) ? [...cs, "8D"] : cs; };
+const saveList = l => { l.classes = withD(l); return setDoc(bdoc("work", l.id), { kind: "material", open: false, title: l.title, classes: l.classes, units: l.units, created: l.created || Date.now(), updated: Date.now() }); };
 const count = l => { const all = l.units.flatMap(u => u.lessons); return [all.filter(x => (x.links || []).length).length, all.length]; };
 const L = () => lists.find(l => l.id === cur);
 
@@ -53,6 +55,7 @@ async function load() {
   const s = await getDocs(bcol("work"));
   lists = s.docs.map(d => ({ id: d.id, ...d.data() })).filter(x => x.kind === "material" && Array.isArray(x.units))
     .map(x => ({ ...x, title: x.title || "Quarter 2", classes: x.classes || [], created: x.created || 0 })).sort((a, b) => (b.created || 0) - (a.created || 0));
+  lists.forEach(l => { if (withD(l).length !== l.classes.length) saveList(l).catch(() => {}); });   // add 8D to existing Grade 8 lists
 }
 const clsBoxes = (sel, attr) => `<div class="mt-cls">${CLASSES.map(c => `<label><input type="checkbox" ${attr}="${esc(c)}"${sel.includes(c) ? " checked" : ""}> ${esc(c)}</label>`).join("")}</div>`;
 
