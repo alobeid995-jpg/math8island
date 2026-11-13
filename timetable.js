@@ -76,6 +76,8 @@ const css = `
 #ttT .tt-row{display:grid;grid-template-columns:auto 1fr auto;gap:8px;padding:6px 8px;border-radius:8px;font-size:.88rem;align-items:center}
 #ttT .tt-row.cur{background:#c6efce;font-weight:800}#ttT .tt-row.done{opacity:.55}#ttT .tt-row.nxt{background:#e5eeff}
 #ttT .tt-none{font-size:.88rem;color:#55607a}
+html.app #ttT{bottom:calc(98px + env(safe-area-inset-bottom,0px))}
+@media(max-width:760px){#ttT{bottom:calc(98px + env(safe-area-inset-bottom,0px))}}
 #ttBanner{position:fixed;left:50%;top:12px;transform:translateX(-50%);z-index:200;background:#c0392b;color:#fff;border-radius:14px;padding:12px 18px;font:800 1.05rem system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.4);display:flex;gap:12px;align-items:center;max-width:calc(100vw - 24px)}
 #ttBanner button{background:#fff;color:#c0392b;border:0;border-radius:8px;padding:5px 10px;font-weight:800;cursor:pointer}`;
 function beep() { try { const a = new (window.AudioContext || window.webkitAudioContext)(), g = a.createGain(); g.connect(a.destination); g.gain.value = .15; [0, .25, .5].forEach(t => { const o = a.createOscillator(); o.frequency.value = 880; o.connect(g); o.start(a.currentTime + t); o.stop(a.currentTime + t + .15); }); } catch {} }
