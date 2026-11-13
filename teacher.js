@@ -1,19 +1,19 @@
 import { onSnapshot, changeEmail, auth, fs, firebaseConfig, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, collection, query, where, writeBatch, setBase, bcol, bdoc, signOut, whenUser, profileOf, emailFor, pinKey,
-  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1112q";
-import { db } from "./fbdb.js?v=1112q";
-import { startUsage } from "./usage.js?v=1112q";
-import { mountTeacherTT } from "./timetable.js?v=1112q";
-import { openWork, gradeData } from "./teacherwork.js?v=1112q";
+  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1112s";
+import { db } from "./fbdb.js?v=1112s";
+import { startUsage } from "./usage.js?v=1112s";
+import { mountTeacherTT } from "./timetable.js?v=1112s";
+import { openWork, gradeData } from "./teacherwork.js?v=1112s";
 import "./lessonxp.js";
-import { openProgress } from "./progress.js?v=1112q";
-import { openMaterial } from "./material.js?v=1112q";
-import { hasFunpark, openFunpark } from "./fpteacher.js?v=1112q";
-import { openCoconut } from "./coconut.js?v=1112q";
-import { xpAllowed } from "./ownerpin.js?v=1112q";
+import { openProgress } from "./progress.js?v=1112s";
+import { openMaterial } from "./material.js?v=1112s";
+import { hasFunpark, openFunpark } from "./fpteacher.js?v=1112s";
+import { openCoconut } from "./coconut.js?v=1112s";
+import { xpAllowed } from "./ownerpin.js?v=1112s";
 window.xpGate = n => xpAllowed(n); window.wkGradeData = gradeData;
-import { initChat } from "./chat.js?v=1112q";
-import { openLive } from "./live.js?v=1112q";
-import { openInbox } from "./inbox.js?v=1112q";
+import { initChat } from "./chat.js?v=1112s";
+import { openLive } from "./live.js?v=1112s";
+import { openInbox } from "./inbox.js?v=1112s";
 
 const $ = id => document.getElementById(id);
 const esc2 = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

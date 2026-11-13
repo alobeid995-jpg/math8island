@@ -25,8 +25,9 @@
   };
   var DY = { b: 0, g: 0, e: 0 };
   window.HAT_IDS = Object.keys(HATS);
-  window.hatSVG = function (id, kind) {
+  window.hatSVG = function (id, kind, fit) {
     var f = HATS[id]; if (!f) return "";
+    if (fit) { var k = fit[2] / 34; return '<g class="hatg" pointer-events="none" transform="translate(' + fit[0] + " " + fit[1] + ") scale(" + k.toFixed(3) + ") translate(-50 -22)" + '">' + f() + "</g>"; }
     var dy = DY[kind] || 0;
     return '<g class="hatg" pointer-events="none"' + (dy ? ' transform="translate(0 ' + dy + ')"' : "") + ">" + f() + "</g>";
   };
