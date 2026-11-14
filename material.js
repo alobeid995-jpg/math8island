@@ -1,7 +1,7 @@
 // "My material": each teacher keeps lists of lessons (one per quarter or term) and adds a link as each lesson is taught.
 // A list is one document, <base>/work/material-<id> (the folder students already read for classwork, so no new database rules).
 // Students see every lesson of every list; a lesson with links is "Available", the others are greyed as "Coming soon".
-import { getDocs, setDoc, deleteDoc, bcol, bdoc } from "./fb.js?v=1113b";
+import { getDocs, setDoc, deleteDoc, bcol, bdoc } from "./fb.js?v=1113c";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -42,7 +42,7 @@ const modal = document.createElement("div");
 modal.className = "modal"; modal.id = "matModal"; modal.hidden = true;
 modal.innerHTML = '<div class="sheet wk-sheet" role="dialog" aria-modal="true" aria-label="My material"><div id="matBody"></div></div>';
 document.body.appendChild(modal);
-{ const st = document.createElement("style"); st.textContent = ".mt-unit{margin:16px 0 6px;font-size:17px}.mt-row{display:grid;gap:6px;padding:10px 12px;border:1px solid var(--line,#dde);border-radius:12px;margin:8px 0;background:var(--card,#fff)}.mt-row.soon{opacity:.8}.mt-h{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}.mt-code{font-weight:800;min-width:2.4em}.mt-chip{font-size:12px;padding:2px 9px;border-radius:99px;background:#e8eefc;color:#27418a;font-weight:700}.mt-chip.ok{background:#dcf5e5;color:#13683a}.mt-links{display:flex;gap:8px;flex-wrap:wrap}.mt-link{display:inline-flex;gap:6px;align-items:center;padding:4px 10px;border:1px solid var(--line,#dde);border-radius:99px;font-size:13px}.mt-link a{color:inherit;font-weight:700}.mt-x{border:0;background:none;cursor:pointer;font-size:15px;padding:0 2px;color:#a33}.mt-form{display:flex;gap:8px;flex-wrap:wrap}.mt-form input{flex:1 1 150px;min-width:0}.mt-cls{display:flex;gap:12px;flex-wrap:wrap;margin:8px 0}.mt-cls label{display:flex;gap:6px;align-items:center}.mt-ta{width:100%;min-height:130px;box-sizing:border-box;font:inherit;padding:10px;border-radius:10px;border:1px solid var(--line,#ccd)}.mt-card{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:12px 14px;border:1px solid var(--line,#dde);border-radius:12px;margin:8px 0;background:var(--card,#fff)}"; document.head.appendChild(st); }
+{ const st = document.createElement("style"); st.textContent = ".mt-grip{cursor:grab;touch-action:none;user-select:none;font-size:20px;line-height:1;padding:4px 6px;border-radius:8px;border:2px solid var(--line,#ccd);align-self:center}.mt-row.mt-drag{opacity:.45}.mt-row.mt-before{box-shadow:0 -4px 0 0 #2563eb}.mt-row.mt-after{box-shadow:0 4px 0 0 #2563eb}.mt-unit.mt-in{box-shadow:0 4px 0 0 #2563eb}.mt-unit{margin:16px 0 6px;font-size:17px}.mt-row{display:grid;gap:6px;padding:10px 12px;border:1px solid var(--line,#dde);border-radius:12px;margin:8px 0;background:var(--card,#fff)}.mt-row.soon{opacity:.8}.mt-h{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}.mt-code{font-weight:800;min-width:2.4em}.mt-chip{font-size:12px;padding:2px 9px;border-radius:99px;background:#e8eefc;color:#27418a;font-weight:700}.mt-chip.ok{background:#dcf5e5;color:#13683a}.mt-links{display:flex;gap:8px;flex-wrap:wrap}.mt-link{display:inline-flex;gap:6px;align-items:center;padding:4px 10px;border:1px solid var(--line,#dde);border-radius:99px;font-size:13px}.mt-link a{color:inherit;font-weight:700}.mt-x{border:0;background:none;cursor:pointer;font-size:15px;padding:0 2px;color:#a33}.mt-form{display:flex;gap:8px;flex-wrap:wrap}.mt-form input{flex:1 1 150px;min-width:0}.mt-cls{display:flex;gap:12px;flex-wrap:wrap;margin:8px 0}.mt-cls label{display:flex;gap:6px;align-items:center}.mt-ta{width:100%;min-height:130px;box-sizing:border-box;font:inherit;padding:10px;border-radius:10px;border:1px solid var(--line,#ccd)}.mt-card{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:12px 14px;border:1px solid var(--line,#dde);border-radius:12px;margin:8px 0;background:var(--card,#fff)}"; document.head.appendChild(st); }
 
 const cleanUrl = u => { u = String(u || "").trim(); if (u && !/^https?:\/\//i.test(u)) u = "https://" + u; try { const x = new URL(u); return /^https?:$/.test(x.protocol) ? x.href : ""; } catch { return ""; } };
 const G8 = /^8[BYMS]$/i;   // 8D (the demo class) always sees what the other Grade 8 classes see
@@ -81,13 +81,14 @@ function render() {
   b.innerHTML = `<div class="lg-bar"><button class="ghost small" type="button" data-mt="back">← All lists</button></div><h3>${esc(l.title)}</h3>
     <p>A lesson turns green for students, with its links, as soon as you add one. Use a share link from Google Drive (set to "Anyone with the link can view").</p>
     <p><b>${have} of ${all}</b> lessons have material.</p>
+    <p><small>To change the order, drag a lesson by its ⠿ handle and drop it where you want it (or use ▲ ▼). Students see the same order.</small></p>
     <div><b>Shown to:</b>${clsBoxes(l.classes, "data-mtcls")}</div>
-    ${l.units.map(u => `<h4 class="mt-unit">${esc(u.title)}</h4>${u.lessons.map(x => {
+    ${l.units.map(u => `<h4 class="mt-unit" data-unit="${esc(u.id)}">${esc(u.title)}</h4>${u.lessons.map(x => {
       const K = x.links || [];
-      return `<div class="mt-row${K.length ? "" : " soon"}"><div class="mt-h"><span class="mt-code">${esc(x.code)}</span><b>${esc(x.title)}</b><span class="mt-chip${K.length ? " ok" : ""}">${K.length ? "Available" : "Coming soon"}</span></div>
+      return `<div class="mt-row${K.length ? "" : " soon"}" data-row="${esc(x.id)}"><div class="mt-h"><span class="mt-grip" data-grip="${esc(x.id)}" role="button" aria-label="Drag to move this lesson" title="Drag to move this lesson">⠿</span><span class="mt-code">${esc(x.code)}</span><b>${esc(x.title)}</b><span class="mt-chip${K.length ? " ok" : ""}">${K.length ? "Available" : "Coming soon"}</span></div>
         ${K.length ? `<div class="mt-links">${K.map((k, i) => `<span class="mt-link"><a href="${esc(k.url)}" target="_blank" rel="noopener">${esc(k.label)}</a><button class="mt-x" type="button" data-mt="rmlink" data-l="${esc(x.id)}" data-i="${i}" aria-label="Remove link">✕</button></span>`).join("")}</div>` : ""}
         ${adding === x.id ? `<div class="mt-form"><input id="mtLabel" placeholder="Name (Slides, Worksheet…)" maxlength="40"><input id="mtUrl" placeholder="Paste the link" inputmode="url"><button class="primary small" type="button" data-mt="savelink" data-l="${esc(x.id)}">Add</button><button class="ghost small" type="button" data-mt="cancel">Cancel</button></div>`
-          : `<div class="mt-form"><button class="ghost small" type="button" data-mt="addlink" data-l="${esc(x.id)}">+ Add link</button><button class="ghost small" type="button" data-mt="rmlesson" data-l="${esc(x.id)}">Remove lesson</button></div>`}</div>`; }).join("")}
+          : `<div class="mt-form"><button class="ghost small" type="button" data-mt="addlink" data-l="${esc(x.id)}">+ Add link</button><button class="ghost small" type="button" data-mt="rmlesson" data-l="${esc(x.id)}">Remove lesson</button><button class="ghost small" type="button" data-mt="up" data-l="${esc(x.id)}" aria-label="Move up">▲</button><button class="ghost small" type="button" data-mt="down" data-l="${esc(x.id)}" aria-label="Move down">▼</button></div>`}</div>`; }).join("")}
       ${addUnit === u.id ? `<div class="mt-form"><input id="mtCode" placeholder="Number (e.g. 4.4)" maxlength="8" style="flex:0 1 120px"><input id="mtTitle" placeholder="Lesson name" maxlength="80"><button class="primary small" type="button" data-mt="savelesson" data-u="${esc(u.id)}">Add lesson</button><button class="ghost small" type="button" data-mt="cancel">Cancel</button></div>` : `<button class="ghost small" type="button" data-mt="addlesson" data-u="${esc(u.id)}">+ Add lesson to this unit</button>`}`).join("")}
     <h4 class="mt-unit">Add more units and lessons</h4>
     <textarea class="mt-ta" id="mtMore" placeholder="Paste more units and lessons here."></textarea>
@@ -128,6 +129,12 @@ document.addEventListener("click", async e => {
   }
   if (a === "rmlink" && x) { if (!confirm("Remove this link?")) return; x.links.splice(+b.dataset.i, 1); await commit(l, "Removed."); return; }
   if (a === "rmlesson" && u) { if (!confirm("Remove this lesson from the list?")) return; u.lessons = u.lessons.filter(y => y.id !== x.id); await commit(l, "Removed."); return; }
+  if ((a === "up" || a === "down") && x) {
+    const flat = l.units.flatMap(y => y.lessons.map(z => ({ u: y, z }))), i = flat.findIndex(f => f.z.id === x.id), n = flat[a === "up" ? i - 1 : i + 1]; if (!n) return;
+    if (n.u.id === u.id) { const i1 = u.lessons.indexOf(x), i2 = u.lessons.indexOf(n.z); u.lessons[i1] = n.z; u.lessons[i2] = x; }
+    else { u.lessons = u.lessons.filter(y => y.id !== x.id); if (a === "up") n.u.lessons.push(x); else n.u.lessons.unshift(x); }
+    await commit(l, "Moved. Students see the new order."); return;
+  }
   if (a === "addlesson") { addUnit = b.dataset.u; render(); const i = $("mtCode"); if (i) i.focus(); return; }
   if (a === "savelesson") {
     const un = l.units.find(y => y.id === b.dataset.u), code = ($("mtCode").value || "").trim(), title = ($("mtTitle").value || "").trim();
@@ -146,6 +153,47 @@ document.addEventListener("change", async e => {
   await commit(l, "Saved.");
 });
 modal.addEventListener("click", e => { if (e.target === modal) modal.hidden = true; });
+
+/* ---------- change the order of lessons: drag the handle (mouse or finger) or use the arrows ---------- */
+function moveLesson(l, id, unitId, beforeId) {   // put lesson `id` in unit `unitId`, just before lesson `beforeId` (or at the end)
+  let item = null;
+  for (const u of l.units) { const i = u.lessons.findIndex(y => y.id === id); if (i >= 0) { item = u.lessons.splice(i, 1)[0]; break; } }
+  const to = l.units.find(u => u.id === unitId); if (!item || !to) return false;
+  const j = beforeId ? to.lessons.findIndex(y => y.id === beforeId) : -1;
+  to.lessons.splice(j >= 0 ? j : to.lessons.length, 0, item); return true;
+}
+let drag = null;
+const clearDrop = () => modal.querySelectorAll(".mt-before,.mt-after,.mt-in,.mt-drag").forEach(n => n.classList.remove("mt-before", "mt-after", "mt-in", "mt-drag"));
+document.addEventListener("pointerdown", e => {
+  const g = e.target.closest && e.target.closest(".mt-grip"); if (!g || modal.hidden) return;
+  e.preventDefault(); drag = { id: g.dataset.grip, drop: null };
+  const r = g.closest(".mt-row"); if (r) r.classList.add("mt-drag");
+});
+document.addEventListener("pointermove", e => {
+  if (!drag) return; e.preventDefault();
+  const sh = modal.querySelector(".sheet"); if (sh) { const b = sh.getBoundingClientRect(); if (e.clientY < b.top + 60) sh.scrollTop -= 14; else if (e.clientY > b.bottom - 60) sh.scrollTop += 14; }
+  modal.querySelectorAll(".mt-before,.mt-after,.mt-in").forEach(n => n.classList.remove("mt-before", "mt-after", "mt-in"));
+  const t = document.elementFromPoint(e.clientX, e.clientY), row = t && t.closest && t.closest("[data-row]"), un = t && t.closest && t.closest("[data-unit]");
+  drag.drop = null;
+  if (row && row.dataset.row !== drag.id) {
+    const rc = row.getBoundingClientRect(), after = e.clientY > rc.top + rc.height / 2; row.classList.add(after ? "mt-after" : "mt-before");
+    drag.drop = { row: row.dataset.row, after };
+  } else if (un) { un.classList.add("mt-in"); drag.drop = { unit: un.dataset.unit }; }
+}, { passive: false });
+async function endDrag(ok) {
+  if (!drag) return; const d = drag; drag = null; clearDrop();
+  const l = L(); if (!ok || !l || !d.drop) return;
+  const all = l.units.flatMap(u => u.lessons.map(x => ({ u, x })));
+  if (d.drop.unit) { if (!moveLesson(l, d.id, d.drop.unit, (l.units.find(u => u.id === d.drop.unit).lessons.find(y => y.id !== d.id) || {}).id)) return; }
+  else {
+    const tgt = all.find(a => a.x.id === d.drop.row); if (!tgt) return;
+    const rest = tgt.u.lessons.filter(y => y.id !== d.id), k = rest.findIndex(y => y.id === d.drop.row), nxt = d.drop.after ? rest[k + 1] : rest[k];
+    moveLesson(l, d.id, tgt.u.id, nxt && nxt.id);
+  }
+  await commit(l, "Moved. Students see the new order.");
+}
+document.addEventListener("pointerup", () => endDrag(true));
+document.addEventListener("pointercancel", () => endDrag(false));
 
 export async function openMaterial() {
   modal.hidden = false; $("matBody").innerHTML = "<p>Loading…</p>"; cur = ""; adding = ""; addUnit = ""; msg = "";
