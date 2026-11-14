@@ -1,13 +1,14 @@
 // "My classwork" on the student page: worksheets from the teacher, and (for the 9S boys) the lesson games.
-import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1112w";
-import { playerOf, catalog } from "./islandmap.js?v=1112w";
-import { logEv } from "./presence.js?v=1112w";
+import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1112x";
+import { playerOf, catalog } from "./islandmap.js?v=1112x";
+import { logEv } from "./presence.js?v=1112x";
+import { LIVE_WS } from "./liveworks.js?v=1112x";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const when = t => new Date(t).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 let materials = [], lxs = {}, P = null, base = [], works = [], mine = new Map(), openId = "", me = null, toast = () => {};
-let player = "", lessons = [], played = new Map(), showAll = false, agPlays = new Set(), isAG = false, isEL = false, isSB = false;
+let liveOpen = {}, player = "", lessons = [], played = new Map(), showAll = false, agPlays = new Set(), isAG = false, isEL = false, isSB = false;
 
 export async function initWork(profile, getMe, toastFn) {
   P = profile; base = profile.tid ? ["teachers", profile.tid] : []; toast = toastFn || toast;
@@ -15,12 +16,14 @@ export async function initWork(profile, getMe, toastFn) {
   if (!me) return;
   await load(); draw();
 }
+const liveList = () => LIVE_WS.filter(w => liveOpen[w.id] && liveOpen[w.id][String((me && me.cls) || "").trim()]);
 async function load() {
   try {
     const w = await getDocs(query(collection(fs, ...base, "work"), where("classes", "array-contains", me.cls)));
     const all = w.docs.map(d => ({ id: d.id, ...d.data() }));
     materials = all.filter(x => x.kind === "material" && Array.isArray(x.units)).sort((a, b) => (b.created || 0) - (a.created || 0));
-    works = all.filter(x => x.kind !== "material" && x.kind !== "announcement" && x.kind !== "funpark").sort((a, b) => (b.created || 0) - (a.created || 0));
+    works = all.filter(x => x.kind !== "material" && x.kind !== "announcement" && x.kind !== "funpark" && x.kind !== "liveopen").sort((a, b) => (b.created || 0) - (a.created || 0));
+    { const lo = all.find(x => x.id === "liveopen" && x.kind === "liveopen"); liveOpen = (lo && lo.open) || {}; }
     const s = await getDocs(query(collection(fs, ...base, "subs"), where("sid", "==", P.sid)));
     mine = new Map(s.docs.map(d => [d.data().wid, d.data()]));
   } catch { works = []; }
@@ -28,7 +31,7 @@ async function load() {
   isAG = /^8G$/i.test(String(me.cls || "").trim());   // this lesson is only for class 8G
   isSB = /^(8Y|8S|8M|8D)$/i.test(String(me.cls || "").trim());   // extra substitution practice: 8Y, 8S, 8M, 8D
   isEL = /^(8B|8Y|8S|8M|8D)$/i.test(String(me.cls || "").trim());   // elimination lesson: only these four classes
-  if (isAG || isEL || isSB) { try { const pl = await getDocs(query(collection(fs, ...base, "plays"), where("sid", "==", P.sid))); let rt = {}; try { const sd = await getDoc(doc(fs, ...base, "students", P.sid)); rt = (sd.exists() && sd.data().rt) || {}; lxs = (sd.exists() && sd.data().lx) || {}; } catch {}
+  if (isAG || isEL || isSB || liveList().length) { try { const pl = await getDocs(query(collection(fs, ...base, "plays"), where("sid", "==", P.sid))); let rt = {}; try { const sd = await getDoc(doc(fs, ...base, "students", P.sid)); rt = (sd.exists() && sd.data().rt) || {}; lxs = (sd.exists() && sd.data().lx) || {}; } catch {}
       agPlays = new Set(pl.docs.map(d => d.data()).filter(v => (v.u || v.t || 0) > (rt[v.g] || 0)).map(v => v.g)); } catch {} }
   if (player) {
     try {
@@ -69,6 +72,10 @@ function draw() {
   const elCard = isEL ? `<div class="wk-lesson"><div class="wk-lh"><b>Simultaneous equations: elimination</b><small>Exercise 4.2 · Day 1</small></div>
       <div class="wk-games"><button class="wk-game${agPlays.has("el42-ws") ? " done" : ""}" type="button" data-wkact="el"><b>Examples, games and worksheet</b><small>Do the examples, play the games, then do the multiple choice worksheet.</small>${xpNote("el42")}
       <span>${agPart("el42-examples", "Examples")}${agPart("el42-addsub", "Game 1")}${agPart("el42-solve", "Game 2")}${agPart("el42-spot", "Game 3")}${agPart("el42-ws", "Worksheet")}</span></button></div></div>` : "";
+  const lv = liveList();
+  const liveCards = lv.map(w => `<div class="wk-lesson"><div class="wk-lh"><b>${esc(w.title)}</b><small>${esc(w.sub || "")}</small></div>
+      <div class="wk-games"><button class="wk-game${agPlays.has(w.id + "-ws") ? " done" : ""}" type="button" data-wkact="live" data-id="${esc(w.id)}"><b>Worked examples, then a worksheet</b><small>${esc(w.desc || "Go through the worked examples first. Then the worksheet opens.")}</small>
+      <span>${agPart(w.id + "-examples", "Examples")}${agPart(w.id + "-ws", "Worksheet")}</span></button></div></div>`).join("");
   const matCard = (() => {
     if (!materials.length) return "";
     return `<section class="card wk-box mt-box"><h3>My material</h3>` + materials.map((m, i) => {
@@ -78,15 +85,15 @@ function draw() {
           return `<div class="mt-ls${L.length ? " ok" : ""}"><span class="mt-n">${esc(l.code)}</span><div><b>${esc(l.title)}</b>${L.length ? `<div class="mt-lk">${L.map(k => `<a class="mt-a" href="${esc(k.url)}" target="_blank" rel="noopener">${esc(k.label)}</a>`).join("")}</div>` : `<small>Coming soon</small>`}</div></div>`; }).join("")}`).join("")}</details>`; }).join("") + `</section>`;
   })();
   const pend = list.filter(x => !mine.has(x.id)).length + (isSB && !agPlays.has("sb42-ws") ? 1 : 0) + (isEL && !agPlays.has("su42-ws") ? 1 : 0) + (isEL && !agPlays.has("el42-ws") ? 1 : 0)
-    + (isAG && !agPlays.has("eq41-ws") ? 1 : 0) + (isAG && !agPlays.has("ag34-ws") ? 1 : 0) + shown.filter(l => l.games.some(g => !played.has(g.id))).length;
-  const cwN = (sheets ? 1 : 0) + (isSB ? 1 : 0) + (isEL ? 2 : 0) + (isAG ? 2 : 0) + shown.length;
+    + lv.filter(w => !agPlays.has(w.id + "-ws")).length + (isAG && !agPlays.has("eq41-ws") ? 1 : 0) + (isAG && !agPlays.has("ag34-ws") ? 1 : 0) + shown.filter(l => l.games.some(g => !played.has(g.id))).length;
+  const cwN = (sheets ? 1 : 0) + (isSB ? 1 : 0) + (isEL ? 2 : 0) + (isAG ? 2 : 0) + lv.length + shown.length;
   const nudge = pend ? `<button class="cw-nudge" type="button" data-wkact="jump"><span class="cw-dot">${pend}</span> You still have ${pend === 1 ? "1 classwork" : pend + " classwork"} to do. Tap to open it.</button>` : "";
   box.innerHTML = nudge + matCard + `<section class="card wk-box cw-box" id="cwBox"><h3>My classwork${pend ? ` <span class="cw-badge">${pend} to do</span>` : cwN ? ` <span class="cw-badge ok">All done ✓</span>` : ""}</h3>
-    <div class="cw-scroll">${sbCard}${suCard}${elCard}${eqCard}${agCard}
+    <div class="cw-scroll">${liveCards}${sbCard}${suCard}${elCard}${eqCard}${agCard}
     ${sheets ? `<div class="wk-list">${sheets}</div>` : ""}
     ${games}</div>${cwN > 1 ? `<small class="cw-hint">Scroll down inside the box to see more ↓</small>` : ""}
     ${lessons.length > 3 ? `<button class="ghost small" type="button" data-wkact="more">${showAll ? "Show fewer lessons" : `Show older lessons (${lessons.length - 3})`}</button>` : ""}
-    ${!sheets && !games && !agCard && !elCard ? `<p class="none">Nothing to do right now. Your teacher's work will appear here.</p>` : ""}</section>`;
+    ${!sheets && !games && !agCard && !elCard && !lv.length ? `<p class="none">Nothing to do right now. Your teacher's work will appear here.</p>` : ""}</section>`;
 }
 function drawSheet(box, w) {
   box.innerHTML = `<section class="card wk-do"><h3>${esc(w.title)}</h3>
@@ -135,6 +142,7 @@ document.addEventListener("click", e => {
   if (a === "el") openAG("elim.html", "Elimination lesson");
   if (a === "su") openAG("subst.html", "Substitution lesson");
   if (a === "sb") openAG("subst2.html", "Substitution: extra practice");
+  if (a === "live") { const w = LIVE_WS.find(x => x.id === b.dataset.id); if (w && liveList().includes(w)) openAG(w.file, w.title); }
   if (a === "eq") openAG("eq41.html", "Solving equations");
   if (a === "closegame") closeGame();
 });
@@ -142,3 +150,11 @@ document.addEventListener("click", e => {
 { const st = document.createElement("style"); st.textContent = ".mt-un{margin:14px 0 6px;font-size:16px}.mt-list{margin:8px 0;border-top:1px solid var(--line);padding-top:8px}.mt-list summary{cursor:pointer;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;font-size:16px}.mt-list summary small{opacity:.7}.mt-ls{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;border-radius:12px;margin:6px 0;background:color-mix(in srgb,var(--accent) 7%,var(--card));color:var(--muted)}.mt-ls.ok{background:color-mix(in srgb,var(--good) 18%,var(--card));color:var(--ink)}.mt-n{font-weight:800;min-width:2.3em}.mt-ls small{display:block;opacity:.8}.mt-lk{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}.mt-a{display:inline-block;padding:6px 12px;border-radius:99px;background:var(--sea-700);color:#fff;font-weight:700;text-decoration:none}"; document.head.appendChild(st); }
 { const st = document.createElement("style"); st.textContent = ".cw-scroll{max-height:340px;overflow-y:auto;padding-right:6px;scroll-snap-type:y proximity;overscroll-behavior:contain}.cw-scroll>*{scroll-snap-align:start}.cw-hint{display:block;margin-top:6px;opacity:.75}.cw-badge{display:inline-block;margin-left:8px;padding:2px 10px;border-radius:99px;background:#d8392b;color:#fff;font-size:13px;font-weight:800;vertical-align:middle}.cw-badge.ok{background:var(--good,#1f7a4a)}.cw-nudge{grid-column:1/-1;display:flex;align-items:center;gap:10px;width:100%;margin:0 0 4px;padding:10px 14px;border:0;border-radius:14px;background:#d8392b;color:#fff;font:inherit;font-weight:700;cursor:pointer;text-align:left}.cw-dot{display:inline-grid;place-items:center;min-width:26px;height:26px;border-radius:99px;background:#fff;color:#d8392b;font-weight:800}@media(min-width:860px){#work{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}#work>section:only-child{grid-column:1/-1}#work>section{margin:0}}"; document.head.appendChild(st); }
 { const st = document.createElement("style"); st.textContent = "#work .wk-box{padding:14px 16px!important}#work .wk-box h3{margin:0 0 6px!important;font-size:18px!important;line-height:1.2}#work .mt-un{font-size:14px;margin:10px 0 4px}#work .mt-ls{padding:7px 10px;margin:4px 0;font-size:14px;gap:8px}#work .mt-n{min-width:2em}#work .mt-list{margin:6px 0;padding-top:6px}#work .mt-list summary{font-size:15px}#work .mt-a{padding:4px 10px;font-size:13px}#work .wk-lh b{font-size:15px}#work .wk-game{padding:10px 12px}#work .wk-game b{font-size:15px}#work .wk-game small{font-size:12.5px}@media(min-width:860px){#work .mt-box{max-height:560px;overflow:auto}}"; document.head.appendChild(st); }
+
+// A worksheet the teacher just started appears without reloading: re-check every 45 s while nothing is open.
+setInterval(async () => {
+  if (!me || document.hidden || $("wkPlay") || openId || !LIVE_WS.length) return;
+  const before = JSON.stringify(liveList().map(w => w.id));
+  try { await load(); } catch { return; }
+  if (JSON.stringify(liveList().map(w => w.id)) !== before) draw();
+}, 45000);

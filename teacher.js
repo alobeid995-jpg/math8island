@@ -1,19 +1,20 @@
 import { onSnapshot, changeEmail, auth, fs, firebaseConfig, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, collection, query, where, writeBatch, setBase, bcol, bdoc, signOut, whenUser, profileOf, emailFor, pinKey,
-  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1112w";
-import { db } from "./fbdb.js?v=1112w";
-import { startUsage } from "./usage.js?v=1112w";
-import { mountTeacherTT } from "./timetable.js?v=1112w";
-import { openWork, gradeData } from "./teacherwork.js?v=1112w";
+  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1112x";
+import { db } from "./fbdb.js?v=1112x";
+import { startUsage } from "./usage.js?v=1112x";
+import { mountTeacherTT } from "./timetable.js?v=1112x";
+import { openWork, gradeData } from "./teacherwork.js?v=1112x";
 import "./lessonxp.js";
-import { openProgress } from "./progress.js?v=1112w";
-import { openMaterial } from "./material.js?v=1112w";
-import { hasFunpark, openFunpark } from "./fpteacher.js?v=1112w";
-import { openCoconut } from "./coconut.js?v=1112w";
-import { xpAllowed } from "./ownerpin.js?v=1112w";
+import { openProgress } from "./progress.js?v=1112x";
+import { openMaterial } from "./material.js?v=1112x";
+import { openLiveWs } from "./liveteacher.js?v=1112x";
+import { hasFunpark, openFunpark } from "./fpteacher.js?v=1112x";
+import { openCoconut } from "./coconut.js?v=1112x";
+import { xpAllowed } from "./ownerpin.js?v=1112x";
 window.xpGate = n => xpAllowed(n); window.wkGradeData = gradeData;
-import { initChat } from "./chat.js?v=1112w";
-import { openLive } from "./live.js?v=1112w";
-import { openInbox } from "./inbox.js?v=1112w";
+import { initChat } from "./chat.js?v=1112x";
+import { openLive } from "./live.js?v=1112x";
+import { openInbox } from "./inbox.js?v=1112x";
 
 const $ = id => document.getElementById(id);
 const esc2 = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -115,6 +116,7 @@ if (ADMIN) { // the button is only created for the owner; other teachers' pages 
 $("workBtn").onclick = () => openWork();
 { const ib2 = document.createElement("button"); ib2.className = "ghost small"; ib2.id = "inboxBtn"; ib2.type = "button"; ib2.textContent = "Announcements"; ib2.onclick = () => openInbox(); $("outBtn").before(ib2); }
 { const lb = document.createElement("button"); lb.className = "ghost small"; lb.id = "liveBtn"; lb.type = "button"; lb.textContent = "Live quiz"; lb.onclick = () => openLive(); $("outBtn").before(lb); }
+{ const lw = document.createElement("button"); lw.className = "ghost small"; lw.id = "lwBtn"; lw.type = "button"; lw.textContent = "Live worksheets"; lw.onclick = () => openLiveWs(); if (ADMIN) $("outBtn").before(lw); }
 { const fb = document.createElement("button"); fb.className = "ghost small"; fb.id = "funBtn"; fb.type = "button"; fb.textContent = "Fun Park"; fb.style.display = "none"; fb.onclick = () => openFunpark(); $("outBtn").before(fb); hasFunpark(ADMIN, u.uid).then(ok => { if (ok) fb.style.display = ""; }).catch(() => {}); }
 { const cb = document.createElement("button"); cb.className = "ghost small"; cb.id = "ccBtn"; cb.type = "button"; cb.textContent = "Coconut Crack"; cb.style.display = "none"; cb.onclick = () => openCoconut(); $("outBtn").before(cb); hasFunpark(ADMIN, u.uid, "coconut").then(ok => { if (ok) cb.style.display = ""; }).catch(() => {}); }
 { const mb = document.createElement("button"); mb.className = "ghost small"; mb.id = "matBtn"; mb.type = "button"; mb.textContent = "My material"; mb.onclick = () => openMaterial(); $("outBtn").before(mb); }
@@ -133,7 +135,7 @@ $("outBtn").onclick = async () => { await signOut(auth); location.href = "index.
     catch (er) { alert(er && er.code === "auth/invalid-credential" || er && er.code === "auth/wrong-password" ? "The password is not right." : "Could not do it: " + ((er && (er.code || er.message)) || "error")); }
   };
   document.body.appendChild(eb);
-  const btns = ["workBtn", "liveBtn", "ccBtn", "funBtn", "inboxBtn", "matBtn", "loginsBtn", "impBtn", "islandBtn", "devBtn", "emailBtn"].map(id => $(id)).filter(Boolean);
+  const btns = ["workBtn", "lwBtn", "liveBtn", "ccBtn", "funBtn", "inboxBtn", "matBtn", "loginsBtn", "impBtn", "islandBtn", "devBtn", "emailBtn"].map(id => $(id)).filter(Boolean);
   btns.forEach(b => holder.appendChild(b));
   const place = () => { const h = $("hubMgmt"); if (h && !btns.every(b => b.parentNode === h)) btns.forEach(b => h.appendChild(b)); };
   const r0 = window.render;
