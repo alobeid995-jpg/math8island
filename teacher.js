@@ -1,20 +1,20 @@
 import { onSnapshot, changeEmail, auth, fs, firebaseConfig, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, collection, query, where, writeBatch, setBase, bcol, bdoc, signOut, whenUser, profileOf, emailFor, pinKey,
-  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1112x";
-import { db } from "./fbdb.js?v=1112x";
-import { startUsage } from "./usage.js?v=1112x";
-import { mountTeacherTT } from "./timetable.js?v=1112x";
-import { openWork, gradeData } from "./teacherwork.js?v=1112x";
+  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1112y";
+import { db } from "./fbdb.js?v=1112y";
+import { startUsage } from "./usage.js?v=1112y";
+import { mountTeacherTT } from "./timetable.js?v=1112y";
+import { openWork, gradeData } from "./teacherwork.js?v=1112y";
 import "./lessonxp.js";
-import { openProgress } from "./progress.js?v=1112x";
-import { openMaterial } from "./material.js?v=1112x";
-import { openLiveWs } from "./liveteacher.js?v=1112x";
-import { hasFunpark, openFunpark } from "./fpteacher.js?v=1112x";
-import { openCoconut } from "./coconut.js?v=1112x";
-import { xpAllowed } from "./ownerpin.js?v=1112x";
+import { openProgress } from "./progress.js?v=1112y";
+import { openMaterial } from "./material.js?v=1112y";
+import { openLiveWs } from "./liveteacher.js?v=1112y";
+import { hasFunpark, openFunpark } from "./fpteacher.js?v=1112y";
+import { openCoconut } from "./coconut.js?v=1112y";
+import { xpAllowed } from "./ownerpin.js?v=1112y";
 window.xpGate = n => xpAllowed(n); window.wkGradeData = gradeData;
-import { initChat } from "./chat.js?v=1112x";
-import { openLive } from "./live.js?v=1112x";
-import { openInbox } from "./inbox.js?v=1112x";
+import { initChat } from "./chat.js?v=1112y";
+import { openLive } from "./live.js?v=1112y";
+import { openInbox } from "./inbox.js?v=1112y";
 
 const $ = id => document.getElementById(id);
 const esc2 = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

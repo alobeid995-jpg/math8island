@@ -1,8 +1,8 @@
 // "My classwork" on the student page: worksheets from the teacher, and (for the 9S boys) the lesson games.
-import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1112x";
-import { playerOf, catalog } from "./islandmap.js?v=1112x";
-import { logEv } from "./presence.js?v=1112x";
-import { LIVE_WS } from "./liveworks.js?v=1112x";
+import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1112y";
+import { playerOf, catalog } from "./islandmap.js?v=1112y";
+import { logEv } from "./presence.js?v=1112y";
+import { LIVE_WS, isLive } from "./liveworks.js?v=1112y";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -16,7 +16,7 @@ export async function initWork(profile, getMe, toastFn) {
   if (!me) return;
   await load(); draw();
 }
-const liveList = () => LIVE_WS.filter(w => liveOpen[w.id] && liveOpen[w.id][String((me && me.cls) || "").trim()]);
+const liveList = () => LIVE_WS.filter(w => isLive(w, liveOpen, String((me && me.cls) || "").trim()));
 async function load() {
   try {
     const w = await getDocs(query(collection(fs, ...base, "work"), where("classes", "array-contains", me.cls)));
@@ -31,7 +31,7 @@ async function load() {
   isAG = /^8G$/i.test(String(me.cls || "").trim());   // this lesson is only for class 8G
   isSB = /^(8Y|8S|8M|8D)$/i.test(String(me.cls || "").trim());   // extra substitution practice: 8Y, 8S, 8M, 8D
   isEL = /^(8B|8Y|8S|8M|8D)$/i.test(String(me.cls || "").trim());   // elimination lesson: only these four classes
-  if (isAG || isEL || isSB || liveList().length) { try { const pl = await getDocs(query(collection(fs, ...base, "plays"), where("sid", "==", P.sid))); let rt = {}; try { const sd = await getDoc(doc(fs, ...base, "students", P.sid)); rt = (sd.exists() && sd.data().rt) || {}; lxs = (sd.exists() && sd.data().lx) || {}; } catch {}
+  if (liveList().length) { try { const pl = await getDocs(query(collection(fs, ...base, "plays"), where("sid", "==", P.sid))); let rt = {}; try { const sd = await getDoc(doc(fs, ...base, "students", P.sid)); rt = (sd.exists() && sd.data().rt) || {}; lxs = (sd.exists() && sd.data().lx) || {}; } catch {}
       agPlays = new Set(pl.docs.map(d => d.data()).filter(v => (v.u || v.t || 0) > (rt[v.g] || 0)).map(v => v.g)); } catch {} }
   if (player) {
     try {
@@ -57,25 +57,10 @@ function draw() {
         return `<button class="wk-game${a ? " done" : ""}" type="button" data-wkact="game" data-id="${esc(g.id)}"><b>${esc(g.title)}</b><small>${esc(g.desc)}</small>${a ? `<span class="wk-tick">${p}% ✓</span>` : ""}</button>`; }).join("")}</div></div>`).join("");
   const xpNote = k => { const r = lxs[k] || {}; return `<small class="wk-xpnote">${r.perfect ? "⭐ +200 XP earned: all correct!" : r.done ? "✓ +100 XP earned. Get the worksheet 100% right for +100 more." : "Finish everything for +100 XP. Get the worksheet 100% right for +100 more."}</small>`; };
   const agPart = (g, l) => `<span class="wk-tick" style="margin-left:6px;opacity:${agPlays.has(g) ? 1 : .35}">${agPlays.has(g) ? "✓ " : ""}${l}</span>`;
-  const eqCard = isAG ? `<div class="wk-lesson"><div class="wk-lh"><b>Exercise 4.1: Solving equations</b><small>Easy version</small></div>
-      <div class="wk-games"><button class="wk-game${agPlays.has("eq41-ws") ? " done" : ""}" type="button" data-wkact="eq"><b>Worked examples, then a worksheet</b><small>Go through the worked examples first. Then the short worksheet opens.</small>${xpNote("eq41")}
-      <span>${agPart("eq41-examples", "Examples")}${agPart("eq41-ws", "Worksheet")}</span></button></div></div>` : "";
-  const agCard = isAG ? `<div class="wk-lesson"><div class="wk-lh"><b>Lesson 3.4: Upper and lower bounds</b><small>Mon 9 Nov 2026</small></div>
-      <div class="wk-games"><button class="wk-game${agPlays.has("ag34-ws") ? " done" : ""}" type="button" data-wkact="ag"><b>Examples, games and worksheet</b><small>Do the examples, play the games, then do the multiple choice worksheet.</small>${xpNote("ag34")}
-      <span>${agPart("ag34-examples", "Examples")}${agPart("ag34-tap", "Game 1")}${agPart("ag34-bound", "Game 2")}${agPart("ag34-ineq", "Game 3")}${agPart("ag34-ws", "Worksheet")}</span></button></div></div>` : "";
-  const suCard = isEL ? `<div class="wk-lesson"><div class="wk-lh"><b>Simultaneous equations: substitution</b><small>Exercise 4.2 · Day 2</small></div>
-      <div class="wk-games"><button class="wk-game${agPlays.has("su42-ws") ? " done" : ""}" type="button" data-wkact="su"><b>Worked examples, then a worksheet</b><small>Go through the worked examples first. Then the short worksheet opens (5 to 7 minutes).</small>${xpNote("su42")}
-      <span>${agPart("su42-examples", "Examples")}${agPart("su42-ws", "Worksheet")}</span></button></div></div>` : "";
-  const sbCard = isSB ? `<div class="wk-lesson"><div class="wk-lh"><b>Substitution method: extra practice</b><small>Exercise 4.2 · new questions</small></div>
-      <div class="wk-games"><button class="wk-game${agPlays.has("sb42-ws") ? " done" : ""}" type="button" data-wkact="sb"><b>Worked examples, then a worksheet</b><small>Put one equation into the other. Go through the examples first. Then the worksheet opens (6 to 8 minutes).</small>${xpNote("sb42")}
-      <span>${agPart("sb42-examples", "Examples")}${agPart("sb42-ws", "Worksheet")}</span></button></div></div>` : "";
-  const elCard = isEL ? `<div class="wk-lesson"><div class="wk-lh"><b>Simultaneous equations: elimination</b><small>Exercise 4.2 · Day 1</small></div>
-      <div class="wk-games"><button class="wk-game${agPlays.has("el42-ws") ? " done" : ""}" type="button" data-wkact="el"><b>Examples, games and worksheet</b><small>Do the examples, play the games, then do the multiple choice worksheet.</small>${xpNote("el42")}
-      <span>${agPart("el42-examples", "Examples")}${agPart("el42-addsub", "Game 1")}${agPart("el42-solve", "Game 2")}${agPart("el42-spot", "Game 3")}${agPart("el42-ws", "Worksheet")}</span></button></div></div>` : "";
   const lv = liveList();
   const liveCards = lv.map(w => `<div class="wk-lesson"><div class="wk-lh"><b>${esc(w.title)}</b><small>${esc(w.sub || "")}</small></div>
-      <div class="wk-games"><button class="wk-game${agPlays.has(w.id + "-ws") ? " done" : ""}" type="button" data-wkact="live" data-id="${esc(w.id)}"><b>Worked examples, then a worksheet</b><small>${esc(w.desc || "Go through the worked examples first. Then the worksheet opens.")}</small>
-      <span>${agPart(w.id + "-examples", "Examples")}${agPart(w.id + "-ws", "Worksheet")}</span></button></div></div>`).join("");
+      <div class="wk-games"><button class="wk-game${agPlays.has(w.id + "-ws") ? " done" : ""}" type="button" data-wkact="live" data-id="${esc(w.id)}"><b>${w.games ? "Examples, games and worksheet" : "Worked examples, then a worksheet"}</b><small>${esc(w.desc || "Go through the worked examples first. Then the worksheet opens.")}</small>${w.xp ? xpNote(w.xp) : ""}
+      <span>${agPart(w.id + "-examples", "Examples")}${(w.games || []).map(([k, l]) => agPart(w.id + "-" + k, l)).join("")}${agPart(w.id + "-ws", "Worksheet")}</span></button></div></div>`).join("");
   const matCard = (() => {
     if (!materials.length) return "";
     return `<section class="card wk-box mt-box"><h3>My material</h3>` + materials.map((m, i) => {
@@ -84,16 +69,16 @@ function draw() {
         ${m.units.map(u => `<h4 class="mt-un">${esc(u.title)}</h4>${(u.lessons || []).map(l => { const L = (l.links || []).filter(k => /^https?:\/\//i.test(k.url));
           return `<div class="mt-ls${L.length ? " ok" : ""}"><span class="mt-n">${esc(l.code)}</span><div><b>${esc(l.title)}</b>${L.length ? `<div class="mt-lk">${L.map(k => `<a class="mt-a" href="${esc(k.url)}" target="_blank" rel="noopener">${esc(k.label)}</a>`).join("")}</div>` : `<small>Coming soon</small>`}</div></div>`; }).join("")}`).join("")}</details>`; }).join("") + `</section>`;
   })();
-  const pend = list.filter(x => !mine.has(x.id)).length + (isSB && !agPlays.has("sb42-ws") ? 1 : 0) + (isEL && !agPlays.has("su42-ws") ? 1 : 0) + (isEL && !agPlays.has("el42-ws") ? 1 : 0)
-    + lv.filter(w => !agPlays.has(w.id + "-ws")).length + (isAG && !agPlays.has("eq41-ws") ? 1 : 0) + (isAG && !agPlays.has("ag34-ws") ? 1 : 0) + shown.filter(l => l.games.some(g => !played.has(g.id))).length;
-  const cwN = (sheets ? 1 : 0) + (isSB ? 1 : 0) + (isEL ? 2 : 0) + (isAG ? 2 : 0) + lv.length + shown.length;
+  const pend = list.filter(x => !mine.has(x.id)).length
+    + lv.filter(w => !agPlays.has(w.id + "-ws")).length + shown.filter(l => l.games.some(g => !played.has(g.id))).length;
+  const cwN = (sheets ? 1 : 0) + lv.length + shown.length;
   const nudge = pend ? `<button class="cw-nudge" type="button" data-wkact="jump"><span class="cw-dot">${pend}</span> You still have ${pend === 1 ? "1 classwork" : pend + " classwork"} to do. Tap to open it.</button>` : "";
   box.innerHTML = nudge + matCard + `<section class="card wk-box cw-box" id="cwBox"><h3>My classwork${pend ? ` <span class="cw-badge">${pend} to do</span>` : cwN ? ` <span class="cw-badge ok">All done ✓</span>` : ""}</h3>
-    <div class="cw-scroll">${liveCards}${sbCard}${suCard}${elCard}${eqCard}${agCard}
+    <div class="cw-scroll">${liveCards}
     ${sheets ? `<div class="wk-list">${sheets}</div>` : ""}
     ${games}</div>${cwN > 1 ? `<small class="cw-hint">Scroll down inside the box to see more ↓</small>` : ""}
     ${lessons.length > 3 ? `<button class="ghost small" type="button" data-wkact="more">${showAll ? "Show fewer lessons" : `Show older lessons (${lessons.length - 3})`}</button>` : ""}
-    ${!sheets && !games && !agCard && !elCard && !lv.length ? `<p class="none">Nothing to do right now. Your teacher's work will appear here.</p>` : ""}</section>`;
+    ${!sheets && !games && !lv.length ? `<p class="none">Nothing to do right now. Your teacher's work will appear here.</p>` : ""}</section>`;
 }
 function drawSheet(box, w) {
   box.innerHTML = `<section class="card wk-do"><h3>${esc(w.title)}</h3>
@@ -138,12 +123,7 @@ document.addEventListener("click", e => {
   if (a === "more") { showAll = !showAll; draw(); }
   if (a === "jump") { const c = $("cwBox"); if (c) c.scrollIntoView({ behavior: "smooth", block: "center" }); }
   if (a === "game") openGame(b.dataset.id);
-  if (a === "ag") openAG();
-  if (a === "el") openAG("elim.html", "Elimination lesson");
-  if (a === "su") openAG("subst.html", "Substitution lesson");
-  if (a === "sb") openAG("subst2.html", "Substitution: extra practice");
   if (a === "live") { const w = LIVE_WS.find(x => x.id === b.dataset.id); if (w && liveList().includes(w)) openAG(w.file, w.title); }
-  if (a === "eq") openAG("eq41.html", "Solving equations");
   if (a === "closegame") closeGame();
 });
 
