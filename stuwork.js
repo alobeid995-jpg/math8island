@@ -1,8 +1,8 @@
 // "My classwork" on the student page: worksheets from the teacher, and (for the 9S boys) the lesson games.
-import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1112y";
-import { playerOf, catalog } from "./islandmap.js?v=1112y";
-import { logEv } from "./presence.js?v=1112y";
-import { LIVE_WS, isLive } from "./liveworks.js?v=1112y";
+import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1112z";
+import { playerOf, catalog } from "./islandmap.js?v=1112z";
+import { logEv } from "./presence.js?v=1112z";
+import { LIVE_WS, isLive } from "./liveworks.js?v=1112z";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -59,8 +59,8 @@ function draw() {
   const agPart = (g, l) => `<span class="wk-tick" style="margin-left:6px;opacity:${agPlays.has(g) ? 1 : .35}">${agPlays.has(g) ? "✓ " : ""}${l}</span>`;
   const lv = liveList();
   const liveCards = lv.map(w => `<div class="wk-lesson"><div class="wk-lh"><b>${esc(w.title)}</b><small>${esc(w.sub || "")}</small></div>
-      <div class="wk-games"><button class="wk-game${agPlays.has(w.id + "-ws") ? " done" : ""}" type="button" data-wkact="live" data-id="${esc(w.id)}"><b>${w.games ? "Examples, games and worksheet" : "Worked examples, then a worksheet"}</b><small>${esc(w.desc || "Go through the worked examples first. Then the worksheet opens.")}</small>${w.xp ? xpNote(w.xp) : ""}
-      <span>${agPart(w.id + "-examples", "Examples")}${(w.games || []).map(([k, l]) => agPart(w.id + "-" + k, l)).join("")}${agPart(w.id + "-ws", "Worksheet")}</span></button></div></div>`).join("");
+      <div class="wk-games"><button class="wk-game${agPlays.has(w.id + "-ws") ? " done" : ""}" type="button" data-wkact="live" data-id="${esc(w.id)}"><b>${w.games ? "Examples, games and worksheet" : w.noWs ? "Worked example" : "Worked examples, then a worksheet"}</b><small>${esc(w.desc || "Go through the worked examples first. Then the worksheet opens.")}</small>${w.xp ? xpNote(w.xp) : ""}
+      <span>${agPart(w.id + "-examples", "Examples")}${(w.games || []).map(([k, l]) => agPart(w.id + "-" + k, l)).join("")}${w.noWs ? "" : agPart(w.id + "-ws", "Worksheet")}</span></button></div></div>`).join("");
   const matCard = (() => {
     if (!materials.length) return "";
     return `<section class="card wk-box mt-box"><h3>My material</h3>` + materials.map((m, i) => {

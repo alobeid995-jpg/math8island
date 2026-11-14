@@ -3,11 +3,13 @@
 // until the teacher presses "Start" for a class (Tools -> Live worksheets).
 //   was:   classes that already had it before this list existed (visible by default until the teacher changes it)
 //   parts: progress chips [play id suffix, label]; the "ws" part is the worksheet and marks it done
+//   noWs:  only the worked-example page exists so far (no worksheet yet)
 //   xp:    key in the lesson XP record (only the older lessons have XP)
 const D = "Go through the worked examples first. Then the short worksheet opens.";
 const G = "Do the examples, play the games, then do the multiple choice worksheet.";
 const EL = ["8B", "8Y", "8S", "8M", "8D"];
 export const LIVE_WS = [
+  { id: "graph42", title: "Graphing simultaneous equations", sub: "Exercise 4.2 · workbook class work", file: "graph42.html", desc: "Worked example: draw both graphs and find where the lines cross. The worksheet comes next.", noWs: true },
   { id: "sb42", title: "Substitution method: extra practice", sub: "Exercise 4.2 · new questions", file: "subst2.html", desc: "Put one equation into the other. Go through the examples first. Then the worksheet opens (6 to 8 minutes).", was: ["8Y", "8S", "8M", "8D"], xp: "sb42" },
   { id: "su42", title: "Simultaneous equations: substitution", sub: "Exercise 4.2 · Day 2", file: "subst.html", desc: "Go through the worked examples first. Then the short worksheet opens (5 to 7 minutes).", was: EL, xp: "su42" },
   { id: "el42", title: "Simultaneous equations: elimination", sub: "Exercise 4.2 · Day 1", file: "elim.html", desc: G, was: EL, xp: "el42", games: [["addsub", "Game 1"], ["solve", "Game 2"], ["spot", "Game 3"]] },

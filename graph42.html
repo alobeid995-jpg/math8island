@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Graphing Simultaneous Equations – Workbook Class Work</title>
+<style>
+:root{
+  --c1:#2563eb; --c2:#ea580c; --sol:#15803d; --bad:#b91c1c;
+  --ink:#1f2937; --mut:#6b7280; --bg:#f3f5fa; --card:#ffffff; --line:#e3e7ef;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.4}
+header{background:#1e293b;color:#fff;padding:14px 20px;display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:space-between}
+header h1{margin:0;font-size:1.2rem;font-weight:700}
+header .who{display:flex;gap:10px;flex-wrap:wrap}
+header label{font-size:.85rem;display:flex;align-items:center;gap:6px}
+header input{padding:6px 8px;border-radius:8px;border:0;font-size:.9rem;width:150px}
+main{max-width:1240px;margin:0 auto;padding:16px;display:grid;grid-template-columns:minmax(0,640px) minmax(0,1fr);gap:18px;align-items:start}
+@media(max-width:960px){main{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.problem{display:flex;flex-wrap:wrap;gap:10px 24px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.problem h2{margin:0 0 4px;font-size:1rem;color:var(--mut);font-weight:600}
+.eqs{display:flex;gap:12px;flex-wrap:wrap}
+.eq{font-size:1.25rem;font-weight:700;padding:6px 14px;border-radius:10px;border:2px solid}
+.eq.e1{color:var(--c1);border-color:var(--c1);background:#eff4ff}
+.eq.e2{color:var(--c2);border-color:var(--c2);background:#fff3ea}
+select,button{font:inherit}
+select{padding:7px 9px;border-radius:8px;border:1px solid #cbd2de;background:#fff;max-width:100%}
+button{cursor:pointer;border:1px solid #cbd2de;background:#fff;border-radius:9px;padding:7px 12px;font-weight:600}
+button:hover{background:#f1f5fb}
+button.primary{background:#1e293b;color:#fff;border-color:#1e293b}
+button.primary:hover{background:#334155}
+.tools{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.tools button{display:flex;align-items:center;gap:7px;border-width:2px}
+.tools button[data-tool="1"]{border-color:var(--c1)}
+.tools button[data-tool="2"]{border-color:var(--c2)}
+.tools button[data-tool="3"]{border-color:var(--sol)}
+.tools button.on[data-tool="1"]{background:var(--c1);color:#fff}
+.tools button.on[data-tool="2"]{background:var(--c2);color:#fff}
+.tools button.on[data-tool="3"]{background:var(--sol);color:#fff}
+svg#g{width:100%;height:auto;display:block;margin:0 auto;background:#fff;border-radius:10px;border:1px solid var(--line);touch-action:manipulation;cursor:crosshair;user-select:none}
+.gfoot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:8px;font-size:.9rem;color:var(--mut);align-items:center}
+.gfoot label{display:flex;gap:6px;align-items:center}
+#readout{font-variant-numeric:tabular-nums;font-weight:600;color:var(--ink)}
+.step{margin-bottom:12px}
+.step h3{margin:0 0 6px;font-size:1rem;display:flex;align-items:center;gap:10px}
+.badge{width:28px;height:28px;border-radius:50%;background:#e5e9f2;color:#334155;display:inline-flex;align-items:center;justify-content:center;font-weight:800;flex:none}
+.step.done .badge{background:var(--sol);color:#fff}
+.step p{margin:0 0 8px;color:#374151;font-size:.93rem}
+.tbl-wrap{overflow-x:auto;margin-bottom:8px}
+table{border-collapse:collapse;font-size:.95rem}
+th,td{border:1px solid #cfd6e4;padding:4px 6px;text-align:center;min-width:44px}
+th{background:#f1f4fa;font-weight:700}
+td.lab{font-weight:700;background:#f8fafc;white-space:nowrap}
+td.lab.l1{color:var(--c1)} td.lab.l2{color:var(--c2)}
+input.cell{width:46px;padding:5px 2px;border:1px solid #cbd2de;border-radius:6px;text-align:center;font:inherit}
+input.cell.ok{background:#dcfce7;border-color:#16a34a}
+input.cell.no{background:#fee2e2;border-color:#dc2626}
+.ans{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:1.1rem;font-weight:700;margin-bottom:8px}
+.ans input{width:64px;padding:7px 4px;border:1px solid #cbd2de;border-radius:8px;text-align:center;font:inherit;font-weight:700}
+.ans input.ok{background:#dcfce7;border-color:#16a34a}
+.ans input.no{background:#fee2e2;border-color:#dc2626}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.msg{min-height:1.2em;margin-top:6px;font-size:.92rem;font-weight:600}
+.msg.ok{color:var(--sol)} .msg.no{color:var(--bad)}
+.banner{display:none;background:#dcfce7;border:2px solid #16a34a;color:#14532d;border-radius:12px;padding:12px 14px;font-weight:700;margin-bottom:12px}
+.banner.show{display:block}
+details.teacher{margin-top:6px}
+details.teacher summary{cursor:pointer;font-weight:700;color:#475569}
+.tgrid{display:grid;grid-template-columns:auto 62px 62px 62px;gap:6px 8px;align-items:center;margin:10px 0;font-weight:600}
+.tgrid input{width:100%;padding:6px;border:1px solid #cbd2de;border-radius:6px;text-align:center;font:inherit}
+.small{font-size:.85rem;color:var(--mut)}
+.ref{background:#fff8e1;border:1px solid #f4d675;border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:.93rem}
+.ref b{color:#7a5a00}
+.tag{margin-left:auto;font-size:.75rem;font-weight:700;background:#eef2ff;color:#3730a3;border-radius:999px;padding:2px 9px;white-space:nowrap}
+</style>
+</head>
+<body>
+<header>
+  <h1>Graphing Simultaneous Equations — Workbook Class Work</h1>
+  <div class="who">
+    <label>Name <input id="stName" type="text" placeholder="Student name"></label>
+    <label>Class <input id="stClass" type="text" placeholder="e.g. 9A" style="width:80px"></label>
+  </div>
+</header>
+
+<main>
+  <!-- GRAPH COLUMN -->
+  <section>
+    <div class="card">
+      <div class="ref" id="ref"></div>
+      <div class="problem">
+        <div>
+          <h2>Solve by drawing both graphs:</h2>
+          <div class="eqs">
+            <div class="eq e1" id="eq1"></div>
+            <div class="eq e2" id="eq2"></div>
+          </div>
+        </div>
+        <div>
+          <label class="small" for="probSel">Problem</label><br>
+          <select id="probSel"></select>
+        </div>
+      </div>
+
+      <div class="tools" id="tools">
+        <button data-tool="1" class="on"><span>●</span> Line 1 points</button>
+        <button data-tool="2"><span>■</span> Line 2 points</button>
+        <button data-tool="3"><span>★</span> Intersection point</button>
+      </div>
+
+      <svg id="g" viewBox="0 0 640 640" role="img" aria-label="Coordinate grid from -10 to 10"></svg>
+
+      <div class="gfoot">
+        <span>Cursor: <span id="readout">–</span></span>
+        <label><input type="checkbox" id="showLabels" checked> Show coordinates on points</label>
+        <button id="clearPts">Clear graph</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEPS COLUMN -->
+  <section>
+    <div class="banner" id="banner"></div>
+
+    <div class="card step" id="st1">
+      <h3><span class="badge">1</span> Table of values <span class="tag" id="tag1"></span></h3>
+      <p>Substitute each value of <b>x</b> into the equation and write <b>y</b>.</p>
+      <div class="tbl-wrap"><table id="tbl1"></table></div>
+      <div class="tbl-wrap"><table id="tbl2"></table></div>
+      <div class="row"><button id="chk1" class="primary">Check table</button></div>
+      <div class="msg" id="m1"></div>
+    </div>
+
+    <div class="card step" id="st2">
+      <h3><span class="badge">2</span> Plot the points <span class="tag" id="tag2"></span></h3>
+      <p>Pick a tool above the graph and click on the grid. Plot at least <b>3 points</b> for each line. Click a point again to remove it.</p>
+      <div class="row"><button id="chk2" class="primary">Check points</button></div>
+      <div class="msg" id="m2"></div>
+    </div>
+
+    <div class="card step" id="st3">
+      <h3><span class="badge">3</span> Draw the lines <span class="tag" id="tag3"></span></h3>
+      <p>Use your points to draw each straight line.</p>
+      <div class="row">
+        <button id="draw1" style="border-color:var(--c1);color:var(--c1)">Draw Line 1</button>
+        <button id="draw2" style="border-color:var(--c2);color:var(--c2)">Draw Line 2</button>
+        <button id="eraseL">Erase lines</button>
+        <button id="chk3" class="primary">Check lines</button>
+      </div>
+      <div class="msg" id="m3"></div>
+    </div>
+
+    <div class="card step" id="st4">
+      <h3><span class="badge">4</span> Solution of the equations <span class="tag" id="tag4"></span></h3>
+      <p>The solution is where the two lines cross.</p>
+      <div class="ans">x = <input id="sx" inputmode="decimal" autocomplete="off"> y = <input id="sy" inputmode="decimal" autocomplete="off"></div>
+      <div class="row"><button id="chk4" class="primary">Check</button></div>
+      <div class="msg" id="m4"></div>
+    </div>
+
+    <div class="card step" id="st5">
+      <h3><span class="badge">5</span> Ordered pair <span class="tag" id="tag5"></span></h3>
+      <p>Write the solution as an ordered pair (x , y).</p>
+      <div class="ans">( <input id="px" inputmode="decimal" autocomplete="off"> , <input id="py" inputmode="decimal" autocomplete="off"> )</div>
+      <div class="row"><button id="chk5" class="primary">Check</button></div>
+      <div class="msg" id="m5"></div>
+    </div>
+
+    <div class="card step" id="st6">
+      <h3><span class="badge">6</span> Plot the ordered pair <span class="tag" id="tag6"></span></h3>
+      <p>Choose the <b>★ Intersection point</b> tool and click the ordered pair on the graph.</p>
+      <div class="row"><button id="chk6" class="primary">Check</button></div>
+      <div class="msg" id="m6"></div>
+    </div>
+
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <button id="resetAll">Start this problem again</button>
+      </div>
+      <details class="teacher">
+        <summary>Teacher tools</summary>
+        <div class="tgrid">
+          <span></span><span>a</span><span>b</span><span>c</span>
+          <span>Line 1: ax + by =</span><input id="a1" type="number" value="1"><input id="b1" type="number" value="1"><input id="c1" type="number" value="6">
+          <span>Line 2: ax + by =</span><input id="a2" type="number" value="1"><input id="b2" type="number" value="-1"><input id="c2" type="number" value="2">
+        </div>
+        <div class="row">
+          <button id="useCustom">Use my equations</button>
+          <label class="small"><input type="checkbox" id="showAns"> Show answer on graph</label>
+        </div>
+        <div class="msg" id="mT"></div>
+        <p class="small">Custom equations: b must not be 0, and the solution must be whole numbers between −10 and 10.</p>
+      </details>
+    </div>
+  </section>
+</main>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------- constants ---------- */
+const M = 40;                                 // margin around the grid (px)
+let X0=-10, X1=10, Y0=-10, Y1=10, U=28, W=640, H=640;   // current grid range / size
+let XS = [-2,-1,0,1,2,3,4];                   // x-values in the table
+const sx = x => M + (x-X0)*U, sy = y => M + (Y1-y)*U;
+function setRange(r){
+  X0=r.x0; X1=r.x1; Y0=r.y0; Y1=r.y1;
+  U = Math.min(44, Math.floor(560/(X1-X0)), Math.floor(560/(Y1-Y0)));
+  W = 2*M + (X1-X0)*U; H = 2*M + (Y1-Y0)*U;
+}
+const COL = {1:"#2563eb", 2:"#ea580c", 3:"#15803d"};
+const NS = "http://www.w3.org/2000/svg";
+
+/* ---------- problems  (a x + b y = c) : from the workbook ---------- */
+const P = [
+  { label:"p.60 · Q3 (a, b, c)  —  y = 2x + 1  &  y = x + 4",
+    ref:"<b>Workbook · Page 60 · Question 3 (a, b, c)</b><br>Solve y = 2x + 1 and y = x + 4 by drawing graphs. Use x = 0, 2, 4 in your table. Grid: x from 0 to 4 and y from 0 to 10.",
+    e1:{t:"y = 2x + 1", a:-2,b:1,c:1}, e2:{t:"y = x + 4", a:-1,b:1,c:4},
+    range:{x0:0,x1:4,y0:0,y1:10}, xs:[0,2,4],
+    tags:["Q3 a","Q3 b","Q3 b","Q3 c","Q3 c","Q3 c"] },
+  { label:"p.62 · Q8 a (i)  —  y = 4x − 3  &  y = x + 3",
+    ref:"<b>Workbook · Page 62 · Question 8 a (i)</b><br>Solve y = 4x − 3 and y = x + 3 using the <b>graphical method</b> (same method as Question 3: table of values, plot, draw, read the intersection).",
+    e1:{t:"y = 4x − 3", a:-4,b:1,c:-3}, e2:{t:"y = x + 3", a:-1,b:1,c:3},
+    range:{x0:-1,x1:5,y0:-4,y1:10}, xs:[0,1,2,3],
+    tags:["Q8 a (i)","Q8 a (i)","Q8 a (i)","Q8 a (i)","Q8 a (i)","Q8 a (i)"] }
+];
+
+/* ---------- state ---------- */
+let prob = P[0];
+let pts = {1:[], 2:[]};
+let sol = null;                // student's star on the graph
+let drawn = {1:false, 2:false};
+let tool = 1;
+let showAns = false;
+let done = {};
+let hover = null;
+
+const $ = id => document.getElementById(id);
+const svg = $("g");
+
+/* ---------- helpers ---------- */
+function term(k, v, first){
+  if(k === 0) return "";
+  const m = Math.abs(k), body = (m === 1 ? "" : m) + v;
+  if(first) return (k < 0 ? "−" : "") + body;
+  return " " + (k < 0 ? "−" : "+") + " " + body;
+}
+function fmtEq(a,b,c){
+  let s = "", first = true;
+  if(a !== 0){ s += term(a,"x",true); first = false; }
+  if(b !== 0){ s += term(b,"y",first); }
+  return s + " = " + String(c).replace("-","−");
+}
+function parseNum(str){
+  if(str == null) return NaN;
+  let s = String(str).trim().replace(/[−–]/g,"-").replace(",",".");
+  if(s === "") return NaN;
+  if(s.indexOf("/") > 0){
+    const [n,d] = s.split("/");
+    const nn = Number(n), dd = Number(d);
+    return (isFinite(nn) && isFinite(dd) && dd !== 0) ? nn/dd : NaN;
+  }
+  const v = Number(s);
+  return isFinite(v) ? v : NaN;
+}
+function near(a,b){ return Math.abs(a-b) < 0.011; }
+function onLine(e,x,y){ return Math.abs(e.a*x + e.b*y - e.c) < 1e-6; }
+function solution(p){
+  const det = p.e1.a*p.e2.b - p.e2.a*p.e1.b;
+  if(Math.abs(det) < 1e-9) return null;
+  return {
+    x:(p.e1.c*p.e2.b - p.e2.c*p.e1.b)/det,
+    y:(p.e1.a*p.e2.c - p.e2.a*p.e1.c)/det
+  };
+}
+function yAt(e,x){ return (e.c - e.a*x)/e.b; }
+function pt(x,y){ return "(" + x + ", " + y + ")"; }
+function num(v){ return String(v).replace("-","−"); }
+function setMsg(id, text, ok){
+  const el = $(id);
+  el.textContent = text || "";
+  el.className = "msg" + (text ? (ok ? " ok" : " no") : "");
+}
+function el(name, attrs, parent){
+  const n = document.createElementNS(NS, name);
+  for(const k in attrs) n.setAttribute(k, attrs[k]);
+  if(parent) parent.appendChild(n);
+  return n;
+}
+
+/* ---------- static graph (grid, axes, labels) ---------- */
+let gLines, gPts, gTop;
+function buildGraph(){
+  svg.setAttribute("viewBox","0 0 "+W+" "+H);
+  svg.style.maxWidth = W + "px";
+  svg.innerHTML = "";
+  const defs = el("defs", {}, svg);
+  const cp = el("clipPath", {id:"clipArea"}, defs);
+  el("rect", {x:sx(X0), y:sy(Y1), width:(X1-X0)*U, height:(Y1-Y0)*U}, cp);
+
+  const grid = el("g", {}, svg);
+  for(let i=X0;i<=X1;i++){
+    const major = (i % 5 === 0);
+    el("line",{x1:sx(i),y1:sy(Y0),x2:sx(i),y2:sy(Y1),stroke:major?"#c3cbd9":"#e2e7f0","stroke-width":major?1.2:1},grid);
+  }
+  for(let j=Y0;j<=Y1;j++){
+    const major = (j % 5 === 0);
+    el("line",{x1:sx(X0),y1:sy(j),x2:sx(X1),y2:sy(j),stroke:major?"#c3cbd9":"#e2e7f0","stroke-width":major?1.2:1},grid);
+  }
+  // axes (drawn at 0 if inside the range, otherwise on the edge)
+  const axX = Math.min(Math.max(0,X0),X1), ayY = Math.min(Math.max(0,Y0),Y1);
+  const ax = el("g",{stroke:"#111827","stroke-width":2},svg);
+  el("line",{x1:sx(X0)-10,y1:sy(ayY),x2:sx(X1)+12,y2:sy(ayY)},ax);
+  el("line",{x1:sx(axX),y1:sy(Y0)+10,x2:sx(axX),y2:sy(Y1)-12},ax);
+  el("polygon",{points:`${sx(X1)+16},${sy(ayY)} ${sx(X1)+6},${sy(ayY)-5} ${sx(X1)+6},${sy(ayY)+5}`,fill:"#111827",stroke:"none"},svg);
+  el("polygon",{points:`${sx(axX)},${sy(Y1)-16} ${sx(axX)-5},${sy(Y1)-6} ${sx(axX)+5},${sy(Y1)-6}`,fill:"#111827",stroke:"none"},svg);
+  // numbers
+  const interiorX = X0 < 0 && X1 > 0, interiorY = Y0 < 0 && Y1 > 0;
+  const lbl = v => v < 0 ? "−" + Math.abs(v) : String(v);
+  for(let i=X0;i<=X1;i++){
+    if(i === 0 && interiorX) continue;
+    const tx = el("text",{x:sx(i),y:sy(ayY)+16,"text-anchor":"middle","font-size":12,fill:"#4b5563"},svg);
+    tx.textContent = lbl(i);
+  }
+  for(let j=Y0;j<=Y1;j++){
+    if(j === 0 && interiorY) continue;
+    if(j === 0 && X0 === 0 && Y0 === 0) continue;       // corner "0" already written by the x-axis
+    const ty = el("text",{x:sx(axX)-7,y:sy(j)+4,"text-anchor":"end","font-size":12,fill:"#4b5563"},svg);
+    ty.textContent = lbl(j);
+  }
+  if(interiorX && interiorY){
+    const o = el("text",{x:sx(0)-7,y:sy(0)+16,"text-anchor":"end","font-size":12,fill:"#4b5563"},svg); o.textContent = "0";
+  }
+  const xl = el("text",{x:sx(X1)+8,y:sy(ayY)-10,"font-size":15,"font-weight":700,"font-style":"italic",fill:"#111827"},svg); xl.textContent = "x";
+  const yl = el("text",{x:sx(axX)+10,y:sy(Y1)-8,"font-size":15,"font-weight":700,"font-style":"italic",fill:"#111827"},svg); yl.textContent = "y";
+
+  gLines = el("g",{"clip-path":"url(#clipArea)"},svg);
+  gPts = el("g",{},svg);
+  gTop = el("g",{"pointer-events":"none"},svg);
+}
+
+function starPoints(cx,cy,ro,ri){
+  let s = "";
+  for(let i=0;i<10;i++){
+    const r = i%2 === 0 ? ro : ri;
+    const a = -Math.PI/2 + i*Math.PI/5;
+    s += (cx + r*Math.cos(a)).toFixed(1) + "," + (cy + r*Math.sin(a)).toFixed(1) + " ";
+  }
+  return s.trim();
+}
+
+function lineEnds(e){      // true line, far ends
+  const A = X0 - 3, B = X1 + 3;
+  return [[A, yAt(e,A)],[B, yAt(e,B)]];
+}
+
+function studentEnds(k){
+  const a = pts[k];
+  if(a.length < 2) return null;
+  const s = a.slice().sort((p,q)=> p.x - q.x || p.y - q.y);
+  const p = s[0], q = s[s.length-1];
+  if(p.x === q.x){ return [[p.x,Y0-3],[p.x,Y1+3]]; }
+  const m = (q.y-p.y)/(q.x-p.x), A = X0-3, B = X1+3;
+  return [[A, p.y + m*(A-p.x)],[B, p.y + m*(B-p.x)]];
+}
+
+function labelFor(x,y){ return "(" + num(x) + ", " + num(y) + ")"; }
+
+function renderGraph(){
+  gLines.innerHTML = ""; gPts.innerHTML = ""; gTop.innerHTML = "";
+
+  // answer overlay (teacher)
+  if(showAns){
+    [[1,prob.e1],[2,prob.e2]].forEach(([k,e])=>{
+      const [A,B] = lineEnds(e);
+      el("line",{x1:sx(A[0]),y1:sy(A[1]),x2:sx(B[0]),y2:sy(B[1]),stroke:COL[k],"stroke-width":2,"stroke-dasharray":"7 6",opacity:.45},gLines);
+    });
+    const s = solution(prob);
+    if(s){
+      el("circle",{cx:sx(s.x),cy:sy(s.y),r:14,fill:"none",stroke:COL[3],"stroke-width":2.5,"stroke-dasharray":"4 3"},gTop);
+    }
+  }
+
+  // student lines
+  [1,2].forEach(k=>{
+    if(!drawn[k]) return;
+    const ends = studentEnds(k);
+    if(!ends) return;
+    el("line",{x1:sx(ends[0][0]),y1:sy(ends[0][1]),x2:sx(ends[1][0]),y2:sy(ends[1][1]),stroke:COL[k],"stroke-width":3,"stroke-linecap":"round"},gLines);
+  });
+
+  const showL = $("showLabels").checked;
+
+  // line 2 first (squares), then line 1 (circles) so circle sits on top
+  pts[2].forEach(p=>{
+    const g = el("g",{},gPts);
+    el("rect",{x:sx(p.x)-6,y:sy(p.y)-6,width:12,height:12,fill:COL[2],stroke:"#fff","stroke-width":1.5},g);
+    if(p.bad) badMark(g,p);
+    if(showL){ const t = el("text",{x:sx(p.x)+9,y:sy(p.y)+19,"font-size":11,"font-weight":700,fill:COL[2],"paint-order":"stroke",stroke:"#fff","stroke-width":3},g); t.textContent = labelFor(p.x,p.y); }
+  });
+  pts[1].forEach(p=>{
+    const g = el("g",{},gPts);
+    el("circle",{cx:sx(p.x),cy:sy(p.y),r:6.5,fill:COL[1],stroke:"#fff","stroke-width":1.5},g);
+    if(p.bad) badMark(g,p);
+    if(showL){ const t = el("text",{x:sx(p.x)+9,y:sy(p.y)-9,"font-size":11,"font-weight":700,fill:COL[1],"paint-order":"stroke",stroke:"#fff","stroke-width":3},g); t.textContent = labelFor(p.x,p.y); }
+  });
+  if(sol){
+    const g = el("g",{},gPts);
+    el("polygon",{points:starPoints(sx(sol.x),sy(sol.y),13,5.5),fill:COL[3],stroke:"#fff","stroke-width":1.5},g);
+    if(sol.bad) badMark(g,sol);
+    if(showL){ const t = el("text",{x:sx(sol.x)+14,y:sy(sol.y)-12,"font-size":12,"font-weight":800,fill:COL[3],"paint-order":"stroke",stroke:"#fff","stroke-width":3},g); t.textContent = labelFor(sol.x,sol.y); }
+  }
+
+  if(hover){
+    el("circle",{cx:sx(hover.x),cy:sy(hover.y),r:10,fill:"none",stroke:"#64748b","stroke-width":1.5,"stroke-dasharray":"3 3"},gTop);
+  }
+}
+function badMark(g,p){
+  el("circle",{cx:sx(p.x),cy:sy(p.y),r:13,fill:"none",stroke:"#dc2626","stroke-width":2.5,"stroke-dasharray":"4 3"},g);
+}
+
+/* ---------- interaction on the graph ---------- */
+function toGrid(e){
+  const r = svg.getBoundingClientRect();
+  if(!r.width) return null;
+  const px = (e.clientX - r.left) * W / r.width;
+  const py = (e.clientY - r.top)  * H / r.height;
+  const gx = Math.round((px - M)/U) + X0, gy = Y1 - Math.round((py - M)/U);
+  if(gx < X0 || gx > X1 || gy < Y0 || gy > Y1) return null;
+  return {x:gx, y:gy};
+}
+svg.addEventListener("pointermove", e=>{
+  const p = toGrid(e);
+  hover = p;
+  $("readout").textContent = p ? labelFor(p.x,p.y) : "–";
+  renderGraph();
+});
+svg.addEventListener("pointerleave", ()=>{ hover = null; $("readout").textContent = "–"; renderGraph(); });
+svg.addEventListener("click", e=>{
+  const p = toGrid(e);
+  if(p) place(p);
+});
+
+function place(p){
+  if(tool === 3){
+    if(sol && sol.x === p.x && sol.y === p.y) sol = null;
+    else sol = {x:p.x, y:p.y, bad:false};
+    done.plot = false; setMsg("m6","");
+  } else {
+    const arr = pts[tool];
+    const i = arr.findIndex(q => q.x === p.x && q.y === p.y);
+    if(i >= 0) arr.splice(i,1); else arr.push({x:p.x, y:p.y, bad:false});
+    arr.forEach(q => q.bad = false);
+    if(arr.length < 2) drawn[tool] = false;
+    done.points = false; done.lines = false;
+    setMsg("m2",""); setMsg("m3","");
+  }
+  renderGraph(); renderSteps();
+}
+
+/* ---------- tools ---------- */
+function setTool(t){
+  tool = t;
+  document.querySelectorAll("#tools button").forEach(b => b.classList.toggle("on", Number(b.dataset.tool) === t));
+}
+document.querySelectorAll("#tools button").forEach(b => b.addEventListener("click", ()=> setTool(Number(b.dataset.tool))));
+
+/* ---------- problem set-up ---------- */
+function loadProblem(p){
+  prob = p;
+  setRange(p.range || {x0:-10,x1:10,y0:-10,y1:10});
+  XS = p.xs || [-2,-1,0,1,2,3,4];
+  buildGraph();
+  $("ref").innerHTML = p.ref || "<b>Custom problem</b> (teacher)";
+  for(let k=1;k<=6;k++) $("tag"+k).textContent = p.tags ? p.tags[k-1] : "";
+  $("ref").style.display = "block";
+  pts = {1:[], 2:[]}; sol = null; drawn = {1:false, 2:false}; done = {};
+  $("eq1").textContent = "Line 1:  " + p.e1.t;
+  $("eq2").textContent = "Line 2:  " + p.e2.t;
+  ["sx","sy","px","py"].forEach(id => { $(id).value = ""; $(id).className = ""; });
+  ["m1","m2","m3","m4","m5","m6"].forEach(id => setMsg(id,""));
+  buildTables();
+  $("banner").className = "banner";
+  hover = null;
+  renderGraph(); renderSteps();
+}
+
+function buildTables(){
+  [[1,prob.e1],[2,prob.e2]].forEach(([k,e])=>{
+    const t = $("tbl"+k);
+    let h = `<tr><td class="lab l${k}">Line ${k}: x</td>` + XS.map(x=>`<th>${num(x)}</th>`).join("") + `</tr>`;
+    h += `<tr><td class="lab l${k}">y</td>` + XS.map(x=>`<td><input class="cell" data-line="${k}" data-x="${x}" inputmode="decimal" autocomplete="off" aria-label="y when x = ${x}, line ${k}"></td>`).join("") + `</tr>`;
+    t.innerHTML = h;
+  });
+  document.querySelectorAll("input.cell").forEach(i => i.addEventListener("input", ()=>{
+    i.className = "cell"; done.table = false; setMsg("m1",""); renderSteps();
+  }));
+}
+
+function renderSteps(){
+  const map = {st1:"table", st2:"points", st3:"lines", st4:"solution", st5:"pair", st6:"plot"};
+  let all = true;
+  for(const id in map){
+    const ok = !!done[map[id]];
+    $(id).classList.toggle("done", ok);
+    if(!ok) all = false;
+  }
+  const s = solution(prob);
+  const b = $("banner");
+  if(all && s){
+    b.textContent = "🎉 Well done! Both lines pass through " + labelFor(s.x,s.y) + " — that is the solution of the simultaneous equations.";
+    b.className = "banner show";
+  } else b.className = "banner";
+}
+
+/* ---------- STEP 1: table ---------- */
+$("chk1").addEventListener("click", ()=>{
+  let empty = 0, wrong = 0;
+  document.querySelectorAll("input.cell").forEach(i=>{
+    const e = Number(i.dataset.line) === 1 ? prob.e1 : prob.e2;
+    const v = parseNum(i.value);
+    if(isNaN(v)){ empty++; i.className = "cell"; return; }
+    if(near(v, yAt(e, Number(i.dataset.x)))) i.className = "cell ok";
+    else { i.className = "cell no"; wrong++; }
+  });
+  if(empty){ done.table = false; setMsg("m1","Fill in every box first ("+empty+" empty).",false); }
+  else if(wrong){ done.table = false; setMsg("m1","✗ "+wrong+" value"+(wrong>1?"s are":" is")+" not right (red). Try again.",false); }
+  else { done.table = true; setMsg("m1","✓ The table is correct.",true); }
+  renderSteps();
+});
+
+/* ---------- STEP 2: points ---------- */
+$("chk2").addEventListener("click", ()=>{
+  const msgs = []; let good = true;
+  [[1,prob.e1],[2,prob.e2]].forEach(([k,e])=>{
+    const a = pts[k];
+    a.forEach(p => p.bad = !onLine(e,p.x,p.y));
+    const bad = a.filter(p=>p.bad).length;
+    if(a.length < 3){ good = false; msgs.push("Line "+k+": plot at least 3 points (you have "+a.length+")."); }
+    else if(bad){ good = false; msgs.push("Line "+k+": "+bad+" point"+(bad>1?"s do":" does")+" not satisfy the equation (red dashed circle)."); }
+  });
+  done.points = good;
+  setMsg("m2", good ? "✓ All points are on the correct lines." : "✗ " + msgs.join("  "), good);
+  renderGraph(); renderSteps();
+});
+
+/* ---------- STEP 3: lines ---------- */
+function drawLine(k){
+  if(pts[k].length < 2){ setMsg("m3","Plot at least 2 points for Line "+k+" first.",false); return; }
+  drawn[k] = true; done.lines = false; setMsg("m3","");
+  renderGraph(); renderSteps();
+}
+$("draw1").addEventListener("click", ()=> drawLine(1));
+$("draw2").addEventListener("click", ()=> drawLine(2));
+$("eraseL").addEventListener("click", ()=>{ drawn = {1:false,2:false}; done.lines = false; setMsg("m3",""); renderGraph(); renderSteps(); });
+$("chk3").addEventListener("click", ()=>{
+  const msgs = []; let good = true;
+  [[1,prob.e1],[2,prob.e2]].forEach(([k,e])=>{
+    if(!drawn[k]){ good = false; msgs.push("Line "+k+" is not drawn yet."); return; }
+    const a = pts[k].slice().sort((p,q)=> p.x - q.x || p.y - q.y);
+    const p = a[0], q = a[a.length-1];
+    if(!(onLine(e,p.x,p.y) && onLine(e,q.x,q.y))){ good = false; msgs.push("Line "+k+" does not match its equation — check your points."); }
+  });
+  done.lines = good;
+  setMsg("m3", good ? "✓ Both lines are correct." : "✗ " + msgs.join("  "), good);
+  renderSteps();
+});
+
+/* ---------- STEP 4: solution x, y ---------- */
+function checkPair(idX, idY, key, msgId){
+  const s = solution(prob);
+  const x = parseNum($(idX).value), y = parseNum($(idY).value);
+  const okX = !isNaN(x) && s && near(x,s.x), okY = !isNaN(y) && s && near(y,s.y);
+  $(idX).className = isNaN(x) ? "" : (okX ? "ok" : "no");
+  $(idY).className = isNaN(y) ? "" : (okY ? "ok" : "no");
+  if(isNaN(x) || isNaN(y)){ done[key] = false; setMsg(msgId,"Fill in both boxes.",false); }
+  else if(okX && okY){ done[key] = true; setMsg(msgId,"✓ Correct!",true); }
+  else { done[key] = false; setMsg(msgId,"✗ Not yet. Look carefully at where the two lines cross.",false); }
+  renderSteps();
+}
+$("chk4").addEventListener("click", ()=> checkPair("sx","sy","solution","m4"));
+$("chk5").addEventListener("click", ()=> checkPair("px","py","pair","m5"));
+["sx","sy"].forEach(id => $(id).addEventListener("input", ()=>{ $(id).className=""; done.solution=false; setMsg("m4",""); renderSteps(); }));
+["px","py"].forEach(id => $(id).addEventListener("input", ()=>{ $(id).className=""; done.pair=false; setMsg("m5",""); renderSteps(); }));
+
+/* ---------- STEP 6: plot the ordered pair ---------- */
+$("chk6").addEventListener("click", ()=>{
+  const s = solution(prob);
+  if(!sol){ done.plot = false; setMsg("m6","Choose the ★ tool and click the point on the graph.",false); }
+  else if(s && sol.x === s.x && sol.y === s.y){ sol.bad = false; done.plot = true; setMsg("m6","✓ The ★ is exactly where the lines meet.",true); }
+  else { sol.bad = true; done.plot = false; setMsg("m6","✗ That point is not where the lines cross.",false); }
+  renderGraph(); renderSteps();
+});
+
+/* ---------- misc buttons ---------- */
+$("clearPts").addEventListener("click", ()=>{
+  pts = {1:[],2:[]}; sol = null; drawn = {1:false,2:false};
+  done.points = done.lines = done.plot = false;
+  setMsg("m2",""); setMsg("m3",""); setMsg("m6","");
+  renderGraph(); renderSteps();
+});
+$("resetAll").addEventListener("click", ()=> loadProblem(prob));
+$("showLabels").addEventListener("change", renderGraph);
+$("showAns").addEventListener("change", e=>{ showAns = e.target.checked; renderGraph(); });
+
+/* ---------- problem selector ---------- */
+const sel = $("probSel");
+P.forEach((p,i)=>{
+  const o = document.createElement("option");
+  o.value = i; o.textContent = p.label;
+  sel.appendChild(o);
+});
+sel.addEventListener("change", ()=>{
+  const v = sel.value;
+  if(v === "custom") return;
+  loadProblem(P[Number(v)]);
+});
+
+/* ---------- teacher: custom equations ---------- */
+$("useCustom").addEventListener("click", ()=>{
+  const g = id => Number($(id).value);
+  const v = {a1:g("a1"),b1:g("b1"),c1:g("c1"),a2:g("a2"),b2:g("b2"),c2:g("c2")};
+  for(const k in v){ if(!isFinite(v[k]) || $(k).value === ""){ setMsg("mT","Fill in all six numbers.",false); return; } }
+  if(v.b1 === 0 || v.b2 === 0){ setMsg("mT","b cannot be 0 (the table needs y).",false); return; }
+  const p = {
+    e1:{a:v.a1,b:v.b1,c:v.c1,t:fmtEq(v.a1,v.b1,v.c1)},
+    e2:{a:v.a2,b:v.b2,c:v.c2,t:fmtEq(v.a2,v.b2,v.c2)},
+    range:{x0:-10,x1:10,y0:-10,y1:10}, xs:[-2,-1,0,1,2,3,4], ref:"<b>Custom problem</b> (teacher)", tags:["","","","","",""]
+  };
+  const s = solution(p);
+  if(!s){ setMsg("mT","These lines are parallel (no single solution).",false); return; }
+  if(!Number.isInteger(s.x) || !Number.isInteger(s.y) || Math.abs(s.x) > 10 || Math.abs(s.y) > 10){
+    setMsg("mT","Solution is ("+s.x+", "+s.y+") — choose equations whose solution is whole numbers within ±10.",false); return;
+  }
+  let o = sel.querySelector('option[value="custom"]');
+  if(!o){ o = document.createElement("option"); o.value = "custom"; sel.appendChild(o); }
+  o.textContent = "Custom:  " + p.e1.t + "   &   " + p.e2.t;
+  sel.value = "custom";
+  loadProblem(p);
+  setMsg("mT","✓ Loaded. Solution: "+labelFor(s.x,s.y),true);
+});
+
+/* ---------- start ---------- */
+loadProblem(P[0]);
+setTool(1);
+
+/* test hooks (harmless) */
+window.__ws = {place, setTool, loadProblem, getState:()=>({pts,sol,drawn,done,prob}), solution};
+})();
+</script>
+</body>
+</html>
