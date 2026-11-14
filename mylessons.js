@@ -21,7 +21,7 @@
 .ml-ov iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff}
 .ml-fab{position:absolute;z-index:2;width:46px;height:46px;border-radius:50%;border:2px solid #fff;background:rgba(19,33,63,.82);color:#fff;font:800 20px/1 system-ui;cursor:pointer;display:grid;place-items:center;opacity:.72}
 .ml-fab:hover,.ml-fab:focus-visible{opacity:1}
-.ml-fab.x{top:10px;right:10px}.ml-fab.t{bottom:12px;right:12px}.ml-fab.f{bottom:12px;right:66px}
+.ml-fab.x{top:10px;right:10px}.ml-fab.o{top:10px;right:66px;text-decoration:none}.ml-fab.t{bottom:12px;right:12px}.ml-fab.f{bottom:12px;right:66px}
 .ml-pill{position:absolute;z-index:2;left:10px;bottom:12px;padding:6px 12px;border-radius:999px;background:rgba(19,33,63,.82);color:#fff;font:700 14px system-ui;border:2px solid #fff;opacity:.8}
 .ml-pill.warn{background:#b91c1c;opacity:1;animation:mlp 1s infinite}
 @keyframes mlp{50%{transform:scale(1.06)}}
@@ -64,22 +64,52 @@
   }
 
   /* ---------- the list of lessons ---------- */
-  window.openMyLessons = function () {
+  /* Turn a Google Drive / Slides / Docs share link into one that can open inside the site. Other web links are used as they are. */
+  function embedUrl(u) {
+    u = String(u || "").trim(); if (!/^https?:\/\//i.test(u)) u = "https://" + u;
+    let x; try { x = new URL(u); } catch { return ""; }
+    if (!/^https?:$/.test(x.protocol)) return "";
+    const m = x.pathname.match(/\/(presentation|document|spreadsheets)\/d\/([\w-]+)/), f = x.pathname.match(/\/file\/d\/([\w-]+)/), q = x.searchParams.get("id");
+    if (/docs\.google\.com$/.test(x.hostname) && m) return `https://docs.google.com/${m[1]}/d/${m[2]}/preview`;
+    if (/drive\.google\.com$/.test(x.hostname) && f) return `https://drive.google.com/file/d/${f[1]}/preview`;
+    if (/drive\.google\.com$/.test(x.hostname) && q) return `https://drive.google.com/file/d/${q}/preview`;
+    return x.href;
+  }
+  let custom = [], cmsg = "";
+  const store = () => window.__mlStore;
+  async function loadCustom() { try { custom = store() ? await store().load() : []; } catch { custom = []; cmsg = "Could not load your saved lessons."; } }
+  async function saveCustom(ok) { cmsg = "Saving…"; renderList(); try { await store().save(custom); cmsg = ok || "Saved."; } catch { cmsg = "Could not save. Check your connection."; } renderList(); }
+  function renderList() {
+    const el = $$("mlList"); if (!el) return;
+    const row = (l, mine, i) => `<div style="display:flex;gap:6px;align-items:stretch;margin:8px 0"><button type="button" class="ghost" data-ml-open="${E(l.id)}" style="flex:1;text-align:left;padding:12px 14px"><b>${E(l.title)}</b><br><small>${E(l.sub || "")}</small></button>${mine ? `<button type="button" class="ghost small" data-ml-up="${i}" aria-label="Move up">▲</button><button type="button" class="ghost small" data-ml-down="${i}" aria-label="Move down">▼</button><button type="button" class="ghost small" data-ml-del="${i}" aria-label="Remove ${E(l.title)}">Remove</button>` : ""}</div>`;
+    el.innerHTML = `<h3>My lessons</h3><p style="margin:4px 0 10px">Tap a lesson to open it full screen. Inside it you get a small class panel (students, XP) and a random picker, so you never have to leave.</p>`
+      + (LESSONS.length || custom.length ? LESSONS.map(l => row(l, false)).join("") + custom.map((l, i) => row(l, true, i)).join("") : `<p class="none">No lessons yet. Add one below.</p>`)
+      + `<h4 style="margin:16px 0 4px">Add a lesson from a link</h4><p style="margin:0 0 6px"><small>Put your slides on Google Drive or Google Slides and share them as "Anyone with the link can view". Then paste the link here.</small></p>
+      <div style="display:grid;gap:6px"><input id="mlNewTitle" maxlength="80" placeholder="Lesson name, for example 4.3 Day 1" autocomplete="off"><input id="mlNewUrl" inputmode="url" placeholder="Paste the Drive or Slides link" autocomplete="off"><div class="sbtns" style="justify-content:flex-start"><button class="primary" type="button" data-ml="add">Add lesson</button></div></div>`
+      + `<p role="status" style="min-height:1.3em;font-weight:700">${E(cmsg)}</p><div class="sbtns"><button class="ghost" type="button" data-ml="close">Close</button></div>`;
+  }
+  window.openMyLessons = async function () {
     css();
     let m = $$("mlModal");
     if (!m) {
       m = document.createElement("div"); m.className = "modal"; m.id = "mlModal"; m.hidden = true;
-      m.innerHTML = '<div class="sheet" role="dialog" aria-modal="true" aria-label="My lessons" style="width:min(640px,100%)"><div id="mlList"></div></div>';
+      m.innerHTML = '<div class="sheet" role="dialog" aria-modal="true" aria-label="My lessons" style="width:min(640px,100%);max-height:94vh;overflow:auto"><div id="mlList"></div></div>';
       document.body.appendChild(m);
-      m.addEventListener("click", e => {
+      m.addEventListener("click", async e => {
         if (e.target === m || e.target.closest("[data-ml=close]")) { m.hidden = true; return; }
-        const b = e.target.closest("[data-ml-open]"); if (b) { m.hidden = true; openLesson(LESSONS.find(x => x.id === b.dataset.mlOpen)); }
+        const b = e.target.closest("[data-ml-open]"); if (b) { const l = LESSONS.concat(custom).find(x => x.id === b.dataset.mlOpen); m.hidden = true; openLesson(l); return; }
+        if (e.target.closest("[data-ml=add]")) {
+          const title = ($$("mlNewTitle").value || "").trim(), url = embedUrl($$("mlNewUrl").value);
+          if (!title) { cmsg = "Type the lesson name."; return renderList(); }
+          if (!url) { cmsg = "That does not look like a web link."; return renderList(); }
+          custom.push({ id: "c" + Date.now().toString(36), title, sub: "From a link", url, orig: ($$("mlNewUrl").value || "").trim(), added: Date.now() }); await saveCustom("Added. Tap it to open."); return;
+        }
+        const up = e.target.closest("[data-ml-up]"), dn = e.target.closest("[data-ml-down]"), del = e.target.closest("[data-ml-del]");
+        if (up || dn) { const i = +(up || dn).dataset[up ? "mlUp" : "mlDown"], k = up ? i - 1 : i + 1; if (k < 0 || k >= custom.length) return; [custom[i], custom[k]] = [custom[k], custom[i]]; await saveCustom("Moved."); return; }
+        if (del) { const i = +del.dataset.mlDel; if (!confirm('Remove "' + custom[i].title + '" from the list? The file on Drive stays where it is.')) return; custom.splice(i, 1); await saveCustom("Removed."); }
       });
     }
-    $$("mlList").innerHTML = `<h3>My lessons</h3><p style="margin:4px 0 10px">Tap a lesson to open it full screen. Inside it you get a small class panel (students, XP, random picker) so you never have to leave.</p>`
-      + (LESSONS.length ? LESSONS.map(l => `<button type="button" class="ghost" data-ml-open="${E(l.id)}" style="display:block;width:100%;text-align:left;margin:8px 0;padding:12px 14px"><b>${E(l.title)}</b><br><small>${E(l.sub || "")}</small></button>`).join("") : `<p class="none">No lessons yet.</p>`)
-      + `<div class="sbtns"><button class="ghost" type="button" data-ml="close">Close</button></div>`;
-    m.hidden = false;
+    cmsg = ""; renderList(); m.hidden = false; await loadCustom(); renderList();
   };
 
   /* ---------- helpers on the page's own data ---------- */
@@ -105,7 +135,8 @@
     if (!l) return; css();
     close(true);
     ov = document.createElement("div"); ov.className = "ml-ov"; ov.id = "mlOv";
-    ov.innerHTML = `<iframe src="${E(l.file)}" title="${E(l.title)}" allow="fullscreen; autoplay" allowfullscreen></iframe>
+    ov.innerHTML = `<iframe src="${E(l.url || l.file)}" title="${E(l.title)}" allow="fullscreen; autoplay" allowfullscreen></iframe>
+      ${l.url ? `<a class="ml-fab o" href="${E(/^https?:/i.test(l.orig || "") ? l.orig : l.url)}" target="_blank" rel="noopener" aria-label="Open in a new tab" title="Open in a new tab">↗</a>` : ""}
       <button class="ml-fab x" type="button" data-mlx="close" aria-label="Close the lesson" title="Close the lesson">✕</button>
       <button class="ml-fab f" type="button" data-mlx="full" aria-label="Full screen" title="Full screen">⛶</button>
       <button class="ml-fab t" type="button" data-mlx="panel" aria-label="Class panel" title="Class panel">👥</button>

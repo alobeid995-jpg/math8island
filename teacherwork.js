@@ -1,7 +1,7 @@
 // Classwork for the teacher: make a worksheet, send it to classes, collect and export the answers.
 // Worksheets live in <base>/work, the answer key in <base>/workkey (students never read it),
 // and each student's submission in <base>/subs/<worksheet>_<student>.
-import { getDocs, setDoc, updateDoc, deleteDoc, getDoc, bcol, bdoc } from "./fb.js?v=1113g";
+import { getDocs, setDoc, updateDoc, deleteDoc, getDoc, bcol, bdoc } from "./fb.js?v=1113h";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -13,7 +13,7 @@ let works = [], subs = [], keys = new Map(), view = "list", cur = null, draft = 
 
 async function load() {
   const [w, s, k] = await Promise.all([getDocs(bcol("work")), getDocs(bcol("subs")), getDocs(bcol("workkey"))]);
-  works = w.docs.map(d => ({ id: d.id, ...d.data() })).filter(x => x.kind !== "material" && x.kind !== "announcement" && x.kind !== "funpark" && x.kind !== "liveopen").sort((a, b) => (b.created || 0) - (a.created || 0));
+  works = w.docs.map(d => ({ id: d.id, ...d.data() })).filter(x => x.kind !== "material" && x.kind !== "announcement" && x.kind !== "funpark" && x.kind !== "liveopen" && x.kind !== "mylessons").sort((a, b) => (b.created || 0) - (a.created || 0));
   subs = s.docs.map(d => ({ id: d.id, ...d.data() }));
   keys = new Map(k.docs.map(d => [d.id, d.data().answers || []]));
 }

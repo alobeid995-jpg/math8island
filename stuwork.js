@@ -1,8 +1,8 @@
 // "My classwork" on the student page: worksheets from the teacher, and (for the 9S boys) the lesson games.
-import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1113g";
-import { playerOf, catalog } from "./islandmap.js?v=1113g";
-import { logEv } from "./presence.js?v=1113g";
-import { LIVE_WS, isLive } from "./liveworks.js?v=1113g";
+import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1113h";
+import { playerOf, catalog } from "./islandmap.js?v=1113h";
+import { logEv } from "./presence.js?v=1113h";
+import { LIVE_WS, isLive } from "./liveworks.js?v=1113h";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -22,7 +22,7 @@ async function load() {
     const w = await getDocs(query(collection(fs, ...base, "work"), where("classes", "array-contains", me.cls)));
     const all = w.docs.map(d => ({ id: d.id, ...d.data() }));
     materials = all.filter(x => x.kind === "material" && Array.isArray(x.units)).sort((a, b) => (b.created || 0) - (a.created || 0));
-    works = all.filter(x => x.kind !== "material" && x.kind !== "announcement" && x.kind !== "funpark" && x.kind !== "liveopen").sort((a, b) => (b.created || 0) - (a.created || 0));
+    works = all.filter(x => x.kind !== "material" && x.kind !== "announcement" && x.kind !== "funpark" && x.kind !== "liveopen" && x.kind !== "mylessons").sort((a, b) => (b.created || 0) - (a.created || 0));
     { const lo = all.find(x => x.id === "liveopen" && x.kind === "liveopen"); liveOpen = (lo && lo.open) || {}; }
     const s = await getDocs(query(collection(fs, ...base, "subs"), where("sid", "==", P.sid)));
     mine = new Map(s.docs.map(d => [d.data().wid, d.data()]));

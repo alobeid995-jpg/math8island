@@ -1,21 +1,21 @@
 import { onSnapshot, changeEmail, auth, fs, firebaseConfig, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, collection, query, where, writeBatch, setBase, bcol, bdoc, signOut, whenUser, profileOf, emailFor, pinKey,
-  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1113g";
-import { db } from "./fbdb.js?v=1113g";
-import { startUsage } from "./usage.js?v=1113g";
-import { liveLesson, mountTeacherTT } from "./timetable.js?v=1113g";
-import { openWork, gradeData } from "./teacherwork.js?v=1113g";
+  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1113h";
+import { db } from "./fbdb.js?v=1113h";
+import { startUsage } from "./usage.js?v=1113h";
+import { liveLesson, mountTeacherTT } from "./timetable.js?v=1113h";
+import { openWork, gradeData } from "./teacherwork.js?v=1113h";
 import "./lessonxp.js";
-import { openProgress } from "./progress.js?v=1113g";
-import { openMaterial } from "./material.js?v=1113g";
-import { openLiveWs } from "./liveteacher.js?v=1113g";
-import { openFunpark } from "./fpteacher.js?v=1113g";
-import { openCoconut } from "./coconut.js?v=1113g";
-import { hasFeature, hideCss } from "./features.js?v=1113g";
-import { xpAllowed } from "./ownerpin.js?v=1113g";
+import { openProgress } from "./progress.js?v=1113h";
+import { openMaterial } from "./material.js?v=1113h";
+import { openLiveWs } from "./liveteacher.js?v=1113h";
+import { openFunpark } from "./fpteacher.js?v=1113h";
+import { openCoconut } from "./coconut.js?v=1113h";
+import { hasFeature, hideCss } from "./features.js?v=1113h";
+import { xpAllowed } from "./ownerpin.js?v=1113h";
 window.xpGate = n => xpAllowed(n); window.wkGradeData = gradeData;
-import { initChat } from "./chat.js?v=1113g";
-import { openLive } from "./live.js?v=1113g";
-import { openInbox } from "./inbox.js?v=1113g";
+import { initChat } from "./chat.js?v=1113h";
+import { openLive } from "./live.js?v=1113h";
+import { openInbox } from "./inbox.js?v=1113h";
 
 const $ = id => document.getElementById(id);
 const esc2 = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -122,6 +122,11 @@ $("workBtn").onclick = () => openWork();
 { const fb = document.createElement("button"); fb.className = "ghost small"; fb.id = "funBtn"; fb.type = "button"; fb.textContent = "Fun Park"; fb.onclick = () => openFunpark(); $("outBtn").before(fb); }
 { const cb = document.createElement("button"); cb.className = "ghost small"; cb.id = "ccBtn"; cb.type = "button"; cb.textContent = "Coconut Crack"; cb.onclick = () => openCoconut(); $("outBtn").before(cb); }
 { const mb = document.createElement("button"); mb.className = "ghost small"; mb.id = "matBtn"; mb.type = "button"; mb.textContent = "My material"; mb.onclick = () => openMaterial(); $("outBtn").before(mb); }
+/* My lessons: lessons added from a Google Drive / Slides link are saved in the teacher's own folder (work/mylessons) */
+window.__mlStore = {
+  load: async () => { const sn = await getDoc(bdoc("work", "mylessons")); return sn.exists() && Array.isArray(sn.data().items) ? sn.data().items : []; },
+  save: items => setDoc(bdoc("work", "mylessons"), { kind: "mylessons", items, updated: Date.now() }),
+};
 /* ---------- features: what the owner has switched on for this teacher (shop/features) ---------- */
 {
   const st = document.createElement("style"); st.id = "featCss"; document.head.appendChild(st);
