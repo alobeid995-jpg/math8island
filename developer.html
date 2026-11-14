@@ -79,9 +79,10 @@ td.n{text-align:right;font-variant-numeric:tabular-nums}th.n{text-align:right}
 </div>
 <div class="drawer" id="dr"><div class="bk" data-close="1"></div><div class="pn" id="pn"></div></div>
 <script type="module">
-import { fs, doc, getDoc, setDoc, updateDoc, collection, getDocs, onSnapshot, query, where, whenUser, profileOf } from "./fb.js?v=1113f";
-import { startUsage } from "./usage.js?v=1113f";
-import { loadPin, hasPin, askPin, savePin, checkPin } from "./ownerpin.js?v=1113f";
+import { fs, doc, getDoc, setDoc, updateDoc, collection, getDocs, onSnapshot, query, where, whenUser, profileOf } from "./fb.js?v=1113g";
+import { CATS, FEATURES, byKey, hasFeature } from "./features.js?v=1113g";
+import { startUsage } from "./usage.js?v=1113g";
+import { loadPin, hasPin, askPin, savePin, checkPin } from "./ownerpin.js?v=1113g";
 const $ = id => document.getElementById(id), out = $("out");
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const ONLINE = 6 * 60 * 1000, DAY = 24 * 60 * 60 * 1000;
@@ -284,30 +285,56 @@ function paintTeachers() {
     return `<tr><td class="nm">${esc(g.title)}<small>${esc([...new Set(mine.map(s => s.cls))].sort().join(", ") || "no classes yet")}</small></td><td>${g.me ? '<span class="pill day">Owner</span>' : g.role === "paused" ? '<span class="pill nolog">Paused</span>' : '<span class="pill on">Active</span>'}</td><td class="n">${g.n}</td><td class="n">${g.logins}</td><td class="n">${on}</td><td class="n">${day}</td><td style="text-align:right">${act}</td></tr>`; }).join("")}</tbody></table></div></div>` + featCard();
   const fc = $("featCard"); if (fc) fc.onclick = featClick;
 }
-/* ---------- features the owner gives to teachers (shop/features: { <key>: { all, uids[] } }) ---------- */
-const FEATS = [["funpark", "Fun Park", "games students play after their work"], ["coconut", "Coconut Crack", "the team question game"]];
-let feat = {};
-async function loadFeat() { feat = {}; let d = {}; try { const x = await getDoc(doc(fs, "shop", "features")); d = x.exists() ? x.data() : {}; } catch {} FEATS.forEach(([k]) => { const f = d[k]; feat[k] = { all: !!(f && f.all), uids: (f && Array.isArray(f.uids)) ? f.uids : [] }; }); }
+/* ---------- features the owner gives to teachers (shop/features: { <key>: { all, uids[], deny[] } }) ---------- */
+let feat = {}, featMode = "feature", featTeacher = "", featOpen = new Set(["xp"]);
+async function loadFeat() { feat = {}; try { const x = await getDoc(doc(fs, "shop", "features")); feat = x.exists() ? x.data() : {}; } catch {} }
+const hasF = (key, uid) => hasFeature(feat, key, uid, false);
 function featCard() {
   const others = teachers.filter(g => !g.me);
-  return `<div class="card" id="featCard" style="margin-top:14px"><h3 style="margin:0 0 4px">Features for teachers</h3>
-    <p class="note">You always have every feature. Choose who else gets each one. A teacher who loses a feature stops seeing it.</p>` + FEATS.map(([k, label, what]) => { const f = feat[k];
-    return `<div style="margin:12px 0;padding-top:10px;border-top:1px solid #dde"><b>${esc(label)}</b> <small>(${esc(what)})</small>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0">
-      <button class="btn${f.all ? "" : " warn"}" type="button" data-fk="${k}" data-fm="all">${f.all ? "✓ " : ""}All teachers</button>
-      <button class="btn" type="button" data-fk="${k}" data-fm="none">Only me (remove from everyone)</button></div>
-    ${others.length ? `<div style="display:grid;gap:6px;margin:6px 0">${others.map(g => `<label style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-fk="${k}" data-fu="${esc(g.uid)}"${f.all || f.uids.includes(g.uid) ? " checked" : ""}${f.all ? " disabled" : ""}> ${esc(g.title)}</label>`).join("")}</div>` : '<p class="note">No other teachers yet.</p>'}
-    <p class="note">${f.all ? "Every teacher has it." : f.uids.length ? f.uids.length + " selected teacher(s) have it." : "Only you have it."}</p></div>`; }).join("") + `</div>`;
+  if (!featTeacher || !others.some(g => g.uid === featTeacher)) featTeacher = others[0] ? others[0].uid : "";
+  const head = `<h3 style="margin:0 0 4px">Features for teachers</h3><p class="note">You always have every feature. Switch each one on or off for each teacher. A teacher who loses a feature stops seeing it right away.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0"><button class="btn${featMode === "feature" ? " warn" : ""}" type="button" data-fv="feature">By feature</button><button class="btn${featMode === "teacher" ? " warn" : ""}" type="button" data-fv="teacher">By teacher</button>
+    ${featMode === "teacher" && others.length ? `<select id="featTeacher" aria-label="Teacher" style="padding:6px;border-radius:8px">${others.map(g => `<option value="${esc(g.uid)}"${g.uid === featTeacher ? " selected" : ""}>${esc(g.title)}</option>`).join("")}</select>` : ""}</div>`;
+  const cat = (c, body, n) => `<details data-fc="${c[0]}"${featOpen.has(c[0]) ? " open" : ""} style="margin:8px 0;border:1px solid #dde;border-radius:10px;padding:6px 12px"><summary style="cursor:pointer;font-weight:800;padding:6px 0">${esc(c[1])} <small style="font-weight:400">· ${esc(c[2])}${n}</small></summary>${body}</details>`;
+  let body;
+  if (!others.length) body = '<p class="note">No other teachers yet.</p>';
+  else if (featMode === "teacher") {
+    body = CATS.map(c => { const fs2 = FEATURES.filter(f => f.cat === c[0]), on = fs2.filter(f => hasF(f.key, featTeacher)).length;
+      return cat(c, `<div style="display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 8px"><button class="btn" type="button" data-fcat="${c[0]}" data-fall="1">Turn all on</button><button class="btn" type="button" data-fcat="${c[0]}" data-fall="0">Turn all off</button></div>`
+        + fs2.map(f => `<label style="display:flex;gap:10px;align-items:flex-start;margin:6px 0"><input type="checkbox" data-fk="${f.key}" data-ft="${esc(featTeacher)}"${hasF(f.key, featTeacher) ? " checked" : ""} style="margin-top:3px"><span><b>${esc(f.label)}</b>${f.what ? `<br><small>${esc(f.what)}</small>` : ""}</span></label>`).join(""), ` · ${on} of ${fs2.length} on`); }).join("");
+  } else {
+    body = CATS.map(c => cat(c, FEATURES.filter(f => f.cat === c[0]).map(f => { const e = feat[f.key] || {}, all = e.all === true || (!feat[f.key] && f.def);
+      return `<div style="margin:10px 0;padding-top:8px;border-top:1px solid #eef"><b>${esc(f.label)}</b>${f.what ? ` <small>(${esc(f.what)})</small>` : ""}
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0"><button class="btn${all ? "" : " warn"}" type="button" data-fk="${f.key}" data-fm="all">${all ? "✓ " : ""}All teachers</button><button class="btn" type="button" data-fk="${f.key}" data-fm="none">Only me</button></div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px 16px">${others.map(g => `<label style="display:flex;gap:6px;align-items:center"><input type="checkbox" data-fk="${f.key}" data-fu="${esc(g.uid)}"${hasF(f.key, g.uid) ? " checked" : ""}> ${esc(g.title)}</label>`).join("")}</div></div>`; }).join(""), "")).join("");
+  }
+  return `<div class="card" id="featCard" style="margin-top:14px">${head}${body}</div>`;
+}
+async function saveFeat(keys) {
+  const out = {}; keys.forEach(k => { const e = feat[k] || {}; out[k] = { all: e.all === true, uids: e.uids || [], deny: e.deny || [] }; });
+  try { await setDoc(doc(fs, "shop", "features"), out, { merge: true }); } catch { alert("Could not save. Check your connection."); }
+}
+function setFor(key, uid, on) {   // give or remove one feature for one teacher
+  const f = byKey[key], e = feat[key] ? { ...feat[key] } : { all: !!f.def, uids: [], deny: [] };
+  e.uids = [...(e.uids || [])]; e.deny = [...(e.deny || [])];
+  if (on) { e.deny = e.deny.filter(x => x !== uid); if (!e.all && !e.uids.includes(uid)) e.uids.push(uid); }
+  else { e.uids = e.uids.filter(x => x !== uid); if (e.all && !e.deny.includes(uid)) e.deny.push(uid); }
+  feat[key] = e;
 }
 async function featClick(e) {
-  const m = e.target.closest("[data-fm]"), u = e.target.closest("[data-fu]"); const t = m || u; if (!t) return;
-  const f = feat[t.dataset.fk]; if (!f) return;
-  if (m) { if (m.dataset.fm === "all") f.all = !f.all; else { f.all = false; f.uids = []; } }
-  if (u) { const id = u.dataset.fu; f.uids = u.checked ? [...new Set([...f.uids, id])] : f.uids.filter(x => x !== id); }
-  const out = {}; FEATS.forEach(([k]) => { out[k] = { all: feat[k].all, uids: feat[k].uids }; });
-  try { await setDoc(doc(fs, "shop", "features"), out, { merge: true }); } catch { alert("Could not save. Check your connection."); }
-  paintTeachers();
+  const v = e.target.closest("[data-fv]");
+  if (v) { featMode = v.dataset.fv; paintTeachers(); return; }
+  const ca = e.target.closest("[data-fall]");
+  if (ca) { const keys = FEATURES.filter(f => f.cat === ca.dataset.fcat).map(f => f.key); keys.forEach(k => setFor(k, featTeacher, ca.dataset.fall === "1")); await saveFeat(keys); paintTeachers(); return; }
+  const m = e.target.closest("[data-fm]"), u = e.target.closest("[data-fu]"), t = e.target.closest("[data-ft]"), k = (m || u || t || {}).dataset && (m || u || t).dataset.fk; if (!k) return;
+  const f = byKey[k]; if (!f) return;
+  if (m) { const cur = feat[k] ? { ...feat[k] } : { all: !!f.def, uids: [], deny: [] }; if (m.dataset.fm === "all") { cur.all = !cur.all; cur.deny = []; } else { cur.all = false; cur.uids = []; cur.deny = []; } feat[k] = cur; }
+  if (u) setFor(k, u.dataset.fu, u.checked);
+  if (t) setFor(k, t.dataset.ft, t.checked);
+  await saveFeat([k]); paintTeachers();
 }
+document.addEventListener("toggle", e => { const d = e.target; if (d && d.dataset && d.dataset.fc) { if (d.open) featOpen.add(d.dataset.fc); else featOpen.delete(d.dataset.fc); } }, true);
+document.addEventListener("change", e => { if (e.target && e.target.id === "featTeacher") { featTeacher = e.target.value; paintTeachers(); } });
 
 async function gameTitles() {
   if (titles) return titles; titles = {};

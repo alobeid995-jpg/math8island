@@ -7,6 +7,8 @@
   const LESSONS = [
     { id: "l42d1", title: "Lesson 4.2: Solving simultaneous equations graphically", sub: "Day 1", file: "lesson42d1.html" },
   ];
+  window.__view = () => view;
+  window.__setView = v => { view = v; try { localStorage.setItem("xp_view", v); } catch {} render(); };
   const $$ = id => document.getElementById(id);
   const E = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   let ov = null, panel = null, sel = "", openSid = "", note = "", pickBusy = false, current = null, timer = 0, lastAuto = "", rc = "", fw = null, fwOpen = false, fwStage = null;

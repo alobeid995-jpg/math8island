@@ -1,20 +1,21 @@
 import { onSnapshot, changeEmail, auth, fs, firebaseConfig, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, collection, query, where, writeBatch, setBase, bcol, bdoc, signOut, whenUser, profileOf, emailFor, pinKey,
-  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1113f";
-import { db } from "./fbdb.js?v=1113f";
-import { startUsage } from "./usage.js?v=1113f";
-import { liveLesson, mountTeacherTT } from "./timetable.js?v=1113f";
-import { openWork, gradeData } from "./teacherwork.js?v=1113f";
+  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1113g";
+import { db } from "./fbdb.js?v=1113g";
+import { startUsage } from "./usage.js?v=1113g";
+import { liveLesson, mountTeacherTT } from "./timetable.js?v=1113g";
+import { openWork, gradeData } from "./teacherwork.js?v=1113g";
 import "./lessonxp.js";
-import { openProgress } from "./progress.js?v=1113f";
-import { openMaterial } from "./material.js?v=1113f";
-import { openLiveWs } from "./liveteacher.js?v=1113f";
-import { hasFunpark, openFunpark } from "./fpteacher.js?v=1113f";
-import { openCoconut } from "./coconut.js?v=1113f";
-import { xpAllowed } from "./ownerpin.js?v=1113f";
+import { openProgress } from "./progress.js?v=1113g";
+import { openMaterial } from "./material.js?v=1113g";
+import { openLiveWs } from "./liveteacher.js?v=1113g";
+import { openFunpark } from "./fpteacher.js?v=1113g";
+import { openCoconut } from "./coconut.js?v=1113g";
+import { hasFeature, hideCss } from "./features.js?v=1113g";
+import { xpAllowed } from "./ownerpin.js?v=1113g";
 window.xpGate = n => xpAllowed(n); window.wkGradeData = gradeData;
-import { initChat } from "./chat.js?v=1113f";
-import { openLive } from "./live.js?v=1113f";
-import { openInbox } from "./inbox.js?v=1113f";
+import { initChat } from "./chat.js?v=1113g";
+import { openLive } from "./live.js?v=1113g";
+import { openInbox } from "./inbox.js?v=1113g";
 
 const $ = id => document.getElementById(id);
 const esc2 = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -116,11 +117,27 @@ if (ADMIN) { // the button is only created for the owner; other teachers' pages 
 $("workBtn").onclick = () => openWork();
 { const ib2 = document.createElement("button"); ib2.className = "ghost small"; ib2.id = "inboxBtn"; ib2.type = "button"; ib2.textContent = "Announcements"; ib2.onclick = () => openInbox(); $("outBtn").before(ib2); }
 { const lb = document.createElement("button"); lb.className = "ghost small"; lb.id = "liveBtn"; lb.type = "button"; lb.textContent = "Live quiz"; lb.onclick = () => openLive(); $("outBtn").before(lb); }
-{ const ml = document.createElement("button"); ml.className = "ghost small"; ml.id = "mlBtn"; ml.type = "button"; ml.textContent = "My lessons"; ml.onclick = () => window.openMyLessons && window.openMyLessons(); if (ADMIN) $("outBtn").before(ml); }
-{ const lw = document.createElement("button"); lw.className = "ghost small"; lw.id = "lwBtn"; lw.type = "button"; lw.textContent = "Live worksheets"; lw.onclick = () => openLiveWs(); if (ADMIN) $("outBtn").before(lw); }
-{ const fb = document.createElement("button"); fb.className = "ghost small"; fb.id = "funBtn"; fb.type = "button"; fb.textContent = "Fun Park"; fb.style.display = "none"; fb.onclick = () => openFunpark(); $("outBtn").before(fb); hasFunpark(ADMIN, u.uid).then(ok => { if (ok) fb.style.display = ""; }).catch(() => {}); }
-{ const cb = document.createElement("button"); cb.className = "ghost small"; cb.id = "ccBtn"; cb.type = "button"; cb.textContent = "Coconut Crack"; cb.style.display = "none"; cb.onclick = () => openCoconut(); $("outBtn").before(cb); hasFunpark(ADMIN, u.uid, "coconut").then(ok => { if (ok) cb.style.display = ""; }).catch(() => {}); }
+{ const ml = document.createElement("button"); ml.className = "ghost small"; ml.id = "mlBtn"; ml.type = "button"; ml.textContent = "My lessons"; ml.onclick = () => window.openMyLessons && window.openMyLessons(); $("outBtn").before(ml); }
+{ const lw = document.createElement("button"); lw.className = "ghost small"; lw.id = "lwBtn"; lw.type = "button"; lw.textContent = "Live worksheets"; lw.onclick = () => openLiveWs(); $("outBtn").before(lw); }
+{ const fb = document.createElement("button"); fb.className = "ghost small"; fb.id = "funBtn"; fb.type = "button"; fb.textContent = "Fun Park"; fb.onclick = () => openFunpark(); $("outBtn").before(fb); }
+{ const cb = document.createElement("button"); cb.className = "ghost small"; cb.id = "ccBtn"; cb.type = "button"; cb.textContent = "Coconut Crack"; cb.onclick = () => openCoconut(); $("outBtn").before(cb); }
 { const mb = document.createElement("button"); mb.className = "ghost small"; mb.id = "matBtn"; mb.type = "button"; mb.textContent = "My material"; mb.onclick = () => openMaterial(); $("outBtn").before(mb); }
+/* ---------- features: what the owner has switched on for this teacher (shop/features) ---------- */
+{
+  const st = document.createElement("style"); st.id = "featCss"; document.head.appendChild(st);
+  let fd = {};
+  const apply = () => {
+    window.__featOn = k => hasFeature(fd, k, u.uid, ADMIN);
+    st.textContent = hideCss(fd, u.uid, ADMIN);
+    try {   // if the teacher was looking at something that is now off, go back to Students
+      const off = { cup: "cup", shop: "shop", board: "dash", hub: "hub" };
+      if (off[window.__view && window.__view()] && !window.__featOn(off[window.__view()])) { window.__setView && window.__setView("students"); }
+      if (window.__view && window.__view() === "hub") window.render();
+    } catch {}
+  };
+  apply();   // right away: features that are off by default stay hidden while the list loads
+  if (!ADMIN) onSnapshot(doc(fs, "shop", "features"), sn => { fd = sn.exists() ? sn.data() : {}; apply(); }, () => {});
+}
 initChat("teacher", { uid: u.uid, ...p }, null).catch(() => {});
 $("outBtn").onclick = async () => { await signOut(auth); location.href = "index.html"; };
 

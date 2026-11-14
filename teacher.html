@@ -1286,7 +1286,7 @@ header.book .geo { max-height: 190px; }
 /* --- Math Island logo mark --- */
 header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !important; color: transparent !important; font-size: 0 !important; border: 0 !important; box-shadow: none !important; border-radius: 22% !important; }
 
-</style><link rel="stylesheet" href="island.css?v=1113f"><style>
+</style><link rel="stylesheet" href="island.css?v=1113g"><style>
 .cls-panel{margin:12px 0;padding:14px;border:2px solid var(--edge);border-radius:12px;background:var(--card);display:grid;gap:10px}
 .cls-panel h4{margin:0}.cls-panel p{margin:0;font-size:14px}
 .cls-panel label{display:grid;gap:4px;font-size:13px;font-weight:600}
@@ -1457,7 +1457,7 @@ header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !import
 window.__ready = new Promise(r => { window.__resolveClaude = r; });
 window.claude = { use: async n => (await window.__ready).use(n) };
 </script>
-<script src="hats.js?v=1113f"></script>
+<script src="hats.js?v=1113g"></script>
 <script>
 const POSITIVE = [
   { title: "Active Participation", xp: 10 },
@@ -3198,7 +3198,9 @@ function renderTools() {
 }
 function renderHub() {
   const el = $("hubView");
-  const tabs = [["insights", "Insights"], ["att", "Attendance"], ["hw", "Homework"], ["marks", "Marks"], ["grades", "Grades /10"], ["books", "Notebooks"], ["seats", "Seat plan"]];
+  const on = window.__featOn || (() => true);
+  const tabs = [["insights", "Insights"], ["att", "Attendance"], ["hw", "Homework"], ["marks", "Marks"], ["grades", "Grades /10"], ["books", "Notebooks"], ["seats", "Seat plan"]].filter(([k]) => on("hub_" + k));
+  if (!tabs.some(([k]) => k === hubTab)) hubTab = tabs.length ? tabs[0][0] : "none";
   const chips = hubTab === "insights" ? "" : `<div class="shop-tabs">${CLASSES.map(c => `<button class="shop-tab" data-act="hubCls" data-cls="${c}" aria-pressed="${c === cls}">${c} <small>${students.filter(s => s.cls === c).length}</small></button>`).join("")}</div>`;
   let body = "";
   if (hubTab === "insights") body = hubInsights();
@@ -3208,7 +3210,7 @@ function renderHub() {
   else if (hubTab === "grades") body = hubGrades();
   else if (hubTab === "books") body = hubBooks();
   else if (hubTab === "seats") body = hubSeats();
-  else body = hubInsights();
+  else body = tabs.length ? hubInsights() : "<p class=\"none\">Nothing here is switched on for you.</p>";
   el.innerHTML = `<div class="shop-intro"><h2>Teacher Hub</h2><p>Your classroom tools in one place: who needs attention, attendance, homework, test marks, a lesson timer and group maker.</p></div>
     <div class="shop-tabs hub-tabs">${tabs.map(([k, l]) => `<button class="shop-tab" data-act="hubTab" data-tab="${k}" aria-pressed="${k === hubTab}">${l}</button>`).join("")}</div>${chips}<div class="hub-body">${body}</div>`;
 }
@@ -3312,7 +3314,7 @@ function hubGrades() {
 
 function grLoadLib() {
   if (window.ExcelJS) return Promise.resolve();
-  return new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1113f"; sc.onload = res; sc.onerror = () => rej(new Error("lib")); document.head.appendChild(sc); });
+  return new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1113g"; sc.onload = res; sc.onerror = () => rej(new Error("lib")); document.head.appendChild(sc); });
 }
 async function grXlsx(btn) {
   const keep = cls;
@@ -3435,7 +3437,7 @@ function hubMarks() {
 }
 function resetCard() {
   const m = curMonth(), done = xpResets.get(m), tot = students.reduce((a, s) => a + (s.xp || 0), 0);
-  return `<section class="card"><h3>Monthly XP reset</h3>
+  return `<section class="card" data-feat="xp_reset"><h3>Monthly XP reset</h3>
     <p class="rep-note">XP is never reset automatically. When you decide a new month starts, reset every student in every class here. Badges, avatars and bought items stay; XP goes back to 0, but each student keeps what is in his shop wallet, and each student's report keeps what the XP was.</p>
     ${done ? `<p class="rep-note">Last reset this month: ${esc(fmtDT(done.at))} (${done.n} students).</p>` : ""}
     ${confirmReset ? `<div class="mo-pend"><b>Reset XP to 0 for all ${students.length} students in ${CLASSES.length} classes?</b><span class="rep-note">This removes ${tot} XP in total. It cannot be undone from here.</span><div class="sbtns"><button class="minus" data-act="xpResetYes">Yes, reset everyone</button><button class="ghost" data-act="xpResetNo">Cancel</button></div></div>`
@@ -3444,11 +3446,11 @@ function resetCard() {
 }
 function hubTools() {
   const presets = [[60, "1 min"], [180, "3 min"], [300, "5 min"], [600, "10 min"], [900, "15 min"]];
-  return `<section class="card"><h3>Manage</h3><p class="rep-note">Classwork, student logins, importing old data and more.</p><div class="sbtns" id="hubMgmt" style="justify-content:flex-start"></div></section>` + resetCard() + `<section class="card tmr"><h3>Lesson timer</h3><div id="tmDisp" class="tmdisp ${tm.left <= 10 ? "low" : ""}">${fmtT(tm.left)}</div>
+  return `<section class="card"><h3>Manage</h3><p class="rep-note">Classwork, student logins, importing old data and more.</p><div class="sbtns" id="hubMgmt" style="justify-content:flex-start"></div></section>` + resetCard() + `<section class="card tmr" data-feat="timer"><h3>Lesson timer</h3><div id="tmDisp" class="tmdisp ${tm.left <= 10 ? "low" : ""}">${fmtT(tm.left)}</div>
     <div class="sbtns">${presets.map(([s, l]) => `<button class="shop-tab" data-act="tmSet" data-s="${s}" aria-pressed="${tm.total === s}">${l}</button>`).join("")}<label class="mx"><input id="tmMin" type="number" inputmode="decimal" min="0.5" step="0.5" placeholder="min" style="width:70px"><button class="ghost small" data-act="tmCustom">Set</button></label></div>
     <div class="sbtns"><button class="primary" data-act="tmGo">${tm.run ? "Pause" : tm.left < tm.total && tm.left > 0 ? "Resume" : "Start"}</button><button class="ghost" data-act="tmReset">Reset</button></div>
     <p class="rep-note">Keeps running if you switch tabs. Plays a sound and says "Time is up" at zero (follows the sound setting).</p></section>
-    <section class="card"><h3>Group maker · ${cls}</h3><div class="hub-bar"><label class="mx">Students per group <select id="grpSize">${[2, 3, 4, 5, 6].map(n => `<option ${((grp && grp.size) || 4) === n ? "selected" : ""}>${n}</option>`).join("")}</select></label><button class="primary" data-act="grpMake">${grp && grp.cls === cls ? "Shuffle again" : "Make groups"}</button>${grp && grp.cls === cls ? `<button class="ghost small" data-act="grpCopy">Copy</button>` : ""}</div>
+    <section class="card" data-feat="groups"><h3>Group maker · ${cls}</h3><div class="hub-bar"><label class="mx">Students per group <select id="grpSize">${[2, 3, 4, 5, 6].map(n => `<option ${((grp && grp.size) || 4) === n ? "selected" : ""}>${n}</option>`).join("")}</select></label><button class="primary" data-act="grpMake">${grp && grp.cls === cls ? "Shuffle again" : "Make groups"}</button>${grp && grp.cls === cls ? `<button class="ghost small" data-act="grpCopy">Copy</button>` : ""}</div>
     <p class="rep-note">Students marked absent today in Attendance are left out.</p>
     ${grp && grp.cls === cls ? `<div class="grp-grid">${grp.groups.map((g, i) => `<div class="grp"><b>Group ${i + 1}</b>${g.map(id => { const st = students.find(s => s.id === id); return st ? `<span>${avatarHTML(st, "xs")}${esc(shortName(st.name))}</span>` : ""; }).join("")}</div>`).join("")}</div>${grp.skipped ? `<p class="rep-note">${grp.skipped} absent student(s) left out.</p>` : ""}` : ""}</section>`;
 }
@@ -4023,7 +4025,7 @@ function renderClass(students) {
               <small>${nx ? `${nx.at - n} more for ${nx.name}` : "Legendary reached"}</small></div></div>`;
         }).join("")}
       </div>
-      <div><div class="bar"><i style="width:${pct}%"></i></div>
+      <div data-feat="stu_levels"><div class="bar"><i style="width:${pct}%"></i></div>
         <div class="barlbl"><span>L${lv}</span><span>${st.xp < 0 ? "below zero" : (base + LEVEL_XP - st.xp) + " XP to L" + (lv + 1)}</span></div></div>
       ${readOnly ? "" : `<div class="cxp"><label for="cx-${st.id}">Custom XP</label>
         <div class="cxr"><input id="cx-${st.id}" type="number" inputmode="numeric" step="1" placeholder="e.g. 35 or -10" aria-label="XP amount"><input id="cr-${st.id}" type="text" maxlength="60" placeholder="Reason (optional)" aria-label="Reason"><button class="plus" data-act="customXp" data-id="${st.id}">Give XP</button></div>
@@ -4480,8 +4482,8 @@ document.getElementById("expBtn")?.addEventListener("click", async () => {
     <div class="acts noprint"><button class="ghost" id="lgPrint" type="button">Print this list</button><button class="ghost" id="lgClose" type="button">Close</button></div>
   </div>
 </div>
-<script type="module" src="teacher.js?v=1113f"></script>
-<script src="mylessons.js?v=1113f"></script>
+<script type="module" src="teacher.js?v=1113g"></script>
+<script src="mylessons.js?v=1113g"></script>
 
 <script>
 /* Post a certificate straight to Google Classroom.
