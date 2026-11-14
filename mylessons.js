@@ -9,7 +9,7 @@
   ];
   const $$ = id => document.getElementById(id);
   const E = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  let ov = null, panel = null, sel = "", tab = "stu", openSid = "", note = "", pickBusy = false, picked = null, current = null, timer = 0, lastAuto = "";
+  let ov = null, panel = null, sel = "", openSid = "", note = "", pickBusy = false, current = null, timer = 0, lastAuto = "", rc = "", fw = null, fwOpen = false, fwStage = null;
 
   function css() {
     if ($$("mlCss")) return;
@@ -41,6 +41,22 @@
 .ml-note{min-height:1.3em;padding:4px 10px;font-weight:700;font-size:13px}
 .ml-big{font:800 34px/1.15 system-ui;text-align:center;margin:18px 0 8px;word-break:break-word}
 .ml-q{font-size:60px;text-align:center;opacity:.35;margin:14px 0 0}
+.ml-wheel{position:absolute;z-index:4;left:10px;bottom:58px;width:58px;height:58px;border-radius:50%;border:3px solid #fff;background:#13213f;padding:0;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.45);display:grid;place-items:center;touch-action:none}
+.ml-wheel svg{width:46px;height:46px;transition:transform .8s cubic-bezier(.2,.8,.2,1)}
+.ml-wheel:hover svg,.ml-wheel.spin svg{transform:rotate(300deg)}
+.ml-wheel[hidden]{display:none}
+.ml-fw{position:absolute;z-index:5;width:min(310px,calc(100% - 20px));background:var(--card,#fff);color:var(--ink,#17233b);border:3px solid var(--ink,#17233b);border-radius:18px;box-shadow:0 10px 34px rgba(0,0,0,.5);font:15px system-ui,sans-serif;display:flex;flex-direction:column;max-height:calc(100% - 20px);overflow:hidden}
+.ml-fw[hidden]{display:none}
+.ml-fwh{display:flex;align-items:center;gap:6px;padding:7px 8px 7px 12px;background:var(--accent-soft,#e6ebff);cursor:grab;touch-action:none;user-select:none;border-bottom:2px solid var(--line,#d7deea)}
+.ml-fwh b{flex:1;font-size:15px}
+.ml-fwh select{font:inherit;font-weight:700;border:2px solid var(--ink,#17233b);border-radius:999px;padding:3px 6px;background:var(--card,#fff);color:inherit}
+.ml-fwb{padding:8px 12px 12px;display:grid;gap:8px;justify-items:center;text-align:center;overflow:auto}
+.ml-fw .pk-stage{min-height:0;padding:4px 0 0;gap:6px;overflow:visible}
+.ml-fw .pk-stage .av.xxl{width:120px;height:120px}
+.ml-fw .pk-stage .pk-name{font-size:24px}
+.ml-fw .pk-stage .pk-q{width:96px;font-size:48px}
+.ml-fw .pk-quick{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.ml-fw .pk-quick button{font-size:13px;padding:6px 10px}
 @media (prefers-reduced-motion:reduce){.ml-pill.warn{animation:none}}`;
     document.head.appendChild(s);
   }
@@ -94,8 +110,8 @@
       <div class="ml-pill" id="mlPill" hidden></div>
       <aside class="ml-p" id="mlPanel" hidden aria-label="Class panel"></aside>`;
     document.body.appendChild(ov); document.body.classList.add("wk-noscroll");
-    panel = ov.querySelector("#mlPanel"); sel = auto() || (typeof cls !== "undefined" ? cls : classes()[0]) || ""; lastAuto = auto() || ""; tab = "stu"; openSid = ""; note = ""; current = null; picked = null;
-    ov.addEventListener("click", onClick); ov.addEventListener("input", () => {});
+    panel = ov.querySelector("#mlPanel"); sel = auto() || (typeof cls !== "undefined" ? cls : classes()[0]) || ""; lastAuto = auto() || ""; openSid = ""; note = ""; current = null; rc = sel; fNote = ""; fwOpen = false;
+    setupFloat(); ov.addEventListener("click", onClick); ov.addEventListener("input", () => {});
     try { (ov.requestFullscreen || ov.webkitRequestFullscreen || (() => Promise.reject())).call(ov).catch(() => {}); } catch {}
     clearInterval(timer); timer = setInterval(tick, 5000); tick();
   }
@@ -114,7 +130,7 @@
       else pill.hidden = true;
     }
     const a = r && r.cls || "";
-    if (a && a !== lastAuto) { lastAuto = a; sel = a; current = null; picked = null; paint(); }   // the next lesson started: switch to its class
+    if (a && a !== lastAuto) { lastAuto = a; sel = a; rc = a; current = null; paint(); paintFloat(); }   // the next lesson started: switch to its class
   }
   function onClick(e) {
     const x = e.target.closest("[data-mlx]");
@@ -128,7 +144,6 @@
     const b = e.target.closest("[data-a]"); if (!b || !panel || !panel.contains(b)) return;
     const a = b.dataset.a;
     if (a === "cls") { sel = b.dataset.c; current = null; openSid = ""; note = ""; paint(); }
-    else if (a === "tab") { tab = b.dataset.t; note = ""; paint(); }
     else if (a === "row") { openSid = openSid === b.dataset.id ? "" : b.dataset.id; note = ""; paint(); }
     else if (a === "give") { const st = allStudents().find(s => s.id === b.dataset.id); if (st) award(st, b.dataset.title, +b.dataset.xp); }
     else if (a === "custom") {
@@ -138,9 +153,6 @@
       award(st, n > 0 ? "Bonus XP" : "XP adjustment", n);
     }
     else if (a === "undo") { const st = allStudents().find(s => s.id === b.dataset.id); if (st) undoLast(st); }
-    else if (a === "spin") spin();
-    else if (a === "again") { const set = getPicked(sel); set.clear(); setPicked(sel, set); note = "Everyone is back in the hat."; paint(); }
-    else if (a === "absent") { if (current) { const set = getPicked(sel); set.add(current.id); setPicked(sel, set); } spin(); }
   }
   function awardsHTML(st) {
     return `<div class="ml-g">${POS().map(p => `<button class="ml-b g s" type="button" data-a="give" data-id="${E(st.id)}" data-title="${E(p.title)}" data-xp="${p.xp}">${E(short(p.title))} +${p.xp}</button>`).join("")}</div>
@@ -150,31 +162,74 @@
   function paint() {
     if (!panel || panel.hidden) return;
     const list = inClass(sel), keep = panel.querySelector(".ml-body"), top = keep ? keep.scrollTop : 0;
-    let body = "";
-    if (tab === "stu") {
-      body = list.length ? list.map(st => `<div class="ml-r"><button class="ml-rh" type="button" data-a="row" data-id="${E(st.id)}" aria-expanded="${openSid === st.id}"><b>${E(st.name)}</b><span>${st.xp} XP</span></button>${openSid === st.id ? `<div class="ml-ex">${awardsHTML(st)}</div>` : ""}</div>`).join("") : `<p>No students in ${E(sel)}.</p>`;
-    } else {
-      const set = getPicked(sel), left = list.filter(s => !set.has(s.id)).length;
-      body = current ? `<div class="ml-big">${E(current.name)}</div><div class="ml-ex">${awardsHTML(current)}</div>` : `<div class="ml-q">?</div>`;
-      body += `<div class="ml-g" style="justify-content:center;margin:12px 0"><button class="ml-b g" type="button" data-a="spin"${pickBusy ? " disabled" : ""}>${current ? "Pick another" : "Pick a student"}</button>${current ? `<button class="ml-b" type="button" data-a="absent">Absent, skip</button>` : ""}</div>
-        <p style="text-align:center;margin:4px 0">${list.length - left} of ${list.length} have had a turn</p><div class="ml-g" style="justify-content:center"><button class="ml-b s" type="button" data-a="again">Start over</button></div>`;
-    }
+    const body = list.length ? list.map(st => `<div class="ml-r"><button class="ml-rh" type="button" data-a="row" data-id="${E(st.id)}" aria-expanded="${openSid === st.id}"><b>${E(st.name)}</b><span>${st.xp} XP</span></button>${openSid === st.id ? `<div class="ml-ex">${awardsHTML(st)}</div>` : ""}</div>`).join("") : `<p>No students in ${E(sel)}.</p>`;
     panel.innerHTML = `<div class="ml-h"><b>${E(sel)}${auto() === sel ? " · now" : ""}</b><button class="ml-t" type="button" data-mlx="hide" aria-label="Hide the panel">Hide ✕</button></div>
       <div class="ml-chips">${classes().map(c => `<button class="ml-c" type="button" data-a="cls" data-c="${E(c)}" aria-pressed="${c === sel}">${E(c)}</button>`).join("")}</div>
-      <div class="ml-chips"><button class="ml-t" type="button" data-a="tab" data-t="stu" aria-pressed="${tab === "stu"}">Students</button><button class="ml-t" type="button" data-a="tab" data-t="pick" aria-pressed="${tab === "pick"}">Random picker</button></div>
       <div class="ml-note" role="status">${E(note)}</div><div class="ml-body">${body}</div>`;
     const nb = panel.querySelector(".ml-body"); if (nb) nb.scrollTop = top;
   }
-  async function spin() {
-    if (pickBusy) return; const list = inClass(sel); if (!list.length) return;
-    const set = getPicked(sel); let pool = list.filter(s => !set.has(s.id) && (!current || s.id !== current.id));
-    if (!pool.length) { set.clear(); setPicked(sel, set); pool = list.filter(s => !current || list.length < 2 || s.id !== current.id); note = "Everyone had a turn. Starting again."; }
-    const win = pool[Math.floor(Math.random() * pool.length)];
-    pickBusy = true; openSid = "";
-    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    for (let i = 0; i < (reduce ? 2 : 14); i++) { current = { id: "x", name: list[Math.floor(Math.random() * list.length)].name, xp: 0 }; paintSpin(); await new Promise(r => setTimeout(r, 70 + i * 12)); }
-    current = win; set.add(win.id); setPicked(sel, set); pickBusy = false; paint();
+  /* ---------- the random picker: a floating window above the lesson, a spin-the-wheel button when minimised ---------- */
+  const WHEEL = '<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29" fill="#fff"/><g>' + ["#ef4444", "#f59e0b", "#22c55e", "#3b82f6", "#a855f7", "#ec4899"].map((c, k) => { const a0 = k * Math.PI / 3 - Math.PI / 2, a1 = (k + 1) * Math.PI / 3 - Math.PI / 2; return `<path d="M32 32L${(32 + 27 * Math.cos(a0)).toFixed(1)} ${(32 + 27 * Math.sin(a0)).toFixed(1)}A27 27 0 0 1 ${(32 + 27 * Math.cos(a1)).toFixed(1)} ${(32 + 27 * Math.sin(a1)).toFixed(1)}Z" fill="${c}"/>`; }).join("") + '</g><circle cx="32" cy="32" r="6" fill="#fff" stroke="#13213f" stroke-width="3"/><path d="M32 2l-5 9h10z" fill="#13213f" stroke="#fff" stroke-width="1.5"/></svg>';
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  const fn = n => (typeof firstName === "function" ? firstName(n) : String(n).split(" ")[0]);
+  const stageHTML = (st, spinning) => {
+    if (!st) return `<div class="pk-stage"><div class="pk-q">?</div><div class="pk-name muted">Tap the button to pick a student</div></div>`;
+    let av = "", nm = E(st.name);
+    try { av = avatarHTML(st, "xxl"); nm = nameHTML(st); } catch {}
+    return `<div class="pk-stage${spinning ? " spinning" : " landed"}">${av}<div class="pk-name">${nm}</div></div>`;
+  };
+  function setupFloat() {
+    fw = document.createElement("section"); fw.className = "ml-fw"; fw.hidden = true; fw.setAttribute("aria-label", "Random picker");
+    ov.appendChild(fw);
+    const w = document.createElement("button"); w.type = "button"; w.className = "ml-wheel"; w.id = "mlWheel"; w.setAttribute("aria-label", "Open the random picker"); w.title = "Random picker"; w.innerHTML = WHEEL; ov.appendChild(w);
+    w.addEventListener("click", () => { fwOpen = true; w.hidden = true; fw.hidden = false; placeFloat(); paintFloat(); });
+    fw.addEventListener("click", e => {
+      const b = e.target.closest("[data-f]"); if (!b) return; const a = b.dataset.f;
+      if (a === "min") { fwOpen = false; fw.hidden = true; w.hidden = false; return; }
+      if (a === "spin") spinF();
+      if (a === "absent") { if (current) { const set = getPicked(rc); set.add(current.id); setPicked(rc, set); } spinF(); }
+      if (a === "reset") { setPicked(rc, new Set()); fNote = "Everyone is back in the hat."; paintFloat(); }
+      if (a === "award") { const st = allStudents().find(x => x.id === b.dataset.id); if (st) { try { giveEntry(st, { title: b.dataset.title, xp: +b.dataset.xp }); fNote = `${st.name}: +${b.dataset.xp} XP`; } catch { fNote = "Could not save."; } paintFloat(); } }
+    });
+    fw.addEventListener("change", e => { if (e.target.id === "mlRc") { rc = e.target.value; current = null; fNote = ""; paintFloat(); } });
+    // drag the window by its title bar
+    let d = null;
+    fw.addEventListener("pointerdown", e => { const h = e.target.closest(".ml-fwh"); if (!h || e.target.closest("button,select")) return; const r = fw.getBoundingClientRect(), o = ov.getBoundingClientRect(); d = { dx: e.clientX - r.left, dy: e.clientY - r.top, ox: o.left, oy: o.top }; h.setPointerCapture(e.pointerId); h.style.cursor = "grabbing"; });
+    fw.addEventListener("pointermove", e => { if (!d) return; const o = ov.getBoundingClientRect(), x = Math.min(Math.max(0, e.clientX - o.left - d.dx), o.width - 80), y = Math.min(Math.max(0, e.clientY - o.top - d.dy), o.height - 50); fw.style.left = x + "px"; fw.style.top = y + "px"; fw.style.right = "auto"; });
+    const end = () => { if (!d) return; d = null; fw.querySelector(".ml-fwh").style.cursor = ""; try { localStorage.setItem("ml_fw_pos", JSON.stringify({ l: fw.style.left, t: fw.style.top })); } catch {} };
+    fw.addEventListener("pointerup", end); fw.addEventListener("pointercancel", end);
   }
-  function paintSpin() { const big = panel && panel.querySelector(".ml-big"); if (big) big.textContent = current.name; else { const b = panel && panel.querySelector(".ml-body"); if (b) b.insertAdjacentHTML("afterbegin", `<div class="ml-big">${E(current.name)}</div>`); const q = panel && panel.querySelector(".ml-q"); if (q) q.remove(); } }
+  let fNote = "";
+  function placeFloat() {
+    let pos = null; try { pos = JSON.parse(localStorage.getItem("ml_fw_pos") || "null"); } catch {}
+    if (pos && pos.l && pos.t) { fw.style.left = pos.l; fw.style.top = pos.t; fw.style.right = "auto"; } else { fw.style.left = "10px"; fw.style.right = "auto"; fw.style.top = "70px"; }
+  }
+  function paintFloat(spinning) {
+    if (!fw || fw.hidden) return;
+    const list = inClass(rc), set = getPicked(rc);
+    fw.innerHTML = `<div class="ml-fwh"><b>Pick a student</b><select id="mlRc" aria-label="Class">${classes().map(c => `<option${c === rc ? " selected" : ""}>${E(c)}</option>`).join("")}</select><button class="ml-t" type="button" data-f="min" aria-label="Minimise" title="Minimise">–</button></div>
+      <div class="ml-fwb">${stageHTML(current, spinning)}
+        ${current && !spinning && !(typeof readOnly !== "undefined" && readOnly) ? `<div class="pk-quick">${[0, 5].filter(i => POS()[i]).map(i => `<button class="plus" type="button" data-f="award" data-id="${E(current.id)}" data-title="${E(POS()[i].title)}" data-xp="${POS()[i].xp}">+${POS()[i].xp} ${E(POS()[i].title)}</button>`).join("")}</div>` : ""}
+        <div class="ml-g" style="justify-content:center"><button class="primary" type="button" data-f="spin"${pickBusy ? " disabled" : ""}>${current ? "Pick again" : "Pick a student"}</button>${current && !pickBusy ? `<button class="ghost" type="button" data-f="absent">Absent, pick another</button>` : ""}</div>
+        <small>${list.filter(s => set.has(s.id)).length} of ${list.length} have had a turn · <button class="ml-b s" type="button" data-f="reset">Reset turns</button></small><small role="status">${E(fNote)}</small></div>`;
+  }
+  async function spinF() {
+    if (pickBusy) return; const list = inClass(rc); if (!list.length) { fNote = "No students in " + rc + "."; return paintFloat(); }
+    const set = getPicked(rc); let pool = list.filter(s => !set.has(s.id) && (!current || list.length < 2 || s.id !== current.id));
+    if (!pool.length) { set.clear(); setPicked(rc, set); pool = list.filter(s => !current || list.length < 2 || s.id !== current.id); fNote = "Everyone had a turn. Starting again."; } else fNote = "";
+    const win = pool[Math.floor(Math.random() * pool.length)];
+    pickBusy = true; const w = $$("mlWheel"); try { if (typeof audio === "function") audio(); } catch {}
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches, steps = reduce ? 3 : 20; let prev = null;
+    for (let i = 0; i < steps; i++) {
+      const last = i === steps - 1; let s2 = last ? win : list[Math.floor(Math.random() * list.length)];
+      if (!last && list.length > 1) while (s2 === prev) s2 = list[Math.floor(Math.random() * list.length)];
+      prev = s2; current = s2; paintFloat(!last);
+      try { if (!last && typeof sndMode !== "undefined" && sndMode !== "off") tone(660 + (i % 2) * 140, 0, 0.045, "square", 0.04); } catch {}
+      if (!last) await sleep(reduce ? 220 : 40 + Math.pow(i / steps, 2.6) * 380);
+    }
+    set.add(win.id); setPicked(rc, set); pickBusy = false;
+    try { if (typeof sndMode !== "undefined" && sndMode !== "off") { [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((f, k) => tone(f, k * 0.07, 0.4, "triangle", 0.22)); if (sndMode === "voice" && typeof speak === "function") setTimeout(() => speak(fn(win.name) + "!"), 450); } } catch {}
+    paintFloat(false);
+  }
   document.addEventListener("fullscreenchange", () => { /* the overlay stays; the fullscreen button comes back */ });
 })();
