@@ -70,7 +70,7 @@ export const FEATURES = [
   { key: "coconut", cat: "work", def: false, label: "Coconut Crack", what: "The team question game", css: ["#ccBtn"] },
   { key: "liveworks", cat: "work", def: false, label: "Live worksheets", what: "Interactive worksheets started class by class", css: ["#lwBtn"] },
   { key: "mylessons", cat: "work", def: false, label: "My lessons", what: "Full-screen lessons", css: ["#mlBtn"] },
-  { key: "ml_students", cat: "work", def: false, label: "Lessons: class panel", what: "Student names and quick XP inside a lesson", css: [".ml-fab.t", ".ml-p"] },
+  { key: "ml_students", cat: "work", def: false, label: "Lessons: class panel", what: "Student names and quick XP inside a lesson", css: [".ml-stu", ".ml-p"] },
   { key: "ml_picker", cat: "work", def: false, label: "Lessons: random picker", what: "The floating picker inside a lesson", css: [".ml-wheel", ".ml-fw"] },
   // ---- Accounts and admin
   { key: "logins", cat: "admin", def: true, label: "Student logins", what: "Create logins and PINs", css: ["#loginsBtn"] },

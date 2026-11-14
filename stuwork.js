@@ -1,8 +1,8 @@
 // "My classwork" on the student page: worksheets from the teacher, and (for the 9S boys) the lesson games.
-import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1113h";
-import { playerOf, catalog } from "./islandmap.js?v=1113h";
-import { logEv } from "./presence.js?v=1113h";
-import { LIVE_WS, isLive } from "./liveworks.js?v=1113h";
+import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1113i";
+import { playerOf, catalog } from "./islandmap.js?v=1113i";
+import { logEv } from "./presence.js?v=1113i";
+import { LIVE_WS, isLive } from "./liveworks.js?v=1113i";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

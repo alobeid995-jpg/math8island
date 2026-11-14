@@ -19,13 +19,15 @@
     s.textContent = `
 .ml-ov{position:fixed;inset:0;z-index:99000;background:#000}
 .ml-ov iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff}
-.ml-fab{position:absolute;z-index:2;width:46px;height:46px;border-radius:50%;border:2px solid #fff;background:rgba(19,33,63,.82);color:#fff;font:800 20px/1 system-ui;cursor:pointer;display:grid;place-items:center;opacity:.72}
+.ml-fab{position:absolute;z-index:6;width:46px;height:46px;border-radius:50%;border:2px solid #fff;background:rgba(19,33,63,.82);color:#fff;font:800 20px/1 system-ui;cursor:pointer;display:grid;place-items:center;opacity:.72}
 .ml-fab:hover,.ml-fab:focus-visible{opacity:1}
-.ml-fab.x{top:10px;right:10px}.ml-fab.o{top:10px;right:66px;text-decoration:none}.ml-fab.t{bottom:12px;right:12px}.ml-fab.f{bottom:12px;right:66px}
+.ml-fab.x{top:10px;right:10px}.ml-fab.f{top:10px;right:66px}.ml-fab.o{top:10px;right:122px;text-decoration:none}
+.ml-stu{position:absolute;z-index:4;right:10px;bottom:96px;width:58px;height:58px;border-radius:50%;border:3px solid #fff;background:linear-gradient(145deg,#2563eb,#7c3aed);padding:0;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.45);display:grid;place-items:center;transition:transform .2s}
+.ml-stu:hover,.ml-stu:focus-visible{transform:scale(1.1)}.ml-stu svg{width:36px;height:36px}.ml-stu[hidden]{display:none}
 .ml-pill{position:absolute;z-index:2;left:10px;bottom:12px;padding:6px 12px;border-radius:999px;background:rgba(19,33,63,.82);color:#fff;font:700 14px system-ui;border:2px solid #fff;opacity:.8}
 .ml-pill.warn{background:#b91c1c;opacity:1;animation:mlp 1s infinite}
 @keyframes mlp{50%{transform:scale(1.06)}}
-.ml-p{position:absolute;z-index:3;top:0;right:0;bottom:0;width:min(370px,100%);background:var(--card,#fff);color:var(--ink,#17233b);border-left:3px solid var(--ink,#17233b);display:flex;flex-direction:column;font:15px system-ui,sans-serif}
+.ml-p{position:absolute;z-index:3;top:66px;right:0;bottom:0;width:min(370px,100%);background:var(--card,#fff);color:var(--ink,#17233b);border-left:3px solid var(--ink,#17233b);display:flex;flex-direction:column;font:15px system-ui,sans-serif}
 .ml-p[hidden]{display:none}
 .ml-h{display:flex;gap:6px;align-items:center;padding:8px 10px;border-bottom:2px solid var(--line,#d7deea);flex-wrap:wrap}
 .ml-h b{font-size:16px;margin-right:auto}
@@ -139,7 +141,7 @@
       ${l.url ? `<a class="ml-fab o" href="${E(/^https?:/i.test(l.orig || "") ? l.orig : l.url)}" target="_blank" rel="noopener" aria-label="Open in a new tab" title="Open in a new tab">↗</a>` : ""}
       <button class="ml-fab x" type="button" data-mlx="close" aria-label="Close the lesson" title="Close the lesson">✕</button>
       <button class="ml-fab f" type="button" data-mlx="full" aria-label="Full screen" title="Full screen">⛶</button>
-      <button class="ml-fab t" type="button" data-mlx="panel" aria-label="Class panel" title="Class panel">👥</button>
+      <button class="ml-stu" type="button" data-mlx="panel" aria-label="Students" title="Students">${STU}</button>
       <div class="ml-pill" id="mlPill" hidden></div>
       <aside class="ml-p" id="mlPanel" hidden aria-label="Class panel"></aside>`;
     document.body.appendChild(ov); document.body.classList.add("wk-noscroll");
@@ -203,6 +205,7 @@
   }
   /* ---------- the random picker: a floating window above the lesson, a spin-the-wheel button when minimised ---------- */
   const WHEEL = '<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29" fill="#fff"/><g>' + ["#ef4444", "#f59e0b", "#22c55e", "#3b82f6", "#a855f7", "#ec4899"].map((c, k) => { const a0 = k * Math.PI / 3 - Math.PI / 2, a1 = (k + 1) * Math.PI / 3 - Math.PI / 2; return `<path d="M32 32L${(32 + 27 * Math.cos(a0)).toFixed(1)} ${(32 + 27 * Math.sin(a0)).toFixed(1)}A27 27 0 0 1 ${(32 + 27 * Math.cos(a1)).toFixed(1)} ${(32 + 27 * Math.sin(a1)).toFixed(1)}Z" fill="${c}"/>`; }).join("") + '</g><circle cx="32" cy="32" r="6" fill="#fff" stroke="#13213f" stroke-width="3"/><path d="M32 2l-5 9h10z" fill="#13213f" stroke="#fff" stroke-width="1.5"/></svg>';
+  const STU = '<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="14" cy="13" r="6" fill="#fff"/><path d="M3 33c0-6.6 4.9-11 11-11s11 4.4 11 11z" fill="#fff"/><circle cx="28" cy="15" r="5" fill="#fde68a"/><path d="M19 33c.6-5.5 4.4-9 9-9s9 3.5 9 9z" fill="#fde68a"/></svg>';
   const sleep = ms => new Promise(r => setTimeout(r, ms));
   const fn = n => (typeof firstName === "function" ? firstName(n) : String(n).split(" ")[0]);
   const stageHTML = (st, spinning) => {
