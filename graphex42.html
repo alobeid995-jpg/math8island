@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simultaneous Equations by Graphs – Worked Examples</title>
+<style>
+:root{--c1:#2563eb;--c2:#ea580c;--sol:#15803d;--ink:#1f2937;--mut:#6b7280;--bg:#f3f5fa;--line:#e3e7ef}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:17px;line-height:1.4}
+header{background:#1e293b;color:#fff;padding:12px 20px;display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;justify-content:space-between}
+header h1{margin:0;font-size:1.15rem}
+.tabs{display:flex;gap:8px}
+.tabs button{background:#334155;color:#fff;border:0;border-radius:9px;padding:8px 16px;font:inherit;font-weight:700;cursor:pointer}
+.tabs button.on{background:#fff;color:#1e293b}
+main{max-width:1400px;margin:0 auto;padding:14px;display:grid;grid-template-columns:minmax(320px,620px) minmax(0,1fr);gap:16px;align-items:start}
+@media(max-width:900px){main{grid-template-columns:1fr}}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;box-shadow:0 1px 2px rgba(0,0,0,.04);margin-bottom:14px}
+svg#g{width:100%;height:auto;display:block;margin:0 auto;background:#fff;border-radius:10px;border:1px solid var(--line)}
+.eqrow{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.eq{font-size:1.35rem;font-weight:800;padding:6px 16px;border-radius:12px;border:3px solid}
+.eq.e1{color:var(--c1);border-color:var(--c1);background:#eff4ff}
+.eq.e2{color:var(--c2);border-color:var(--c2);background:#fff3ea}
+.hint{color:var(--mut);font-size:.9rem;margin:0 0 8px}
+.ctrl{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+button.btn{font:inherit;font-weight:700;border:1px solid #cbd2de;background:#fff;border-radius:10px;padding:8px 14px;cursor:pointer}
+button.btn.primary{background:#1e293b;color:#fff;border-color:#1e293b}
+h3.tt{margin:0 0 8px;font-size:1.05rem}
+h3.tt.l1{color:var(--c1)} h3.tt.l2{color:var(--c2)}
+.tw{overflow-x:auto}
+table{border-collapse:collapse}
+th,td{border:1px solid #cfd6e4;padding:6px 8px;text-align:center;min-width:64px;height:46px;transition:background .25s}
+td.lab{font-weight:800;background:#f8fafc;white-space:nowrap;min-width:70px}
+th{background:#f1f4fa}
+.hl{background:#fff3b0!important}
+input.cell{width:58px;padding:6px 2px;border:2px solid #cbd2de;border-radius:8px;text-align:center;font:inherit;font-weight:700}
+input.cell.ok{background:#dcfce7;border-color:#16a34a}
+input.cell.no{background:#fee2e2;border-color:#dc2626;animation:shake .35s}
+td.pair{font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+td.pair.l1{color:var(--c1)} td.pair.l2{color:var(--c2)}
+td.pair.show{animation:slide .5s ease-out}
+@keyframes slide{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.inter{display:none}
+.inter.show{display:block;animation:slide .6s ease-out;border:3px solid var(--sol);background:#f0fdf4}
+.bigpair{display:flex;align-items:flex-end;justify-content:center;gap:6px;font-size:2.4rem;font-weight:800;color:var(--sol);margin:6px 0 10px}
+.co{display:inline-flex;flex-direction:column;align-items:center;line-height:1}
+.co i{font-size:.95rem;font-weight:700;color:#166534;background:#dcfce7;border-radius:6px;padding:1px 8px;margin-bottom:4px}
+.answer{text-align:center;font-size:1.25rem;font-weight:800;color:#14532d;margin-bottom:6px}
+.answer .star{font-size:1.6rem;color:#f59e0b;text-shadow:0 0 6px #fde68a}
+.answer small{display:block;font-size:.9rem;font-weight:600;color:#166534}
+.check{text-align:center;font-size:1rem;color:#14532d}
+.note{text-align:center;color:#166534;font-weight:600;margin:4px 0 8px}
+/* svg animations */
+.shape{transform-box:fill-box;transform-origin:center}
+.new .shape{animation:pop .55s cubic-bezier(.2,1.6,.4,1)}
+@keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
+.ripple{transform-box:fill-box;transform-origin:center;animation:ripple .9s ease-out forwards}
+@keyframes ripple{from{transform:scale(.4);opacity:.9}to{transform:scale(2.6);opacity:0}}
+.pt{transform-box:fill-box;transform-origin:center;transition:transform .15s}
+.pt.hl{transform:scale(1.7)}
+.pulse{transform-box:fill-box;transform-origin:center;animation:pulse 1.4s ease-out infinite}
+@keyframes pulse{from{transform:scale(.7);opacity:.9}to{transform:scale(2.2);opacity:0}}
+.fadein{animation:slide .6s ease-out}
+</style>
+</head>
+<body>
+<header>
+  <h1>Solving simultaneous equations by graphs — worked examples</h1>
+  <div class="tabs" id="tabs"></div>
+</header>
+
+<main>
+  <section class="card">
+    <svg id="g" role="img" aria-label="Coordinate grid"></svg>
+  </section>
+
+  <section>
+    <div class="card">
+      <div class="eqrow"><div class="eq e1" id="eq1"></div><div class="eq e2" id="eq2"></div></div>
+      <p class="hint">The full coordinate plane has 4 quadrants (I, II, III, IV) — we draw in the quadrant we need. Type the <b>y</b> value in the table and press <b>Enter</b> — or press <b>Show next value</b>. Hover over a column to see its point on the graph.</p>
+      <div class="ctrl">
+        <button class="btn primary" id="next">Show next value ▶</button>
+        <button class="btn" id="reset">Start again</button>
+      </div>
+      <h3 class="tt l1" id="tt1"></h3><div class="tw"><table id="tbl1"></table></div>
+      <h3 class="tt l2" id="tt2" style="margin-top:14px"></h3><div class="tw"><table id="tbl2"></table></div>
+    </div>
+
+    <div class="card inter" id="inter"></div>
+  </section>
+</main>
+
+<script>
+(function(){
+"use strict";
+const NS = "http://www.w3.org/2000/svg";
+const COL = {1:"#2563eb", 2:"#ea580c", 3:"#15803d"};
+const M = 40;
+const EX = [
+  { name:"Example 1", range:{x0:-10,x1:10,y0:-10,y1:10}, xs:[0,2,4],
+    l1:{t:"y = x + 2",   m:1,  c:2}, l2:{t:"y = −x + 8",  m:-1, c:8} },
+  { name:"Example 2", range:{x0:-10,x1:10,y0:-10,y1:10}, xs:[-6,-4,-2,0],
+    l1:{t:"y = x + 2",   m:1,  c:2}, l2:{t:"y = −2x − 7", m:-2, c:-7} }
+];
+
+let X0,X1,Y0,Y1,U,W,H, ex, st, gLines, gPts, gTop, timer;
+const $ = id => document.getElementById(id);
+const svg = $("g");
+const sx = x => M + (x-X0)*U, sy = y => M + (Y1-y)*U;
+const N = v => String(v).replace("-","−");
+function el(n,a,p){ const e = document.createElementNS(NS,n); for(const k in a) e.setAttribute(k,a[k]); if(p) p.appendChild(e); return e; }
+function yOf(l,x){ return l.m*x + l.c; }
+
+function setRange(r){
+  X0=r.x0; X1=r.x1; Y0=r.y0; Y1=r.y1;
+  U = Math.min(52, Math.floor(560/(X1-X0)), Math.floor(560/(Y1-Y0)));
+  W = 2*M + (X1-X0)*U; H = 2*M + (Y1-Y0)*U;
+}
+
+/* ---------- static graph ---------- */
+function buildGraph(){
+  svg.setAttribute("viewBox","0 0 "+W+" "+H);
+  svg.style.maxWidth = W + "px";
+  svg.innerHTML = "";
+  const defs = el("defs",{},svg), cp = el("clipPath",{id:"clipArea"},defs);
+  el("rect",{x:sx(X0),y:sy(Y1),width:(X1-X0)*U,height:(Y1-Y0)*U},cp);
+  const grid = el("g",{},svg);
+  for(let i=X0;i<=X1;i++) el("line",{x1:sx(i),y1:sy(Y0),x2:sx(i),y2:sy(Y1),stroke:i%5===0?"#c3cbd9":"#e2e7f0","stroke-width":i%5===0?1.2:1},grid);
+  for(let j=Y0;j<=Y1;j++) el("line",{x1:sx(X0),y1:sy(j),x2:sx(X1),y2:sy(j),stroke:j%5===0?"#c3cbd9":"#e2e7f0","stroke-width":j%5===0?1.2:1},grid);
+  const axX = Math.min(Math.max(0,X0),X1), ayY = Math.min(Math.max(0,Y0),Y1);
+  st.axX = axX; st.ayY = ayY;
+  const ax = el("g",{stroke:"#111827","stroke-width":2},svg);
+  el("line",{x1:sx(X0)-10,y1:sy(ayY),x2:sx(X1)+12,y2:sy(ayY)},ax);
+  el("line",{x1:sx(axX),y1:sy(Y0)+10,x2:sx(axX),y2:sy(Y1)-12},ax);
+  el("polygon",{points:`${sx(X1)+16},${sy(ayY)} ${sx(X1)+6},${sy(ayY)-5} ${sx(X1)+6},${sy(ayY)+5}`,fill:"#111827"},svg);
+  el("polygon",{points:`${sx(axX)},${sy(Y1)-16} ${sx(axX)-5},${sy(Y1)-6} ${sx(axX)+5},${sy(Y1)-6}`,fill:"#111827"},svg);
+  const iX = X0<0 && X1>0, iY = Y0<0 && Y1>0;
+  for(let i=X0;i<=X1;i++){ if(i===0 && iX) continue; el("text",{x:sx(i),y:sy(ayY)+17,"text-anchor":"middle","font-size":13,fill:"#4b5563"},svg).textContent = N(i); }
+  for(let j=Y0;j<=Y1;j++){ if(j===0 && iY) continue; if(j===0 && X0===0 && Y0===0) continue; el("text",{x:sx(axX)-7,y:sy(j)+4,"text-anchor":"end","font-size":13,fill:"#4b5563"},svg).textContent = N(j); }
+  if(iX && iY) el("text",{x:sx(0)-7,y:sy(0)+17,"text-anchor":"end","font-size":13,fill:"#4b5563"},svg).textContent = "0";
+  el("text",{x:sx(X1)+8,y:sy(ayY)-10,"font-size":16,"font-weight":700,"font-style":"italic"},svg).textContent = "x";
+  el("text",{x:sx(axX)+10,y:sy(Y1)-8,"font-size":16,"font-weight":700,"font-style":"italic"},svg).textContent = "y";
+  if(iX && iY){
+    const q = [["I",sx(X1)-22,sy(Y1)+30],["II",sx(X0)+22,sy(Y1)+30],["III",sx(X0)+22,sy(Y0)-14],["IV",sx(X1)-22,sy(Y0)-14]];
+    q.forEach(([t,x,y])=>{ el("text",{x,y,"text-anchor":"middle","font-size":24,"font-weight":800,fill:"#94a3b8",opacity:.45},svg).textContent = t; });
+  }
+  gLines = el("g",{"clip-path":"url(#clipArea)"},svg);
+  gPts = el("g",{},svg);
+  gTop = el("g",{"pointer-events":"none"},svg);
+}
+
+function star(cx,cy,ro,ri){
+  let s=""; for(let i=0;i<10;i++){ const r=i%2?ri:ro, a=-Math.PI/2+i*Math.PI/5; s+=(cx+r*Math.cos(a)).toFixed(1)+","+(cy+r*Math.sin(a)).toFixed(1)+" "; } return s.trim();
+}
+
+/* ---------- render the graph from state ---------- */
+function render(anim){
+  anim = anim || {};
+  gLines.innerHTML = ""; gPts.innerHTML = ""; gTop.innerHTML = "";
+
+  [1,2].forEach(k=>{
+    if(!st.lineDone[k]) return;
+    const l = ex["l"+k], A = X0-3, B = X1+3;
+    const x1=sx(A), y1=sy(yOf(l,A)), x2=sx(B), y2=sy(yOf(l,B));
+    const ln = el("line",{x1,y1,x2,y2,stroke:COL[k],"stroke-width":3.5,"stroke-linecap":"round"},gLines);
+    if(anim.line === k){
+      const len = Math.hypot(x2-x1,y2-y1);
+      ln.style.strokeDasharray = len; ln.style.strokeDashoffset = len;
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{ ln.style.transition = "stroke-dashoffset 1s ease-in-out"; ln.style.strokeDashoffset = 0; }));
+    }
+  });
+
+  [2,1].forEach(k=>{
+    const l = ex["l"+k];
+    ex.xs.forEach(x=>{
+      if(st.vals[k][x] == null) return;
+      const y = st.vals[k][x];
+      const isNew = anim.pt && anim.pt.k===k && anim.pt.x===x;
+      const g = el("g",{class:"pt"+(isNew?" new":""),"data-k":k,"data-x":x},gPts);
+      const sh = el("g",{class:"shape"},g);
+      if(k===1) el("circle",{cx:sx(x),cy:sy(y),r:8,fill:COL[1],stroke:"#fff","stroke-width":2},sh);
+      else el("rect",{x:sx(x)-7.5,y:sy(y)-7.5,width:15,height:15,fill:COL[2],stroke:"#fff","stroke-width":2},sh);
+      const lab = "(" + N(x) + ", " + N(y) + ")";
+      const lw = lab.length*7.6;
+      const flip = sx(x) + 11 + lw > W - 2;
+      const t = el("text",{x:flip ? sx(x)-11 : sx(x)+11,y:sy(y)+(k===1?-11:21),"text-anchor":flip?"end":"start","font-size":13,"font-weight":800,fill:COL[k],"paint-order":"stroke",stroke:"#fff","stroke-width":3.5},g);
+      t.textContent = lab;
+      if(isNew){
+        const rp = el("circle",{cx:sx(x),cy:sy(y),r:14,fill:"none",stroke:COL[k],"stroke-width":3,class:"ripple"},gTop);
+      }
+    });
+  });
+
+  if(st.inter){
+    const X = st.sol.x, Y = st.sol.y;
+    const gx = sx(X), gy = sy(Y);
+    // dashed guides to the axes
+    const gd = el("g",{class:"fadein"},gTop);
+    el("line",{x1:gx,y1:gy,x2:gx,y2:sy(st.ayY),stroke:COL[3],"stroke-width":2.5,"stroke-dasharray":"6 5"},gd);
+    el("line",{x1:gx,y1:gy,x2:sx(st.axX),y2:gy,stroke:COL[3],"stroke-width":2.5,"stroke-dasharray":"6 5"},gd);
+    // highlighted axis numbers
+    const tx = el("g",{},gd);
+    el("rect",{x:gx-14,y:sy(st.ayY)+4,width:28,height:18,rx:5,fill:"#dcfce7"},tx);
+    el("text",{x:gx,y:sy(st.ayY)+17,"text-anchor":"middle","font-size":14,"font-weight":800,fill:"#14532d"},tx).textContent = N(X);
+    el("rect",{x:sx(st.axX)-34,y:gy-10,width:28,height:20,rx:5,fill:"#dcfce7"},tx);
+    el("text",{x:sx(st.axX)-20,y:gy+5,"text-anchor":"middle","font-size":14,"font-weight":800,fill:"#14532d"},tx).textContent = N(Y);
+    // pulsing ring + star
+    el("circle",{cx:gx,cy:gy,r:16,fill:"none",stroke:COL[3],"stroke-width":3,class:"pulse"},gTop);
+    el("polygon",{points:star(gx,gy,17,7),fill:"#f59e0b",stroke:COL[3],"stroke-width":2.5,"stroke-linejoin":"round",class:"fadein"},gTop);
+    // label (X, Y) with tiny x / y above the numbers
+    const sX = N(X), sY = N(Y), s = "(" + sX + ", " + sY + ")";
+    const cw = 10.2, tw = s.length*cw + 12;
+    // choose a free spot for the label box (avoid the plotted points and their labels)
+    const bw = tw + 4, bh = 44, hit = [];
+    [1,2].forEach(k=>ex.xs.forEach(x=>{
+      const yy = st.vals[k][x]; if(yy == null) return;
+      const lw = ("(" + N(x) + ", " + N(yy) + ")").length*7.6, flip = sx(x)+11+lw > W-2;
+      hit.push([sx(x)-11, sy(yy)-11, sx(x)+11, sy(yy)+11]);
+      const l0 = flip ? sx(x)-11-lw : sx(x)+11, t0 = k===1 ? sy(yy)-25 : sy(yy)+7;
+      hit.push([l0, t0, l0+lw, t0+18]);
+    }));
+    let best = null;
+    outer: for(const d of [64,84,104,124]){
+      for(const a of [-90,-60,-120,-30,-150,0,180,30,150,60,120,90]){
+        const cx = gx + d*Math.cos(a*Math.PI/180), cy = gy + d*Math.sin(a*Math.PI/180);
+        const L = cx - bw/2, T = cy - bh/2, Rr = L + bw, B = T + bh;
+        if(L < 4 || T < 4 || Rr > W-4 || B > H-4) continue;
+        if(hit.some(h => !(Rr < h[0] || L > h[2] || B < h[1] || T > h[3]))) continue;
+        best = {L,T,cx,cy}; break outer;
+      }
+    }
+    if(!best) best = {L:Math.max(4,Math.min(W-bw-4,gx-bw/2)), T:Math.max(4,gy-100), cx:gx, cy:Math.max(4,gy-100)+bh/2};
+    const lx = best.L + 4, ly = best.T + 32;
+    const lg = el("g",{class:"fadein"},gTop);
+    el("line",{x1:gx,y1:gy,x2:best.cx,y2:best.cy,stroke:COL[3],"stroke-width":2},lg);
+    el("rect",{x:lx-4,y:ly-32,width:tw,height:44,rx:8,fill:"#ffffff",stroke:COL[3],"stroke-width":2},lg);
+    const mono = "ui-monospace,Menlo,Consolas,monospace";
+    el("text",{x:lx+2,y:ly+2,"font-size":19,"font-weight":800,fill:COL[3],"font-family":mono,"xml:space":"preserve"},lg).textContent = s;
+    const xc = lx + 2 + (1 + sX.length/2)*cw, yc = lx + 2 + (1 + sX.length + 2 + sY.length/2)*cw;
+    el("text",{x:xc,y:ly-14,"text-anchor":"middle","font-size":12,"font-style":"italic","font-weight":800,fill:"#166534"},lg).textContent = "x";
+    el("text",{x:yc,y:ly-14,"text-anchor":"middle","font-size":12,"font-style":"italic","font-weight":800,fill:"#166534"},lg).textContent = "y";
+  }
+}
+
+/* ---------- tables ---------- */
+function buildTables(){
+  [1,2].forEach(k=>{
+    const l = ex["l"+k];
+    $("tt"+k).textContent = "Line " + k + ":  " + l.t;
+    let h = `<tr><td class="lab">x</td>` + ex.xs.map(x=>`<th data-k="${k}" data-x="${x}">${N(x)}</th>`).join("") + `</tr>`;
+    h += `<tr><td class="lab">y</td>` + ex.xs.map(x=>`<td data-k="${k}" data-x="${x}"><input class="cell" inputmode="decimal" autocomplete="off" aria-label="y when x = ${x}"></td>`).join("") + `</tr>`;
+    h += `<tr><td class="lab">(x, y)</td>` + ex.xs.map(x=>`<td class="pair l${k}" id="pr${k}_${x}" data-k="${k}" data-x="${x}"></td>`).join("") + `</tr>`;
+    $("tbl"+k).innerHTML = h;
+  });
+  document.querySelectorAll("input.cell").forEach(inp=>{
+    const k = Number(inp.parentNode.dataset.k), x = Number(inp.parentNode.dataset.x);
+    inp.addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); commit(k,x,inp); focusNext(inp); } });
+    inp.addEventListener("change", ()=> commit(k,x,inp));
+    inp.addEventListener("input", ()=> inp.classList.remove("no"));
+  });
+}
+function focusNext(inp){
+  const all = [...document.querySelectorAll("input.cell:not([readonly])")];
+  const n = all.find(i => i !== inp);
+  if(n) n.focus();
+}
+function parse(s){ s = String(s).trim().replace(/[−–]/g,"-").replace(",","."); if(s==="") return NaN; const v = Number(s); return isFinite(v) ? v : NaN; }
+
+function commit(k,x,inp){
+  if(inp.readOnly || st.vals[k][x] != null) return;
+  const v = parse(inp.value);
+  if(isNaN(v)) return;
+  const y = yOf(ex["l"+k], x);
+  if(Math.abs(v - y) > 1e-9){ inp.classList.add("no"); return; }
+  inp.classList.remove("no"); inp.classList.add("ok"); inp.readOnly = true; inp.value = N(y);
+  st.vals[k][x] = y;
+  const pr = $("pr"+k+"_"+x); pr.textContent = "(" + N(x) + ", " + N(y) + ")"; pr.classList.add("show");
+  const full = ex.xs.every(xx => st.vals[k][xx] != null);
+  let anim = {pt:{k,x}};
+  if(full && !st.lineDone[k]){ st.lineDone[k] = true; anim.line = k; }
+  render(anim);
+  if(st.lineDone[1] && st.lineDone[2] && !st.inter && !timer){
+    timer = setTimeout(()=>{ timer = null; revealInter(); }, 1400);
+  }
+}
+
+function subText(l,x,y){
+  let rhs;
+  if(l.m === 1) rhs = N(x);
+  else if(l.m === -1) rhs = "−" + N(x);
+  else rhs = (l.m<0?"−":"") + Math.abs(l.m) + " × " + N(x);
+  if(l.c > 0) rhs += " + " + l.c; else if(l.c < 0) rhs += " − " + Math.abs(l.c);
+  return N(y) + " = " + rhs + " ✓";
+}
+
+function revealInter(){
+  st.inter = true;
+  const X = st.sol.x, Y = st.sol.y;
+  const p = $("inter");
+  p.innerHTML =
+    `<div class="note">Look at the graph: the two lines cross at one point.</div>
+     <div class="bigpair"><span>(</span><span class="co"><i>x</i>${N(X)}</span><span>,</span><span class="co"><i>y</i>${N(Y)}</span><span>)</span></div>
+     <div class="note">The first number is <b>x</b>, the second number is <b>y</b>.</div>
+     <div class="answer"><span class="star">★</span> x = ${N(X)} &nbsp;and&nbsp; y = ${N(Y)}
+       <small>This point is on BOTH lines — so it is the answer to both equations.</small></div>
+     <div class="check"><b>Check</b> — Line 1: ${subText(ex.l1,X,Y)} &nbsp;|&nbsp; Line 2: ${subText(ex.l2,X,Y)}</div>`;
+  p.className = "card inter show";
+  render({});
+  p.scrollIntoView({behavior:"smooth", block:"nearest"});
+}
+
+/* ---------- hover link between table column and graph point ---------- */
+function hl(k,x,on){
+  document.querySelectorAll(`[data-k="${k}"][data-x="${x}"]`).forEach(n => n.classList.toggle("hl", on));
+}
+document.addEventListener("mouseover", e=>{ const n = e.target.closest && e.target.closest("[data-k][data-x]"); if(n) hl(n.dataset.k, n.dataset.x, true); });
+document.addEventListener("mouseout",  e=>{ const n = e.target.closest && e.target.closest("[data-k][data-x]"); if(n) hl(n.dataset.k, n.dataset.x, false); });
+
+/* ---------- controls ---------- */
+$("next").addEventListener("click", ()=>{
+  for(const k of [1,2]){
+    for(const x of ex.xs){
+      if(st.vals[k][x] == null){
+        const inp = document.querySelector(`td[data-k="${k}"][data-x="${x}"] input`);
+        inp.value = yOf(ex["l"+k], x);
+        commit(k,x,inp);
+        return;
+      }
+    }
+  }
+});
+$("reset").addEventListener("click", ()=> load(cur));
+
+let cur = 0;
+function load(i){
+  cur = i; ex = EX[i];
+  if(timer){ clearTimeout(timer); timer = null; }
+  const den = ex.l1.m - ex.l2.m;                       // y = m1 x + c1 = m2 x + c2
+  const X = (ex.l2.c - ex.l1.c) / den;
+  st = {vals:{1:{},2:{}}, lineDone:{1:false,2:false}, inter:false, sol:{x:X, y:yOf(ex.l1,X)}};
+  ex.xs.forEach(x => { st.vals[1][x] = null; st.vals[2][x] = null; });
+  setRange(ex.range);
+  buildGraph();
+  $("eq1").textContent = "Line 1:  " + ex.l1.t;
+  $("eq2").textContent = "Line 2:  " + ex.l2.t;
+  buildTables();
+  $("inter").className = "card inter"; $("inter").innerHTML = "";
+  document.querySelectorAll("#tabs button").forEach((b,j)=> b.classList.toggle("on", j===i));
+  render({});
+}
+EX.forEach((e,i)=>{
+  const b = document.createElement("button"); b.textContent = e.name;
+  b.addEventListener("click", ()=> load(i)); $("tabs").appendChild(b);
+});
+st = {}; load(0);
+window.__demo = {commit, load, getState:()=>st};
+})();
+</script>
+</body>
+</html>

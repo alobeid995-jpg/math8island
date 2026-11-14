@@ -1,8 +1,8 @@
 // "My classwork" on the student page: worksheets from the teacher, and (for the 9S boys) the lesson games.
-import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1112z";
-import { playerOf, catalog } from "./islandmap.js?v=1112z";
-import { logEv } from "./presence.js?v=1112z";
-import { LIVE_WS, isLive } from "./liveworks.js?v=1112z";
+import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1113a";
+import { playerOf, catalog } from "./islandmap.js?v=1113a";
+import { logEv } from "./presence.js?v=1113a";
+import { LIVE_WS, isLive } from "./liveworks.js?v=1113a";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -58,7 +58,8 @@ function draw() {
   const xpNote = k => { const r = lxs[k] || {}; return `<small class="wk-xpnote">${r.perfect ? "⭐ +200 XP earned: all correct!" : r.done ? "✓ +100 XP earned. Get the worksheet 100% right for +100 more." : "Finish everything for +100 XP. Get the worksheet 100% right for +100 more."}</small>`; };
   const agPart = (g, l) => `<span class="wk-tick" style="margin-left:6px;opacity:${agPlays.has(g) ? 1 : .35}">${agPlays.has(g) ? "✓ " : ""}${l}</span>`;
   const lv = liveList();
-  const liveCards = lv.map(w => `<div class="wk-lesson"><div class="wk-lh"><b>${esc(w.title)}</b><small>${esc(w.sub || "")}</small></div>
+  const liveCards = lv.map(w => w.pages ? `<div class="wk-lesson"><div class="wk-lh"><b>${esc(w.title)}</b><small>${esc(w.sub || "")}</small></div>
+      <small>${esc(w.desc || "")}</small><div class="wk-games">${w.pages.map(([f, l], k) => `<button class="wk-game" type="button" data-wkact="live" data-id="${esc(w.id)}" data-p="${k}"><b>${esc(l)}</b></button>`).join("")}</div></div>` : `<div class="wk-lesson"><div class="wk-lh"><b>${esc(w.title)}</b><small>${esc(w.sub || "")}</small></div>
       <div class="wk-games"><button class="wk-game${agPlays.has(w.id + "-ws") ? " done" : ""}" type="button" data-wkact="live" data-id="${esc(w.id)}"><b>${w.games ? "Examples, games and worksheet" : w.noWs ? "Worked example" : "Worked examples, then a worksheet"}</b><small>${esc(w.desc || "Go through the worked examples first. Then the worksheet opens.")}</small>${w.xp ? xpNote(w.xp) : ""}
       <span>${agPart(w.id + "-examples", "Examples")}${(w.games || []).map(([k, l]) => agPart(w.id + "-" + k, l)).join("")}${w.noWs ? "" : agPart(w.id + "-ws", "Worksheet")}</span></button></div></div>`).join("");
   const matCard = (() => {
@@ -123,7 +124,7 @@ document.addEventListener("click", e => {
   if (a === "more") { showAll = !showAll; draw(); }
   if (a === "jump") { const c = $("cwBox"); if (c) c.scrollIntoView({ behavior: "smooth", block: "center" }); }
   if (a === "game") openGame(b.dataset.id);
-  if (a === "live") { const w = LIVE_WS.find(x => x.id === b.dataset.id); if (w && liveList().includes(w)) openAG(w.file, w.title); }
+  if (a === "live") { const w = LIVE_WS.find(x => x.id === b.dataset.id); if (w && liveList().includes(w)) { const pg = w.pages && w.pages[+b.dataset.p || 0]; openAG(pg ? pg[0] : w.file, w.title); } }
   if (a === "closegame") closeGame();
 });
 
