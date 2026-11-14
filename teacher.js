@@ -1,20 +1,20 @@
 import { onSnapshot, changeEmail, auth, fs, firebaseConfig, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, collection, query, where, writeBatch, setBase, bcol, bdoc, signOut, whenUser, profileOf, emailFor, pinKey,
-  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1113c";
-import { db } from "./fbdb.js?v=1113c";
-import { startUsage } from "./usage.js?v=1113c";
-import { mountTeacherTT } from "./timetable.js?v=1113c";
-import { openWork, gradeData } from "./teacherwork.js?v=1113c";
+  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1113d";
+import { db } from "./fbdb.js?v=1113d";
+import { startUsage } from "./usage.js?v=1113d";
+import { mountTeacherTT } from "./timetable.js?v=1113d";
+import { openWork, gradeData } from "./teacherwork.js?v=1113d";
 import "./lessonxp.js";
-import { openProgress } from "./progress.js?v=1113c";
-import { openMaterial } from "./material.js?v=1113c";
-import { openLiveWs } from "./liveteacher.js?v=1113c";
-import { hasFunpark, openFunpark } from "./fpteacher.js?v=1113c";
-import { openCoconut } from "./coconut.js?v=1113c";
-import { xpAllowed } from "./ownerpin.js?v=1113c";
+import { openProgress } from "./progress.js?v=1113d";
+import { openMaterial } from "./material.js?v=1113d";
+import { openLiveWs } from "./liveteacher.js?v=1113d";
+import { hasFunpark, openFunpark } from "./fpteacher.js?v=1113d";
+import { openCoconut } from "./coconut.js?v=1113d";
+import { xpAllowed } from "./ownerpin.js?v=1113d";
 window.xpGate = n => xpAllowed(n); window.wkGradeData = gradeData;
-import { initChat } from "./chat.js?v=1113c";
-import { openLive } from "./live.js?v=1113c";
-import { openInbox } from "./inbox.js?v=1113c";
+import { initChat } from "./chat.js?v=1113d";
+import { openLive } from "./live.js?v=1113d";
+import { openInbox } from "./inbox.js?v=1113d";
 
 const $ = id => document.getElementById(id);
 const esc2 = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -348,6 +348,26 @@ async function resetLogins(classes) {
   await listLogins();
 }
 $("lgReset").onclick = () => resetLogins([$("lgCls").value]);
+$("lgNever").onclick = async () => {
+  const box = $("lgNeverBox"), btn = $("lgNever"); btn.disabled = true; box.hidden = false; box.innerHTML = "<p>Checking every class…</p>";
+  try {
+    const lg = (await getDocs(bcol("logins"))).docs.map(d => ({ ...d.data(), sid: d.id })), st = (await getDocs(bcol("students"))).docs.map(d => ({ ...d.data(), sid: d.id }));
+    const has = new Set(lg.map(r => r.sid)), byCls = {};
+    const add = (c, k, n) => { (byCls[c] = byCls[c] || { never: [], none: [], total: 0 }); byCls[c][k].push(n); };
+    lg.forEach(r => { byCls[r.cls] = byCls[r.cls] || { never: [], none: [], total: 0 }; byCls[r.cls].total++; if (r.first === true) add(r.cls, "never", r.name || r.sid); });
+    st.filter(x => !has.has(x.sid) && x.cls).forEach(x => { add(x.cls, "none", x.name || x.sid); byCls[x.cls].total++; });
+    const order = [...new Set([...CLASSES, ...Object.keys(byCls)])].filter(c => byCls[c]);
+    const nm = a => a.sort((x, y) => String(x).localeCompare(String(y)));
+    const tot = order.reduce((n, c) => n + byCls[c].never.length, 0);
+    box.innerHTML = `<h4 style="margin:10px 0 4px">${tot} student${tot === 1 ? "" : "s"} have never signed in</h4>` + (order.map(c => { const r = byCls[c], n = r.never.length;
+      return `<details class="lg-nv" ${n || r.none.length ? "open" : ""} style="margin:6px 0;border:2px solid var(--line,#ccd);border-radius:12px;padding:8px 12px"><summary style="cursor:pointer;font-weight:800">${esc2(c)} · ${n} of ${r.total - r.none.length} never signed in${n || r.none.length ? "" : " ✓"}</summary>`
+        + (n ? `<ol style="margin:6px 0 2px 20px">${nm(r.never).map(x => `<li>${esc2(x)}</li>`).join("")}</ol>` : (r.none.length ? "" : `<p style="margin:6px 0">Everyone in this class has signed in.</p>`))
+        + (r.none.length ? `<p style="margin:6px 0 2px"><b>No login yet (${r.none.length}):</b> ${nm(r.none).map(esc2).join(", ")}</p>` : "") + `</details>`; }).join("") || "<p>No student logins found.</p>")
+      + `<div class="lg-bar" style="margin-top:6px"><button class="ghost small" id="lgNeverCp" type="button">Copy the list</button></div>`;
+    $("lgNeverCp").onclick = async () => { const t = order.map(c => c + " (" + byCls[c].never.length + ")\n" + (nm(byCls[c].never).map(x => "• " + x).join("\n") || "• everyone signed in")).join("\n\n"); try { await navigator.clipboard.writeText(t); msg("Copied."); } catch { msg("Could not copy."); } };
+  } catch (e) { box.innerHTML = `<p class="lg-msg">Could not load (${esc2(e.code || e.message)}).</p>`; }
+  btn.disabled = false;
+};
 $("lgResetAll").onclick = () => resetLogins(CLASSES.slice());
 
 $("loginsBtn").onclick = () => { fillLg(); $("loginsModal").hidden = false; msg(CLASSES.length ? "" : "Add a class first (the + Class button)."); if (CLASSES.length) listLogins(); };

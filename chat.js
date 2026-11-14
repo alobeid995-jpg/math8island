@@ -2,7 +2,7 @@
 // it opens a Facebook-style panel: people and groups with avatars, the last message and an unread mark, then the conversation.
 // 1:1 messages: <base>/msgs (sid, name, cls, from, text, at, tread).  Groups (made by the teacher only): <base>/groups {name, members[], created}
 // and <base>/gmsgs {gid, to[] (members), sid, name, cls, from, text, at, a, e}. Everything is live (onSnapshot).
-import { fs, collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, query, where, bcol, bdoc } from "./fb.js?v=1113c";
+import { fs, collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, query, where, bcol, bdoc } from "./fb.js?v=1113d";
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const br = s => esc(s).replace(/\n/g, "<br>");
