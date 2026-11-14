@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Graphing simultaneous equations</title>
+<style>
+:root{--ink:#13213f;--bg:#f3f5fa;--card:#fff;--line:#cfd6e4;--ok:#15803d}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{display:flex;flex-direction:column;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:10px 14px 10px 14px;padding-right:120px;background:#fff;border-bottom:2px solid var(--line)}
+.bar b{margin-right:6px}
+.st{border:2px solid var(--ink);background:#fff;color:var(--ink);border-radius:999px;padding:7px 14px;font:inherit;font-weight:800;cursor:pointer}
+.st[aria-current="true"]{background:var(--ink);color:#fff}
+.st.done::after{content:" \2713";color:var(--ok)}
+.st[aria-current="true"].done::after{color:#9be7b5}
+.st.lock{opacity:.55;border-style:dashed}
+.note{font-size:.9rem;margin-left:auto;opacity:.8}
+iframe{flex:1;width:100%;border:0;background:#fff;min-height:0}
+[hidden]{display:none!important}
+</style></head><body>
+<div class="bar"><b>Graphing simultaneous equations</b>
+ <button class="st" id="b1" type="button" data-go="1">1. Worked examples</button>
+ <button class="st lock" id="b2" type="button" data-go="2">2. Worksheet</button>
+ <span class="note" id="note"></span></div>
+<iframe id="f1" title="Worked examples" src="graphex42.html"></iframe>
+<iframe id="f2" title="Worksheet" hidden></iframe>
+<script type="module">
+import { fs, doc, getDoc, setDoc, getDocs, collection, query, where, whenUser, profileOf } from "./fb.js?v=1113b";
+const $ = id => document.getElementById(id);
+const G = { ex: "graph42-examples", ws: "graph42-ws" };
+const u = await whenUser(), p = u && await profileOf(u.uid);
+if (!p) { location.href = "index.html"; throw new Error("not signed in"); }
+const mode = p.role === "teacher" ? "teacher" : "student";
+const base = mode === "teacher" ? [] : (p.tid ? ["teachers", p.tid] : []);
+let retake = {}, myName = "", exDone = false, wsDone = false, seen = new Set(), view = 1;
+if (mode === "student") {
+  try { const s = await getDoc(doc(fs, ...base, "students", p.sid)); myName = s.exists() ? s.data().name || "" : ""; retake = s.exists() ? (s.data().rt || {}) : {}; } catch {}
+  try {
+    const s = await getDocs(query(collection(fs, ...base, "plays"), where("sid", "==", p.sid)));
+    s.docs.forEach(d => { const v = d.data(); if (v.g === G.ex) exDone = true; if (v.g === G.ws && (v.u || v.t || 0) > (retake[G.ws] || 0)) wsDone = true; });
+  } catch {}
+}
+async function save(g) {
+  if (mode !== "student") return;
+  const t = Date.now();
+  try { await setDoc(doc(fs, ...base, "plays", `${p.sid}_${g}_${t}`), { s: "ag", g, l: 1, r: 1, w: 0, t, u: t, m: [], sid: p.sid, name: myName }); } catch {}
+}
+const unlocked = () => mode === "teacher" || exDone;
+function paint() {
+  $("b1").setAttribute("aria-current", String(view === 1)); $("b2").setAttribute("aria-current", String(view === 2));
+  $("b1").classList.toggle("done", exDone); $("b2").classList.toggle("done", wsDone); $("b2").classList.toggle("lock", !unlocked());
+  $("f1").hidden = view !== 1; $("f2").hidden = view !== 2;
+  $("note").textContent = !unlocked() ? "Finish both worked examples to open the worksheet." : "";
+}
+function go(v) {
+  if (v === 2 && !unlocked()) { $("note").textContent = "Finish both worked examples first. Then the worksheet opens."; return; }
+  view = v; if (v === 2 && !$("f2").src) $("f2").src = "graph42.html"; paint();
+}
+document.addEventListener("click", e => { const b = e.target.closest("[data-go]"); if (b) go(+b.dataset.go); });
+window.addEventListener("message", async e => {
+  if (e.origin !== location.origin || typeof e.data !== "string") return;
+  if (/^g42-ex-\d+$/.test(e.data)) {
+    seen.add(e.data);
+    if (seen.size >= 2 && !exDone) { exDone = true; await save(G.ex); $("note").textContent = "Well done! The worksheet is open now."; paint(); setTimeout(() => go(2), 1200); }
+  }
+  if (e.data === "g42-ws-done" && !wsDone) { wsDone = true; await save(G.ws); paint(); }
+});
+paint();
+</script></body></html>

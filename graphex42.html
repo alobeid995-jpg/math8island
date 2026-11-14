@@ -306,6 +306,7 @@ function revealInter(){
        <small>This point is on BOTH lines — so it is the answer to both equations.</small></div>
      <div class="check"><b>Check</b> — Line 1: ${subText(ex.l1,X,Y)} &nbsp;|&nbsp; Line 2: ${subText(ex.l2,X,Y)}</div>`;
   p.className = "card inter show";
+  try{ parent.postMessage("g42-ex-"+cur, location.origin); }catch(e){}
   render({});
   p.scrollIntoView({behavior:"smooth", block:"nearest"});
 }

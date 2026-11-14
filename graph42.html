@@ -513,6 +513,7 @@ function renderSteps(){
   if(all && s){
     b.textContent = "🎉 Well done! Both lines pass through " + labelFor(s.x,s.y) + " — that is the solution of the simultaneous equations.";
     b.className = "banner show";
+    if(!window.__sent){ window.__sent = 1; try{ parent.postMessage("g42-ws-done", location.origin); }catch(e){} }
   } else b.className = "banner";
 }
 
