@@ -18,6 +18,13 @@ export function nowBH(t = Date.now()) {
   const x = new Date(t + 3 * 3600e3), jd = x.getUTCDay();          // 0 = Sunday
   return { d: jd, m: x.getUTCHours() * 60 + x.getUTCMinutes(), s: x.getUTCSeconds(), key: x.toISOString().slice(0, 10) };
 }
+/* the class Mr. Khalid is teaching right now (or about to, within 10 minutes) */
+export function liveLesson(t = Date.now()) {
+  const n = nowBH(t), cur = L.find(l => l.d === n.d && n.m >= l.sm && n.m < l.em);
+  if (cur) return { cls: cur.cls, now: true, left: left(n, cur.em), start: cur.s, end: cur.e };
+  const nx = L.filter(l => l.d === n.d && l.sm > n.m && l.sm - n.m <= 10)[0];
+  return nx ? { cls: nx.cls, now: false, left: 0, startsIn: nx.sm - n.m, start: nx.s, end: nx.e } : null;
+}
 const teach = c => (c === "8D" ? "8S" : c);    // 8D (demo class) follows 8S
 const dayList = (d, c) => L.filter(l => l.d === d && (!c || l.cls === teach(c))).sort((a, b) => a.sm - b.sm);
 const dur = m => m >= 60 ? Math.floor(m / 60) + " h" + (m % 60 ? " " + (m % 60) + " min" : "") : m + " min";

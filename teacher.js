@@ -1,20 +1,20 @@
 import { onSnapshot, changeEmail, auth, fs, firebaseConfig, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, collection, query, where, writeBatch, setBase, bcol, bdoc, signOut, whenUser, profileOf, emailFor, pinKey,
-  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1113d";
-import { db } from "./fbdb.js?v=1113d";
-import { startUsage } from "./usage.js?v=1113d";
-import { mountTeacherTT } from "./timetable.js?v=1113d";
-import { openWork, gradeData } from "./teacherwork.js?v=1113d";
+  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1113e";
+import { db } from "./fbdb.js?v=1113e";
+import { startUsage } from "./usage.js?v=1113e";
+import { liveLesson, mountTeacherTT } from "./timetable.js?v=1113e";
+import { openWork, gradeData } from "./teacherwork.js?v=1113e";
 import "./lessonxp.js";
-import { openProgress } from "./progress.js?v=1113d";
-import { openMaterial } from "./material.js?v=1113d";
-import { openLiveWs } from "./liveteacher.js?v=1113d";
-import { hasFunpark, openFunpark } from "./fpteacher.js?v=1113d";
-import { openCoconut } from "./coconut.js?v=1113d";
-import { xpAllowed } from "./ownerpin.js?v=1113d";
+import { openProgress } from "./progress.js?v=1113e";
+import { openMaterial } from "./material.js?v=1113e";
+import { openLiveWs } from "./liveteacher.js?v=1113e";
+import { hasFunpark, openFunpark } from "./fpteacher.js?v=1113e";
+import { openCoconut } from "./coconut.js?v=1113e";
+import { xpAllowed } from "./ownerpin.js?v=1113e";
 window.xpGate = n => xpAllowed(n); window.wkGradeData = gradeData;
-import { initChat } from "./chat.js?v=1113d";
-import { openLive } from "./live.js?v=1113d";
-import { openInbox } from "./inbox.js?v=1113d";
+import { initChat } from "./chat.js?v=1113e";
+import { openLive } from "./live.js?v=1113e";
+import { openInbox } from "./inbox.js?v=1113e";
 
 const $ = id => document.getElementById(id);
 const esc2 = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -91,7 +91,7 @@ document.addEventListener("click", async ev => {
 window.__resolveClaude({ use: async n => n === "db" ? db : n === "user" ? { can: async () => true, isOwner: () => true, canEdit: () => true } : null });
 
 // Students may only spend what the shop price list allows, so the list lives in the database.
-window.__owner = ADMIN; if (ADMIN) mountTeacherTT();   // only the owner can change prices
+window.__owner = ADMIN; if (ADMIN) { mountTeacherTT(); window.__liveLesson = liveLesson; }   // only the owner can change prices
 {
   const pref = doc(fs, "shop", "prices"); let saved = {};
   try { const s = window.__pricesSnap || await getDoc(pref); if (s && s.exists()) saved = s.data().prices || {}; } catch {}
@@ -116,6 +116,7 @@ if (ADMIN) { // the button is only created for the owner; other teachers' pages 
 $("workBtn").onclick = () => openWork();
 { const ib2 = document.createElement("button"); ib2.className = "ghost small"; ib2.id = "inboxBtn"; ib2.type = "button"; ib2.textContent = "Announcements"; ib2.onclick = () => openInbox(); $("outBtn").before(ib2); }
 { const lb = document.createElement("button"); lb.className = "ghost small"; lb.id = "liveBtn"; lb.type = "button"; lb.textContent = "Live quiz"; lb.onclick = () => openLive(); $("outBtn").before(lb); }
+{ const ml = document.createElement("button"); ml.className = "ghost small"; ml.id = "mlBtn"; ml.type = "button"; ml.textContent = "My lessons"; ml.onclick = () => window.openMyLessons && window.openMyLessons(); if (ADMIN) $("outBtn").before(ml); }
 { const lw = document.createElement("button"); lw.className = "ghost small"; lw.id = "lwBtn"; lw.type = "button"; lw.textContent = "Live worksheets"; lw.onclick = () => openLiveWs(); if (ADMIN) $("outBtn").before(lw); }
 { const fb = document.createElement("button"); fb.className = "ghost small"; fb.id = "funBtn"; fb.type = "button"; fb.textContent = "Fun Park"; fb.style.display = "none"; fb.onclick = () => openFunpark(); $("outBtn").before(fb); hasFunpark(ADMIN, u.uid).then(ok => { if (ok) fb.style.display = ""; }).catch(() => {}); }
 { const cb = document.createElement("button"); cb.className = "ghost small"; cb.id = "ccBtn"; cb.type = "button"; cb.textContent = "Coconut Crack"; cb.style.display = "none"; cb.onclick = () => openCoconut(); $("outBtn").before(cb); hasFunpark(ADMIN, u.uid, "coconut").then(ok => { if (ok) cb.style.display = ""; }).catch(() => {}); }
@@ -135,7 +136,7 @@ $("outBtn").onclick = async () => { await signOut(auth); location.href = "index.
     catch (er) { alert(er && er.code === "auth/invalid-credential" || er && er.code === "auth/wrong-password" ? "The password is not right." : "Could not do it: " + ((er && (er.code || er.message)) || "error")); }
   };
   document.body.appendChild(eb);
-  const btns = ["workBtn", "lwBtn", "liveBtn", "ccBtn", "funBtn", "inboxBtn", "matBtn", "loginsBtn", "impBtn", "islandBtn", "devBtn", "emailBtn"].map(id => $(id)).filter(Boolean);
+  const btns = ["workBtn", "mlBtn", "lwBtn", "liveBtn", "ccBtn", "funBtn", "inboxBtn", "matBtn", "loginsBtn", "impBtn", "islandBtn", "devBtn", "emailBtn"].map(id => $(id)).filter(Boolean);
   btns.forEach(b => holder.appendChild(b));
   const place = () => { const h = $("hubMgmt"); if (h && !btns.every(b => b.parentNode === h)) btns.forEach(b => h.appendChild(b)); };
   const r0 = window.render;
