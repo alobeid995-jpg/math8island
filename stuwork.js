@@ -1,8 +1,8 @@
 // "My classwork" on the student page: worksheets from the teacher, and (for the 9S boys) the lesson games.
-import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1113i";
-import { playerOf, catalog } from "./islandmap.js?v=1113i";
-import { logEv } from "./presence.js?v=1113i";
-import { LIVE_WS, isLive } from "./liveworks.js?v=1113i";
+import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1113j";
+import { playerOf, catalog } from "./islandmap.js?v=1113j";
+import { logEv } from "./presence.js?v=1113j";
+import { LIVE_WS, isLive } from "./liveworks.js?v=1113j";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -60,7 +60,7 @@ function draw() {
   const lv = liveList();
   const liveCards = lv.map(w => w.pages ? `<div class="wk-lesson"><div class="wk-lh"><b>${esc(w.title)}</b><small>${esc(w.sub || "")}</small></div>
       <small>${esc(w.desc || "")}</small><div class="wk-games">${w.pages.map(([f, l], k) => `<button class="wk-game" type="button" data-wkact="live" data-id="${esc(w.id)}" data-p="${k}"><b>${esc(l)}</b></button>`).join("")}</div></div>` : `<div class="wk-lesson"><div class="wk-lh"><b>${esc(w.title)}</b><small>${esc(w.sub || "")}</small></div>
-      <div class="wk-games"><button class="wk-game${agPlays.has(w.id + "-ws") ? " done" : ""}" type="button" data-wkact="live" data-id="${esc(w.id)}"><b>${w.games ? "Examples, games and worksheet" : w.noWs ? "Worked example" : "Worked examples, then a worksheet"}</b><small>${esc(w.desc || "Go through the worked examples first. Then the worksheet opens.")}</small>${w.xp ? xpNote(w.xp) : ""}
+      <div class="wk-games"><button class="wk-game${agPlays.has(w.id + "-ws") ? " done" : ""}" type="button" data-wkact="live" data-id="${esc(w.id)}"><b>${w.games ? "Examples, games and worksheet" : w.noWs ? "Worked example" : "Worked examples, then a worksheet"}</b><small>${esc(w.desc || "Go through the worked examples first. Then the worksheet opens.")}</small>${w.noWs ? "" : xpNote(w.xp || w.id)}
       <span>${agPart(w.id + "-examples", "Examples")}${(w.games || []).map(([k, l]) => agPart(w.id + "-" + k, l)).join("")}${w.noWs ? "" : agPart(w.id + "-ws", "Worksheet")}</span></button></div></div>`).join("");
   const matCard = (() => {
     if (!materials.length) return "";

@@ -280,6 +280,7 @@ function yAt(e,x){ return (e.c - e.a*x)/e.b; }
 function pt(x,y){ return "(" + x + ", " + y + ")"; }
 function num(v){ return String(v).replace("-","−"); }
 function setMsg(id, text, ok){
+  if(text && !ok && text.charAt(0) === "\u2717") window.__wrongN = (window.__wrongN || 0) + 1;   // counts every wrong check (for the 100% bonus)
   const el = $(id);
   el.textContent = text || "";
   el.className = "msg" + (text ? (ok ? " ok" : " no") : "");
@@ -513,7 +514,7 @@ function renderSteps(){
   if(all && s){
     b.textContent = "🎉 Well done! Both lines pass through " + labelFor(s.x,s.y) + " — that is the solution of the simultaneous equations.";
     b.className = "banner show";
-    if(!window.__sent){ window.__sent = 1; try{ parent.postMessage("g42-ws-done", location.origin); }catch(e){} }
+    if(!window.__sent){ window.__sent = 1; try{ parent.postMessage("g42-ws-done:" + (window.__wrongN || 0), location.origin); }catch(e){} }
   } else b.className = "banner";
 }
 

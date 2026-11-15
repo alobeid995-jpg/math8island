@@ -1,7 +1,8 @@
 // Lesson XP: +100 XP when a student finishes a whole lesson (examples, 3 games and the worksheet),
 // and another +100 XP when the worksheet is 100% correct. Runs inside the teacher page; each award is saved on the student
 // (lx), so nobody is paid twice, even if several screens are open.
-import { getDocs, query, where, bcol, bdoc, getDoc } from "./fb.js?v=1113i";
+import { getDocs, query, where, bcol, bdoc, getDoc } from "./fb.js?v=1113j";
+import { LIVE_WS } from "./liveworks.js?v=1113j";
 
 const LES = {
   ag34: { cls: /^8G$/i, name: "Unit 3.4 lesson", parts: ["ag34-examples", "ag34-tap", "ag34-bound", "ag34-ineq", "ag34-ws"], ws: "ag34-ws" },
@@ -10,6 +11,9 @@ const LES = {
   sb42: { cls: /^8[YSM]$/i, name: "substitution practice lesson", parts: ["sb42-examples", "sb42-ws"], ws: "sb42-ws" },
   el42: { cls: /^8[BYSM]$/i, name: "elimination lesson", parts: ["el42-examples", "el42-addsub", "el42-solve", "el42-spot", "el42-ws"], ws: "el42-ws" }
 };
+// Every interactive worksheet in the Live worksheets list pays the same way (100 XP for finishing, 100 more for a perfect worksheet),
+// for any class that has it, without having to be listed above.
+LIVE_WS.forEach(w => { if (!LES[w.id] && !w.noWs) LES[w.id] = { cls: /./, name: w.title.toLowerCase(), parts: [w.id + "-examples", ...(w.games || []).map(g => w.id + "-" + g[0]), w.id + "-ws"], ws: w.id + "-ws" }; });
 const DONE_XP = 100, PERFECT_XP = 100;
 let running = false;
 const busy = new Set();
@@ -18,8 +22,7 @@ async function run() {
   if (running) return; running = true;
   try {
     if (typeof students === "undefined" || !students.length || readOnly) return;
-    const kinds = new Set(); students.forEach(s => Object.entries(LES).forEach(([k, c]) => { if (c.cls.test(s.cls)) kinds.add(k === "ag34" ? "ag" : "el"); }));
-    if (!kinds.size) return;
+    const kinds = new Set(["ag", "el"]);
     const snap = await getDocs(query(bcol("plays"), where("s", "in", [...kinds])));
     const bySid = new Map();
     snap.docs.forEach(d => { const v = d.data(); if (!bySid.has(v.sid)) bySid.set(v.sid, []); bySid.get(v.sid).push(v); });
@@ -29,7 +32,7 @@ async function run() {
         if (!c.cls.test(st.cls)) continue;
         const have = new Set(pl.map(p => p.g)), rec = (st.lx || {})[key] || {};
         const finished = c.parts.every(g => have.has(g));
-        const perfect = finished && pl.some(p => p.g === c.ws && (+p.w || 0) === 0 && (+p.r || 0) > 0);
+        const perfect = finished && pl.some(p => p.g === c.ws && (+p.w || 0) === 0 && (+p.r || 0) > 0 && (!LIVE_WS.some(w => w.id === key) || p.v === 2));   // graph42 plays before the fix cannot prove a perfect worksheet
         const wantDone = finished && !rec.done, wantPerfect = perfect && !rec.perfect;
         if (!wantDone && !wantPerfect) continue;
         const tag = st.id + key; if (busy.has(tag)) continue; busy.add(tag);

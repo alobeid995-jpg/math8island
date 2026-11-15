@@ -23,7 +23,7 @@ iframe{flex:1;width:100%;border:0;background:#fff;min-height:0}
 <iframe id="f1" title="Worked examples" src="graphex42.html"></iframe>
 <iframe id="f2" title="Worksheet" hidden></iframe>
 <script type="module">
-import { fs, doc, getDoc, setDoc, getDocs, collection, query, where, whenUser, profileOf } from "./fb.js?v=1113i";
+import { fs, doc, getDoc, setDoc, getDocs, collection, query, where, whenUser, profileOf } from "./fb.js?v=1113j";
 const $ = id => document.getElementById(id);
 const G = { ex: "graph42-examples", ws: "graph42-ws" };
 const u = await whenUser(), p = u && await profileOf(u.uid);
@@ -38,10 +38,10 @@ if (mode === "student") {
     s.docs.forEach(d => { const v = d.data(); if (v.g === G.ex) exDone = true; if (v.g === G.ws && (v.u || v.t || 0) > (retake[G.ws] || 0)) wsDone = true; });
   } catch {}
 }
-async function save(g) {
+async function save(g, w = 0) {
   if (mode !== "student") return;
   const t = Date.now();
-  try { await setDoc(doc(fs, ...base, "plays", `${p.sid}_${g}_${t}`), { s: "ag", g, l: 1, r: 1, w: 0, t, u: t, m: [], sid: p.sid, name: myName }); } catch {}
+  try { await setDoc(doc(fs, ...base, "plays", `${p.sid}_${g}_${t}`), { s: "ag", g, l: 1, r: 1, w, v: 2, t, u: t, m: [], sid: p.sid, name: myName }); } catch {}
 }
 const unlocked = () => mode === "teacher" || exDone;
 function paint() {
@@ -61,7 +61,7 @@ window.addEventListener("message", async e => {
     seen.add(e.data);
     if (seen.size >= 2 && !exDone) { exDone = true; await save(G.ex); $("note").textContent = "Well done! The worksheet is open now."; paint(); setTimeout(() => go(2), 1200); }
   }
-  if (e.data === "g42-ws-done" && !wsDone) { wsDone = true; await save(G.ws); paint(); }
+  if (/^g42-ws-done(:\d+)?$/.test(e.data) && !wsDone) { wsDone = true; await save(G.ws, +(e.data.split(":")[1] || 0)); paint(); }
 });
 paint();
 </script></body></html>
