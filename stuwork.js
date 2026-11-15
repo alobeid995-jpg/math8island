@@ -1,8 +1,8 @@
 // "My classwork" on the student page: worksheets from the teacher, and (for the 9S boys) the lesson games.
-import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1115h";
-import { playerOf, catalog } from "./islandmap.js?v=1115h";
-import { logEv } from "./presence.js?v=1115h";
-import { LIVE_WS, isLive } from "./liveworks.js?v=1115h";
+import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1115i";
+import { playerOf, catalog } from "./islandmap.js?v=1115i";
+import { logEv } from "./presence.js?v=1115i";
+import { LIVE_WS, isLive } from "./liveworks.js?v=1115i";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -134,9 +134,16 @@ document.addEventListener("click", e => {
 { const st = document.createElement("style"); st.textContent = ".cw-scroll{max-height:340px;overflow-y:auto;padding-right:6px;scroll-snap-type:y proximity;overscroll-behavior:contain}.cw-scroll>*{scroll-snap-align:start}.cw-hint{display:block;margin-top:6px;opacity:.75}.cw-badge{display:inline-block;margin-left:8px;padding:2px 10px;border-radius:99px;background:#d8392b;color:#fff;font-size:13px;font-weight:800;vertical-align:middle}.cw-badge.ok{background:var(--good,#1f7a4a)}.cw-nudge{grid-column:1/-1;display:flex;align-items:center;gap:10px;width:100%;margin:0 0 4px;padding:10px 14px;border:0;border-radius:14px;background:#d8392b;color:#fff;font:inherit;font-weight:700;cursor:pointer;text-align:left}.cw-dot{display:inline-grid;place-items:center;min-width:26px;height:26px;border-radius:99px;background:#fff;color:#d8392b;font-weight:800}@media(min-width:860px){#work{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}#work>section:only-child{grid-column:1/-1}#work>section{margin:0}}"; document.head.appendChild(st); }
 { const st = document.createElement("style"); st.textContent = "#work .wk-box{padding:14px 16px!important}#work .wk-box h3{margin:0 0 6px!important;font-size:18px!important;line-height:1.2}#work .mt-un{font-size:14px;margin:10px 0 4px}#work .mt-ls{padding:7px 10px;margin:4px 0;font-size:14px;gap:8px}#work .mt-n{min-width:2em}#work .mt-list{margin:6px 0;padding-top:6px}#work .mt-list summary{font-size:15px}#work .mt-a{padding:4px 10px;font-size:13px}#work .wk-lh b{font-size:15px}#work .wk-game{padding:10px 12px}#work .wk-game b{font-size:15px}#work .wk-game small{font-size:12.5px}@media(min-width:860px){#work .mt-box{max-height:560px;overflow:auto}}"; document.head.appendChild(st); }
 
-// A worksheet the teacher just started appears without reloading: re-check every 45 s while nothing is open.
+// A worksheet the teacher just started appears without reloading. Every 45 s we read only the two small switch documents (2 reads);
+// the full work list (many reads) is loaded again only when one of them changed.
+let lastSwitch = "";
 setInterval(async () => {
   if (!me || document.hidden || $("wkPlay") || openId || !LIVE_WS.length) return;
+  let sig = "";
+  try { const a = await getDoc(doc(fs, ...base, "work", "liveopen")), b = await getDoc(doc(fs, ...base, "work", "remind")); sig = JSON.stringify([a.exists() ? a.data().open : null, b.exists() ? b.data().at : null]); } catch { return; }
+  if (!lastSwitch) { lastSwitch = sig; return; }
+  if (sig === lastSwitch) return;
+  lastSwitch = sig;
   const before = JSON.stringify(liveList().map(w => w.id));
   try { await load(); } catch { return; }
   if (JSON.stringify(liveList().map(w => w.id)) !== before) draw();

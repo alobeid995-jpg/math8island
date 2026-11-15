@@ -1,6 +1,6 @@
 // Student side: announcements from the teacher (top of the page) and a message box to write to the teacher.
 // Announcements are documents in <base>/work (kind "announcement"). Messages are documents in <base>/msgs.
-import { fs, doc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1115h";
+import { fs, doc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1115i";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -52,7 +52,8 @@ document.addEventListener("click", async e => {
     sending = false; draw();
   }
 });
-async function tick() { if (document.hidden || !me) return; const had = unreadT(); await load(); if (!($("smText") && document.activeElement === $("smText") && $("smText").value)) draw(); else if (unreadT() !== had) draw(); }
+let lastLoad = Date.now();
+async function tick(force) { if (document.hidden || !me) return; if (!force && Date.now() - lastLoad < 5 * 60000) return; lastLoad = Date.now(); const had = unreadT(); await load(); if (!($("smText") && document.activeElement === $("smText") && $("smText").value)) draw(); else if (unreadT() !== had) draw(); }
 
 export async function initMsgs(profile, getMe) {
   P = profile; base = profile.tid ? ["teachers", profile.tid] : [];
@@ -60,5 +61,5 @@ export async function initMsgs(profile, getMe) {
   if (!me) return;
   await load(); draw();
   setTimeout(() => { ls.set(key("mi_news_seen"), Date.now()); }, 6000);   // the "New" tags go away after he has seen the page
-  setInterval(tick, 60000); document.addEventListener("visibilitychange", () => { if (!document.hidden) tick(); });
+  setInterval(tick, 5 * 60000); document.addEventListener("visibilitychange", () => { if (!document.hidden) tick(); });   // announcements rarely change: re-read at most every 5 minutes (was every minute)
 }

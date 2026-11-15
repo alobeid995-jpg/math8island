@@ -27,15 +27,21 @@ export { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndP
 // It is an estimate (it counts documents the page asked for), kept on the device and sent along with the "who is online" record.
 // The free quota day and month follow Pacific time, because that is when Google resets them.
 const pt = () => new Date().toLocaleDateString("en-CA", { timeZone: "America/Los_Angeles" });
-let M = { d: pt(), m: pt().slice(0, 7), dr: 0, dw: 0, mr: 0, mw: 0 };
-try { const o = JSON.parse(localStorage.getItem("mi_meter") || "null"); if (o && typeof o.dr === "number") M = o; } catch {}
-let mTimer = 0;
-function bump(r, w) {
-  const d = pt(); if (M.d !== d) { M.d = d; M.dr = 0; M.dw = 0; } if (M.m !== d.slice(0, 7)) { M.m = d.slice(0, 7); M.mr = 0; M.mw = 0; }
-  M.dr += r; M.mr += r; M.dw += w; M.mw += w;
-  if (!mTimer) mTimer = setTimeout(() => { mTimer = 0; try { localStorage.setItem("mi_meter", JSON.stringify(M)); } catch {} }, 3000);
+const zero = () => ({ d: pt(), m: pt().slice(0, 7), dr: 0, dw: 0, mr: 0, mw: 0 });
+const readStore = () => { try { const o = JSON.parse(localStorage.getItem("mi_meter") || "null"); if (o && typeof o.dr === "number") return o; } catch {} return zero(); };
+// Several pages of one device (student page, games inside it) count at the same time. Each one keeps only what it counted since its last save
+// and ADDS that to the stored total, so one page never overwrites the others' counts.
+let P = { r: 0, w: 0 }, mTimer = 0;
+function roll(o) { const d = pt(); if (o.d !== d) { o.d = d; o.dr = 0; o.dw = 0; } if (o.m !== d.slice(0, 7)) { o.m = d.slice(0, 7); o.mr = 0; o.mw = 0; } return o; }
+function flush() {
+  mTimer = 0; const o = roll(readStore());
+  o.dr += P.r; o.mr += P.r; o.dw += P.w; o.mw += P.w; P = { r: 0, w: 0 };
+  try { localStorage.setItem("mi_meter", JSON.stringify(o)); } catch {}
+  return o;
 }
-export const meter = () => { bump(0, 0); return { d: M.d, dr: M.dr, dw: M.dw, m: M.m, mr: M.mr, mw: M.mw }; };
+function bump(r, w) { P.r += r; P.w += w; if (!mTimer) mTimer = setTimeout(flush, 3000); }
+addEventListener("pagehide", () => { if (P.r || P.w) flush(); });
+export const meter = () => { const o = flush(); return { d: o.d, dr: o.dr, dw: o.dw, m: o.m, mr: o.mr, mw: o.mw }; };
 export const getDoc = (...a) => { bump(1, 0); return _getDoc(...a); };
 export const getDocs = async (...a) => { const s = await _getDocs(...a); bump(Math.max(1, s.size), 0); return s; };
 export const setDoc = (...a) => { bump(0, 1); return _setDoc(...a); };
