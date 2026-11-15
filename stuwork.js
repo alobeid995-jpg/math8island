@@ -1,8 +1,8 @@
 // "My classwork" on the student page: worksheets from the teacher, and (for the 9S boys) the lesson games.
-import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1115f";
-import { playerOf, catalog } from "./islandmap.js?v=1115f";
-import { logEv } from "./presence.js?v=1115f";
-import { LIVE_WS, isLive } from "./liveworks.js?v=1115f";
+import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1115g";
+import { playerOf, catalog } from "./islandmap.js?v=1115g";
+import { logEv } from "./presence.js?v=1115g";
+import { LIVE_WS, isLive } from "./liveworks.js?v=1115g";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -17,13 +17,15 @@ export async function initWork(profile, getMe, toastFn) {
   await load(); draw();
 }
 const liveList = () => LIVE_WS.filter(w => isLive(w, liveOpen, String((me && me.cls) || "").trim()));
+let remindOn = false;   // the teacher pressed "Remind about missing work" for this class
 async function load() {
   try {
     const w = await getDocs(query(collection(fs, ...base, "work"), where("classes", "array-contains", me.cls)));
     const all = w.docs.map(d => ({ id: d.id, ...d.data() }));
     materials = all.filter(x => x.kind === "material" && Array.isArray(x.units)).sort((a, b) => (b.created || 0) - (a.created || 0));
-    works = all.filter(x => x.kind !== "material" && x.kind !== "announcement" && x.kind !== "funpark" && x.kind !== "liveopen" && x.kind !== "mylessons").sort((a, b) => (b.created || 0) - (a.created || 0));
+    works = all.filter(x => x.kind !== "material" && x.kind !== "announcement" && x.kind !== "funpark" && x.kind !== "liveopen" && x.kind !== "remind" && x.kind !== "mylessons").sort((a, b) => (b.created || 0) - (a.created || 0));
     { const lo = all.find(x => x.id === "liveopen" && x.kind === "liveopen"); liveOpen = (lo && lo.open) || {}; }
+    { const rd = all.find(x => x.id === "remind" && x.kind === "remind"), at = (rd && rd.at) || {}; remindOn = Object.keys(at).some(k => at[k] && k.toUpperCase() === String(me.cls || "").trim().toUpperCase()); }
     const s = await getDocs(query(collection(fs, ...base, "subs"), where("sid", "==", P.sid)));
     mine = new Map(s.docs.map(d => [d.data().wid, d.data()]));
   } catch { works = []; }
@@ -73,7 +75,7 @@ function draw() {
   const pend = list.filter(x => !mine.has(x.id)).length
     + lv.filter(w => !agPlays.has(w.id + "-ws")).length + shown.filter(l => l.games.some(g => !played.has(g.id))).length;
   const cwN = (sheets ? 1 : 0) + lv.length + shown.length;
-  const nudge = pend ? `<button class="cw-nudge" type="button" data-wkact="jump"><span class="cw-dot">${pend}</span> You still have ${pend === 1 ? "1 classwork" : pend + " classwork"} to do. Tap to open it.</button>` : "";
+  const nudge = pend && remindOn ? `<button class="cw-nudge" type="button" data-wkact="jump"><span class="cw-dot">${pend}</span> Your teacher says: you have ${pend === 1 ? "1 missing classwork" : pend + " missing classwork"}. Please finish ${pend === 1 ? "it" : "them"}. Tap to open.</button>` : "";
   box.innerHTML = nudge + matCard + `<section class="card wk-box cw-box" id="cwBox"><h3>My classwork${pend ? ` <span class="cw-badge">${pend} to do</span>` : cwN ? ` <span class="cw-badge ok">All done ✓</span>` : ""}</h3>
     <div class="cw-scroll">${liveCards}
     ${sheets ? `<div class="wk-list">${sheets}</div>` : ""}
