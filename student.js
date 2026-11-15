@@ -1,12 +1,12 @@
-import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1115a";
-import { initWork } from "./stuwork.js?v=1115a";
-import { initMsgs } from "./stumsg.js?v=1115a";
-import { initLive } from "./livequiz.js?v=1115a";
-import { initChat } from "./chat.js?v=1115a";
-import { initFunpark } from "./funpark.js?v=1115a";
-import { startPresence, logEv } from "./presence.js?v=1115a";
-import { mountStudentTT } from "./timetable.js?v=1115a";
-import { achCard, initAch } from "./achieve.js?v=1115a";
+import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1115c";
+import { initWork } from "./stuwork.js?v=1115c";
+import { initMsgs } from "./stumsg.js?v=1115c";
+import { initLive } from "./livequiz.js?v=1115c";
+import { initChat } from "./chat.js?v=1115c";
+import { initFunpark } from "./funpark.js?v=1115c";
+import { startPresence, logEv } from "./presence.js?v=1115c";
+import { mountStudentTT } from "./timetable.js?v=1115c";
+import { achCard, initAch } from "./achieve.js?v=1115c";
 
 const sub = (t, n) => t.split("{n}").join(n);
 let me = null, ref = null, shopCat = "frame", confirmId = "", pickerOpen = false, seeds = [], loaded = false;

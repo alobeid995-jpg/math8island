@@ -1,21 +1,21 @@
 import { onSnapshot, changeEmail, auth, fs, firebaseConfig, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, collection, query, where, writeBatch, setBase, bcol, bdoc, signOut, whenUser, profileOf, emailFor, pinKey,
-  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1115a";
-import { db } from "./fbdb.js?v=1115a";
-import { startUsage } from "./usage.js?v=1115a";
-import { liveLesson, mountTeacherTT } from "./timetable.js?v=1115a";
-import { openWork, gradeData } from "./teacherwork.js?v=1115a";
+  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1115c";
+import { db } from "./fbdb.js?v=1115c";
+import { startUsage } from "./usage.js?v=1115c";
+import { liveLesson, mountTeacherTT } from "./timetable.js?v=1115c";
+import { openWork, gradeData } from "./teacherwork.js?v=1115c";
 import "./lessonxp.js";
-import { openProgress } from "./progress.js?v=1115a";
-import { openMaterial } from "./material.js?v=1115a";
-import { openLiveWs } from "./liveteacher.js?v=1115a";
-import { openFunpark } from "./fpteacher.js?v=1115a";
-import { openCoconut } from "./coconut.js?v=1115a";
-import { hasFeature, hideCss } from "./features.js?v=1115a";
-import { xpAllowed } from "./ownerpin.js?v=1115a";
+import { openProgress } from "./progress.js?v=1115c";
+import { openMaterial } from "./material.js?v=1115c";
+import { openLiveWs } from "./liveteacher.js?v=1115c";
+import { openFunpark } from "./fpteacher.js?v=1115c";
+import { openCoconut } from "./coconut.js?v=1115c";
+import { hasFeature, hideCss } from "./features.js?v=1115c";
+import { xpAllowed } from "./ownerpin.js?v=1115c";
 window.xpGate = n => xpAllowed(n); window.wkGradeData = gradeData;
-import { initChat } from "./chat.js?v=1115a";
-import { openLive } from "./live.js?v=1115a";
-import { openInbox } from "./inbox.js?v=1115a";
+import { initChat } from "./chat.js?v=1115c";
+import { openLive } from "./live.js?v=1115c";
+import { openInbox } from "./inbox.js?v=1115c";
 
 const $ = id => document.getElementById(id);
 const esc2 = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -228,9 +228,10 @@ async function listLogins() {
   const stale = rows.filter(r => r.want && r.want.toLowerCase() !== String(r.username || "").toLowerCase());
   $("lgList").innerHTML = rows.length
     ? (stale.length ? `<div class="lg-stale"><b>${stale.length} login${stale.length === 1 ? " uses" : "s use"} an old ID.</b> These students now have a student ID, but their login still uses the old code. <button class="primary small" id="lgFixIds" type="button">Update login ID${stale.length === 1 ? "" : "s"}</button></div>` : "") +
-      `<h4 style="margin:6px 0 2px">Class ${esc2(cl)} · ${rows.length} logins · ${rows.filter(r => r.first === true).length} still on the starting PIN</h4><table class="lg-tbl"><thead><tr><th>Name</th><th>ID</th><th>PIN</th><th>Status</th></tr></thead><tbody>${rows.map(r => `<tr><td>${esc2(r.name)}</td><td>${esc2(r.username)}${stale.includes(r) ? ` <small class="lg-old">→ ${esc2(r.want)}</small>` : ""}</td><td class="pin">${esc2(r.pin)}</td><td>${r.first === true ? "Starting PIN · must change at first login" : "Own PIN"}</td></tr>`).join("")}</tbody></table>`
+      `<h4 style="margin:6px 0 2px">Class ${esc2(cl)} · ${rows.length} logins · ${rows.filter(r => r.first === true).length} still on the starting PIN</h4><table class="lg-tbl"><thead><tr><th>Name</th><th>ID</th><th>PIN</th><th>Status</th><th></th></tr></thead><tbody>${rows.map(r => `<tr><td>${esc2(r.name)}</td><td>${esc2(r.username)}${stale.includes(r) ? ` <small class="lg-old">→ ${esc2(r.want)}</small>` : ""}</td><td class="pin">${esc2(r.pin)}</td><td>${r.first === true ? "Starting PIN · must change at first login" : "Own PIN"}</td><td><button class="ghost small" type="button" data-rsid="${esc2(r.sid)}">Reset login</button></td></tr>`).join("")}</tbody></table>`
     : `<p class="none">No logins for ${esc2(cl)} yet.</p>`;
   if (stale.length) $("lgFixIds").onclick = () => fixIds(stale);
+  $("lgList").querySelectorAll("[data-rsid]").forEach(x => { x.onclick = () => resetLogins([cl], x.dataset.rsid); });
   const todo = rows.filter(r => r.first === true);
   if (rows.length) {
     const box = document.createElement("div"); box.style.cssText = "margin-top:12px";
@@ -330,13 +331,13 @@ async function fixIds(stale) {
 }
 
 let resetting = false;
-async function resetLogins(classes) {
+async function resetLogins(classes, onlySid) {
   if (resetting) return;
-  const start = $("lgStart").value.trim(), btns = [$("lgReset"), $("lgResetAll"), $("lgMake")];
+  const start = $("lgStart").value.trim(), btns = [...document.querySelectorAll("[data-rsid]"), $("lgReset"), $("lgResetAll"), $("lgMake")];
   if (!/^\d{6}$/.test(start)) { msg("Type the new 6-digit starting PIN first."); $("lgStart").focus(); return; }
-  const rows = (await getDocs(bcol("logins"))).docs.filter(d => classes.includes(d.data().cls));
+  const rows = (await getDocs(bcol("logins"))).docs.filter(d => classes.includes(d.data().cls) && (!onlySid || d.id === onlySid));
   if (!rows.length) { msg("No logins to reset" + (classes.length === 1 ? " in " + classes[0] : "") + "."); return; }
-  if (!confirm(`Reset the PIN of ${rows.length} student${rows.length === 1 ? "" : "s"} in ${classes.join(", ")}?\n\nTheir old PINs stop working. Everyone logs in once with ${start} and then chooses his own PIN.`)) return;
+  if (!confirm(`Reset the PIN of ${onlySid ? (rows[0].data().name || "this student") : rows.length + " student" + (rows.length === 1 ? "" : "s") + " in " + classes.join(", ")}?\n\nTheir old PINs stop working. Everyone logs in once with ${start} and then chooses his own PIN.`)) return;
   btns.forEach(b => b.disabled = true); resetting = true;
   try {
   // the profiles of my students (to switch off their old logins)
