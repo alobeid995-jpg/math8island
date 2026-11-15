@@ -1,8 +1,8 @@
 // Coconut Crack: a team game for the whole class on one screen (the teacher's projector). Teams take turns to crack a coconut.
-// A coconut hides a question or a surprise. Questions come from the Live quiz sets (or pasted/imported cells). Nothing is saved to students.
-import { getDocs, bcol } from "./fb.js?v=1115d";
-import { PRESETS } from "./presets.js?v=1115d";
-import { parseQuiz } from "./live.js?v=1115d";
+// A coconut hides a question or a surprise. Questions come from your own Coconut sets (uploaded from Excel/CSV or pasted). They are kept apart from Live quiz. Nothing is saved to students.
+import { getDocs, setDoc, deleteDoc, bcol, bdoc } from "./fb.js?v=1115f";
+import { PRESETS } from "./presets.js?v=1115f";
+import { parseQuiz, readFile } from "./live.js?v=1115f";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -11,7 +11,8 @@ const TEAMS = [["Parrots", "🦜", "#e0443e"], ["Crabs", "🦀", "#e5a50a"], ["T
 const SUR = { bonus: ["🎁", "Treasure!", "+10 points for your team"], bomb: ["💣", "Boom!", "Your team loses 5 points"], steal: ["🏴‍☠️", "Pirate!", "Steal 5 points from a team you choose"], swap: ["🔄", "Swap!", "Swap scores with a team you choose"], gift: ["🎉", "Party!", "Every team gets +3 points"] };
 
 let sets = [], qs = [], tiles = [], teams = [], turn = 0, open = -1, step = "", pts = 10, nT = 4, text = "", note = "", sname = "", reveal = false, over = false;
-let ov = null;
+let ov = null, selId = "";
+const sel = () => selId && sets.some(x => x.id === selId);
 
 { const st = document.createElement("style"); st.textContent = `
 #ccOv.cc-board{overflow:hidden;height:100vh;height:100dvh}
@@ -43,7 +44,7 @@ let ov = null;
 @media (max-height:560px){#ccOv{padding:6px 10px}#ccOv h2{font-size:20px}#ccOv .cc-top{margin-bottom:2px}#ccOv .cc-x{padding:5px 10px}#ccOv .cc-team{min-width:70px;padding:3px 8px;border-width:3px}#ccOv .cc-team b{font-size:20px}#ccOv .cc-score{margin-bottom:4px;gap:6px}#ccOv .cc-pr{font-size:15px!important;margin:2px 0!important}}
 `; document.head.appendChild(st); }
 
-function ui() { if (!ov) { ov = document.createElement("div"); ov.id = "ccOv"; ov.hidden = true; document.body.appendChild(ov); ov.addEventListener("click", onClick); ov.addEventListener("input", e => { if (e.target.id === "ccText") text = e.target.value; if (e.target.id === "ccName") sname = e.target.value; }); ov.addEventListener("change", e => { if (e.target.id === "ccSet") pickSet(e.target.value); if (e.target.id === "ccN") nT = +e.target.value; if (e.target.id === "ccPts") pts = +e.target.value; }); } return ov; }
+function ui() { if (!ov) { ov = document.createElement("div"); ov.id = "ccOv"; ov.hidden = true; document.body.appendChild(ov); ov.addEventListener("click", onClick); ov.addEventListener("input", e => { if (e.target.id === "ccText") text = e.target.value; if (e.target.id === "ccName") sname = e.target.value; }); ov.addEventListener("change", e => { if (e.target.id === "ccSet") { selId = e.target.value; pickSet(e.target.value); if (sel()) paint(); } if (e.target.id === "ccFile" && e.target.files[0]) { const f = e.target.files[0]; readFile(f).then(t => { text = t; const r = parseQuiz(text); qs = r.qs; sname = sname || f.name.replace(/\.[^.]+$/, ""); note = r.qs.length ? `${r.qs.length} question${r.qs.length === 1 ? "" : "s"} ready. Press Save to keep this set.` + (r.errs.length ? " " + r.errs[0] : "") : (r.errs[0] || "No questions found in that file."); paint(); }).catch(() => { note = "Could not read that file. Save it as CSV, or paste the cells."; paint(); }); } if (e.target.id === "ccN") nT = +e.target.value; if (e.target.id === "ccPts") pts = +e.target.value; }); } return ov; }
 const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
 function pickSet(id) { const s = id.startsWith("preset:") ? PRESETS[+id.slice(7)] : sets.find(x => x.id === id); if (s) { qs = s.qs.slice(); sname = s.title || ""; note = `${qs.length} question${qs.length === 1 ? "" : "s"} ready.`; } else { qs = []; note = ""; } paint(); }
 
@@ -77,11 +78,12 @@ function paint() {
   const top = `<div class="cc-top"><h2>🥥 Coconut Crack</h2><button class="cc-x" type="button" data-cc="x">Close</button></div>`;
   if (!tiles.length) {
     o.innerHTML = top + `<div class="cc-card"><h3 style="margin-top:0">Set up the game</h3>
-      <p>Pick a saved question set (from Live quiz), or paste your questions below. Each coconut hides a question or a surprise.</p>
-      <select id="ccSet"><option value="">Choose a set…</option>${PRESETS.map((x, i) => `<option value="preset:${i}">⭐ ${esc(x.title)}</option>`).join("")}${sets.map(s => `<option value="${esc(s.id)}">${esc(s.title || "Untitled")} (${(s.qs || []).length})</option>`).join("")}</select>
+      <p>Pick a saved Coconut set, or upload / paste your questions below. Each coconut hides a question or a surprise.</p>
+      <select id="ccSet"><option value="">Choose a set…</option>${(window.__owner ? PRESETS : []).map((x, i) => `<option value="preset:${i}">⭐ ${esc(x.title)}</option>`).join("")}${sets.map(s => `<option value="${esc(s.id)}"${s.id === selId ? " selected" : ""}>${esc(s.title || "Untitled")} (${(s.qs || []).length})</option>`).join("")}</select>
+      <div class="cc-row"><label class="cc-btn o" style="cursor:pointer">📂 Upload Excel or CSV<input id="ccFile" type="file" accept=".csv,.txt,.xlsx,.xls" hidden></label>${sel() ? `<button class="cc-btn o" type="button" data-cc="delset">Delete this set</button>` : ""}</div>
       <p style="margin:10px 0 4px"><b>Or paste from Excel / Sheets</b> (columns: Question, A, B, C, D, Correct)</p>
       <textarea id="ccText" placeholder="Question\tA\tB\tC\tD\tCorrect">${esc(text)}</textarea>
-      <div class="cc-row"><button class="cc-btn o" type="button" data-cc="parse">Use pasted questions</button>
+      <div class="cc-row"><button class="cc-btn o" type="button" data-cc="parse">Use pasted questions</button><input class="cc-in" id="ccName" placeholder="Name to save this set" value="${esc(sname)}" style="width:200px"><button class="cc-btn o" type="button" data-cc="saveset"${qs.length ? "" : " disabled"}>💾 Save to my Coconut sets</button>
       <label>Teams <select id="ccN" style="width:auto">${[2, 3, 4, 5, 6].map(n => `<option${n === nT ? " selected" : ""}>${n}</option>`).join("")}</select></label>
       <label>Points per question <select id="ccPts" style="width:auto">${[5, 10, 20].map(n => `<option${n === pts ? " selected" : ""}>${n}</option>`).join("")}</select></label></div>
       <p class="cc-msg">${esc(note)}</p><div class="cc-row"><button class="cc-btn" type="button" data-cc="start"${qs.length ? "" : " disabled"}>Start the game 🥥</button></div></div>`;
@@ -123,6 +125,10 @@ function onClick(e) {
   const b = e.target.closest("[data-cc]"); if (!b) return; const a = b.dataset.cc;
   if (a === "x") { if (tiles.length && !over && !confirm("Leave the game? The scores will be lost.")) return; ov.hidden = true; tiles = []; qs = []; return; }
   if (a === "parse") { const r = parseQuiz(text); qs = r.qs; note = r.qs.length ? `${r.qs.length} question${r.qs.length === 1 ? "" : "s"} ready.` + (r.errs.length ? " " + r.errs[0] : "") : (r.errs[0] || "Paste at least one question."); return paint(); }
+  if (a === "saveset") { const nm = (sname || "").trim(); if (!nm) { note = "Type a name for the set first."; return paint(); } if (!qs.length) return;
+    return void setDoc(bdoc("live", "c" + Date.now().toString(36)), { kind: "set", tool: "coco", title: nm, qs, created: Date.now() }).then(async () => { note = "Saved to your Coconut sets."; await openCoconut(); }).catch(() => { note = "Could not save. Check your internet."; paint(); }); }
+  if (a === "delset") { const id = selId; const s0 = sets.find(x => x.id === id); if (!s0 || !confirm("Delete the set " + (s0.title || "") + "?")) return;
+    return void deleteDoc(bdoc("live", id)).then(async () => { selId = ""; qs = []; note = "Deleted."; await openCoconut(); }).catch(() => { note = "Could not delete."; paint(); }); }
   if (a === "start") { build(); return paint(); }
   if (a === "again") { build(); return paint(); }
   if (a === "new") { tiles = []; qs = []; note = ""; return paint(); }
@@ -146,7 +152,7 @@ function onClick(e) {
 }
 export async function openCoconut() {
   ui(); note = "Loading…"; paint();
-  try { const d = await getDocs(bcol("live")); sets = d.docs.map(x => ({ id: x.id, ...x.data() })).filter(x => x.kind === "set" && Array.isArray(x.qs) && x.qs.length).sort((a, b) => (b.created || 0) - (a.created || 0)); note = ""; }
+  try { const d = await getDocs(bcol("live")); sets = d.docs.map(x => ({ id: x.id, ...x.data() })).filter(x => x.kind === "set" && x.tool === "coco" && Array.isArray(x.qs) && x.qs.length).sort((a, b) => (b.created || 0) - (a.created || 0)); note = ""; }
   catch { sets = []; note = "Could not load saved sets. You can still paste questions."; }
   if (!tiles.length) paint();
 }

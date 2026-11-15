@@ -79,10 +79,10 @@ td.n{text-align:right;font-variant-numeric:tabular-nums}th.n{text-align:right}
 </div>
 <div class="drawer" id="dr"><div class="bk" data-close="1"></div><div class="pn" id="pn"></div></div>
 <script type="module">
-import { fs, doc, getDoc, setDoc, updateDoc, collection, getDocs, onSnapshot, query, where, whenUser, profileOf } from "./fb.js?v=1115d";
-import { CATS, FEATURES, byKey, hasFeature } from "./features.js?v=1115d";
-import { startUsage } from "./usage.js?v=1115d";
-import { loadPin, hasPin, askPin, savePin, checkPin } from "./ownerpin.js?v=1115d";
+import { fs, doc, getDoc, setDoc, updateDoc, collection, getDocs, onSnapshot, query, where, whenUser, profileOf } from "./fb.js?v=1115f";
+import { CATS, FEATURES, byKey, hasFeature } from "./features.js?v=1115f";
+import { startUsage } from "./usage.js?v=1115f";
+import { loadPin, hasPin, askPin, savePin, checkPin } from "./ownerpin.js?v=1115f";
 const $ = id => document.getElementById(id), out = $("out");
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const ONLINE = 6 * 60 * 1000, DAY = 24 * 60 * 60 * 1000;
@@ -145,7 +145,7 @@ async function load() {
     for (const t of tch) {
       if (t.uid === u.uid) continue;
       let rows = []; try { rows = (await getDocs(collection(fs, "teachers", t.uid, "students"))).docs; } catch {}
-      add(t.uid, t.name || "Teacher " + t.uid.slice(0, 6), t.role, rows, false);
+      add(t.uid, (t.name || "Teacher " + t.uid.slice(0, 6)) + (t.admin === true ? " ⚠ OWNER-LEVEL (sees your main data)" : ""), t.role, rows, false);
     }
     teachers.forEach(g => { g.logins = students.filter(s => s.tid === (g.me ? "" : g.uid) && s.hasLogin).length; });
     out.className = ""; build(); watch();

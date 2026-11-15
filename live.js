@@ -1,8 +1,8 @@
 // Teacher side: Live quiz (a Kahoot-style game). The teacher builds or imports questions, opens a lobby, students join from their own
 // page, then every question is shown to all of them at the same time. After each question: the right answer and the ranking.
 // Data: <base>/live/<id>  kind "set" (saved questions) or "session" (a running game);  <base>/liveplayers/<session>_<sid>  one per joined student.
-import { PRESETS, toTsv } from "./presets.js?v=1115d";
-import { getDocs, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, query, where, bcol, bdoc } from "./fb.js?v=1115d";
+import { PRESETS, toTsv } from "./presets.js?v=1115f";
+import { getDocs, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, query, where, bcol, bdoc } from "./fb.js?v=1115f";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -88,7 +88,7 @@ const stuOf = id => (typeof students !== "undefined" ? students : []).find(s => 
 async function load() {
   const d = await getDocs(bcol("live"));
   const all = d.docs.map(x => ({ id: x.id, ...x.data() }));
-  sets = all.filter(x => x.kind === "set").sort((a, b) => (b.created || 0) - (a.created || 0));
+  sets = all.filter(x => x.kind === "set" && x.tool !== "coco").sort((a, b) => (b.created || 0) - (a.created || 0));
   sessions = all.filter(x => x.kind === "session").sort((a, b) => (b.created || 0) - (a.created || 0));
 }
 const avOf = (sid, name) => { const st = stuOf(sid); try { return avatarHTML(st || { id: sid, name: name || "", avatar: 0, eq: {} }, "sm"); } catch { return ""; } };
@@ -114,7 +114,7 @@ function draw() {
       <div class="lv-row"><input class="lv-in" id="lvTitle" placeholder="Quiz name, for example 4.1 Solving equations" maxlength="80" value="${esc(draft.title)}" style="flex:1;min-width:220px"><label>Seconds per question <input class="lv-in" id="lvDur" type="number" min="5" max="180" value="${draft.dur}" style="width:80px"></label></div>
       <div><b>Play with:</b><div class="lv-cls">${(typeof CLASSES !== "undefined" ? CLASSES : []).map(c => `<label><input type="checkbox" data-lvcls="${esc(c)}"${draft.cls.includes(c) ? " checked" : ""}> ${esc(c)}</label>`).join("")}</div></div>
       ${draft.setId ? "" : `<div class="lv-card"><b>Questions</b><p style="margin:4px 0">Columns: <code>Question, A, B, C, D, Correct, Time</code>. Correct is the letter. Time is optional.</p>
-        <div class="lv-row"><select class="lv-in" id="lvPre"><option value="">Ready-made sets…</option>${PRESETS.map((x, i) => `<option value="${i}">${esc(x.title)}</option>`).join("")}</select></div>
+        <div class="lv-row"><select class="lv-in" id="lvPre"><option value="">Ready-made sets…</option>${(window.__owner ? PRESETS : []).map((x, i) => `<option value="${i}">${esc(x.title)}</option>`).join("")}</select></div>
         <textarea class="lv-ta" id="lvText" placeholder="Paste the cells from Excel or Google Sheets here">${esc(draft.text)}</textarea>
         <div class="lv-row"><label class="ghost small" style="cursor:pointer;padding:8px 12px;border:1.5px solid var(--line,#cdd5e3);border-radius:10px">Upload Excel or CSV<input id="lvFile" type="file" accept=".csv,.txt,.xlsx,.xls" hidden></label>
         <input class="lv-in" id="lvLink" placeholder="or paste a Google Sheet link" style="flex:1;min-width:200px"><button class="ghost small" type="button" data-lv="link">Load link</button><button class="ghost small" type="button" data-lv="tpl">Download template</button></div></div>`}
@@ -235,7 +235,7 @@ const syncDraft = () => {
   const t = $("lvTitle"), d = $("lvDur"), x = $("lvText");
   if (t) draft.title = t.value; if (d) draft.dur = Math.max(5, Math.min(180, Number(d.value) || 20)); if (x) draft.text = x.value;
 };
-async function readFile(f) {
+export async function readFile(f) {
   const name = f.name.toLowerCase();
   if (/\.(csv|txt)$/.test(name)) return f.text();
   if (!window.XLSX) await new Promise((ok, no) => { const s = document.createElement("script"); s.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
@@ -281,7 +281,7 @@ modal.addEventListener("click", async e => {
     if (!draft.cls.length) { msg = "Choose at least one class."; return draw(); }
     busy = true; draw();
     try {
-      if (!draft.setId) await setDoc(bdoc("live", "q" + Date.now().toString(36)), { kind: "set", title: draft.title.trim(), qs, dur: draft.dur, cls: [], created: Date.now() });
+      if (!draft.setId) await setDoc(bdoc("live", "q" + Date.now().toString(36)), { kind: "set", tool: "live", title: draft.title.trim(), qs, dur: draft.dur, cls: [], created: Date.now() });
       await createSession(draft.title.trim(), qs, draft.dur, draft.cls); await load();
     } catch { msg = "Could not open the quiz. Check your internet."; view = "build"; }
     busy = false; return draw();
