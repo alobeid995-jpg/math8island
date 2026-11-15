@@ -1286,7 +1286,7 @@ header.book .geo { max-height: 190px; }
 /* --- Math Island logo mark --- */
 header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !important; color: transparent !important; font-size: 0 !important; border: 0 !important; box-shadow: none !important; border-radius: 22% !important; }
 
-</style><link rel="stylesheet" href="island.css?v=1115g"><style>
+</style><link rel="stylesheet" href="island.css?v=1115h"><style>
 .cls-panel{margin:12px 0;padding:14px;border:2px solid var(--edge);border-radius:12px;background:var(--card);display:grid;gap:10px}
 .cls-panel h4{margin:0}.cls-panel p{margin:0;font-size:14px}
 .cls-panel label{display:grid;gap:4px;font-size:13px;font-weight:600}
@@ -1457,7 +1457,7 @@ header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !import
 window.__ready = new Promise(r => { window.__resolveClaude = r; });
 window.claude = { use: async n => (await window.__ready).use(n) };
 </script>
-<script src="hats.js?v=1115g"></script>
+<script src="hats.js?v=1115h"></script>
 <script>
 const POSITIVE = [
   { title: "Active Participation", xp: 10 },
@@ -2163,7 +2163,17 @@ function renderShopView() {
   pend.sort((a, b) => a.r.at - b.r.at);
   const demo = { id: "demo", avatar: 20260514, name: "Your Name", eq: {}, cls: shopViewGirl ? "8G" : "" };
   const pendHTML = pend.length ? `<ul class="plist">${pend.map(p => `<li>${avatarHTML(p.s, "sm")}<div><div class="nm2" style="font-size:15px">${nameHTML(p.s)} <small style="font-weight:500;color:var(--muted)">${p.s.cls}</small></div><div>${p.it.icon} ${esc(p.it.name)} · ${p.it.price} XP</div></div><div class="sbtns"><button class="plus small" data-act="reqDone" data-id="${p.s.id}" data-item="${p.r.k}" data-at="${p.r.at}" ${readOnly ? "disabled" : ""}>Done</button><button class="ghost small" data-act="reqRefund" data-id="${p.s.id}" data-item="${p.r.k}" data-at="${p.r.at}" ${readOnly ? "disabled" : ""}>Refund</button></div></li>`).join("")}</ul>` : `<div class="none">No class perks waiting. When a student requests one it appears here.</div>`;
-  $("shopView").innerHTML = `<div class="shop-intro"><h2>XP Shop</h2><p>Students spend XP here. Open a student in the list and press Shop. Spending never lowers their level or badges.</p>${window.__owner ? `<p class="pxbar"><b>Set prices:</b> change any number below, then save. Students see the new price straight away. <button class="primary small" type="button" id="pxSave" data-act="savePrices" ${Object.keys(priceEdits).length ? "" : "disabled"}>Save prices</button></p>` : ""}</div>
+  const shopOpenCard = window.__owner ? (() => {
+    const st = window.__shopStatus || {}, wins = [0, 1].map(i => (st.wins || [])[i] || { on: false, from: i ? "13:00" : "08:00", to: i ? "15:30" : "13:00", days: [0, 1, 2, 3, 4] });
+    const cl = !!st.closed;
+    return `<section class="card" id="shopOpenCard"><h3>Shop opening</h3><p class="rep-note">Students cannot buy or change anything while the shop is closed. Teachers can still give XP and manage the shop.</p>
+      <p><b>${cl ? "🔒 Closed (by you)" : "🟢 Open"}</b> <button class="${cl ? "primary" : "ghost"} small" type="button" data-act="shopToggle">${cl ? "Open the shop" : "Close the shop now"}</button></p>
+      <p class="rep-note">Or close it automatically (Bahrain time):</p>
+      ${wins.map((w, i) => `<div class="hub-bar" style="flex-wrap:wrap;gap:8px;align-items:center"><label><input type="checkbox" data-sw="on" data-i="${i}" ${w.on ? "checked" : ""}> Closed from</label><input type="time" data-sw="from" data-i="${i}" value="${w.from}"> to <input type="time" data-sw="to" data-i="${i}" value="${w.to}">
+        ${["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d, k) => `<label><input type="checkbox" data-sw="day" data-i="${i}" data-k="${k}" ${(w.days || []).includes(k) ? "checked" : ""}>${d}</label>`).join(" ")}</div>`).join("")}
+      <button class="primary small" type="button" data-act="shopWinSave" style="margin-top:8px">Save automatic times</button></section>`;
+  })() : "";
+  $("shopView").innerHTML = shopOpenCard + `<div class="shop-intro"><h2>XP Shop</h2><p>Students spend XP here. Open a student in the list and press Shop. Spending never lowers their level or badges.</p>${window.__owner ? `<p class="pxbar"><b>Set prices:</b> change any number below, then save. Students see the new price straight away. <button class="primary small" type="button" id="pxSave" data-act="savePrices" ${Object.keys(priceEdits).length ? "" : "disabled"}>Save prices</button></p>` : ""}</div>
     ${pend.length ? `<section class="card"><h3>Old perk requests (${pend.length})</h3>${pendHTML}</section>` : ""}
     <div class="shop-tabs" role="tablist" aria-label="Shop categories"><div class="gs-sw" role="group" aria-label="Which shop">${[[false, "Boys' shop"], [true, "Girls' shop (8G)"]].filter(([v]) => shopOK(v)).map(([v, l]) => `<button class="shop-tab" data-act="shopViewGirl" data-girl="${v ? 1 : 0}" aria-pressed="${v === shopViewGirl}">${l}</button>`).join("")}</div>
     ${shopCats().map(c => `<button class="shop-tab" role="tab" data-act="shopViewCat" data-cat="${c.key}" aria-pressed="${c.key === shopViewCat}" aria-selected="${c.key === shopViewCat}">${c.label} <small>${SHOP.filter(x => (x.both || !!x.g === GIRL) && x.cat === c.key).length}</small></button>`).join("")}</div>
@@ -3317,7 +3327,7 @@ function hubGrades() {
 
 function grLoadLib() {
   if (window.ExcelJS) return Promise.resolve();
-  return new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1115g"; sc.onload = res; sc.onerror = () => rej(new Error("lib")); document.head.appendChild(sc); });
+  return new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1115h"; sc.onload = res; sc.onerror = () => rej(new Error("lib")); document.head.appendChild(sc); });
 }
 async function grXlsx(btn) {
   const keep = cls;
@@ -4095,6 +4105,9 @@ document.addEventListener("click", e => {
       if (st) toast(st.name + " removed");
       break;
     }
+    case "shopToggle": { const st = window.__shopStatus || {}; window.__saveShopStatus({ ...st, closed: !st.closed }).then(() => toast(!st.closed ? "Shop closed" : "Shop open")).catch(() => toast("Could not save")); break; }
+    case "shopWinSave": { const st = window.__shopStatus || {}, wins = [0, 1].map(i => { const q = k => document.querySelector(`[data-sw="${k}"][data-i="${i}"]`); return { on: q("on").checked, from: q("from").value, to: q("to").value, days: [...document.querySelectorAll(`[data-sw="day"][data-i="${i}"]`)].filter(x => x.checked).map(x => +x.dataset.k) }; });
+      window.__saveShopStatus({ ...st, wins }).then(() => toast("Saved")).catch(() => toast("Could not save")); break; }
     case "shopViewGirl": if (!shopOK(b.dataset.girl === "1")) { toast("You do not have this shop"); break; } shopViewGirl = b.dataset.girl === "1"; shopViewCat = "frame"; renderShopView(); break;
     case "avPick": pickerFor = id; newPickerSeeds(); render(); break;
     case "avMore": newPickerSeeds(); render(); break;
@@ -4485,8 +4498,8 @@ document.getElementById("expBtn")?.addEventListener("click", async () => {
     <div class="acts noprint"><button class="ghost" id="lgPrint" type="button">Print this list</button><button class="ghost" id="lgClose" type="button">Close</button></div>
   </div>
 </div>
-<script type="module" src="teacher.js?v=1115g"></script>
-<script src="mylessons.js?v=1115g"></script>
+<script type="module" src="teacher.js?v=1115h"></script>
+<script src="mylessons.js?v=1115h"></script>
 
 <script>
 /* Post a certificate straight to Google Classroom.

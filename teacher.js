@@ -1,21 +1,21 @@
 import { onSnapshot, changeEmail, auth, fs, firebaseConfig, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, collection, query, where, writeBatch, setBase, bcol, bdoc, signOut, whenUser, profileOf, emailFor, pinKey,
-  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1115g";
-import { db } from "./fbdb.js?v=1115g";
-import { startUsage } from "./usage.js?v=1115g";
-import { liveLesson, mountTeacherTT } from "./timetable.js?v=1115g";
-import { openWork, gradeData } from "./teacherwork.js?v=1115g";
+  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1115h";
+import { db } from "./fbdb.js?v=1115h";
+import { startUsage } from "./usage.js?v=1115h";
+import { liveLesson, mountTeacherTT } from "./timetable.js?v=1115h";
+import { openWork, gradeData } from "./teacherwork.js?v=1115h";
 import "./lessonxp.js";
-import { openProgress } from "./progress.js?v=1115g";
-import { openMaterial } from "./material.js?v=1115g";
-import { openLiveWs } from "./liveteacher.js?v=1115g";
-import { openFunpark } from "./fpteacher.js?v=1115g";
-import { openCoconut } from "./coconut.js?v=1115g";
-import { hasFeature, hideCss } from "./features.js?v=1115g";
-import { xpAllowed } from "./ownerpin.js?v=1115g";
+import { openProgress } from "./progress.js?v=1115h";
+import { openMaterial } from "./material.js?v=1115h";
+import { openLiveWs } from "./liveteacher.js?v=1115h";
+import { openFunpark } from "./fpteacher.js?v=1115h";
+import { openCoconut } from "./coconut.js?v=1115h";
+import { hasFeature, hideCss } from "./features.js?v=1115h";
+import { xpAllowed } from "./ownerpin.js?v=1115h";
 window.xpGate = n => xpAllowed(n); window.wkGradeData = gradeData;
-import { initChat } from "./chat.js?v=1115g";
-import { openLive } from "./live.js?v=1115g";
-import { openInbox } from "./inbox.js?v=1115g";
+import { initChat } from "./chat.js?v=1115h";
+import { openLive } from "./live.js?v=1115h";
+import { openInbox } from "./inbox.js?v=1115h";
 
 const $ = id => document.getElementById(id);
 const esc2 = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -99,6 +99,10 @@ window.__owner = ADMIN; if (ADMIN) { mountTeacherTT(); window.__liveLesson = liv
   applyPrices(saved);   // prices he has set win over the defaults in the code
   const all = () => Object.fromEntries(SHOP.map(i => [i.id, i.price]));
   if (ADMIN) setDoc(pref, { prices: all() }).catch(() => {});   // new items get their default price; his own prices stay
+  const sref = doc(fs, "shop", "status");
+  window.__shopStatus = null;
+  const loadSt = sn => { window.__shopStatus = sn.exists() ? sn.data() : null; try { if (view === "shop") renderShopView(); } catch {} };
+  if (ADMIN) { onSnapshot(sref, loadSt, () => {}); window.__saveShopStatus = async v => { await setDoc(sref, v); }; }
   window.__savePrices = async m => { await setDoc(pref, { prices: { ...all(), ...m } }); };
   try { if (view === "shop") renderShopView(); } catch {}
   if (!ADMIN) onSnapshot(pref, sn => { if (sn.exists()) { applyPrices(sn.data().prices || {}); try { if (view === "shop") renderShopView(); } catch {} } }, () => {});   // the owner's price changes reach other teachers live

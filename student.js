@@ -1,14 +1,16 @@
-import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1115g";
-import { initWork } from "./stuwork.js?v=1115g";
-import { initMsgs } from "./stumsg.js?v=1115g";
-import { initLive } from "./livequiz.js?v=1115g";
-import { initChat } from "./chat.js?v=1115g";
-import { initFunpark } from "./funpark.js?v=1115g";
-import { startPresence, logEv } from "./presence.js?v=1115g";
-import { mountStudentTT } from "./timetable.js?v=1115g";
-import { achCard, initAch } from "./achieve.js?v=1115g";
+import { shopClosedNow } from "./shopstatus.js?v=1115h";
+import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1115h";
+import { initWork } from "./stuwork.js?v=1115h";
+import { initMsgs } from "./stumsg.js?v=1115h";
+import { initLive } from "./livequiz.js?v=1115h";
+import { initChat } from "./chat.js?v=1115h";
+import { initFunpark } from "./funpark.js?v=1115h";
+import { startPresence, logEv } from "./presence.js?v=1115h";
+import { mountStudentTT } from "./timetable.js?v=1115h";
+import { achCard, initAch } from "./achieve.js?v=1115h";
 
 const sub = (t, n) => t.split("{n}").join(n);
+let shopSt = null, lastClosed = false;
 let me = null, ref = null, shopCat = "frame", confirmId = "", pickerOpen = false, seeds = [], loaded = false;
 const newSeeds = () => { seeds = Array.from({ length: 18 }, () => (Math.random() * 4294967295) >>> 0); };
 
@@ -36,6 +38,8 @@ async function start() {
   const lref = p.tid ? doc(fs, "teachers", p.tid, "logins", p.sid) : doc(fs, "logins", p.sid);
   let lg = null; try { const s = await getDoc(lref); lg = s.exists() ? s.data() : null; } catch {}
   if (lg && lg.first === true) { await choosePin(u, lref, String(lg.pin || "")); }
+  onSnapshot(doc(fs, "shop", "status"), s => { shopSt = s.exists() ? s.data() : null; render(); }, () => {});   // the owner can shut the shop
+  setInterval(() => { const c = !!shopClosedNow(shopSt); if (c !== lastClosed) render(); }, 30000);
   onSnapshot(doc(fs, "shop", "prices"), s => { if (s.exists()) { applyPrices(s.data().prices); render(); } }, () => {});   // prices the owner sets
   onSnapshot(ref, snap => { loaded = true; me = snap.exists() ? fromDoc(snap) : null; if (me) applyTheme(validT(me.theme) ? me.theme : lsT.get()); render(); },
     e => { loaded = true; me = null; window.__loadErr = (e && e.code) || "error"; render(); });
@@ -121,6 +125,7 @@ function render() {
       <div class="pk-acts"><button class="ghost" data-act="moreAv" type="button">Show more</button><button class="ghost" data-act="closeAv" type="button">Close</button></div></section>` : "";
   GIRL = isGirlCls(st.cls);
   const items = shopList(shopCat);
+  const closed = !!shopClosedNow(shopSt); lastClosed = closed;
   const recent = st.log.slice(-8).reverse();
   $("app").innerHTML = bookNotes(st) + `
     <section class="card">
@@ -136,9 +141,9 @@ function render() {
     </section>
     ${achCard(st)}
     <section class="card${GIRL ? " girlshop" : ""}"><h3>${GIRL ? "✨ Sparkle Boutique" : "XP Shop"}</h3>${GIRL ? `<p class="gs-sub">Dress up your avatar with pretty things. You pay with your XP.</p>` : ""}
-      <div class="shop-tabs">${shopCats().map(c => `<button class="shop-tab" data-act="cat" data-cat="${c.key}" aria-pressed="${c.key === shopCat}">${c.label}</button>`).join("")}</div>
+      ${closed ? `<div class="none" style="padding:22px 10px;text-align:center"><div style="font-size:42px">🔒</div><b>The shop is closed right now.</b><br>Your teacher will open it again. Keep working and keep earning XP!</div>` : `<div class="shop-tabs">${shopCats().map(c => `<button class="shop-tab" data-act="cat" data-cat="${c.key}" aria-pressed="${c.key === shopCat}">${c.label}</button>`).join("")}</div>
       ${shopCat === "skin" ? tierBar("tier") : ""}
-      <div class="shop-grid">${items.map(it => card(st, it)).join("")}</div>
+      <div class="shop-grid">${items.map(it => card(st, it)).join("")}</div>`}
     </section>
     <section class="card"><h3>My latest XP</h3>
       ${recent.length ? `<div class="log">${recent.map(e => `<div class="ent ${e.xp >= 0 ? "pos" : "neg"}"><span>${esc(e.title || "")}</span><span>${e.xp > 0 ? "+" : ""}${e.xp}</span></div>`).join("")}</div>` : `<div class="none">No XP yet. Earn some in class!</div>`}
@@ -148,6 +153,7 @@ function render() {
 document.addEventListener("click", e => {
   const b = e.target.closest("[data-act]"); if (!b || !me) return;
   const a = b.dataset.act, id = b.dataset.item, it = id && shopItem(id);
+  if (["tier", "cat", "ask", "buy", "eq"].includes(a) && shopClosedNow(shopSt)) { confirmId = ""; render(); return; }
   if (a === "tier") { setTier(b.dataset.tier); confirmId = ""; render(); }
   if (a === "cat") { shopCat = b.dataset.cat; confirmId = ""; render(); }
   else if (a === "ask") { confirmId = id; render(); }
