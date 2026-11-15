@@ -29,15 +29,25 @@
     bar.innerHTML = '<button type="button" class="sv">💾 Save my work</button><span class="cwk-msg">Save to carry on later. Submit when you are finished.</span><button type="button" class="go sb">✅ Submit</button>';
     document.body.appendChild(bar); document.body.classList.add("cwk-pad");
     saveB = bar.querySelector(".sv"); subB = bar.querySelector(".sb"); msg = bar.querySelector(".cwk-msg");
-    saveB.onclick = function () { if (locked) return; saveB.disabled = true; say("Saving…"); post({ op: "save", state: o.getState() }); };
+    var pend = null;
+    function wait(what) { clearTimeout(pend); pend = setTimeout(function () { saveB.disabled = subB.disabled = false; say("No answer from the page. Refresh it and try again.", "bad"); }, 8000); }
+    saveB.onclick = function () { if (locked) return; saveB.disabled = true; say("Saving\u2026"); wait(); post({ op: "save", state: o.getState() }); };
+    var ask = null;
     subB.onclick = function () {
       if (locked) return;
-      var s = o.summary ? o.summary() : "", full = o.isComplete ? o.isComplete() : true;
-      var q = (full ? "Submit your work now?" : "Not everything is finished yet" + (s ? " (" + s + ")" : "") + ". Submit anyway?") + "\nYou cannot change your answers after this. You can always open the worksheet again to see your solved work.";
-      if (!confirm(q)) return;
-      subB.disabled = saveB.disabled = true; say("Submitting…");
-      post({ op: "submit", state: o.getState(), complete: !!full });
+      if (!ask) {   // first tap: ask in the page (browser pop-ups are blocked inside frames on some tablets)
+        var s = o.summary ? o.summary() : "", full = o.isComplete ? o.isComplete() : true;
+        subB.textContent = "\u2705 Yes, submit"; saveB.textContent = "Not yet"; saveB.onclick = function () { ask = null; subB.textContent = "\u2705 Submit"; saveB.textContent = "\ud83d\udcbe Save my work"; saveB.onclick = doSave; say("Save to carry on later. Submit when you are finished."); };
+        ask = { full: full };
+        say((full ? "Submit your work now?" : "Not everything is finished yet" + (s ? " (" + s + ")" : "") + ". Submit anyway?") + " You cannot change your answers after this.");
+        return;
+      }
+      var full2 = ask.full; ask = null; subB.textContent = "\u2705 Submit"; saveB.textContent = "\ud83d\udcbe Save my work"; saveB.onclick = doSave;
+      subB.disabled = saveB.disabled = true; say("Submitting\u2026"); wait();
+      post({ op: "submit", state: o.getState(), complete: !!full2 });
     };
+    var doSave = saveB.onclick;
+    window.__cwClear = function () { clearTimeout(pend); };
   }
   function lock(at) {
     locked = true; document.documentElement.classList.add("cw-locked");
@@ -48,6 +58,7 @@
   window.addEventListener("message", function (e) {
     var d = e.data;
     if (e.origin !== location.origin || !o || !d || d.cwk !== 1 || d.id !== o.id) return;
+    if (window.__cwClear) window.__cwClear();
     if (d.op === "load") {
       if (d.teacher) return;                       // a teacher looking at the page: no bar
       bar.hidden = false;
@@ -66,7 +77,7 @@
     init: function (opts) {
       o = opts;
       if (window.parent === window) return;        // opened on its own (not inside the package page): nothing to save to
-      var go = function () { build(); post({ op: "hello" }); };
+      var go = function () { build(); var n = 0, t = setInterval(function () { if (!bar.hidden || ++n > 12) return clearInterval(t); post({ op: "hello" }); }, 1000); post({ op: "hello" }); };
       if (document.body) go(); else document.addEventListener("DOMContentLoaded", go);
     }
   };
