@@ -11,7 +11,7 @@
   window.__setView = v => { view = v; try { localStorage.setItem("xp_view", v); } catch {} render(); };
   const $$ = id => document.getElementById(id);
   const E = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  let ov = null, panel = null, sel = "", openSid = "", note = "", pickBusy = false, current = null, timer = 0, lastAuto = "", rc = "", fw = null, fwOpen = false, fwStage = null;
+  let ov = null, panel = null, sel = "", openSid = "", note = "", pickBusy = false, current = null, timer = 0, lastAuto = "", rc = "", wcView = false, wcSel = new Set(), wcB = "p0", wcAmt = "", wcWhy = "", fw = null, fwOpen = false, fwStage = null;
 
   function css() {
     if ($$("mlCss")) return;
@@ -61,6 +61,12 @@
 .ml-fw .pk-stage .pk-q{width:96px;font-size:48px}
 .ml-fw .pk-quick{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
 .ml-fw .pk-quick button{font-size:13px;padding:6px 10px}
+.ml-wcb{margin:8px 10px 0;width:calc(100% - 20px)}
+.ml-chips2{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.ml-chip{font:inherit;font-weight:700;border:2px solid var(--line,#d7deea);background:var(--card,#fff);color:inherit;border-radius:999px;padding:6px 12px;cursor:pointer}
+.ml-chip[aria-pressed="true"]{background:#15803d;border-color:#15803d;color:#fff}
+.ml-sel{width:100%;font:inherit;padding:8px;border:2px solid var(--ink,#17233b);border-radius:10px;background:var(--card,#fff);color:inherit}
+.ml-in{font:inherit;padding:7px;border:2px solid var(--line,#d7deea);border-radius:8px;background:var(--card,#fff);color:inherit;width:100%}
 @media (prefers-reduced-motion:reduce){.ml-pill.warn{animation:none}}`;
     document.head.appendChild(s);
   }
@@ -145,8 +151,9 @@
       <div class="ml-pill" id="mlPill" hidden></div>
       <aside class="ml-p" id="mlPanel" hidden aria-label="Class panel"></aside>`;
     document.body.appendChild(ov); document.body.classList.add("wk-noscroll");
-    panel = ov.querySelector("#mlPanel"); sel = auto() || (typeof cls !== "undefined" ? cls : classes()[0]) || ""; lastAuto = auto() || ""; openSid = ""; note = ""; current = null; rc = sel; fNote = ""; fwOpen = false;
-    setupFloat(); ov.addEventListener("click", onClick); ov.addEventListener("input", () => {});
+    panel = ov.querySelector("#mlPanel"); sel = auto() || (typeof cls !== "undefined" ? cls : classes()[0]) || ""; lastAuto = auto() || ""; openSid = ""; note = ""; current = null; rc = sel; wcView = false; wcSel = new Set(inClass(sel).map(x => x.id)); fNote = ""; fwOpen = false;
+    setupFloat(); ov.addEventListener("click", onClick); ov.addEventListener("input", e => { if (e.target.id === "mlWcAmt") wcAmt = e.target.value; if (e.target.id === "mlWcWhy") wcWhy = e.target.value; });
+    ov.addEventListener("change", e => { if (e.target.id === "mlWcB") { wcB = e.target.value; paint(); } });
     try { (ov.requestFullscreen || ov.webkitRequestFullscreen || (() => Promise.reject())).call(ov).catch(() => {}); } catch {}
     clearInterval(timer); timer = setInterval(tick, 5000); tick();
   }
@@ -178,7 +185,13 @@
     }
     const b = e.target.closest("[data-a]"); if (!b || !panel || !panel.contains(b)) return;
     const a = b.dataset.a;
-    if (a === "cls") { sel = b.dataset.c; current = null; openSid = ""; note = ""; paint(); }
+    if (a === "cls") { sel = b.dataset.c; current = null; openSid = ""; note = ""; wcSel = new Set(inClass(sel).map(x => x.id)); paint(); }
+    else if (a === "wc") { wcView = true; wcSel = new Set(inClass(sel).map(x => x.id)); note = ""; paint(); }
+    else if (a === "wcback") { wcView = false; note = ""; paint(); }
+    else if (a === "wct") { wcSel.has(b.dataset.id) ? wcSel.delete(b.dataset.id) : wcSel.add(b.dataset.id); paint(); }
+    else if (a === "wcall") { inClass(sel).forEach(x => wcSel.add(x.id)); paint(); }
+    else if (a === "wcnone") { wcSel.clear(); paint(); }
+    else if (a === "wcgo") wholeClass();
     else if (a === "row") { openSid = openSid === b.dataset.id ? "" : b.dataset.id; note = ""; paint(); }
     else if (a === "give") { const st = allStudents().find(s => s.id === b.dataset.id); if (st) award(st, b.dataset.title, +b.dataset.xp); }
     else if (a === "custom") {
@@ -189,6 +202,27 @@
     }
     else if (a === "undo") { const st = allStudents().find(s => s.id === b.dataset.id); if (st) undoLast(st); }
   }
+  /* give the same XP to the selected students of one class (same effect as the Whole class button on the main page) */
+  async function wholeClass() {
+    if (typeof readOnly !== "undefined" && readOnly) { note = "View only."; return paint(); }
+    const list = inClass(sel), targets = list.filter(x => wcSel.has(x.id));
+    let b;
+    if (wcB === "c") { const n = Math.round(Number(wcAmt)); if (!wcAmt.trim() || !Number.isFinite(n) || n === 0) { note = "Type an amount like 5 or -5."; return paint(); } if (Math.abs(n) > 500) { note = "Up to 500 XP here."; return paint(); } b = { title: (wcWhy || "").trim().slice(0, 60) || (n > 0 ? "Bonus XP" : "XP adjustment"), xp: n }; }
+    else b = (wcB[0] === "p" ? POS() : NEG())[+wcB.slice(1)];
+    if (!b) return;
+    if (!targets.length) { note = "Choose at least one student."; return paint(); }
+    const batch = "b" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), all = targets.length === list.length, at = new Date().toISOString(), unlocks = [];
+    try { seenBatches.add(batch); } catch {}
+    targets.forEach(st => {
+      st.xp += b.xp; st.log = st.log.concat({ title: b.title, xp: b.xp, kind: b.xp > 0 ? "pos" : "neg", at, batch, batchN: targets.length, batchAll: all });
+      try { if (b.xp > 0 && isPositiveTitle(b.title)) { st.counts = { ...(st.counts || {}) }; st.counts[b.title] = (st.counts[b.title] || 0) + 1; const u = unlockFor(b.title, st.counts[b.title]); if (u) unlocks.push([st, u]); } } catch {}
+      try { localRecent.set(st.id, st.log.length); } catch {}
+    });
+    try { unlocks.forEach(([st, u]) => queueUnlock(st.name, st, u)); } catch {}
+    try { render(); announceGroup(sel, b, targets.length, all); } catch {}
+    note = `${all ? "Whole class" : targets.length + " students"}: ${b.xp > 0 ? "+" : ""}${b.xp} XP`; wcView = false; paint();
+    for (const st of targets) { try { await save(st); } catch {} }
+  }
   function awardsHTML(st) {
     return `<div class="ml-g">${POS().map(p => `<button class="ml-b g s" type="button" data-a="give" data-id="${E(st.id)}" data-title="${E(p.title)}" data-xp="${p.xp}">${E(short(p.title))} +${p.xp}</button>`).join("")}</div>
       <div class="ml-g">${NEG().map(p => `<button class="ml-b r s" type="button" data-a="give" data-id="${E(st.id)}" data-title="${E(p.title)}" data-xp="${p.xp}">${E(short(p.title))} ${p.xp}</button>`).join("")}</div>
@@ -197,7 +231,17 @@
   function paint() {
     if (!panel || panel.hidden) return;
     const list = inClass(sel), keep = panel.querySelector(".ml-body"), top = keep ? keep.scrollTop : 0;
-    const body = list.length ? list.map(st => `<div class="ml-r"><button class="ml-rh" type="button" data-a="row" data-id="${E(st.id)}" aria-expanded="${openSid === st.id}"><b>${E(st.name)}</b><span>${st.xp} XP</span></button>${openSid === st.id ? `<div class="ml-ex">${awardsHTML(st)}</div>` : ""}</div>`).join("") : `<p>No students in ${E(sel)}.</p>`;
+    let body;
+    if (wcView) {
+      const opts = POS().map((p, i) => `<option value="p${i}"${wcB === "p" + i ? " selected" : ""}>+${p.xp}  ${E(p.title)}</option>`).join("") + NEG().map((p, i) => `<option value="n${i}"${wcB === "n" + i ? " selected" : ""}>${p.xp}  ${E(p.title)}</option>`).join("") + `<option value="c"${wcB === "c" ? " selected" : ""}>Custom amount…</option>`;
+      body = `<div class="ml-ex"><button class="ml-b s" type="button" data-a="wcback" style="justify-self:start">← Students</button>
+        <label>Give to the selected students:<select class="ml-sel" id="mlWcB" aria-label="Behaviour">${opts}</select></label>
+        ${wcB === "c" ? `<div class="ml-cx"><input class="ml-in" id="mlWcAmt" type="number" inputmode="numeric" placeholder="XP, e.g. 5 or -5" value="${E(wcAmt)}" aria-label="XP amount"><input class="ml-in" id="mlWcWhy" maxlength="60" placeholder="Reason (optional)" value="${E(wcWhy)}" aria-label="Reason"></div>` : ""}
+        <div class="ml-g"><button class="ml-b s" type="button" data-a="wcall">Select all</button><button class="ml-b s" type="button" data-a="wcnone">Clear</button><b style="align-self:center">${list.filter(x => wcSel.has(x.id)).length} of ${list.length} selected</b></div>
+        <div class="ml-chips2">${list.map(x => `<button class="ml-chip" type="button" data-a="wct" data-id="${E(x.id)}" aria-pressed="${wcSel.has(x.id)}">${E(x.name.split(" ")[0])}</button>`).join("")}</div>
+        <p style="margin:0;font-size:13px">Tap a name to leave that student out (for example if he is absent).</p>
+        <button class="ml-b g" type="button" data-a="wcgo">Give XP</button></div>`;
+    } else body = `<button class="ml-b g ml-wcb" type="button" data-a="wc">Whole class XP…</button>` + (list.length ? list.map(st => `<div class="ml-r"><button class="ml-rh" type="button" data-a="row" data-id="${E(st.id)}" aria-expanded="${openSid === st.id}"><b>${E(st.name)}</b><span>${st.xp} XP</span></button>${openSid === st.id ? `<div class="ml-ex">${awardsHTML(st)}</div>` : ""}</div>`).join("")               : `<p>No students in ${E(sel)}.</p>`);
     panel.innerHTML = `<div class="ml-h"><b>${E(sel)}${auto() === sel ? " · now" : ""}</b><button class="ml-t" type="button" data-mlx="hide" aria-label="Hide the panel">Hide ✕</button></div>
       <div class="ml-chips">${classes().map(c => `<button class="ml-c" type="button" data-a="cls" data-c="${E(c)}" aria-pressed="${c === sel}">${E(c)}</button>`).join("")}</div>
       <div class="ml-note" role="status">${E(note)}</div><div class="ml-body">${body}</div>`;
