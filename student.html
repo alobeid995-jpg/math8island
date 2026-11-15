@@ -1836,6 +1836,7 @@ const SHOP = [
   { id: "g-galaxy", cat: "skin", name: "Galaxy Princess", price: 1000, g: 1 },
   { id: "g-rose", cat: "skin", name: "Rose Empress", price: 1100, g: 1 },
   { id: "g-butterfly", cat: "skin", name: "Butterfly Queen", price: 1000, g: 1 },
+  { id: "g-samurai", cat: "skin", name: "Samurai", price: 1200, g: 1 },
   { id: "f-g-aurora", cat: "frame", name: "✦ Aurora Glow", price: 450, g: 1 },
   { id: "f-g-rose", cat: "frame", name: "✿ Rose Petal", price: 200, g: 1 },
   { id: "f-g-lilac", cat: "frame", name: "✿ Lilac Dream", price: 200, g: 1 },
@@ -1930,7 +1931,7 @@ function shopPreview(it, st) {
 // Avatars are split in three tiers so each tab stays short. The tier is fixed per avatar (prices can change).
 const AV_TIERS = [["basic", "Basic"], ["epic", "Epic"], ["legendary", "Legendary"]];
 const AV_TIER = {"e-slime": "basic", "e-zombie": "basic", "e-robot": "basic", "e-ghost": "basic", "e-skeleton": "basic", "e-vampire": "basic", "e-alien": "basic", "e-dragon": "basic", "e-pirate": "basic", "s-slime": "basic", "s-zombie": "basic", "s-robot": "basic", "e-knight": "epic", "e-golem": "epic", "e-frost": "epic", "e-wizard": "epic", "e-ninja": "epic", "e-pharaoh": "epic", "s-ghost": "epic", "s-bone": "epic", "s-bat": "epic", "s-alien": "epic", "s-wyvern": "epic", "s-knight": "epic", "s-pirate": "epic", "s-stone": "epic", "e-cosmic": "legendary", "e-phoenix": "legendary", "s-icedragon": "legendary", "s-sorcerer": "legendary", "s-ninja": "legendary", "s-pharaoh": "legendary", "s-astro": "legendary", "s-phoenix": "legendary"};
-Object.assign(AV_TIER, {"g-bow":"basic","g-bunny":"basic","g-kitty":"basic","g-flower":"basic","g-sweet":"basic","g-princess":"epic","g-mermaid":"epic","g-fairy":"epic","g-witch":"epic","g-popstar":"epic","g-iceq":"legendary","g-butterfly":"legendary","g-angel":"legendary","g-galaxy":"legendary","g-rose":"legendary"});
+Object.assign(AV_TIER, {"g-bow":"basic","g-bunny":"basic","g-kitty":"basic","g-flower":"basic","g-sweet":"basic","g-princess":"epic","g-mermaid":"epic","g-fairy":"epic","g-witch":"epic","g-popstar":"epic","g-iceq":"legendary","g-butterfly":"legendary","g-angel":"legendary","g-galaxy":"legendary","g-rose":"legendary","g-samurai":"legendary"});
 let shopTier = "basic";
 const setTier = k => { shopTier = k; };
 const tierOf = it => AV_TIER[it.id] || "basic";
