@@ -51,7 +51,7 @@ export const FEATURES = [
   { key: "cup", cat: "comp", def: true, label: "Class Cup", what: "Weekly points between classes", css: ["#vCup", "#cupView"] },
   { key: "shop", cat: "comp", def: true, label: "Shop", what: "Prices, perks and the student shop", css: ["#vShop", "#shopView", "[data-act=shopOpen]"] },
   { key: "shop_boys", cat: "comp", def: true, label: "Boys' shop", what: "The XP Shop for boys' classes (set it quickly in Developer > Shop access)", css: [] },
-  { key: "shop_girls", cat: "comp", def: true, label: "Girls' shop", what: "The Sparkle Boutique for girls' classes (8G)", css: [] },
+  { key: "shop_girls", cat: "comp", def: true, label: "Girls' shop", what: "The Sparkle Boutique for girls' classes (any class ending in G, like 8G)", css: [] },
   { key: "dash", cat: "comp", def: true, label: "Dashboard", what: "The big-screen class dashboard", css: ["#vBoard", "#dashView"] },
   // ---- Teacher Hub
   { key: "hub", cat: "hub", def: true, label: "Teacher Hub (whole page)", what: "Turns off every part of the Hub", css: ["#vHub", "#hubView"] },
