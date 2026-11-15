@@ -73,6 +73,7 @@ details.teacher summary{cursor:pointer;font-weight:700;color:#475569}
 .small{font-size:.85rem;color:var(--mut)}
 .ref{background:#fff8e1;border:1px solid #f4d675;border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:.93rem}
 .ref b{color:#7a5a00}
+.cw-locked main{pointer-events:none}.cw-locked #probSel{pointer-events:auto}.cw-locked details.teacher{display:none}
 .tag{margin-left:auto;font-size:.75rem;font-weight:700;background:#eef2ff;color:#3730a3;border-radius:999px;padding:2px 9px;white-space:nowrap}
 </style>
 </head>
@@ -197,6 +198,7 @@ details.teacher summary{cursor:pointer;font-weight:700;color:#475569}
   </section>
 </main>
 
+<script src="cwkeep.js"></script>
 <script>
 (function(){
 "use strict";
@@ -514,8 +516,9 @@ function renderSteps(){
   if(all && s){
     b.textContent = "🎉 Well done! Both lines pass through " + labelFor(s.x,s.y) + " — that is the solution of the simultaneous equations.";
     b.className = "banner show";
-    if(!window.__sent){ window.__sent = 1; try{ parent.postMessage("g42-ws-done:" + (window.__wrongN || 0), location.origin); }catch(e){} }
+    if(!window.__sent && allProblemsDone()){ window.__sent = 1; try{ parent.postMessage("g42-ws-done:" + (window.__wrongN || 0), location.origin); }catch(e){} }
   } else b.className = "banner";
+  if(window.__cwLocked) lockInputs();
 }
 
 /* ---------- STEP 1: table ---------- */
@@ -618,7 +621,9 @@ P.forEach((p,i)=>{
 sel.addEventListener("change", ()=>{
   const v = sel.value;
   if(v === "custom") return;
-  loadProblem(P[Number(v)]);
+  if(!window.__cwLocked) keepCurrent();          // remember the problem he is leaving
+  const kept = store[Number(v)];
+  if(kept) restore(kept); else loadProblem(P[Number(v)]);
 });
 
 /* ---------- teacher: custom equations ---------- */
@@ -643,6 +648,58 @@ $("useCustom").addEventListener("click", ()=>{
   sel.value = "custom";
   loadProblem(p);
   setMsg("mT","✓ Loaded. Solution: "+labelFor(s.x,s.y),true);
+});
+
+/* ---------- Save / Submit (checkpoint and hand-in) ---------- */
+const store = {};                               // problem number -> what he has done on it
+const STEPS = ["table","points","lines","solution","pair","plot"];
+function snap(){
+  const i = P.indexOf(prob); if(i < 0) return null;
+  return { i: i,
+    pts: {1: pts[1].map(q => ({x:q.x,y:q.y})), 2: pts[2].map(q => ({x:q.x,y:q.y}))},
+    sol: sol ? {x:sol.x,y:sol.y} : null, drawn: {1:!!drawn[1], 2:!!drawn[2]}, done: Object.assign({}, done),
+    cells: Array.prototype.map.call(document.querySelectorAll("input.cell"), x => x.value),
+    sx:$("sx").value, sy:$("sy").value, px:$("px").value, py:$("py").value,
+    all: STEPS.every(k => done[k]) };
+}
+function keepCurrent(){ const s = snap(); if(s) store[s.i] = s; }
+function allProblemsDone(){
+  const cur = P.indexOf(prob);
+  return P.every((_, i) => i === cur ? STEPS.every(k => done[k]) : !!(store[i] && store[i].all));
+}
+function restore(s){
+  loadProblem(P[s.i]); sel.value = String(s.i);
+  pts = {1: s.pts[1].map(q => ({x:q.x,y:q.y,bad:false})), 2: s.pts[2].map(q => ({x:q.x,y:q.y,bad:false}))};
+  sol = s.sol ? {x:s.sol.x,y:s.sol.y,bad:false} : null;
+  drawn = {1:!!s.drawn[1], 2:!!s.drawn[2]}; done = Object.assign({}, s.done);
+  document.querySelectorAll("input.cell").forEach((x,k) => { x.value = s.cells[k] || ""; x.className = done.table && x.value !== "" ? "cell ok" : "cell"; });
+  $("sx").value = s.sx || ""; $("sy").value = s.sy || ""; $("px").value = s.px || ""; $("py").value = s.py || "";
+  if(done.solution){ $("sx").className = "ok"; $("sy").className = "ok"; }
+  if(done.pair){ $("px").className = "ok"; $("py").className = "ok"; }
+  if(done.table) setMsg("m1","\u2713 The table is correct.",true);
+  if(done.points) setMsg("m2","\u2713 All points are on the correct lines.",true);
+  if(done.lines) setMsg("m3","\u2713 Both lines are correct.",true);
+  if(done.solution) setMsg("m4","\u2713 Correct!",true);
+  if(done.pair) setMsg("m5","\u2713 Correct!",true);
+  if(done.plot) setMsg("m6","\u2713 The \u2605 is exactly where the lines meet.",true);
+  renderGraph(); renderSteps();
+}
+function lockInputs(){
+  document.querySelectorAll("main input, main button").forEach(x => { if(x.id !== "probSel") x.disabled = true; });
+}
+if(window.CWKeep) CWKeep.init({
+  id: "g42-ws",
+  getState: () => { keepCurrent(); return { v:1, cur:P.indexOf(prob), wrong:window.__wrongN || 0, probs:store }; },
+  setState: (st) => {
+    if(!st || !st.probs) return;
+    Object.keys(st.probs).forEach(k => { store[k] = st.probs[k]; });
+    window.__wrongN = st.wrong || 0;
+    const first = store[st.cur] || store[Object.keys(store)[0]];
+    if(first) restore(first);
+  },
+  isComplete: () => { keepCurrent(); return allProblemsDone(); },
+  summary: () => { keepCurrent(); return P.filter((_, i) => store[i] && store[i].all).length + " of " + P.length + " problems finished"; },
+  onLock: () => { window.__cwLocked = true; lockInputs(); }
 });
 
 /* ---------- start ---------- */

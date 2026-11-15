@@ -1286,7 +1286,7 @@ header.book .geo { max-height: 190px; }
 /* --- Math Island logo mark --- */
 header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !important; color: transparent !important; font-size: 0 !important; border: 0 !important; box-shadow: none !important; border-radius: 22% !important; }
 
-</style><link rel="stylesheet" href="island.css?v=1113k"><style>
+</style><link rel="stylesheet" href="island.css?v=1115a"><style>
 .cls-panel{margin:12px 0;padding:14px;border:2px solid var(--edge);border-radius:12px;background:var(--card);display:grid;gap:10px}
 .cls-panel h4{margin:0}.cls-panel p{margin:0;font-size:14px}
 .cls-panel label{display:grid;gap:4px;font-size:13px;font-weight:600}
@@ -1457,7 +1457,7 @@ header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !import
 window.__ready = new Promise(r => { window.__resolveClaude = r; });
 window.claude = { use: async n => (await window.__ready).use(n) };
 </script>
-<script src="hats.js?v=1113k"></script>
+<script src="hats.js?v=1115a"></script>
 <script>
 const POSITIVE = [
   { title: "Active Participation", xp: 10 },
@@ -2153,7 +2153,10 @@ function renderShop() {
 const priceEdits = {};
 document.addEventListener("input", e => { const x = e.target; if (x && x.dataset && x.dataset.pid) { priceEdits[x.dataset.pid] = x.value; const b = $("pxSave"); if (b) b.disabled = false; } });
 let shopViewGirl = false;
+// Which shops may this teacher use? The owner decides in Developer > Shop access (features shop_boys / shop_girls).
+const shopOK = girl => !window.__featOn || window.__featOn(girl ? "shop_girls" : "shop_boys");
 function renderShopView() {
+  if (!shopOK(false) && shopOK(true)) shopViewGirl = true; else if (!shopOK(true) && shopOK(false)) shopViewGirl = false;
   GIRL = shopViewGirl;
   const pend = [];
   students.forEach(s => s.reqs.forEach(r => { const it = shopItem(r.k); if (it) pend.push({ s, r, it }); }));
@@ -2162,7 +2165,7 @@ function renderShopView() {
   const pendHTML = pend.length ? `<ul class="plist">${pend.map(p => `<li>${avatarHTML(p.s, "sm")}<div><div class="nm2" style="font-size:15px">${nameHTML(p.s)} <small style="font-weight:500;color:var(--muted)">${p.s.cls}</small></div><div>${p.it.icon} ${esc(p.it.name)} · ${p.it.price} XP</div></div><div class="sbtns"><button class="plus small" data-act="reqDone" data-id="${p.s.id}" data-item="${p.r.k}" data-at="${p.r.at}" ${readOnly ? "disabled" : ""}>Done</button><button class="ghost small" data-act="reqRefund" data-id="${p.s.id}" data-item="${p.r.k}" data-at="${p.r.at}" ${readOnly ? "disabled" : ""}>Refund</button></div></li>`).join("")}</ul>` : `<div class="none">No class perks waiting. When a student requests one it appears here.</div>`;
   $("shopView").innerHTML = `<div class="shop-intro"><h2>XP Shop</h2><p>Students spend XP here. Open a student in the list and press Shop. Spending never lowers their level or badges.</p>${window.__owner ? `<p class="pxbar"><b>Set prices:</b> change any number below, then save. Students see the new price straight away. <button class="primary small" type="button" id="pxSave" data-act="savePrices" ${Object.keys(priceEdits).length ? "" : "disabled"}>Save prices</button></p>` : ""}</div>
     ${pend.length ? `<section class="card"><h3>Old perk requests (${pend.length})</h3>${pendHTML}</section>` : ""}
-    <div class="shop-tabs" role="tablist" aria-label="Shop categories"><div class="gs-sw" role="group" aria-label="Which shop">${[[false, "Boys' shop"], [true, "Girls' shop (8G)"]].map(([v, l]) => `<button class="shop-tab" data-act="shopViewGirl" data-girl="${v ? 1 : 0}" aria-pressed="${v === shopViewGirl}">${l}</button>`).join("")}</div>
+    <div class="shop-tabs" role="tablist" aria-label="Shop categories"><div class="gs-sw" role="group" aria-label="Which shop">${[[false, "Boys' shop"], [true, "Girls' shop (8G)"]].filter(([v]) => shopOK(v)).map(([v, l]) => `<button class="shop-tab" data-act="shopViewGirl" data-girl="${v ? 1 : 0}" aria-pressed="${v === shopViewGirl}">${l}</button>`).join("")}</div>
     ${shopCats().map(c => `<button class="shop-tab" role="tab" data-act="shopViewCat" data-cat="${c.key}" aria-pressed="${c.key === shopViewCat}" aria-selected="${c.key === shopViewCat}">${c.label} <small>${SHOP.filter(x => (x.both || !!x.g === GIRL) && x.cat === c.key).length}</small></button>`).join("")}</div>
     ${shopCats().filter(c => c.key === shopViewCat).map(c => `<section class="card${GIRL ? " girlshop" : ""}"><h3>${c.label}</h3>${c.key === "skin" ? tierBar("shopViewTier") : ""}<div class="shop-grid">${shopList(c.key).map(it => `<div class="sitem"><div class="prev">${shopPreview(it, demo)}</div><b>${esc(it.name)}</b>${window.__owner ? `<label class="pxe"><input type="number" inputmode="numeric" min="0" max="99999" step="10" data-pid="${it.id}" value="${priceEdits[it.id] ?? it.price}" aria-label="Price of ${esc(it.name)}"> XP</label>` : `<span class="pr">${it.price} XP</span>`}${it.desc ? `<small>${esc(it.desc)}</small>` : ""}</div>`).join("")}</div></section>`).join("")}`;
 }
@@ -3314,7 +3317,7 @@ function hubGrades() {
 
 function grLoadLib() {
   if (window.ExcelJS) return Promise.resolve();
-  return new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1113k"; sc.onload = res; sc.onerror = () => rej(new Error("lib")); document.head.appendChild(sc); });
+  return new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1115a"; sc.onload = res; sc.onerror = () => rej(new Error("lib")); document.head.appendChild(sc); });
 }
 async function grXlsx(btn) {
   const keep = cls;
@@ -4092,7 +4095,7 @@ document.addEventListener("click", e => {
       if (st) toast(st.name + " removed");
       break;
     }
-    case "shopViewGirl": shopViewGirl = b.dataset.girl === "1"; shopViewCat = "frame"; renderShopView(); break;
+    case "shopViewGirl": if (!shopOK(b.dataset.girl === "1")) { toast("You do not have this shop"); break; } shopViewGirl = b.dataset.girl === "1"; shopViewCat = "frame"; renderShopView(); break;
     case "avPick": pickerFor = id; newPickerSeeds(); render(); break;
     case "avMore": newPickerSeeds(); render(); break;
     case "avClose": pickerFor = null; render(); break;
@@ -4113,7 +4116,7 @@ document.addEventListener("click", e => {
       view = ["cup", "shop", "hub", "tools", "board"].includes(b.dataset.view) ? b.dataset.view : "students";
       try { localStorage.setItem("xp_view", view); } catch {}
       render(); break;
-    case "shopOpen": shopFor = id; shopCat = "frame"; shopConfirm = ""; renderShop(); break;
+    case "shopOpen": { const sh = students.find(s => s.id === id); if (sh && !shopOK(isGirlCls(sh.cls))) { toast(isGirlCls(sh.cls) ? "You do not have the girls' shop" : "You do not have the boys' shop"); break; } } shopFor = id; shopCat = "frame"; shopConfirm = ""; renderShop(); break;
     case "shopClose": shopFor = null; shopConfirm = ""; $("shopModal").hidden = true; break;
     case "shopCat": shopCat = b.dataset.cat; shopConfirm = ""; renderShop(); break;
     case "savePrices": (async () => { const m = {}; for (const k in priceEdits) { const v = Number(priceEdits[k]); if (priceEdits[k] === "" || !Number.isFinite(v) || v < 0 || v > 99999) { toast("Check the prices: use whole numbers from 0 to 99999."); return; } m[k] = Math.round(v); }
@@ -4482,8 +4485,8 @@ document.getElementById("expBtn")?.addEventListener("click", async () => {
     <div class="acts noprint"><button class="ghost" id="lgPrint" type="button">Print this list</button><button class="ghost" id="lgClose" type="button">Close</button></div>
   </div>
 </div>
-<script type="module" src="teacher.js?v=1113k"></script>
-<script src="mylessons.js?v=1113k"></script>
+<script type="module" src="teacher.js?v=1115a"></script>
+<script src="mylessons.js?v=1115a"></script>
 
 <script>
 /* Post a certificate straight to Google Classroom.

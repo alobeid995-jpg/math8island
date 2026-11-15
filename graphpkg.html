@@ -23,20 +23,36 @@ iframe{flex:1;width:100%;border:0;background:#fff;min-height:0}
 <iframe id="f1" title="Worked examples" src="graphex42.html"></iframe>
 <iframe id="f2" title="Worksheet" hidden></iframe>
 <script type="module">
-import { fs, doc, getDoc, setDoc, getDocs, collection, query, where, whenUser, profileOf } from "./fb.js?v=1113k";
+import { fs, doc, getDoc, setDoc, getDocs, collection, query, where, whenUser, profileOf } from "./fb.js?v=1115a";
 const $ = id => document.getElementById(id);
 const G = { ex: "graph42-examples", ws: "graph42-ws" };
 const u = await whenUser(), p = u && await profileOf(u.uid);
 if (!p) { location.href = "index.html"; throw new Error("not signed in"); }
 const mode = p.role === "teacher" ? "teacher" : "student";
 const base = mode === "teacher" ? [] : (p.tid ? ["teachers", p.tid] : []);
+const CWID = G.ws + "-cw";   // saved work (checkpoint / hand-in) of the worksheet
+let cw = { state: null, at: 0 }, cwSub = false, cwSubAt = 0;
+const LK = () => "cwk:" + p.sid + ":" + CWID;
 let retake = {}, myName = "", exDone = false, wsDone = false, seen = new Set(), view = 1;
 if (mode === "student") {
   try { const s = await getDoc(doc(fs, ...base, "students", p.sid)); myName = s.exists() ? s.data().name || "" : ""; retake = s.exists() ? (s.data().rt || {}) : {}; } catch {}
   try {
     const s = await getDocs(query(collection(fs, ...base, "plays"), where("sid", "==", p.sid)));
-    s.docs.forEach(d => { const v = d.data(); if (v.g === G.ex) exDone = true; if (v.g === G.ws && (v.u || v.t || 0) > (retake[G.ws] || 0)) wsDone = true; });
+    s.docs.forEach(d => { const v = d.data(); if (v.g === G.ex) exDone = true; if (v.g === G.ws && (v.u || v.t || 0) > (retake[G.ws] || 0)) wsDone = true;
+      if (v.g === CWID && v.cw && (v.t || 0) > (retake[G.ws] || 0)) { if (v.sub) { cwSub = true; if (!cwSubAt) cwSubAt = v.t; } if ((v.t || 0) > cw.at) cw = { state: v.cw, at: v.t }; } });
   } catch {}
+}
+try {   // a copy kept on this device wins when it is newer (the online save may not have worked)
+  const l = JSON.parse(localStorage.getItem(LK()) || "null");
+  if (l && l.state && l.at > (retake[G.ws] || 0)) { if (l.at > cw.at) cw = { state: l.state, at: l.at }; if (l.sub) { cwSub = true; cwSubAt = cwSubAt || l.at; } }
+} catch {}
+// Save = checkpoint, Submit = finished. Plays are created, never changed, so each one is a new document.
+async function keep(state, sub) {
+  const t = Date.now(), str = JSON.stringify(state);
+  cw = { state: str, at: t }; if (sub) { cwSub = true; cwSubAt = t; }
+  try { localStorage.setItem(LK(), JSON.stringify({ state: str, at: t, sub: cwSub ? 1 : 0 })); } catch {}
+  try { await setDoc(doc(fs, ...base, "plays", `${p.sid}_${CWID}_${t}`), { s: "ag", g: CWID, l: 1, r: 0, w: 0, v: 2, t, u: t, m: [], sid: p.sid, name: myName, cw: str, sub: sub ? 1 : 0 }); return { at: t, where: "cloud" }; }
+  catch { return { at: t, where: "device" }; }
 }
 async function save(g, w = 0) {
   if (mode !== "student") return;
@@ -56,6 +72,19 @@ function go(v) {
 }
 document.addEventListener("click", e => { const b = e.target.closest("[data-go]"); if (b) go(+b.dataset.go); });
 window.addEventListener("message", async e => {
+  const d = e.data;
+  if (e.origin === location.origin && d && typeof d === "object" && d.cwk === 1 && d.id === "g42-ws") {
+    const reply = o => { try { $("f2").contentWindow.postMessage({ cwk: 1, id: d.id, ...o }, location.origin); } catch {} };
+    if (d.op === "hello") reply({ op: "load", teacher: mode === "teacher", state: cw.state ? JSON.parse(cw.state) : null, submitted: cwSub, at: cwSub ? cwSubAt : cw.at });
+    else if (mode === "student" && !cwSub && (d.op === "save" || d.op === "submit")) {
+      const sub = d.op === "submit", r = await keep(d.state, sub);
+      if (sub) {
+        if (!wsDone) { wsDone = true; await save(G.ws, +(d.state && d.state.wrong) || 0); paint(); }   // this is what marks the worksheet as done for his teacher
+        reply({ op: "submitted", ok: true, at: r.at });
+      } else reply({ op: "saved", ok: true, where: r.where, at: r.at });
+    }
+    return;
+  }
   if (e.origin !== location.origin || typeof e.data !== "string") return;
   if (/^g42-ex-\d+$/.test(e.data)) {
     seen.add(e.data);

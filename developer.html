@@ -79,10 +79,10 @@ td.n{text-align:right;font-variant-numeric:tabular-nums}th.n{text-align:right}
 </div>
 <div class="drawer" id="dr"><div class="bk" data-close="1"></div><div class="pn" id="pn"></div></div>
 <script type="module">
-import { fs, doc, getDoc, setDoc, updateDoc, collection, getDocs, onSnapshot, query, where, whenUser, profileOf } from "./fb.js?v=1113k";
-import { CATS, FEATURES, byKey, hasFeature } from "./features.js?v=1113k";
-import { startUsage } from "./usage.js?v=1113k";
-import { loadPin, hasPin, askPin, savePin, checkPin } from "./ownerpin.js?v=1113k";
+import { fs, doc, getDoc, setDoc, updateDoc, collection, getDocs, onSnapshot, query, where, whenUser, profileOf } from "./fb.js?v=1115a";
+import { CATS, FEATURES, byKey, hasFeature } from "./features.js?v=1115a";
+import { startUsage } from "./usage.js?v=1115a";
+import { loadPin, hasPin, askPin, savePin, checkPin } from "./ownerpin.js?v=1115a";
 const $ = id => document.getElementById(id), out = $("out");
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const ONLINE = 6 * 60 * 1000, DAY = 24 * 60 * 60 * 1000;
@@ -282,8 +282,24 @@ function paintTeachers() {
   $("pane").innerHTML = `<div class="card"><div class="tbl"><table><thead><tr><th>Teacher</th><th>Status</th><th class="n">Students</th><th class="n">Logins</th><th class="n">Online</th><th class="n">Active 24 h</th><th></th></tr></thead><tbody>${teachers.map(g => {
     const mine = students.filter(s => s.tid === (g.me ? "" : g.uid)), on = mine.filter(s => statusOf(s) === "on").length, day = mine.filter(s => ["on", "day"].includes(statusOf(s))).length;
     const act = g.me ? "" : g.role === "paused" ? `<button class="btn" data-uid="${esc(g.uid)}" data-to="teacher" type="button">Restore access</button>` : `<button class="btn warn" data-uid="${esc(g.uid)}" data-to="paused" type="button">Pause access</button>`;
-    return `<tr><td class="nm">${esc(g.title)}<small>${esc([...new Set(mine.map(s => s.cls))].sort().join(", ") || "no classes yet")}</small></td><td>${g.me ? '<span class="pill day">Owner</span>' : g.role === "paused" ? '<span class="pill nolog">Paused</span>' : '<span class="pill on">Active</span>'}</td><td class="n">${g.n}</td><td class="n">${g.logins}</td><td class="n">${on}</td><td class="n">${day}</td><td style="text-align:right">${act}</td></tr>`; }).join("")}</tbody></table></div></div>` + featCard();
+    return `<tr><td class="nm">${esc(g.title)}<small>${esc([...new Set(mine.map(s => s.cls))].sort().join(", ") || "no classes yet")}</small></td><td>${g.me ? '<span class="pill day">Owner</span>' : g.role === "paused" ? '<span class="pill nolog">Paused</span>' : '<span class="pill on">Active</span>'}</td><td class="n">${g.n}</td><td class="n">${g.logins}</td><td class="n">${on}</td><td class="n">${day}</td><td style="text-align:right">${act}</td></tr>`; }).join("")}</tbody></table></div></div>` + shopCard() + featCard();
   const fc = $("featCard"); if (fc) fc.onclick = featClick;
+  const sc = $("shopCard"); if (sc) sc.onclick = shopClick;
+}
+/* ---------- shop access: which teacher may use the boys' shop and/or the girls' shop (saved as the shop_boys / shop_girls features) ---------- */
+function shopCard() {
+  const others = teachers.filter(g => !g.me);
+  if (!others.length) return "";
+  const modes = [["boys", "Boys' shop"], ["girls", "Girls' shop"], ["both", "Both"], ["none", "No shop"]];
+  const cur = uid => { const b = hasF("shop_boys", uid), g = hasF("shop_girls", uid); return b && g ? "both" : b ? "boys" : g ? "girls" : "none"; };
+  return `<div class="card" id="shopCard" style="margin-top:14px"><h3 style="margin:0 0 4px">Shop access</h3><p class="note">Choose which shop each teacher can use. A teacher with only the girls' shop does not see the boys' shop at all (and the other way round). The change reaches the teacher the next time she opens the Shop.</p>
+    ${others.map(g => `<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0;padding-top:8px;border-top:1px solid #eef"><b style="min-width:150px">${esc(g.title)}</b>${modes.map(([m, l]) => `<button class="btn${cur(g.uid) === m ? " warn" : ""}" type="button" data-shopu="${esc(g.uid)}" data-shopm="${m}">${cur(g.uid) === m ? "✓ " : ""}${l}</button>`).join("")}</div>`).join("")}</div>`;
+}
+async function shopClick(e) {
+  const b = e.target.closest("[data-shopm]"); if (!b) return;
+  const uid = b.dataset.shopu, m = b.dataset.shopm;
+  setFor("shop_boys", uid, m === "boys" || m === "both"); setFor("shop_girls", uid, m === "girls" || m === "both"); setFor("shop", uid, m !== "none");
+  await saveFeat(["shop_boys", "shop_girls", "shop"]); paintTeachers();
 }
 /* ---------- features the owner gives to teachers (shop/features: { <key>: { all, uids[], deny[] } }) ---------- */
 let feat = {}, featMode = "feature", featTeacher = "", featOpen = new Set(["xp"]);
