@@ -38,7 +38,7 @@ async function start() {
   if (lg && lg.first === true) { await choosePin(u, lref, String(lg.pin || "")); }
   onSnapshot(doc(fs, "shop", "prices"), s => { if (s.exists()) { applyPrices(s.data().prices); render(); } }, () => {});   // prices the owner sets
   onSnapshot(ref, snap => { loaded = true; me = snap.exists() ? fromDoc(snap) : null; if (me) applyTheme(validT(me.theme) ? me.theme : lsT.get()); render(); },
-    () => { loaded = true; me = null; render(); });
+    e => { loaded = true; me = null; window.__loadErr = (e && e.code) || "error"; render(); });
   mountStudentTT(() => (me && me.cls) || "");
   initAch(() => render(), () => me);
   initWork(p, () => me, toast).catch(() => {});
@@ -114,7 +114,7 @@ function render() {
   const app = $("app");
   if (!loaded) { app.innerHTML = `<div class="empty"><h2>Loading…</h2></div>`; return; }
   document.documentElement.classList.remove("wait");
-  if (!me) { app.innerHTML = `<div class="empty"><h2>Your record was not found</h2>Ask your teacher to check your login.</div>`; return; }
+  if (!me) { app.innerHTML = `<div class="empty"><h2>Your record was not found</h2>Ask your teacher to check your login.${window.__loadErr ? `<br><small>(${esc(window.__loadErr)})</small>` : ""}</div>`; return; }
   const st = me, lv = level(st.xp), into = Math.max(0, st.xp - (lv - 1) * LEVEL_XP), pct = Math.min(100, into / LEVEL_XP * 100);
   const picker = pickerOpen ? `<section class="picker"><b>Pick a new look</b>
       <div class="pk-grid">${seeds.map(s => `<button class="pk" type="button" data-act="setAv" data-seed="${s}" aria-label="Use this avatar">${avatarHTML({ id: st.id, avatar: s, eq: st.eq, cls: st.cls }, "")}</button>`).join("")}</div>
