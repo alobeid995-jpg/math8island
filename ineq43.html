@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Inequalities 4.3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fffdf4;--ink:#151412;--mut:#5c574b;--line:#d9d2bd;--y:#f3b31c;--b:#1f4fd8;--r:#d8402b;--g:#1e7a46;--gbg:#e2f3e8;--rbg:#fbe3df;--bbg:#e6edff;--ybg:#fff1c9}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.5 "Archivo",system-ui,sans-serif;min-height:100vh;
+ background-image:radial-gradient(circle at 92% 6%,rgba(31,79,216,.06) 0 120px,transparent 121px),radial-gradient(circle at 4% 96%,rgba(243,179,28,.12) 0 150px,transparent 151px)}
+button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:900px;margin:0 auto;padding:14px 16px 90px}
+.top{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.logo{width:42px;height:42px;background:var(--y);border:3px solid var(--ink);display:grid;place-items:center;transform:rotate(-6deg);font:italic 26px/1 "Instrument Serif",serif;flex:none}
+.top h1{margin:0;font-size:22px;font-weight:900;line-height:1.15;letter-spacing:-.01em}.top small{display:block;color:var(--mut);font-weight:500;font-size:14px}
+.x{margin-left:auto;border:3px solid var(--ink);background:#fff;border-radius:10px;padding:8px 14px;font-weight:800;box-shadow:3px 3px 0 var(--ink)}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0 16px}
+.step{border:3px solid var(--ink);background:#fff;border-radius:10px;padding:9px 8px;font-weight:800;text-align:center;box-shadow:3px 3px 0 var(--ink);font-size:16px;line-height:1.2}
+.step small{display:block;font-weight:600;color:var(--mut);font-size:12.5px;margin-top:2px}
+.step[aria-current=true]{background:var(--y)}.step.done{background:var(--gbg)}.step.lock{opacity:.55;box-shadow:none;border-style:dashed}
+.card{background:#fff;border:3px solid var(--ink);border-radius:12px;box-shadow:5px 5px 0 var(--ink);padding:18px;margin-bottom:16px}
+.card h2{margin:0 0 6px;font-size:24px;font-weight:900;letter-spacing:-.01em}.card h3{margin:0 0 6px;font-size:19px;font-weight:800}
+.q{font-size:21px;font-weight:600;margin:6px 0 12px}
+.big{font-size:26px;font-weight:900}
+.btn{border:3px solid var(--ink);background:var(--b);color:#fff;border-radius:12px;padding:13px 22px;font-weight:800;font-size:19px;box-shadow:4px 4px 0 var(--ink);min-height:54px}
+.btn:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--ink)}.btn.alt{background:#fff;color:var(--ink)}.btn.go{background:var(--g)}.btn:disabled{opacity:.45;box-shadow:none}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.chips{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin:10px 0}
+@media(max-width:560px){.chips{grid-template-columns:repeat(4,1fr)}}
+.chip{border:3px solid var(--ink);background:#fff;border-radius:10px;padding:10px 4px;font-weight:800;font-size:19px;min-height:52px;font-variant-numeric:tabular-nums}
+.chip[aria-pressed=true]{background:var(--ybg);outline:3px solid var(--y)}
+.chip.ok{background:var(--gbg);border-color:var(--g)}.chip.no{background:var(--rbg);border-color:var(--r)}.chip.miss{background:var(--gbg);border-style:dashed;border-color:var(--g)}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0}@media(max-width:560px){.opts{grid-template-columns:1fr}}
+.opt{border:3px solid var(--ink);background:#fff;border-radius:12px;padding:14px;font-weight:800;font-size:21px;text-align:center;min-height:62px;font-variant-numeric:tabular-nums}
+.opt[aria-pressed=true]{background:var(--ybg);outline:3px solid var(--y)}.opt.ok{background:var(--gbg);border-color:var(--g)}.opt.no{background:var(--rbg);border-color:var(--r)}
+.fb{margin:12px 0;padding:12px 14px;border-radius:10px;border:3px solid var(--ink);font-weight:600}.fb.good{background:var(--gbg)}.fb.bad{background:var(--rbg)}.fb.info{background:var(--bbg)}
+.bar{height:14px;border:3px solid var(--ink);border-radius:99px;background:#fff;overflow:hidden;margin:6px 0 12px}.bar i{display:block;height:100%;background:var(--g);transition:width .3s}
+.tag{display:inline-block;border:2px solid var(--ink);border-radius:99px;padding:1px 10px;font-weight:800;font-size:14px;background:var(--ybg)}
+.nl{position:relative;height:96px;margin:16px 8px 6px}
+.nl .ln{position:absolute;left:0;right:0;top:46px;height:4px;background:var(--ink);border-radius:2px}
+.nl .rng{position:absolute;top:34px;height:28px;background:rgba(30,122,70,.28);border:3px solid var(--g);border-radius:6px}
+.nl .pt{position:absolute;top:36px;width:4px;height:24px;background:var(--ink);transform:translateX(-2px)}
+.nl .lb{position:absolute;top:70px;transform:translateX(-50%);font-weight:800;font-size:16px;white-space:nowrap}
+.nl .dot{position:absolute;top:38px;width:20px;height:20px;border-radius:50%;border:3px solid var(--ink);transform:translateX(-10px)}
+.nl .dot.in{background:var(--g)}.nl .dot.out{background:#fff}
+.ineq{font:italic 30px/1.2 "Instrument Serif",serif;text-align:center;margin:8px 0;font-variant-numeric:tabular-nums}
+.ineq b{font:900 30px "Archivo",sans-serif;font-style:normal}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.tab{border:3px solid var(--ink);background:#fff;border-radius:99px;padding:8px 16px;font-weight:800}.tab[aria-pressed=true]{background:var(--y)}.tab.ok{background:var(--gbg)}
+.gcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.gc{border:3px solid var(--ink);background:#fff;border-radius:12px;box-shadow:4px 4px 0 var(--ink);padding:14px;text-align:left}
+.gc b{display:block;font-size:20px;font-weight:900}.gc span{color:var(--mut);font-size:15px;display:block;margin:2px 0 6px}.gc.ok{background:var(--gbg)}
+.ws .wq{border-bottom:2px dashed var(--line);padding:14px 0}.ws .wq:last-of-type{border:0}
+.ws .num{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--y);border:3px solid var(--ink);font-weight:900;margin-right:8px;font-size:16px}
+.lockbox{text-align:center;padding:26px 12px}.lockbox .big{margin-bottom:6px}
+.pick{display:flex;gap:8px;margin:10px 0}.pick .tab{flex:1;text-align:center}
+.stepper{display:flex;align-items:center;gap:12px;justify-content:center;margin:8px 0}.stepper b{font-size:36px;min-width:130px;text-align:center;font-variant-numeric:tabular-nums}
+.stepper button{width:56px;height:56px;border:3px solid var(--ink);border-radius:12px;background:#fff;font-size:30px;font-weight:900;box-shadow:3px 3px 0 var(--ink)}
+[hidden]{display:none!important}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style><style>
+.nl2{position:relative;height:110px;margin:14px 26px 4px}
+.nl2 .ln{position:absolute;left:-14px;right:-14px;top:50px;height:4px;background:var(--ink);border-radius:2px}
+.nl2 .tk{position:absolute;top:42px;width:3px;height:20px;background:var(--ink);transform:translateX(-1.5px)}
+.nl2 .lb{position:absolute;top:68px;transform:translateX(-50%);font-weight:800;font-size:16px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.nl2 .seg{position:absolute;top:46px;height:12px;background:var(--g);border-radius:6px;opacity:.85}
+.nl2 .dot{position:absolute;top:41px;width:22px;height:22px;border-radius:50%;border:4px solid var(--g);transform:translateX(-11px);background:#fff;z-index:2}
+.nl2 .dot.cl{background:var(--g)}
+.nl2 .ah{position:absolute;top:38px;width:0;height:0;border-top:14px solid transparent;border-bottom:14px solid transparent;z-index:1}
+.nl2 .ah.r{border-left:20px solid var(--g)}.nl2 .ah.l{border-right:20px solid var(--g)}
+.work{border:3px solid var(--ink);border-radius:10px;background:var(--bbg);padding:10px 14px;margin:10px 0;font-weight:700}.wl{padding:3px 0;font-size:19px}
+.ineqbig{font:italic 40px/1.2 "Instrument Serif",serif;text-align:center;margin:8px 0;font-variant-numeric:tabular-nums}
+.opts.one{grid-template-columns:1fr}
+.steps{grid-template-columns:repeat(2,1fr)}
+</style></head><body>
+<div class="wrap" id="app"><p>Loading…</p></div>
+<script type="module">
+import { fs, doc, getDoc, setDoc, getDocs, collection, query, where, whenUser, profileOf } from "./fb.js?v=1115p";
+
+const $ = id => document.getElementById(id), app = $("app");
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const G = { ex: "ineq43-examples", ws: "ineq43-ws" };
+
+/* ---------- who is here ---------- */
+const u = await whenUser(), p = u && await profileOf(u.uid);
+if (!p) { location.href = "index.html"; throw new Error("not signed in"); }
+const mode = p.role === "teacher" ? "teacher" : "student";
+const base = mode === "teacher" ? [] : (p.tid ? ["teachers", p.tid] : []);
+const embedded = window.parent !== window;
+let retake = {}, myName = "", done = { ex: false }, wsRes = null;
+if (mode === "student") {
+  try { const s = await getDoc(doc(fs, ...base, "students", p.sid)); myName = s.exists() ? s.data().name || "" : ""; retake = s.exists() ? (s.data().rt || {}) : {}; } catch {}
+  try {
+    const s = await getDocs(query(collection(fs, ...base, "plays"), where("sid", "==", p.sid)));
+    s.docs.forEach(d => { const v = d.data();
+      if (v.g === G.ex) done.ex = true;
+      if (v.g === G.ws && (v.u || v.t || 0) > (retake[G.ws] || 0)) wsRes = { r: v.r, w: v.w, m: v.m || [] }; });
+  } catch {}
+}
+async function save(g, r, w, m) {
+  if (mode !== "student") return;   // a teacher can look around; nothing is saved for him
+  const t = Date.now();
+  try { await setDoc(doc(fs, ...base, "plays", `${p.sid}_${g}_${t}`), { s: "ag", g, l: 1, r, w, t, u: t, m: (m || []).slice(-20), sid: p.sid, name: myName }); } catch {}
+}
+const close = () => { if (embedded) { try { parent.postMessage("mi-close", location.origin); } catch {} } else location.href = mode === "teacher" ? "teacher.html" : "student.html"; };
+const unlocked = () => mode === "teacher" || done.ex;
+
+/* ---------- number line picture: dots (open or closed), an arrow or a bar between two dots ---------- */
+// spec: { lo, hi, dots: [[value, "o"|"c"]], arrow: [value, "r"|"l"], bar: [a, b] }
+function nline(s) {
+  const pos = v => 100 * (v - s.lo) / (s.hi - s.lo);
+  let h = `<div class="nl2" role="img" aria-label="A number line from ${s.lo} to ${s.hi}"><div class="ln"></div>`;
+  for (let v = s.lo; v <= s.hi; v++) h += `<div class="tk" style="left:${pos(v)}%"></div><div class="lb" style="left:${pos(v)}%">${String(v).replace("-", "−")}</div>`;
+  if (s.bar) h += `<div class="seg" style="left:${pos(s.bar[0])}%;width:${pos(s.bar[1]) - pos(s.bar[0])}%"></div>`;
+  if (s.arrow) { const [v, d] = s.arrow, e = d === "r" ? 100 : 0; h += `<div class="seg" style="left:${Math.min(pos(v), e)}%;width:${Math.abs(e - pos(v))}%"></div><div class="ah ${d}" style="left:calc(${e}% ${d === "r" ? "- 2px" : "- 18px"})"></div>`; }
+  (s.dots || []).forEach(([v, k]) => { h += `<div class="dot ${k === "c" ? "cl" : ""}" style="left:${pos(v)}%"></div>`; });
+  return h + "</div>";
+}
+
+/* ---------- shell ---------- */
+let view = "ex";
+function shell(inner) {
+  const st = (k, n, l, d) => `<button class="step ${d ? "done" : ""} ${k === "ws" && !unlocked() ? "lock" : ""}" data-go="${k}" aria-current="${view === k}"><span>${n}. ${l}</span><small>${k === "ws" ? (wsRes ? "done" : unlocked() ? "ready" : "after the example") : d ? "done ✓" : ""}</small></button>`;
+  app.innerHTML = `<div class="top"><div class="logo">π</div><h1>Inequalities<small>Exercise 4.3 · Day 1 · number lines and integers</small></h1><button class="x" data-close="1" type="button">✕ Close</button></div>
+    <div class="steps">${st("ex", 1, "Worked example", done.ex)}${st("ws", 2, "Worksheet", !!wsRes)}</div>${inner}`;
+}
+document.addEventListener("click", e => {
+  const t = e.target;
+  if (t.closest("[data-close]")) return close();
+  const g = t.closest("[data-go]"); if (g) { view = g.dataset.go; render(); window.scrollTo({ top: 0, behavior: "smooth" }); }
+});
+function render() { ({ ex: renderEx, ws: renderWs })[view](); }
+
+/* ---------- 1. Worked example: −2 ≤ x < 4, every step is a question and the number line is drawn as you go ---------- */
+const BASE = { lo: -4, hi: 6 };
+const EX = { inq: "−2 ≤ x < 4", intro: "x is a number from −2 up to 4. Is −2 included? Is 4 included? Let us draw it.", steps: [
+  { q: "Look at the left part: −2 ≤ x. The sign ≤ means “less than OR EQUAL to”. Is −2 included?", o: ["Yes, it is included", "No, it is not included"], c: "Yes, it is included", line: "−2 ≤ x  →  −2 is included", pic: {} },
+  { q: "So what kind of circle goes at −2?", o: ["Closed circle ●", "Open circle ○"], c: "Closed circle ●", line: "Closed circle ● at −2", pic: { dots: [[-2, "c"]] } },
+  { q: "Now the right part: x < 4. The sign < has no “equal” line. Is 4 included?", o: ["No, it is not included", "Yes, it is included"], c: "No, it is not included", line: "x < 4  →  4 is not included", pic: { dots: [[-2, "c"]] } },
+  { q: "So what kind of circle goes at 4?", o: ["Open circle ○", "Closed circle ●"], c: "Open circle ○", line: "Open circle ○ at 4", pic: { dots: [[-2, "c"], [4, "o"]] } },
+  { q: "x is BETWEEN −2 and 4. What do we draw between the two circles?", o: ["A line joining them", "An arrow to the right", "An arrow to the left"], c: "A line joining them", line: "Join the circles with a line", pic: { dots: [[-2, "c"], [4, "o"]], bar: [-2, 4] } },
+  { q: "Now the integers. N is an integer and −2 ≤ N < 4. Which list is right?", o: ["−2, −1, 0, 1, 2, 3", "−1, 0, 1, 2, 3", "−2, −1, 0, 1, 2, 3, 4", "−2, −1, 0, 1, 2"], c: "−2, −1, 0, 1, 2, 3", line: "Integers: −2, −1, 0, 1, 2, 3  (−2 is in, 4 is out)", pic: { dots: [[-2, "c"], [4, "o"]], bar: [-2, 4] } }
+]};
+const ex = { s: 0, wrong: "" };
+function renderEx() {
+  const s = ex.s, fin = s >= EX.steps.length, cur = EX.steps[s], last = EX.steps[Math.min(s, EX.steps.length) - 1];
+  const lines = EX.steps.slice(0, s).map(x => `<div class="wl">${esc(x.line)}</div>`).join("");
+  const pic = s === 0 ? {} : last.pic;
+  shell(`<div class="card"><h2>Worked example</h2><div class="ineqbig">${EX.inq}</div><p class="q">${EX.intro}</p>
+    <p class="fb info"><b>Rule:</b> ≤ and ≥ include the number (closed circle ●). &lt; and &gt; do not (open circle ○).</p>
+    ${nline({ ...BASE, ...pic })}
+    ${lines ? `<div class="work">${lines}</div>` : ""}
+    ${fin ? `<div class="fb good"><b>Solution set: −2 ≤ x < 4. Integers: −2, −1, 0, 1, 2, 3.</b></div>
+      <div class="row"><button class="btn go" data-exfin="1" type="button">${done.ex ? "Go to the worksheet →" : "I understand. Open the worksheet ✓"}</button></div>`
+    : `<p class="q"><span class="tag">Step ${s + 1} of ${EX.steps.length}</span> ${esc(cur.q)}</p>
+      <div class="opts ${cur.o.length > 2 ? "one" : ""}">${cur.o.map(o => `<button class="opt" data-eopt="${esc(o)}">${esc(o)}</button>`).join("")}</div>
+      ${ex.wrong ? `<div class="fb bad">${esc(ex.wrong)}</div>` : ""}`}</div>`);
+}
+document.addEventListener("click", e => {
+  if (view !== "ex") return; const t = e.target;
+  const op = t.closest("[data-eopt]"); if (op) {
+    const st = EX.steps[ex.s];
+    if (op.dataset.eopt === st.c) { ex.s++; ex.wrong = ""; } else ex.wrong = "Not quite. Remember: ≤ and ≥ are included (closed ●). < and > are not included (open ○). Try again.";
+    return renderEx();
+  }
+  if (t.closest("[data-exfin]")) {
+    if (!done.ex) { done.ex = true; save(G.ex, 1, 0, []); }
+    view = "ws"; render(); window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+});
+
+/* ---------- 2. Worksheet: 11 multiple-choice questions (about 10 minutes), easy first ---------- */
+const WS = [
+  { q: "Which sign means “greater than or equal to”?", c: "≥", w: ["≤", ">", "<"] },
+  { q: "x > 5. Which circle goes at 5 on the number line?", c: "Open circle ○ (5 is not included)", w: ["Closed circle ● (5 is included)", "No circle", "Open circle ○ (5 is included)"] },
+  { q: "Which inequality does this number line show?", pic: { lo: -2, hi: 6, dots: [[2, "o"]], arrow: [2, "r"] }, c: "x > 2", w: ["x ≥ 2", "x < 2", "x ≤ 2"] },
+  { q: "Which inequality does this number line show?", pic: { lo: -5, hi: 3, dots: [[-1, "c"]], arrow: [-1, "l"] }, c: "x ≤ −1", w: ["x ≥ −1", "x < −1", "x > −1"] },
+  { q: "All the numbers greater than or equal to 4 and less than 9. Which inequality is this?", c: "4 ≤ x < 9", w: ["4 < x ≤ 9", "4 ≤ x ≤ 9", "4 < x < 9"] },
+  { q: "Which inequality does this number line show?", pic: { lo: -4, hi: 4, dots: [[-3, "c"], [2, "o"]], bar: [-3, 2] }, c: "−3 ≤ x < 2", w: ["−3 < x ≤ 2", "−3 ≤ x ≤ 2", "−3 < x < 2"] },
+  { q: "N is an integer and N > 4. Sam says the smallest value of N is 4. What is the smallest value of N?", c: "5", w: ["4", "3", "6"] },
+  { q: "N is an integer and N < −5. What is the largest value of N?", c: "−6", w: ["−5", "−4", "−7"] },
+  { q: "N is an integer and −3 ≤ N < 1. Which list shows all the values of N?", c: "−3, −2, −1, 0", w: ["−3, −2, −1, 0, 1", "−2, −1, 0", "−2, −1, 0, 1"] },
+  { q: "N is an integer and N ≤ 4. Is N < 5 true?", c: "Must be true", w: ["Could be true, but not always", "Cannot be true"] },
+  { q: "N is an integer and a ≤ N < b. The integers that fit are 2, 3, 4 and 5. What are a and b?", c: "a = 2 and b = 6", w: ["a = 2 and b = 5", "a = 3 and b = 5", "a = 1 and b = 6"] }
+];
+let wsOrder = null, wsPick = [], confirmHand = false;
+function renderWs() {
+  if (!unlocked()) {
+    shell(`<div class="card lockbox"><div class="big">🔒 The worksheet opens soon</div><p class="q">First finish the worked example. Then come back here.</p><div class="row" style="justify-content:center"><button class="btn" data-go="ex" type="button">Go to the worked example</button></div></div>`);
+    return;
+  }
+  if (wsRes) {
+    const n = wsRes.r + wsRes.w, pc = n ? Math.round(100 * wsRes.r / n) : 0;
+    shell(`<div class="card"><h2>Worksheet: handed in ✓</h2><p class="big">${wsRes.r} of ${n} right (${pc}%)</p><div class="bar"><i style="width:${pc}%"></i></div>
+      ${wsRes.m.length ? `<h3>Questions to look at again</h3>${wsRes.m.map(x => `<div class="fb bad"><b>${esc(x.q)}</b><br>${esc(x.a)}</div>`).join("")}` : `<p class="q">Every answer was right. Well done!</p>`}
+      <div class="row"><button class="btn go" data-close="1" type="button">Finish</button></div></div>`);
+    return;
+  }
+  if (!wsOrder) wsOrder = WS.map(q => ({ ...q, o: shuffle([q.c, ...q.w]) })), wsPick = WS.map(() => "");
+  const answered = wsPick.filter(Boolean).length;
+  shell(`<div class="card ws"><h2>Worksheet</h2><p class="q">Choose one answer for each question. It takes about 10 minutes. You can hand in once.</p><div class="bar"><i style="width:${100 * answered / WS.length}%"></i></div>
+    ${wsOrder.map((q, i) => `<div class="wq"><p class="q"><span class="num">${i + 1}</span>${esc(q.q)}</p>${q.pic ? nline(q.pic) : ""}<div class="opts ${q.o.some(o => o.length > 22) ? "one" : ""}">${q.o.map(o => `<button class="opt" data-wq="${i}" data-wo="${esc(o)}" aria-pressed="${wsPick[i] === o}">${esc(o)}</button>`).join("")}</div></div>`).join("")}
+    <p class="fb ${confirmHand ? "bad" : "info"}" id="wsNote">${confirmHand ? "Tap “Yes, hand in” to finish. You cannot change your answers after this." : answered + " of " + WS.length + " answered"}</p>
+    <div class="row">${confirmHand ? `<button class="btn go" data-wsend="1" type="button">Yes, hand in</button><button class="btn alt" data-wsno="1" type="button">Not yet</button>` : `<button class="btn go" data-wsask="1" type="button" ${answered === WS.length ? "" : "disabled"}>Hand in</button>`}</div></div>`);
+}
+document.addEventListener("click", async e => {
+  if (view !== "ws") return; const t = e.target;
+  const o = t.closest("[data-wq]"); if (o) { const y = window.scrollY; wsPick[+o.dataset.wq] = o.dataset.wo; confirmHand = false; renderWs(); window.scrollTo(0, y); return; }
+  if (t.closest("[data-wsask]")) { confirmHand = true; renderWs(); return window.scrollTo({ top: document.body.scrollHeight }); }
+  if (t.closest("[data-wsno]")) { confirmHand = false; renderWs(); return; }
+  if (t.closest("[data-wsend]")) {
+    let r = 0, w = 0; const m = [];
+    wsOrder.forEach((q, i) => { if (wsPick[i] === q.c) r++; else { w++; m.push({ q: `${i + 1}. ${q.q}`, a: "chose " + wsPick[i] + " | correct " + q.c, at: Date.now() }); } });
+    confirmHand = false; wsRes = { r, w, m }; await save(G.ws, r, w, m); renderWs(); window.scrollTo({ top: 0 });
+  }
+});
+
+render();
+</script></body></html>
