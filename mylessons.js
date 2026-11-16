@@ -146,6 +146,7 @@
     ov.innerHTML = `<iframe src="${E(l.url || l.file)}" title="${E(l.title)}" allow="fullscreen; autoplay" allowfullscreen></iframe>
       ${l.url ? `<a class="ml-fab o" href="${E(/^https?:/i.test(l.orig || "") ? l.orig : l.url)}" target="_blank" rel="noopener" aria-label="Open in a new tab" title="Open in a new tab">↗</a>` : ""}
       <button class="ml-fab x" type="button" data-mlx="close" aria-label="Close the lesson" title="Close the lesson">✕</button>
+      <button class="ml-fab t" type="button" data-mlx="timer" aria-label="Timer" title="Timer">⏱</button>
       <button class="ml-fab p" type="button" data-mlx="pen" aria-label="Pen and eraser" title="Pen and eraser">✎</button>
       <button class="ml-fab f" type="button" data-mlx="full" aria-label="Full screen" title="Full screen">⛶</button>
       <button class="ml-stu" type="button" data-mlx="panel" aria-label="Students" title="Students">${STU}</button>
@@ -153,7 +154,7 @@
       <aside class="ml-p" id="mlPanel" hidden aria-label="Class panel"></aside>`;
     document.body.appendChild(ov); document.body.classList.add("wk-noscroll");
     panel = ov.querySelector("#mlPanel"); sel = auto() || (typeof cls !== "undefined" ? cls : classes()[0]) || ""; lastAuto = auto() || ""; openSid = ""; note = ""; current = null; rc = sel; wcView = false; wcSel = new Set(inClass(sel).map(x => x.id)); fNote = ""; fwOpen = false;
-    setupFloat(); setupPen(); ov.addEventListener("click", onClick); ov.addEventListener("input", e => { if (e.target.id === "mlWcAmt") wcAmt = e.target.value; if (e.target.id === "mlWcWhy") wcWhy = e.target.value; });
+    setupFloat(); setupPen(); setupTimer(); ov.addEventListener("click", onClick); ov.addEventListener("input", e => { if (e.target.id === "mlWcAmt") wcAmt = e.target.value; if (e.target.id === "mlWcWhy") wcWhy = e.target.value; });
     ov.addEventListener("change", e => { if (e.target.id === "mlWcB") { wcB = e.target.value; paint(); } });
     try { (ov.requestFullscreen || ov.webkitRequestFullscreen || (() => Promise.reject())).call(ov).catch(() => {}); } catch {}
     clearInterval(timer); timer = setInterval(tick, 5000); tick();
@@ -297,6 +298,49 @@
     ov.querySelector('[data-mlx="pen"]').addEventListener("click", e => { e.stopPropagation(); setOn(!on); });
     window.addEventListener("resize", fit); document.addEventListener("fullscreenchange", () => setTimeout(fit, 200));
     new ResizeObserver(fit).observe(ov); fit();
+  }
+  /* Countdown timer like Canva's: big digits, presets, start/pause, +1 min, a bar, a sound and "Time's up" at zero. Draggable; shrinks to a small pill. */
+  function setupTimer() {
+    if (!document.getElementById("mlTimerCss")) { const st = document.createElement("style"); st.id = "mlTimerCss";
+      st.textContent = ".ml-fab.t{top:10px;right:178px}.ml-fab.t.on{background:#7c3aed;opacity:1}.ml-fab.o{right:234px}"
+        + ".ml-tm{position:absolute;z-index:5;left:50%;top:70px;transform:translateX(-50%);width:min(340px,calc(100% - 20px));background:#fff;color:#1f1147;border-radius:22px;box-shadow:0 12px 40px rgba(0,0,0,.5);overflow:hidden;font-family:system-ui,sans-serif;touch-action:none}.ml-tm[hidden]{display:none}"
+        + ".ml-tm .h{display:flex;align-items:center;justify-content:space-between;padding:10px 12px 0 16px;cursor:grab;font:800 14px system-ui;color:#6d28d9}.ml-tm .h button{width:34px;height:34px;border-radius:50%;border:0;background:#f1ecfd;color:#6d28d9;font:800 16px/1 system-ui;cursor:pointer}"
+        + ".ml-tm .d{font:800 84px/1.05 ui-rounded,system-ui,sans-serif;font-variant-numeric:tabular-nums;text-align:center;padding:6px 8px 2px;letter-spacing:-2px}.ml-tm.low .d{color:#dc2626}.ml-tm.end .d{color:#dc2626;animation:mltm 1s infinite}"
+        + ".ml-tm .bar{height:8px;margin:6px 18px 12px;border-radius:99px;background:#ece7fb;overflow:hidden}.ml-tm .bar i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#7c3aed,#06b6d4);border-radius:99px;transition:width .3s linear}"
+        + ".ml-tm .r{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:0 14px 12px}.ml-tm .r button{border:0;border-radius:999px;padding:11px 18px;font:800 16px system-ui;cursor:pointer;background:#f1ecfd;color:#5b21b6;min-height:44px}"
+        + ".ml-tm .r .go{background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;min-width:110px}.ml-tm .r button.sel{outline:3px solid #7c3aed}.ml-tm .c{display:flex;gap:6px;justify-content:center;padding:0 14px 14px;align-items:center}.ml-tm .c input{width:70px;padding:9px;border-radius:12px;border:2px solid #d9cffa;font:700 16px system-ui;text-align:center}"
+        + ".ml-tpill{position:absolute;z-index:5;left:50%;top:12px;transform:translateX(-50%);padding:8px 18px;border-radius:999px;background:#7c3aed;color:#fff;font:800 22px ui-rounded,system-ui;font-variant-numeric:tabular-nums;border:2px solid #fff;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.45)}.ml-tpill[hidden]{display:none}.ml-tpill.end{background:#dc2626;animation:mltm 1s infinite}@keyframes mltm{50%{opacity:.45}}@media (prefers-reduced-motion:reduce){.ml-tm.end .d,.ml-tpill.end{animation:none}}";
+      document.head.appendChild(st); }
+    const card = document.createElement("section"); card.className = "ml-tm"; card.hidden = true; card.setAttribute("aria-label", "Timer");
+    card.innerHTML = `<div class="h" data-drag><span>⏱ Timer</span><button type="button" data-k="min" aria-label="Shrink the timer">–</button></div><div class="d" data-k="d">05:00</div><div class="bar"><i data-k="bar"></i></div>
+      <div class="r"><button type="button" class="go" data-k="go">Start</button><button type="button" data-k="add">+1 min</button><button type="button" data-k="reset">Reset</button></div>
+      <div class="r">${[1, 3, 5, 10, 15].map(m => `<button type="button" data-m="${m}"${m === 5 ? ' class="sel"' : ""}>${m} min</button>`).join("")}</div>
+      <div class="c"><input type="number" min="1" max="180" inputmode="numeric" placeholder="min" data-k="cu" aria-label="Minutes"><button type="button" class="ml-tmset" data-k="set" style="border:0;border-radius:999px;padding:10px 16px;background:#f1ecfd;color:#5b21b6;font:800 15px system-ui;cursor:pointer">Set</button></div>`;
+    const pill = document.createElement("button"); pill.type = "button"; pill.className = "ml-tpill"; pill.hidden = true; pill.setAttribute("aria-label", "Open the timer");
+    ov.appendChild(card); ov.appendChild(pill);
+    const $k = k => card.querySelector(`[data-k="${k}"]`), btn = ov.querySelector('[data-mlx="timer"]');
+    let total = 300, left = 300, endAt = 0, run = false, tk = 0, done = false, shown = false;
+    const fmt = n => { n = Math.max(0, Math.ceil(n)); return String(Math.floor(n / 60)).padStart(2, "0") + ":" + String(n % 60).padStart(2, "0"); };
+    const beep = () => { try { const A = new (window.AudioContext || window.webkitAudioContext)(); [0, .35, .7].forEach(t => { const o = A.createOscillator(), g = A.createGain(); o.frequency.value = 880; g.gain.setValueAtTime(.0001, A.currentTime + t); g.gain.exponentialRampToValueAtTime(.4, A.currentTime + t + .03); g.gain.exponentialRampToValueAtTime(.0001, A.currentTime + t + .3); o.connect(g); g.connect(A.destination); o.start(A.currentTime + t); o.stop(A.currentTime + t + .32); }); } catch {} };
+    const paint = () => { const t = fmt(left); $k("d").textContent = done ? "Time's up" : t; $k("d").style.fontSize = done ? "44px" : ""; $k("bar").style.width = (total ? 100 * left / total : 0) + "%"; card.classList.toggle("low", run && left <= 10 && !done); card.classList.toggle("end", done);
+      $k("go").textContent = run ? "Pause" : done ? "Again" : "Start"; pill.textContent = done ? "Time's up" : t; pill.classList.toggle("end", done); pill.hidden = !(shown === false && (run || done)); btn.classList.toggle("on", run || done); };
+    const stop = () => { run = false; clearInterval(tk); tk = 0; };
+    const tick = () => { if (!ov.isConnected) return stop(); left = Math.max(0, (endAt - Date.now()) / 1000); if (left <= 0) { stop(); done = true; left = 0; beep(); if (shown === false) { shown = true; card.hidden = false; } } paint(); };
+    const start = () => { if (done || left <= 0) { left = total; done = false; } run = true; endAt = Date.now() + left * 1000; clearInterval(tk); tk = setInterval(tick, 250); paint(); };
+    const setMin = m => { m = Math.max(1, Math.min(180, Math.round(+m || 0))); if (!m) return; stop(); done = false; total = left = m * 60; card.querySelectorAll("[data-m]").forEach(x => x.classList.toggle("sel", +x.dataset.m === m)); paint(); };
+    const open = v => { shown = v; card.hidden = !v; paint(); };
+    btn.addEventListener("click", e => { e.stopPropagation(); open(card.hidden); });
+    pill.addEventListener("click", e => { e.stopPropagation(); open(true); });
+    card.addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; e.stopPropagation(); const k = b.dataset.k;
+      if (b.dataset.m) return setMin(b.dataset.m);
+      if (k === "min") return open(false);
+      if (k === "go") { if (run) { stop(); paint(); } else start(); }
+      if (k === "add") { total += 60; left += 60; if (run) endAt += 60000; done = false; paint(); }
+      if (k === "reset") { stop(); done = false; left = total; paint(); }
+      if (k === "set") { const v = $k("cu").value; if (v) { setMin(v); $k("cu").value = ""; } } });
+    let dr = null; card.querySelector("[data-drag]").addEventListener("pointerdown", e => { if (e.target.closest("button")) return; const r = card.getBoundingClientRect(), o = ov.getBoundingClientRect(); dr = { dx: e.clientX - r.left, dy: e.clientY - r.top, ox: o.left, oy: o.top }; card.style.transform = "none"; card.style.left = (r.left - o.left) + "px"; card.style.top = (r.top - o.top) + "px"; try { e.target.setPointerCapture(e.pointerId); } catch {} });
+    card.addEventListener("pointermove", e => { if (!dr) return; card.style.left = Math.max(0, e.clientX - dr.ox - dr.dx) + "px"; card.style.top = Math.max(0, e.clientY - dr.oy - dr.dy) + "px"; });
+    card.addEventListener("pointerup", () => { dr = null; }); paint();
   }
   function setupFloat() {
     fw = document.createElement("section"); fw.className = "ml-fw"; fw.hidden = true; fw.setAttribute("aria-label", "Random picker");

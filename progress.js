@@ -1,6 +1,6 @@
 // Students progress inside the teacher page: pick a class, then a lesson, then see each student's games and every mistake.
-import { getDocs, bcol, bdoc, updateDoc, onSnapshot, query, where } from "./fb.js?v=1115o";
-import { LIVE_WS, isLive } from "./liveworks.js?v=1115o";
+import { getDocs, bcol, bdoc, updateDoc, onSnapshot, query, where } from "./fb.js?v=1115p";
+import { LIVE_WS, isLive } from "./liveworks.js?v=1115p";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
