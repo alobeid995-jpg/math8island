@@ -1,11 +1,13 @@
 // Students progress inside the teacher page: pick a class, then a lesson, then see each student's games and every mistake.
-import { getDocs, bcol, bdoc, updateDoc } from "./fb.js?v=1115i";
+import { getDocs, bcol, bdoc, updateDoc } from "./fb.js?v=1115j";
+import { LIVE_WS, isLive } from "./liveworks.js?v=1115j";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const pct = (r, w) => (r + w) ? Math.round(100 * r / (r + w)) : null;
 const day = t => t ? new Date(t).toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : "";
 { const st = document.createElement("style"); st.textContent = ".pg-pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin:10px 0}.pg-opt{display:grid;gap:4px;text-align:left;padding:14px;border:2px solid var(--line,#ccc);border-radius:12px;background:var(--card,#fff);color:inherit;font:inherit;cursor:pointer}.pg-opt b{font-size:18px}.pg-opt small{color:var(--muted,#666);font-size:13px}.pg-opt:hover{border-color:var(--accent,#1f5bbd)}.pg-lesson{margin:4px 0 10px}.pg-choose{border:2px solid var(--line,#ccc);border-radius:10px;padding:8px 12px;margin:8px 0}.pg-choose summary{cursor:pointer;font-weight:700}.pg-chk{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px}.pg-chk label{display:flex;gap:8px;align-items:center;padding:4px 0}"; document.head.appendChild(st); }
+let wk = { works: [], subs: [], keys: new Map(), sess: [], lp: [], open: {} }, stuSid = "";
 let titles = null, secOf = {}, secs = [], plays = [], openSid = "", selCls = "", selLes = "", pick = new Set(), solo = "", chooseOpen = false;
 
 async function gameTitles() {
@@ -45,6 +47,7 @@ function crumbs() {
   return `<div class="lg-bar noprint" style="margin:0 0 8px"><button class="ghost small" type="button" data-pg="home">Classes</button>${selCls ? `<span>›</span><button class="ghost small" type="button" data-pg="cls" data-c="${esc(selCls)}">${esc(selCls)}</button>` : ""}${l ? `<span>›</span><b>${esc(l.title)}</b>` : ""}</div>`;
 }
 function render() {
+  if (stuSid) return stuView();
   const b = $("pgBody");
   const head = `<h3>Students progress</h3>`;
   if (!selCls) {
@@ -57,6 +60,7 @@ function render() {
     b.innerHTML = head + crumbs() + `<p class="noprint">Choose the lesson you want to see.</p>` + (L.length ? `<div class="pg-pick">${L.map(l => {
       const gs = new Set(l.games), pl = plays.filter(p => gs.has(p.g) && kidsC.some(k => k.id === p.sid)), who = new Set(pl.map(p => p.sid)).size;
       return `<button type="button" class="pg-opt" data-pg="les" data-l="${esc(l.id)}"><b>${esc(l.title)}</b><small>${l.tag ? esc(l.tag) + " · " : ""}${l.date ? esc(l.date) + " · " : ""}${who} of ${kidsC.length} started</small></button>`; }).join("")}</div>` : `<p class="none">There are no games or lessons to follow for ${esc(selCls)} yet.</p>`) + `<div class="lg-bar noprint"><button class="ghost" type="button" data-pg="close">Close</button></div>`;
+    b.insertAdjacentHTML("beforeend", stuPicker());
     return;
   }
   const les = lesObj(), gs = new Set(les.games), everyone = inCls(selCls), list = everyone.filter(s => solo ? s.id === solo : pick.has(s.id));
@@ -94,7 +98,74 @@ function csv() {
   const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "Students progress " + selCls + " " + ((lesObj() || {}).title || "") + ".csv";
   document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
 }
-async function load() { await gameTitles(); plays = (await getDocs(bcol("plays"))).docs.map(d => ({ id: d.id, ...d.data() })); }
+async function load() {
+  await gameTitles();
+  const safe = p => p.then(x => x.docs, () => []);
+  const [pl, w, sb, ky, lv, lp] = await Promise.all([safe(getDocs(bcol("plays"))), safe(getDocs(bcol("work"))), safe(getDocs(bcol("subs"))), safe(getDocs(bcol("workkey"))), safe(getDocs(bcol("live"))), safe(getDocs(bcol("liveplayers")))]);
+  plays = pl.map(d => ({ id: d.id, ...d.data() }));
+  const all = w.map(d => ({ id: d.id, ...d.data() }));
+  wk = { works: all.filter(x => !["material", "announcement", "funpark", "liveopen", "remind", "mylessons"].includes(x.kind)).sort((a, b) => (b.created || 0) - (a.created || 0)),
+    subs: sb.map(d => ({ id: d.id, ...d.data() })), keys: new Map(ky.map(d => [d.id, d.data().answers || []])),
+    sess: lv.map(d => ({ id: d.id, ...d.data() })).filter(x => x.kind === "session" && Array.isArray(x.qs)).sort((a, b) => (b.created || 0) - (a.created || 0)),
+    lp: lp.map(d => d.data()), open: (all.find(x => x.id === "liveopen") || {}).open || {} };
+}
+const norm = v => String(v ?? "").trim().toLowerCase().replace(/\s+/g, "").replace(/×/g, "x").replace(/−/g, "-");
+const same = (a, b) => { const x = norm(a), y = norm(b); if (!x || !y) return false; if (x === y) return true; const n = Number(x), m = Number(y); return !isNaN(n) && !isNaN(m) && Math.abs(n - m) < 1e-9; };
+const when = t => t ? new Date(t).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
+const lwWs = lw => lw.noWs ? lw.id + "-examples" : lw.id + "-ws";
+
+/* Everything one student did, in one place: classwork and worksheets, live worksheets, live quizzes, games. */
+function stuData(s) {
+  const U = String(s.cls || "").toUpperCase(), out = { work: [], live: [], quiz: [], games: [] };
+  wk.works.filter(w => (w.classes || []).some(c => String(c).toUpperCase() === U)).forEach(w => {
+    const sub = wk.subs.find(x => x.wid === w.id && x.sid === s.id), key = wk.keys.get(w.id) || [];
+    let right = null, n = 0; if (sub && sub.answers && key.length) { const m = key.map((k, i) => k ? same(sub.answers[i], k) : null); n = m.filter(x => x !== null).length; right = m.filter(x => x === true).length; }
+    out.work.push({ title: w.title || "Worksheet", type: w.graded ? "Graded worksheet" : "Classwork", at: sub ? sub.at : 0, done: !!sub, right: n ? right : null, n, made: w.created || 0 });
+  });
+  LIVE_WS.forEach(lw => {
+    const mine = id => plays.filter(p => p.sid === s.id && p.g === id).sort((a, b) => (b.u || b.t || 0) - (a.u || a.t || 0));
+    const ws = mine(lwWs(lw)), ex = mine(lw.id + "-examples"), cw = mine(lw.id + "-cw");
+    if (!ws.length && !ex.length && !cw.length && !isLive(lw, wk.open, s.cls)) return;
+    const last = ws[0], p = last ? pct(+last.r || 0, +last.w || 0) : null;
+    out.live.push({ title: lw.title, ex: ex.length > 0, ws: ws.length > 0, pct: p, tries: ws.length, at: Math.max(0, ...[ws[0], ex[0], cw[0]].filter(Boolean).map(x => x.u || x.t || 0)),
+      cw: cw.some(x => x.sub) ? "Submitted" : cw.length ? "Saved, not submitted" : "" });
+  });
+  wk.sess.forEach(se => {
+    const lp = wk.lp.find(x => x.sess === se.id && x.sid === s.id); if (!lp) return;
+    const a = lp.ans || {}, ks = Object.keys(a); let right = 0, ms = 0; ks.forEach(k => { const q = se.qs[+k]; if (q && a[k].c === q.c) right++; ms += Number(a[k].ms) || 0; });
+    out.quiz.push({ title: se.title || "Live quiz", at: se.created || 0, total: se.qs.length, answered: ks.length, right, avg: ks.length ? Math.round(ms / ks.length / 100) / 10 : null });
+  });
+  const by = statsOf(s.id); out.games = Object.keys(by).filter(g => !/-cw$/.test(g)).sort((x, y) => by[y].last - by[x].last).map(g => ({ g, ...by[g] }));
+  return out;
+}
+const stuPicker = () => `<h4 style="margin:18px 0 6px">Everything one student did</h4><p class="noprint">Classwork, worksheets, live worksheets, live quizzes and games in one page.</p>
+  <div class="pg-chk">${inCls(selCls).map(s => `<button type="button" class="ghost small" data-pg="stu" data-sid="${esc(s.id)}">${esc(s.name)}</button>`).join(" ")}</div>`;
+function stuView() {
+  const s = students.find(x => x.id === stuSid); if (!s) { stuSid = ""; return render(); }
+  const D = stuData(s), b = $("pgBody");
+  const missing = D.work.filter(x => !x.done).length, tbl = (h, rows, empty) => rows.length ? `<table class="lg-tbl"><thead><tr>${h.map(x => `<th>${x}</th>`).join("")}</tr></thead><tbody>${rows.join("")}</tbody></table>` : `<p class="none">${empty}</p>`;
+  b.innerHTML = `<h3>Students progress</h3><div class="lg-bar noprint" style="margin:0 0 8px"><button class="ghost small" type="button" data-pg="stuback">‹ ${esc(selCls || s.cls)}</button><button class="ghost small" type="button" data-pg="refresh">Refresh</button><button class="primary small" type="button" data-pg="stucsv">Download Excel file</button><button class="ghost small" type="button" data-pg="print">Print / save PDF</button></div>
+    <article class="pg-card"><div class="pg-head"><div><b>${esc(s.name)}</b><small>${esc(s.cls)} ${esc(s.enrollment || "")}</small></div></div>
+    <h4>Classwork and worksheets${missing ? ` <small style="color:var(--bad)">· ${missing} missing</small>` : ""}</h4>
+    ${tbl(["Work", "Type", "Status", "Mark"], D.work.map(x => `<tr><td>${esc(x.title)}</td><td>${x.type}</td><td>${x.done ? "Handed in " + esc(when(x.at)) : "<b style='color:var(--bad)'>MISSING</b>"}</td><td>${x.right === null ? (x.done ? "Not marked" : "") : x.right + " / " + x.n}</td></tr>`), "No classwork was sent to this class yet.")}
+    <h4>Live worksheets</h4>
+    ${tbl(["Worksheet", "Examples", "Worksheet", "Tries", "Class work", "Last"], D.live.map(x => `<tr><td>${esc(x.title)}</td><td>${x.ex ? "Done" : "-"}</td><td>${x.pct === null ? "-" : `<b class="pg-pc ${pc(x.pct)}">${x.pct}%</b>`}</td><td>${x.tries || "-"}</td><td>${x.cw || "-"}</td><td>${esc(when(x.at))}</td></tr>`), "No live worksheet started for this class yet.")}
+    <h4>Live quizzes and Coconut</h4>
+    ${tbl(["Quiz", "Date", "Answered", "Right", "Avg. time"], D.quiz.map(x => `<tr><td>${esc(x.title)}</td><td>${esc(when(x.at))}</td><td>${x.answered} / ${x.total}</td><td>${x.right} / ${x.total}</td><td>${x.avg === null ? "-" : x.avg + " s"}</td></tr>`), "He has not joined a live quiz yet.")}
+    <h4>Games</h4>
+    ${tbl(["Game", "Right", "Answers", "Plays", "Last"], D.games.map(x => { const p = pct(x.r, x.w); return `<tr><td>${esc(title(x.g))}</td><td><b class="pg-pc ${pc(p)}">${p === null ? "-" : p + "%"}</b></td><td>${x.r} / ${x.r + x.w}</td><td>${x.n}</td><td>${esc(when(x.last))}</td></tr>`; }), "No games played yet.")}
+    </article>`;
+}
+function stuCsv() {
+  const s = students.find(x => x.id === stuSid); if (!s) return; const D = stuData(s), cell = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const rows = [["Student", "Class", "Area", "Item", "Status", "Mark / percent", "When"]];
+  D.work.forEach(x => rows.push([s.name, s.cls, x.type, x.title, x.done ? "Handed in" : "MISSING", x.right === null ? "" : x.right + "/" + x.n, x.at ? new Date(x.at).toLocaleString("en-GB") : ""]));
+  D.live.forEach(x => rows.push([s.name, s.cls, "Live worksheet", x.title, (x.ex ? "Examples done. " : "") + (x.cw ? "Class work " + x.cw : ""), x.pct === null ? "" : x.pct + "%", x.at ? new Date(x.at).toLocaleString("en-GB") : ""]));
+  D.quiz.forEach(x => rows.push([s.name, s.cls, "Live quiz", x.title, "Answered " + x.answered + "/" + x.total, x.right + "/" + x.total, x.at ? new Date(x.at).toLocaleString("en-GB") : ""]));
+  D.games.forEach(x => rows.push([s.name, s.cls, "Game", title(x.g), x.n + " plays", (pct(x.r, x.w) ?? "") + "%", x.last ? new Date(x.last).toLocaleString("en-GB") : ""]));
+  const blob = new Blob(["﻿" + rows.map(r => r.map(cell).join(",")).join("\r\n")], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "Progress " + s.name + ".csv"; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
 
 document.addEventListener("change", e => { const c = e.target.closest && e.target.closest("[data-pgchk]"); if (!c) return; if (c.checked) pick.add(c.dataset.pgchk); else pick.delete(c.dataset.pgchk); chooseOpen = true; render(); });
 document.addEventListener("toggle", e => { const d = e.target; if (d.classList && d.classList.contains("pg-choose")) chooseOpen = d.open;
@@ -103,6 +174,9 @@ document.addEventListener("click", async e => {
   const b = e.target.closest("[data-pg]"); if (!b) return;
   const a = b.dataset.pg;
   if (a === "close") $("progressModal").hidden = true;
+  if (a === "stu") { stuSid = b.dataset.sid; render(); }
+  if (a === "stuback") { stuSid = ""; render(); }
+  if (a === "stucsv") stuCsv();
   if (a === "home") { selCls = ""; selLes = ""; render(); }
   if (a === "cls") { selCls = b.dataset.c; selLes = ""; pick = new Set(inCls(selCls).map(s => s.id)); solo = ""; render(); const L = lessonsFor(selCls); if (L.length === 1) { selLes = L[0].id; render(); } }
   if (a === "retake") {
@@ -121,7 +195,7 @@ document.addEventListener("click", async e => {
   if (a === "print") { document.querySelectorAll(".pg-mist").forEach(d => d.open = true); document.body.classList.add("pg-printing"); window.print(); setTimeout(() => document.body.classList.remove("pg-printing"), 500); }
 });
 export async function openProgress() {
-  $("progressModal").hidden = false; $("pgBody").innerHTML = "<p>Loading…</p>"; selCls = ""; selLes = "";
+  $("progressModal").hidden = false; $("pgBody").innerHTML = "<p>Loading…</p>"; selCls = ""; selLes = ""; stuSid = "";
   try { await load(); } catch (e) { $("pgBody").innerHTML = `<p class="lg-msg">Could not load (${esc(e.code || e.message)}).</p><button class="ghost" data-pg="close">Close</button>`; return; }
   render();
 }
