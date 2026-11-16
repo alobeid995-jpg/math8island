@@ -8,9 +8,19 @@ const D = [  // [day 0=Sun..4=Thu, class, start, end]  (24h)
   [3, "9S", "08:25", "09:15"], [3, "8G", "09:35", "10:20"], [3, "8Y", "10:25", "11:10"], [3, "8S", "11:15", "12:00"], [3, "8M", "12:25", "13:10"],
   [4, "8G", "08:15", "08:55"], [4, "8Y", "09:25", "10:05"], [4, "8S", "10:10", "10:55"], [4, "8B", "11:00", "11:40"]
 ];
+/* Mr. Khalid O's duties, from the "Revised HIS Duty Schedule 26-27" file. [day 0=Sun..4=Thu, start, end, kind, place]
+   Break duties: Break 2 is 12:00-12:20 on the MS boys schedule. After-school: Sun-Wed (Thursday is earlier, and has no duty for him). */
+const DUTY_LIST = [
+  [0, "12:00", "12:20", "Break 2 duty", "Soccer Field (MS boys)"],
+  [1, "13:40", "14:10", "After-school duty", "Frontyard Reception Door (HS boys)"],
+  [1, "13:40", "14:10", "After-school duty", "Reception, area between the accounts section and Mr Sameer's office (HS girls)"],
+  [2, "12:00", "12:20", "Break 2 duty", "PS Boys Entrance Stairs (MS boys)"],
+  [3, "13:10", "13:40", "After-school duty", "ESU door towards the reception"]
+];
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const mins = t => { const [h, m] = t.split(".").length > 1 ? t.split(".") : t.split(":"); return +h * 60 + +m; };
 const fmt = t => { let [h, m] = t.split(":").map(Number); const ap = h >= 12 ? "pm" : "am"; h = h % 12 || 12; return h + ":" + String(m).padStart(2, "0") + " " + ap; };
+const DUTIES = DUTY_LIST.map(([d, s, e, kind, place]) => ({ d, s, e, kind, place, sm: mins(s), em: mins(e) }));
 const L = D.map(([d, c, s, e]) => ({ d, cls: c, s, e, sm: mins(s), em: mins(e) }));
 
 /* now in Bahrain (UTC+3), whatever the device's own time zone is */
@@ -97,6 +107,21 @@ export function mountTeacherTT() {
   const tick = () => {
     const n = nowBH(), today = dayList(n.d), cur = today.find(l => n.m >= l.sm && n.m < l.em), nxt = today.find(l => l.sm > n.m);
     const remain = cur ? left(n, cur.em) : 0;
+    const du = DUTIES.filter(x => x.d === n.d).sort((a, b) => a.sm - b.sm), curD = du.filter(x => n.m >= x.sm && n.m < x.em), nxD = du.filter(x => x.sm > n.m && x.sm === (du.find(y => y.sm > n.m) || {}).sm);
+    // a reminder 10 minutes before each duty
+    if (nxD.length && nxD[0].sm - n.m <= 10) {
+      const k = "duty" + n.key + nxD[0].sm;
+      if (!seen[k]) {
+        seen[k] = 1; try { localStorage.setItem("tt_warned", JSON.stringify(Object.fromEntries(Object.entries(seen).slice(-40)))); } catch {}
+        const old = document.getElementById("ttBanner"); if (old) old.remove();
+        const mn = nxD[0].sm - n.m, bn = document.createElement("div"); bn.id = "ttBanner"; bn.style.background = "#7c3aed";
+        bn.innerHTML = `<span>🛡 Duty ${mn <= 0 ? "now" : "in " + mn + " min"} (${fmt(nxD[0].s)}): ${nxD.map(x => x.place).join(" / ")}${nxD.length > 1 ? " ⚠ two duties at the same time" : ""}</span><button type="button" style="color:#7c3aed">OK</button>`;
+        bn.querySelector("button").onclick = () => bn.remove(); document.body.appendChild(bn); setTimeout(() => bn.remove(), 300000);
+        beep();
+        try { if ("Notification" in window && Notification.permission === "granted") new Notification("Duty soon", { body: `${fmt(nxD[0].s)}: ${nxD.map(x => x.place).join(" / ")}` }); } catch {}
+        try { if (navigator.vibrate) navigator.vibrate([300, 150, 300]); } catch {}
+      }
+    }
     // 5 minutes before the end
     if (cur && remain <= 5 && remain > 0) {
       const k = n.key + cur.cls + cur.s;
@@ -110,9 +135,11 @@ export function mountTeacherTT() {
       }
     }
     const warn = cur && remain <= 5;
-    const label = cur ? `${cur.cls} · ${remain} min left` : nxt ? `Next: ${nxt.cls} ${fmt(nxt.s)}` : today.length ? "No more lessons today" : (n.d > 4 ? "Weekend" : "No lessons today");
+    const label = warn ? `${cur.cls} · ${remain} min left` : curD.length ? `Duty now · ${curD[0].place.split(" (")[0]}` : nxD.length && nxD[0].sm - n.m <= 30 ? `Duty in ${nxD[0].sm - n.m} min` : cur ? `${cur.cls} · ${remain} min left` : nxt ? `Next: ${nxt.cls} ${fmt(nxt.s)}` : today.length ? "No more lessons today" : (n.d > 4 ? "Weekend" : "No lessons today");
     const rows = today.map(l => { const c = n.m >= l.em ? "done" : n.m >= l.sm ? "cur" : l === nxt ? "nxt" : ""; return `<div class="tt-row ${c}"><b>${l.cls}</b><span>${fmt(l.s)} – ${fmt(l.e)}</span><span>${c === "cur" ? remain + " min left" : c === "nxt" ? "in " + dur(l.sm - n.m) : c === "done" ? "done" : ""}</span></div>`; }).join("");
-    const pan = open ? `<div class="tt-pan"><h4>${DAYS[n.d]}'s lessons</h4>${rows || `<div class="tt-none">${n.d > 4 ? "No school lessons today." : "No lessons today."}</div>`}${"Notification" in window && Notification.permission === "default" ? `<button type="button" id="ttNf" class="ghost small" style="margin-top:8px">Also notify me outside this tab</button>` : ""}</div>` : "";
+    const dutyRows = du.map(x => { const c = n.m >= x.em ? "done" : n.m >= x.sm ? "cur" : "nxt"; return `<div class="tt-row ${c}" style="${c === "nxt" ? "background:#f1e8ff" : ""}"><b>🛡</b><span>${fmt(x.s)} – ${fmt(x.e)}<br><small>${x.kind}: ${x.place}</small></span><span>${c === "cur" ? "now" : c === "nxt" ? "in " + dur(x.sm - n.m) : "done"}</span></div>`; }).join("") + (du.length > 1 && du.some((x, i) => i && x.sm < du[i - 1].em) ? `<div class="tt-none" style="color:#b91c1c">⚠ Two duties at the same time today.</div>` : "");
+    const week = [0, 1, 2, 3, 4].map(d => { const l = DUTIES.filter(x => x.d === d); return `<div style="font-size:.8rem;margin-top:3px"><b>${DAYS[d].slice(0, 3)}</b> ${l.length ? l.map(x => fmt(x.s) + " " + x.place.split(" (")[0]).join(" · ") : "no duty"}</div>`; }).join("");
+    const pan = open ? `<div class="tt-pan"><h4>${DAYS[n.d]}'s lessons and duties</h4>${rows || `<div class="tt-none">${n.d > 4 ? "No school lessons today." : "No lessons today."}</div>`}${dutyRows}<h4 style="margin:10px 0 2px">My duties this week</h4>${week}${"Notification" in window && Notification.permission === "default" ? `<button type="button" id="ttNf" class="ghost small" style="margin-top:8px">Also notify me outside this tab</button>` : ""}</div>` : "";
     box.innerHTML = pan + `<button type="button" class="tt-pill ${warn ? "warn" : cur ? "on" : ""}" id="ttPill" aria-expanded="${open}">🕑 ${label}</button>`;
     document.getElementById("ttPill").onclick = () => { open = !open; try { localStorage.setItem("tt_open", open ? "1" : "0"); } catch {} tick(); };
     const nf = document.getElementById("ttNf"); if (nf) nf.onclick = () => { try { Notification.requestPermission().then(tick); } catch {} };
