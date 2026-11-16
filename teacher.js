@@ -1,21 +1,21 @@
 import { onSnapshot, changeEmail, auth, fs, firebaseConfig, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, collection, query, where, writeBatch, setBase, bcol, bdoc, signOut, whenUser, profileOf, emailFor, pinKey,
-  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1115j";
-import { db } from "./fbdb.js?v=1115j";
-import { startUsage } from "./usage.js?v=1115j";
-import { liveLesson, mountTeacherTT } from "./timetable.js?v=1115j";
-import { openWork, gradeData } from "./teacherwork.js?v=1115j";
+  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1115k";
+import { db } from "./fbdb.js?v=1115k";
+import { startUsage } from "./usage.js?v=1115k";
+import { liveLesson, mountTeacherTT } from "./timetable.js?v=1115k";
+import { openWork, gradeData } from "./teacherwork.js?v=1115k";
 import "./lessonxp.js";
-import { openProgress } from "./progress.js?v=1115j";
-import { openMaterial } from "./material.js?v=1115j";
-import { openLiveWs } from "./liveteacher.js?v=1115j";
-import { openFunpark } from "./fpteacher.js?v=1115j";
-import { openCoconut } from "./coconut.js?v=1115j";
-import { hasFeature, hideCss } from "./features.js?v=1115j";
-import { xpAllowed } from "./ownerpin.js?v=1115j";
+import { openProgress } from "./progress.js?v=1115k";
+import { openMaterial } from "./material.js?v=1115k";
+import { openLiveWs } from "./liveteacher.js?v=1115k";
+import { openFunpark } from "./fpteacher.js?v=1115k";
+import { openCoconut } from "./coconut.js?v=1115k";
+import { hasFeature, hideCss } from "./features.js?v=1115k";
+import { xpAllowed } from "./ownerpin.js?v=1115k";
 window.xpGate = n => xpAllowed(n); window.wkGradeData = gradeData;
-import { initChat } from "./chat.js?v=1115j";
-import { openLive } from "./live.js?v=1115j";
-import { openInbox } from "./inbox.js?v=1115j";
+import { initChat } from "./chat.js?v=1115k";
+import { openLive } from "./live.js?v=1115k";
+import { openInbox } from "./inbox.js?v=1115k";
 
 const $ = id => document.getElementById(id);
 const esc2 = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -232,9 +232,21 @@ async function listLogins() {
   const stale = rows.filter(r => r.want && r.want.toLowerCase() !== String(r.username || "").toLowerCase());
   $("lgList").innerHTML = rows.length
     ? (stale.length ? `<div class="lg-stale"><b>${stale.length} login${stale.length === 1 ? " uses" : "s use"} an old ID.</b> These students now have a student ID, but their login still uses the old code. <button class="primary small" id="lgFixIds" type="button">Update login ID${stale.length === 1 ? "" : "s"}</button></div>` : "") +
-      `<h4 style="margin:6px 0 2px">Class ${esc2(cl)} · ${rows.length} logins · ${rows.filter(r => r.first === true).length} still on the starting PIN</h4><table class="lg-tbl"><thead><tr><th>Name</th><th>ID</th><th>PIN</th><th>Status</th><th></th></tr></thead><tbody>${rows.map(r => `<tr><td>${esc2(r.name)}</td><td>${esc2(r.username)}${stale.includes(r) ? ` <small class="lg-old">→ ${esc2(r.want)}</small>` : ""}</td><td class="pin">${esc2(r.pin)}</td><td>${r.first === true ? "Starting PIN · must change at first login" : "Own PIN"}</td><td><button class="ghost small" type="button" data-rsid="${esc2(r.sid)}">Reset login</button>${ids.has(r.sid) ? "" : ` <button class="primary small" type="button" data-mksid="${esc2(r.sid)}" title="This login has no student record">Re-create student record</button>`}</td></tr>`).join("")}</tbody></table>`
+      `<h4 style="margin:6px 0 2px">Class ${esc2(cl)} · ${rows.length} logins · ${rows.filter(r => r.first === true).length} still on the starting PIN</h4><table class="lg-tbl"><thead><tr><th>Name</th><th>ID</th><th>PIN</th><th>Status</th><th></th></tr></thead><tbody>${rows.map(r => `<tr><td>${esc2(r.name)}</td><td>${esc2(r.username)}${stale.includes(r) ? ` <small class="lg-old">→ ${esc2(r.want)}</small>` : ""}</td><td class="pin">${esc2(r.pin)}</td><td>${r.first === true ? "Starting PIN · must change at first login" : "Own PIN"}</td><td><button class="ghost small" type="button" data-rsid="${esc2(r.sid)}">Reset login</button> <button class="ghost small" type="button" data-rmsid="${esc2(r.sid)}">Remove login</button>${ids.has(r.sid) ? "" : ` <button class="primary small" type="button" data-mksid="${esc2(r.sid)}" title="This login has no student record">Re-create student record</button>`}</td></tr>`).join("")}</tbody></table>`
     : `<p class="none">No logins for ${esc2(cl)} yet.</p>`;
   if (stale.length) $("lgFixIds").onclick = () => fixIds(stale);
+  $("lgList").querySelectorAll("[data-rmsid]").forEach(x => { x.onclick = async () => {
+    const r = rows.find(y => y.sid === x.dataset.rmsid); if (!r) return;
+    if (!confirm(`Remove the login of ${r.name}?\n\nHis old ID and PIN stop working. His student record (XP, work) is NOT touched. Then press "Create logins" to make him a brand new login.`)) return;
+    x.disabled = true;
+    try {
+      const us = (ADMIN ? (await getDocs(query(collection(fs, "users"), where("role", "==", "student")))).docs.filter(d => !d.data().tid || d.data().tid === u.uid)
+                        : (await getDocs(query(collection(fs, "users"), where("tid", "==", u.uid)))).docs);
+      for (const o of us.filter(d => d.data().sid === r.sid)) await deleteDoc(doc(fs, "users", o.id));
+      await deleteDoc(bdoc("logins", r.sid));
+      msg(`Login of ${r.name} removed. Press "Create logins" to make a new one.`); await listLogins();
+    } catch (e) { msg("Could not remove: " + (e.code || e.message)); x.disabled = false; }
+  }; });
   $("lgList").querySelectorAll("[data-mksid]").forEach(x => { x.onclick = async () => {
     const r = rows.find(y => y.sid === x.dataset.mksid); if (!r) return;
     if (!confirm(`${r.name} has a login but no student record, so the student page says "Your record was not found".\nCreate a new empty record (0 XP) for him?`)) return;
@@ -278,9 +290,15 @@ async function makeLogins() {
       const v = d.data(), username = String(v.enrollment || d.id), pin = start;
       msg(`Creating ${ok + bad.length + 1} of ${todo.length}…`);
       try {
-        const c = await createUserWithEmailAndPassword(sauth, emailFor(username), pin);
+        // an ID that was used before (a removed login) is already taken in Firebase, so a new version of the address is used
+        let ver = 0, c = null;
+        for (let k = 0; k < 8 && !c; k++) {
+          try { c = await createUserWithEmailAndPassword(sauth, emailFor(username, ver), pin); }
+          catch (e) { if (e.code === "auth/email-already-in-use" && k < 7) ver++; else throw e; }
+        }
         await setDoc(doc(fs, "users", c.user.uid), ADMIN ? { role: "student", sid: d.id } : { role: "student", sid: d.id, tid: u.uid });
-        await setDoc(bdoc("logins", d.id), { username, pin, name: String(v.name || ""), cls: cl, first: true });
+        if (ver) await setDoc(doc(fs, "pinver", pinKey(username)), { v: ver, tid: u.uid });
+        await setDoc(bdoc("logins", d.id), ver ? { username, pin, name: String(v.name || ""), cls: cl, first: true, ver, uid: c.user.uid } : { username, pin, name: String(v.name || ""), cls: cl, first: true });
         await signOut(sauth); ok++;
       } catch (e) { bad.push(`${v.name || d.id}: ` + (e.code === "auth/email-already-in-use" ? `the ID ${username} already has a login (maybe from another teacher). Check the ID.` : (e.code || e.message))); }
     }
