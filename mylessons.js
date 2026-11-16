@@ -146,13 +146,14 @@
     ov.innerHTML = `<iframe src="${E(l.url || l.file)}" title="${E(l.title)}" allow="fullscreen; autoplay" allowfullscreen></iframe>
       ${l.url ? `<a class="ml-fab o" href="${E(/^https?:/i.test(l.orig || "") ? l.orig : l.url)}" target="_blank" rel="noopener" aria-label="Open in a new tab" title="Open in a new tab">↗</a>` : ""}
       <button class="ml-fab x" type="button" data-mlx="close" aria-label="Close the lesson" title="Close the lesson">✕</button>
+      <button class="ml-fab p" type="button" data-mlx="pen" aria-label="Pen and eraser" title="Pen and eraser">✎</button>
       <button class="ml-fab f" type="button" data-mlx="full" aria-label="Full screen" title="Full screen">⛶</button>
       <button class="ml-stu" type="button" data-mlx="panel" aria-label="Students" title="Students">${STU}</button>
       <div class="ml-pill" id="mlPill" hidden></div>
       <aside class="ml-p" id="mlPanel" hidden aria-label="Class panel"></aside>`;
     document.body.appendChild(ov); document.body.classList.add("wk-noscroll");
     panel = ov.querySelector("#mlPanel"); sel = auto() || (typeof cls !== "undefined" ? cls : classes()[0]) || ""; lastAuto = auto() || ""; openSid = ""; note = ""; current = null; rc = sel; wcView = false; wcSel = new Set(inClass(sel).map(x => x.id)); fNote = ""; fwOpen = false;
-    setupFloat(); ov.addEventListener("click", onClick); ov.addEventListener("input", e => { if (e.target.id === "mlWcAmt") wcAmt = e.target.value; if (e.target.id === "mlWcWhy") wcWhy = e.target.value; });
+    setupFloat(); setupPen(); ov.addEventListener("click", onClick); ov.addEventListener("input", e => { if (e.target.id === "mlWcAmt") wcAmt = e.target.value; if (e.target.id === "mlWcWhy") wcWhy = e.target.value; });
     ov.addEventListener("change", e => { if (e.target.id === "mlWcB") { wcB = e.target.value; paint(); } });
     try { (ov.requestFullscreen || ov.webkitRequestFullscreen || (() => Promise.reject())).call(ov).catch(() => {}); } catch {}
     clearInterval(timer); timer = setInterval(tick, 5000); tick();
@@ -258,6 +259,45 @@
     try { av = avatarHTML(st, "xxl"); nm = nameHTML(st); } catch {}
     return `<div class="pk-stage${spinning ? " spinning" : " landed"}">${av}<div class="pk-name">${nm}</div></div>`;
   };
+  /* Pen, highlighter and eraser drawn over the lesson (works on any lesson, even a Google Slides link, because it is a transparent layer on top). */
+  function setupPen() {
+    if (!document.getElementById("mlPenCss")) { const st = document.createElement("style"); st.id = "mlPenCss";
+      st.textContent = ".ml-fab.p{top:10px;right:122px}.ml-fab.o{right:178px}.ml-fab.p.on{background:#f59e0b;color:#13213f;opacity:1}.ml-cv{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;touch-action:none}.ml-cv.on{pointer-events:auto;cursor:crosshair}"
+        + ".ml-pen{position:absolute;z-index:5;left:50%;bottom:12px;transform:translateX(-50%);display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center;max-width:calc(100% - 20px);padding:8px 10px;border-radius:999px;background:rgba(19,33,63,.94);border:2px solid #fff;box-shadow:0 4px 16px rgba(0,0,0,.5)}.ml-pen[hidden]{display:none}"
+        + ".ml-pen button{min-width:42px;height:42px;border-radius:50%;border:2px solid #fff;background:#243a66;color:#fff;font:800 16px/1 system-ui;cursor:pointer;padding:0 8px}.ml-pen button.sel{background:#f59e0b;color:#13213f;border-color:#fff}.ml-pen .sw{width:34px;min-width:34px;height:34px;border:3px solid #fff}.ml-pen .sw.sel{outline:3px solid #f59e0b;outline-offset:2px}.ml-pen .tx{border-radius:999px}";
+      document.head.appendChild(st); }
+    const cv = document.createElement("canvas"); cv.className = "ml-cv"; ov.insertBefore(cv, ov.querySelector(".ml-fab"));
+    const bar = document.createElement("div"); bar.className = "ml-pen"; bar.hidden = true; bar.setAttribute("aria-label", "Pen tools");
+    const COLS = ["#ef4444", "#2563eb", "#16a34a", "#111827", "#ffffff"];
+    bar.innerHTML = `<button type="button" data-t="pen" class="sel" aria-label="Pen">✎</button><button type="button" data-t="hi" aria-label="Highlighter">🖍</button><button type="button" data-t="er" aria-label="Eraser">⌫</button>`
+      + COLS.map((c, i) => `<button type="button" class="sw${i === 0 ? " sel" : ""}" data-c="${c}" style="background:${c}" aria-label="Colour ${i + 1}"></button>`).join("")
+      + `<button type="button" data-t="w" aria-label="Thicker or thinner">●</button><button type="button" data-t="undo" aria-label="Undo">↶</button><button type="button" class="tx" data-t="clear">Clear</button><button type="button" class="tx" data-t="done">Done</button>`;
+    ov.appendChild(bar);
+    const ctx = cv.getContext("2d"); let strokes = [], cur = null, tool = "pen", col = COLS[0], wi = 1, on = false;
+    const WS = [4, 8, 16];
+    const fit = () => { const r = ov.getBoundingClientRect(), d = Math.min(2, window.devicePixelRatio || 1); cv.width = Math.round(r.width * d); cv.height = Math.round(r.height * d); ctx.setTransform(d, 0, 0, d, 0, 0); redraw(); };
+    const seg = (a, b) => { ctx.save(); ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.lineWidth = a.w; ctx.strokeStyle = a.c; ctx.globalAlpha = a.t === "hi" ? .35 : 1; ctx.globalCompositeOperation = a.t === "er" ? "destination-out" : "source-over";
+      ctx.beginPath(); ctx.moveTo(a.p[0].x, a.p[0].y); if (a.p.length === 1) ctx.lineTo(a.p[0].x + .1, a.p[0].y); a.p.forEach(q => ctx.lineTo(q.x, q.y)); ctx.stroke(); ctx.restore(); };
+    const redraw = () => { ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height); ctx.restore(); strokes.forEach(s => seg(s)); };
+    const pos = e => { const r = cv.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+    cv.addEventListener("pointerdown", e => { if (!on) return; e.preventDefault(); try { cv.setPointerCapture(e.pointerId); } catch {}
+      cur = { t: tool, c: col, w: tool === "er" ? WS[wi] * 4 : tool === "hi" ? WS[wi] * 3 : WS[wi], p: [pos(e)] }; strokes.push(cur); redraw(); });
+    cv.addEventListener("pointermove", e => { if (!cur) return; e.preventDefault(); const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e]; (evs.length ? evs : [e]).forEach(x => cur.p.push(pos(x))); redraw(); });
+    const up = () => { cur = null; }; cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up);
+    const setOn = v => { on = v; cv.classList.toggle("on", v); bar.hidden = !v; const b = ov.querySelector('[data-mlx="pen"]'); if (b) b.classList.toggle("on", v); };
+    bar.addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; e.stopPropagation();
+      if (b.dataset.c) { col = b.dataset.c; if (tool === "er") tool = "pen"; }
+      else if (b.dataset.t === "w") { wi = (wi + 1) % WS.length; b.style.transform = `scale(${[.7, 1, 1.3][wi]})`; }
+      else if (b.dataset.t === "undo") { strokes.pop(); redraw(); }
+      else if (b.dataset.t === "clear") { strokes = []; redraw(); }
+      else if (b.dataset.t === "done") { setOn(false); }
+      else if (b.dataset.t) tool = b.dataset.t;
+      bar.querySelectorAll("[data-t=pen],[data-t=hi],[data-t=er]").forEach(x => x.classList.toggle("sel", x.dataset.t === tool));
+      bar.querySelectorAll(".sw").forEach(x => x.classList.toggle("sel", x.dataset.c === col && tool !== "er")); });
+    ov.querySelector('[data-mlx="pen"]').addEventListener("click", e => { e.stopPropagation(); setOn(!on); });
+    window.addEventListener("resize", fit); document.addEventListener("fullscreenchange", () => setTimeout(fit, 200));
+    new ResizeObserver(fit).observe(ov); fit();
+  }
   function setupFloat() {
     fw = document.createElement("section"); fw.className = "ml-fw"; fw.hidden = true; fw.setAttribute("aria-label", "Random picker");
     ov.appendChild(fw);
