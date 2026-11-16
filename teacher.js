@@ -1,21 +1,21 @@
 import { onSnapshot, changeEmail, auth, fs, firebaseConfig, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, collection, query, where, writeBatch, setBase, bcol, bdoc, signOut, whenUser, profileOf, emailFor, pinKey,
-  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1115m";
-import { db } from "./fbdb.js?v=1115m";
-import { startUsage } from "./usage.js?v=1115m";
-import { liveLesson, mountTeacherTT } from "./timetable.js?v=1115m";
-import { openWork, gradeData } from "./teacherwork.js?v=1115m";
+  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1115o";
+import { db } from "./fbdb.js?v=1115o";
+import { startUsage } from "./usage.js?v=1115o";
+import { liveLesson, mountTeacherTT } from "./timetable.js?v=1115o";
+import { openWork, gradeData } from "./teacherwork.js?v=1115o";
 import "./lessonxp.js";
-import { openProgress } from "./progress.js?v=1115m";
-import { openMaterial } from "./material.js?v=1115m";
-import { openLiveWs } from "./liveteacher.js?v=1115m";
-import { openFunpark } from "./fpteacher.js?v=1115m";
-import { openCoconut } from "./coconut.js?v=1115m";
-import { hasFeature, hideCss } from "./features.js?v=1115m";
-import { xpAllowed } from "./ownerpin.js?v=1115m";
+import { openProgress } from "./progress.js?v=1115o";
+import { openMaterial } from "./material.js?v=1115o";
+import { openLiveWs } from "./liveteacher.js?v=1115o";
+import { openFunpark } from "./fpteacher.js?v=1115o";
+import { openCoconut } from "./coconut.js?v=1115o";
+import { hasFeature, hideCss } from "./features.js?v=1115o";
+import { xpAllowed } from "./ownerpin.js?v=1115o";
 window.xpGate = n => xpAllowed(n); window.wkGradeData = gradeData;
-import { initChat } from "./chat.js?v=1115m";
-import { openLive } from "./live.js?v=1115m";
-import { openInbox } from "./inbox.js?v=1115m";
+import { initChat } from "./chat.js?v=1115o";
+import { openLive } from "./live.js?v=1115o";
+import { openInbox } from "./inbox.js?v=1115o";
 
 const $ = id => document.getElementById(id);
 const esc2 = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

@@ -1,6 +1,6 @@
 // Students progress inside the teacher page: pick a class, then a lesson, then see each student's games and every mistake.
-import { getDocs, bcol, bdoc, updateDoc } from "./fb.js?v=1115m";
-import { LIVE_WS, isLive } from "./liveworks.js?v=1115m";
+import { getDocs, bcol, bdoc, updateDoc, onSnapshot, query, where } from "./fb.js?v=1115o";
+import { LIVE_WS, isLive } from "./liveworks.js?v=1115o";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -47,6 +47,7 @@ function crumbs() {
   return `<div class="lg-bar noprint" style="margin:0 0 8px"><button class="ghost small" type="button" data-pg="home">Classes</button>${selCls ? `<span>›</span><button class="ghost small" type="button" data-pg="cls" data-c="${esc(selCls)}">${esc(selCls)}</button>` : ""}${l ? `<span>›</span><b>${esc(l.title)}</b>` : ""}</div>`;
 }
 function render() {
+  if (liveCls) return liveView();
   if (stuSid) return stuView();
   const b = $("pgBody");
   const head = `<h3>Students progress</h3>`;
@@ -114,6 +115,49 @@ const same = (a, b) => { const x = norm(a), y = norm(b); if (!x || !y) return fa
 const when = t => t ? new Date(t).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
 const lwWs = lw => lw.noWs ? lw.id + "-examples" : lw.id + "-ws";
 
+
+/* ---------- Live now: who is answering what, right or wrong, as it happens (only today's plays are listened to, so it stays cheap) ---------- */
+let liveCls = "", liveOff = null, liveTick = 0, livePl = new Map(), liveFeed = new Map(), liveReady = false;
+function stopLive() { if (liveOff) { try { liveOff(); } catch {} } liveOff = null; clearInterval(liveTick); liveTick = 0; liveCls = ""; livePl = new Map(); liveFeed = new Map(); liveReady = false; }
+function startLive(c) {
+  stopLive(); liveCls = c;
+  const since = new Date(Date.now()); since.setHours(0, 0, 0, 0);
+  liveOff = onSnapshot(query(bcol("plays"), where("u", ">", since.getTime())), snap => {
+    if ($("progressModal").hidden) return stopLive();
+    const first = !liveReady; liveReady = true;
+    snap.docChanges().forEach(ch => {
+      const d = ch.doc.data(), id = ch.doc.id;
+      if (ch.type === "removed") { livePl.delete(id); return; }
+      const old = livePl.get(id) || { r: 0, w: 0 }; livePl.set(id, { ...d });
+      if (first || /-cw$/.test(d.g)) return;
+      const a = liveFeed.get(d.sid) || []; const wrongs = (d.m || []).slice().sort((x, y) => (y.at || 0) - (x.at || 0));
+      for (let i = 0; i < (+d.r || 0) - old.r; i++) a.unshift({ ok: true, g: d.g, at: Date.now() });
+      for (let i = 0; i < (+d.w || 0) - old.w; i++) a.unshift({ ok: false, g: d.g, at: Date.now(), q: (wrongs[i] || {}).q, t: (wrongs[i] || {}).a });
+      liveFeed.set(d.sid, a.slice(0, 14));
+    });
+    if (liveCls) render();
+  }, () => { if (liveCls) { const b = $("pgBody"); if (b) b.insertAdjacentHTML("afterbegin", `<p class="lg-msg">Live updates stopped. Check the connection, then open Live now again.</p>`); } });
+  liveTick = setInterval(() => { if ($("progressModal").hidden) return stopLive(); if (liveCls && !document.hidden) render(); }, 20000);
+}
+const ago = t => { const m = Math.round((Date.now() - t) / 60000); return m < 1 ? "just now" : m < 60 ? m + " min ago" : Math.round(m / 60) + " h ago"; };
+function liveView() {
+  const b = $("pgBody"), list = inCls(liveCls), now = Date.now();
+  const rows = list.map(s => {
+    const ps = [...livePl.values()].filter(p => p.sid === s.id && !/-cw$/.test(p.g)).sort((x, y) => (y.u || 0) - (x.u || 0)), last = ps[0];
+    const r = ps.reduce((a, p) => a + (+p.r || 0), 0), w = ps.reduce((a, p) => a + (+p.w || 0), 0), act = last && now - (last.u || 0) < 120000;
+    const feed = liveFeed.get(s.id) || [], wrong = feed.filter(x => !x.ok && x.q).slice(0, 3);
+    return { s, last, r, w, act, feed, wrong, pcv: pct(r, w) };
+  }).sort((x, y) => (y.act - x.act) || ((y.last ? y.last.u : 0) - (x.last ? x.last.u : 0)) || x.s.name.localeCompare(y.s.name));
+  const on = rows.filter(x => x.act).length;
+  b.innerHTML = `<h3>Live now · ${esc(liveCls)}</h3><div class="lg-bar noprint" style="margin:0 0 8px"><button class="ghost small" type="button" data-pg="liveback">‹ ${esc(liveCls)}</button></div>
+    <p class="noprint"><b>${on}</b> of ${list.length} working now. It updates by itself a moment after each answer. Right and wrong are counted for today.</p>
+    <table class="lg-tbl"><thead><tr><th>Student</th><th>Now</th><th>Right</th><th>Wrong</th><th>%</th><th>Last answers (newest first)</th></tr></thead><tbody>${rows.map(x => `<tr>
+      <td><b>${esc(x.s.name)}</b></td>
+      <td>${x.last ? `<span style="color:${x.act ? "var(--ok)" : "var(--muted)"}">●</span> ${esc(title(x.last.g))}<br><small>${x.act ? "working now" : ago(x.last.u || 0)}</small>` : "<small>not started today</small>"}</td>
+      <td>${x.r}</td><td>${x.w}</td><td>${x.pcv === null ? "" : `<b class="pg-pc ${pc(x.pcv)}">${x.pcv}%</b>`}</td>
+      <td>${x.feed.length ? x.feed.map(f => `<b style="color:${f.ok ? "var(--ok)" : "var(--bad)"}">${f.ok ? "✓" : "✗"}</b>`).join(" ") : ""}${x.wrong.map(f => `<br><small>✗ ${esc(f.q)}${f.t ? " → " + esc(f.t) : ""}</small>`).join("")}</td></tr>`).join("")}</tbody></table>`;
+}
+
 /* Everything one student did, in one place: classwork and worksheets, live worksheets, live quizzes, games. */
 function stuData(s) {
   const U = String(s.cls || "").toUpperCase(), out = { work: [], live: [], quiz: [], games: [] };
@@ -138,7 +182,7 @@ function stuData(s) {
   const by = statsOf(s.id); out.games = Object.keys(by).filter(g => !/-cw$/.test(g)).sort((x, y) => by[y].last - by[x].last).map(g => ({ g, ...by[g] }));
   return out;
 }
-const stuPicker = () => `<h4 style="margin:18px 0 6px">Everything one student did</h4><p class="noprint">Classwork, worksheets, live worksheets, live quizzes and games in one page.</p>
+const stuPicker = () => `<div class="lg-bar noprint" style="margin:14px 0 0"><button class="primary" type="button" data-pg="live" data-c="${esc(selCls)}">Live now: see answers as they happen</button></div><h4 style="margin:18px 0 6px">Everything one student did</h4><p class="noprint">Classwork, worksheets, live worksheets, live quizzes and games in one page.</p>
   <div class="pg-chk">${inCls(selCls).map(s => `<button type="button" class="ghost small" data-pg="stu" data-sid="${esc(s.id)}">${esc(s.name)}</button>`).join(" ")}</div>`;
 function stuView() {
   const s = students.find(x => x.id === stuSid); if (!s) { stuSid = ""; return render(); }
@@ -173,7 +217,9 @@ document.addEventListener("toggle", e => { const d = e.target; if (d.classList &
 document.addEventListener("click", async e => {
   const b = e.target.closest("[data-pg]"); if (!b) return;
   const a = b.dataset.pg;
-  if (a === "close") $("progressModal").hidden = true;
+  if (a === "close") { stopLive(); $("progressModal").hidden = true; }
+  if (a === "live") { startLive(b.dataset.c); render(); }
+  if (a === "liveback") { stopLive(); render(); }
   if (a === "stu") { stuSid = b.dataset.sid; render(); }
   if (a === "stuback") { stuSid = ""; render(); }
   if (a === "stucsv") stuCsv();
@@ -195,7 +241,7 @@ document.addEventListener("click", async e => {
   if (a === "print") { document.querySelectorAll(".pg-mist").forEach(d => d.open = true); document.body.classList.add("pg-printing"); window.print(); setTimeout(() => document.body.classList.remove("pg-printing"), 500); }
 });
 export async function openProgress() {
-  $("progressModal").hidden = false; $("pgBody").innerHTML = "<p>Loading…</p>"; selCls = ""; selLes = ""; stuSid = "";
+  $("progressModal").hidden = false; $("pgBody").innerHTML = "<p>Loading…</p>"; selCls = ""; selLes = ""; stuSid = ""; stopLive();
   try { await load(); } catch (e) { $("pgBody").innerHTML = `<p class="lg-msg">Could not load (${esc(e.code || e.message)}).</p><button class="ghost" data-pg="close">Close</button>`; return; }
   render();
 }
