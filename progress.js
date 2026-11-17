@@ -1,6 +1,6 @@
 // Students progress inside the teacher page: pick a class, then a lesson, then see each student's games and every mistake.
-import { getDocs, bcol, bdoc, updateDoc, onSnapshot, query, where } from "./fb.js?v=1115q";
-import { LIVE_WS, isLive } from "./liveworks.js?v=1115q";
+import { getDocs, bcol, bdoc, updateDoc, onSnapshot, query, where } from "./fb.js?v=1115r";
+import { LIVE_WS, isLive } from "./liveworks.js?v=1115r";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -20,7 +20,7 @@ async function gameTitles() {
   } catch {}
   return titles;
 }
-const title = g => (titles && titles[g]) || g;
+const title = g => { if (titles && titles[g]) return titles[g]; const m = String(g).match(/^(\w+?)-(.+)$/), lw = m && LIVE_WS.find(x => x.id === m[1]); return lw ? lw.title + " · " + (m[2] === "ws" ? "Worksheet" : m[2] === "examples" ? "Examples" : (((lw.games || []).find(x => x[0] === m[2]) || [])[1] || m[2])) : g; };
 const kids = () => students.filter(s => /^(9S|8G|8B|8Y|8S|8M|8D)$/i.test(s.cls)).sort((a, b) => a.name.localeCompare(b.name));
 
 function statsOf(sid) {
@@ -34,11 +34,26 @@ function statsOf(sid) {
 }
 const clsList = () => [...new Set(kids().map(s => s.cls))].sort();
 const inCls = c => kids().filter(s => s.cls === c);
-function lessonsFor(c) {
+function baseLessons(c) {
   if (/^8G$/i.test(c)) return [{ id: "eq41", title: "Exercise 4.1: solving equations (easy)", date: "", games: Object.keys(titles).filter(g => g.startsWith("eq41-")) }, { id: "ag34", title: "Unit 3.4: examples, games and worksheet", date: "", games: Object.keys(titles).filter(g => g.startsWith("ag34-")) }];
   if (/^8[BYSM]$/i.test(c)) return [...(/^8[YSM]$/i.test(c) ? [{ id: "sb42", title: "Substitution method: extra practice (Exercise 4.2)", date: "", games: ["sb42-examples", "sb42-ws"] }] : []), { id: "su42", title: "Simultaneous equations: substitution (Exercise 4.2, Day 2)", date: "", games: Object.keys(titles).filter(g => g.startsWith("su42-")) }, { id: "el42", title: "Simultaneous equations: elimination (Exercise 4.2, Day 1)", date: "", games: Object.keys(titles).filter(g => g.startsWith("el42-")) }];
   if (/^9S$/i.test(c)) return secs.map(x => ({ id: x.id, title: x.title, date: x.date, tag: x.group === "g2" ? "Level 1–2" : "Level 5", games: Object.keys(secOf).filter(g => secOf[g] === x.id) }));
   return [];
+}
+/* Every live worksheet started for this class (or already played) is a lesson here too, newest first, so nothing assigned is missing. */
+function liveLessons(c) {
+  const U = String(c).toUpperCase(), ids = new Set(kids().filter(k => k.cls.toUpperCase() === U).map(k => k.id));
+  return LIVE_WS.filter(lw => isLive(lw, wk.open, c) || plays.some(p => ids.has(p.sid) && String(p.g).startsWith(lw.id + "-") && !/-cw$/.test(p.g))).map(lw => {
+    const o = wk.open[lw.id] || {}, st = +o[Object.keys(o).find(k => k.toUpperCase() === U)] || 0;
+    const gs = new Set([lw.id + "-examples", lw.id + "-ws", ...(lw.games || []).map(g => lw.id + "-" + g[0])]);
+    plays.forEach(p => { if (ids.has(p.sid) && String(p.g).startsWith(lw.id + "-") && !/-cw$/.test(p.g)) gs.add(p.g); });
+    return { id: lw.id, title: lw.title + (lw.sub ? " (" + lw.sub + ")" : ""), date: "", games: [...gs], st };
+  }).sort((a, b) => b.st - a.st);
+}
+function lessonsFor(c) {
+  const b = baseLessons(c); if (/^9S$/i.test(c)) return b;
+  const have = new Set(b.map(x => x.id)), extra = liveLessons(c).filter(x => !have.has(x.id));
+  return [...extra, ...b];
 }
 const lesObj = () => lessonsFor(selCls).find(l => l.id === selLes);
 const pc = p => p === null ? "" : p >= 80 ? "hi" : p >= 50 ? "mid" : "lo";
@@ -48,6 +63,7 @@ function crumbs() {
 }
 function render() {
   if (liveCls) return liveView();
+  if (workId) return workView();
   if (stuSid) return stuView();
   const b = $("pgBody");
   const head = `<h3>Students progress</h3>`;
@@ -61,7 +77,7 @@ function render() {
     b.innerHTML = head + crumbs() + `<p class="noprint">Choose the lesson you want to see.</p>` + (L.length ? `<div class="pg-pick">${L.map(l => {
       const gs = new Set(l.games), pl = plays.filter(p => gs.has(p.g) && kidsC.some(k => k.id === p.sid)), who = new Set(pl.map(p => p.sid)).size;
       return `<button type="button" class="pg-opt" data-pg="les" data-l="${esc(l.id)}"><b>${esc(l.title)}</b><small>${l.tag ? esc(l.tag) + " · " : ""}${l.date ? esc(l.date) + " · " : ""}${who} of ${kidsC.length} started</small></button>`; }).join("")}</div>` : `<p class="none">There are no games or lessons to follow for ${esc(selCls)} yet.</p>`) + `<div class="lg-bar noprint"><button class="ghost" type="button" data-pg="close">Close</button></div>`;
-    b.insertAdjacentHTML("beforeend", stuPicker());
+    b.insertAdjacentHTML("beforeend", workList() + stuPicker());
     return;
   }
   const les = lesObj(), gs = new Set(les.games), everyone = inCls(selCls), list = everyone.filter(s => solo ? s.id === solo : pick.has(s.id));
@@ -182,6 +198,22 @@ function stuData(s) {
   const by = statsOf(s.id); out.games = Object.keys(by).filter(g => !/-cw$/.test(g)).sort((x, y) => by[y].last - by[x].last).map(g => ({ g, ...by[g] }));
   return out;
 }
+const markOf = (w, sub) => { const key = wk.keys.get(w.id) || []; if (!sub || !sub.answers || !key.length) return null; const m = key.map((k, i) => k ? same(sub.answers[i], k) : null), n = m.filter(x => x !== null).length; return n ? { right: m.filter(x => x === true).length, n } : null; };
+let workId = "";
+const workList = () => {
+  const U = String(selCls).toUpperCase(), ws = wk.works.filter(w => (w.classes || []).some(c => String(c).toUpperCase() === U)), kidsC = inCls(selCls);
+  if (!ws.length) return `<h4 style="margin:18px 0 6px">Classwork and worksheets</h4><p class="none">Nothing was sent to ${esc(selCls)} yet.</p>`;
+  return `<h4 style="margin:18px 0 6px">Classwork and worksheets</h4><div class="pg-pick">${ws.map(w => { const n = kidsC.filter(k => wk.subs.some(x => x.wid === w.id && x.sid === k.id)).length;
+    return `<button type="button" class="pg-opt" data-pg="work" data-w="${esc(w.id)}"><b>${esc(w.title || "Worksheet")}</b><small>${w.graded ? "Graded worksheet · " : "Classwork · "}${n} of ${kidsC.length} handed in · ${esc(when(w.created))}</small></button>`; }).join("")}</div>`;
+};
+function workView() {
+  const w = wk.works.find(x => x.id === workId); if (!w) { workId = ""; return render(); }
+  const rows = inCls(selCls).map(k => { const sub = wk.subs.find(x => x.wid === w.id && x.sid === k.id); return { k, sub, mk: markOf(w, sub) }; }), done = rows.filter(r => r.sub).length, ms = rows.filter(r => r.mk);
+  const avg = ms.length ? Math.round(100 * ms.reduce((a, r) => a + r.mk.right / r.mk.n, 0) / ms.length) : null;
+  $("pgBody").innerHTML = `<h3>Students progress</h3><div class="lg-bar noprint" style="margin:0 0 8px"><button class="ghost small" type="button" data-pg="workback">‹ ${esc(selCls)}</button><button class="ghost small" type="button" data-pg="refresh">Refresh</button></div>
+    <p class="pg-lesson"><b>${esc(w.title || "Worksheet")}</b> · ${w.graded ? "Graded worksheet" : "Classwork"} · ${done} of ${rows.length} handed in${avg === null ? "" : ` · class average ${avg}%`}</p>
+    <table class="lg-tbl"><thead><tr><th>Student</th><th>Status</th><th>Handed in</th><th>Mark</th></tr></thead><tbody>${rows.sort((a, b) => (!!b.sub - !!a.sub) || a.k.name.localeCompare(b.k.name)).map(r => `<tr><td><b>${esc(r.k.name)}</b></td><td>${r.sub ? "Handed in" : "<b style='color:var(--bad)'>MISSING</b>"}</td><td>${r.sub ? esc(when(r.sub.at)) : ""}</td><td>${r.mk ? `<b class="pg-pc ${pc(Math.round(100 * r.mk.right / r.mk.n))}">${r.mk.right} / ${r.mk.n}</b>` : r.sub ? "Not marked" : ""}</td></tr>`).join("")}</tbody></table>`;
+}
 const stuPicker = () => `<div class="lg-bar noprint" style="margin:14px 0 0"><button class="primary" type="button" data-pg="live" data-c="${esc(selCls)}">Live now: see answers as they happen</button></div><h4 style="margin:18px 0 6px">Everything one student did</h4><p class="noprint">Classwork, worksheets, live worksheets, live quizzes and games in one page.</p>
   <div class="pg-chk">${inCls(selCls).map(s => `<button type="button" class="ghost small" data-pg="stu" data-sid="${esc(s.id)}">${esc(s.name)}</button>`).join(" ")}</div>`;
 function stuView() {
@@ -220,6 +252,8 @@ document.addEventListener("click", async e => {
   if (a === "close") { stopLive(); $("progressModal").hidden = true; }
   if (a === "live") { startLive(b.dataset.c); render(); }
   if (a === "liveback") { stopLive(); render(); }
+  if (a === "work") { workId = b.dataset.w; render(); }
+  if (a === "workback") { workId = ""; render(); }
   if (a === "stu") { stuSid = b.dataset.sid; render(); }
   if (a === "stuback") { stuSid = ""; render(); }
   if (a === "stucsv") stuCsv();
@@ -241,7 +275,7 @@ document.addEventListener("click", async e => {
   if (a === "print") { document.querySelectorAll(".pg-mist").forEach(d => d.open = true); document.body.classList.add("pg-printing"); window.print(); setTimeout(() => document.body.classList.remove("pg-printing"), 500); }
 });
 export async function openProgress() {
-  $("progressModal").hidden = false; $("pgBody").innerHTML = "<p>Loading…</p>"; selCls = ""; selLes = ""; stuSid = ""; stopLive();
+  $("progressModal").hidden = false; $("pgBody").innerHTML = "<p>Loading…</p>"; selCls = ""; selLes = ""; stuSid = ""; workId = ""; stopLive();
   try { await load(); } catch (e) { $("pgBody").innerHTML = `<p class="lg-msg">Could not load (${esc(e.code || e.message)}).</p><button class="ghost" data-pg="close">Close</button>`; return; }
   render();
 }
