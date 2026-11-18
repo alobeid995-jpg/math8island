@@ -3267,7 +3267,12 @@ function hubHw() {
 }
 
 /* ---------- Grades /10: participation, behaviour, classwork, graded worksheet (teacher only) ---------- */
-let grCfg = { from: "", to: "", total: 0, pTarget: 10, perMiss: 0.5 }, grData = null, grLoading = false;
+/* School quarters 2026-27 (Q1+Q2 = first semester, Q3+Q4 = second). Reports use a whole quarter as the period. */
+const QUARTERS = [{ k: "Q1", from: "2026-08-30", to: "2026-10-22" }, { k: "Q2", from: "2026-11-01", to: "2027-01-28" }, { k: "Q3", from: "2027-02-01", to: "2027-03-31" }, { k: "Q4", from: "2027-04-04", to: "2027-06-24" }];
+const quarterNow = () => { const t = new Date(Date.now() + 3 * 3600e3).toISOString().slice(0, 10); return QUARTERS.find(q => t >= q.from && t <= q.to) || QUARTERS.find(q => t < q.from) || QUARTERS[3]; };
+const quarterOf = (c) => { const q = QUARTERS.find(x => x.from === c.from && x.to === c.to); return q ? q.k : ""; };
+const grFresh = () => { const q = quarterNow(); return { from: q.from, to: q.to, total: 0, pTarget: 10, perMiss: 0.5 }; };
+let grCfg = grFresh(), grData = null, grLoading = false;
 const GR_PART = ["Active Participation", "Great Mathematical Reasoning", "Helping Peer / Teamwork"];
 const GR_BEH = NEGATIVE.map(n => n.title).filter(t => t !== "Incomplete Task / Homework");
 const gr1 = n => (Math.round(n * 10) / 10).toString();
@@ -3311,7 +3316,7 @@ function hubGrades() {
   return `<section class="card"><h3>Grades out of 10 · ${esc(cls)}</h3>
     <p class="rep-note">Only you see these. <b>Participation:</b> ${c.pTarget} good moments (participation, great reasoning, helping a peer) = 10. <b>Behaviour:</b> starts at 10, each deduction takes off ${c.perMiss}. <b>Classwork:</b> the worksheets you send to the class (Tools → Classwork), a worksheet handed in = done; mark = handed in ÷ worksheets sent × 10. Worked examples and games do not count. <b>Graded worksheet:</b> the one you mark "Make graded" in Classwork; its mark is the auto-marked score ×10 and it is not counted as classwork.</p>
     <div class="hub-bar" style="flex-wrap:wrap;gap:8px">
-      <label>From <input type="date" id="grFrom" value="${c.from}"></label><label>To <input type="date" id="grTo" value="${c.to}"></label>
+      <span style="display:flex;gap:6px;flex-wrap:wrap">${QUARTERS.map(q => `<button class="${quarterOf(c) === q.k ? "primary" : "ghost"} small" data-act="grQ" data-q="${q.k}">${q.k}</button>`).join("")}<button class="${(c.from || c.to) ? "ghost" : "primary"} small" data-act="grQ" data-q="">All dates</button></span><label>From <input type="date" id="grFrom" value="${c.from}"></label><label>To <input type="date" id="grTo" value="${c.to}"></label>
       <label>Classworks held <input type="number" id="grTotal" min="0" max="200" style="width:70px" value="${c.total || ""}" placeholder="${total}"></label>
       <label>Participation target <input type="number" id="grPT" min="1" max="100" style="width:70px" value="${c.pTarget}"></label>
       <label>Per deduction <input type="number" id="grPM" min="0" max="10" step="0.25" style="width:70px" value="${c.perMiss}"></label>
@@ -3340,7 +3345,7 @@ async function grXlsx(btn) {
     const NAVY = "FF1F3A6E", GREY = "FFF3F5FA", GOOD = "FFC6EFCE", MID = "FFFFEB9C", BAD = "FFFFC7CE", LINE = { style: "thin", color: { argb: "FFB8C2D6" } };
     const box = { top: LINE, left: LINE, bottom: LINE, right: LINE };
     const fillOf = v => ({ type: "pattern", pattern: "solid", fgColor: { argb: v >= 8 ? GOOD : v >= 5 ? MID : BAD } });
-    const period = (c.from || c.to) ? `${c.from || "start"} to ${c.to || "today"}` : "All dates";
+    const period = (c.from || c.to) ? (quarterOf(c) ? quarterOf(c) + " · " : "") + `${c.from || "start"} to ${c.to || "today"}` : "All dates";
     const today = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
     const summary = [];
     const sheets = CLASSES.filter(k => students.some(s => s.cls === k));
@@ -4160,7 +4165,8 @@ document.addEventListener("click", e => {
     case "seatCell": case "seatPool": case "seatUnseat": case "seatAlpha": case "seatShuffle": case "seatClear": case "seatPic": seatClick(b); break;
     case "grXlsx": grXlsx(b); break;
     case "grPrint": window.print(); break;
-    case "grReset": grCfg = { from: "", to: "", total: 0, pTarget: 10, perMiss: 0.5 }; render(); break;
+    case "grReset": grCfg = grFresh(); render(); break;
+    case "grQ": { const q = QUARTERS.find(x => x.k === b.dataset.q); grCfg.from = q ? q.from : ""; grCfg.to = q ? q.to : ""; render(); break; }
     case "hubTab": hubTab = b.dataset.tab; if (hubTab === "grades") { grData = null; } hubConf = ""; render(); break;
     case "hubCls": cls = b.dataset.cls; try { localStorage.setItem("xp_class", cls); } catch {} hubConf = ""; render(); break;
     case "hubNo": hubConf = ""; render(); break;
