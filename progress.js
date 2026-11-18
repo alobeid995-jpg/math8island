@@ -69,7 +69,7 @@ function render() {
   const head = `<h3>Students progress</h3>`;
   if (!selCls) {
     const cl = clsList();
-    b.innerHTML = head + `<p class="noprint">Choose a class to follow its progress.</p>` + (cl.length ? `<div class="pg-pick">${cl.map(c => `<button type="button" class="pg-opt" data-pg="cls" data-c="${esc(c)}"><b>${esc(c)}</b><small>${inCls(c).length} student${inCls(c).length === 1 ? "" : "s"}</small></button>`).join("")}</div>` : `<p class="none">No students in these classes yet.</p>`) + `<div class="lg-bar noprint"><button class="ghost" type="button" data-pg="refresh">Refresh</button><button class="ghost" type="button" data-pg="close">Close</button></div>`;
+    b.innerHTML = head + `<p class="noprint">Choose a class to follow its progress.</p>` + (cl.length ? `<div class="pg-pick">${cl.map(c => `<button type="button" class="pg-opt" data-pg="cls" data-c="${esc(c)}"><b>${esc(c)}</b><small>${inCls(c).length} student${inCls(c).length === 1 ? "" : "s"}</small></button>`).join("")}</div>` : `<p class="none">No students in these classes yet.</p>`) + `<div class="lg-bar noprint"><button class="ghost" type="button" data-pg="refresh">Refresh</button><button class="ghost" type="button" data-pg="close">Close</button></div>` + (cl.length ? xlBar("all") : "");
     return;
   }
   if (!selLes) {
@@ -77,13 +77,14 @@ function render() {
     b.innerHTML = head + crumbs() + `<p class="noprint">Choose the lesson you want to see.</p>` + (L.length ? `<div class="pg-pick">${L.map(l => {
       const gs = new Set(l.games), pl = plays.filter(p => gs.has(p.g) && kidsC.some(k => k.id === p.sid)), who = new Set(pl.map(p => p.sid)).size;
       return `<button type="button" class="pg-opt" data-pg="les" data-l="${esc(l.id)}"><b>${esc(l.title)}</b><small>${l.tag ? esc(l.tag) + " · " : ""}${l.date ? esc(l.date) + " · " : ""}${who} of ${kidsC.length} started</small></button>`; }).join("")}</div>` : `<p class="none">There are no games or lessons to follow for ${esc(selCls)} yet.</p>`) + `<div class="lg-bar noprint"><button class="ghost" type="button" data-pg="close">Close</button></div>`;
-    b.insertAdjacentHTML("beforeend", workList() + stuPicker());
+    b.insertAdjacentHTML("beforeend", workList() + stuPicker() + xlBar("cls"));
     return;
   }
   const les = lesObj(), gs = new Set(les.games), everyone = inCls(selCls), list = everyone.filter(s => solo ? s.id === solo : pick.has(s.id));
   const mine = sid => plays.filter(p => p.sid === sid && gs.has(p.g));
   const started = list.filter(s => mine(s.id).length).length, allP = list.flatMap(s => mine(s.id)), CR = allP.reduce((a, p) => a + (+p.r || 0), 0), CW = allP.reduce((a, p) => a + (+p.w || 0), 0), CP = pct(CR, CW);
   b.innerHTML = head + crumbs() + `<p class="pg-lesson"><b>${esc(les.title)}</b> · ${esc(selCls)} · ${started} of ${list.length} student${list.length === 1 ? "" : "s"} started${CP === null ? "" : ` · class average <span class="pg-pc ${pc(CP)}">${CP}%</span>`}</p>
+    ${xlBar("cls")}
     <details class="pg-choose noprint" ${chooseOpen ? "open" : ""}><summary>Students shown: ${list.length === everyone.length ? "all " + everyone.length : list.length + " of " + everyone.length} (tap to choose)</summary>
       <div class="lg-bar" style="margin:8px 0"><button class="ghost small" type="button" data-pg="all">Select all</button><button class="ghost small" type="button" data-pg="none">Clear</button></div>
       <div class="pg-chk">${everyone.map(s => `<label><input type="checkbox" data-pgchk="${esc(s.id)}" ${pick.has(s.id) ? "checked" : ""}> ${esc(s.name)}</label>`).join("")}</div></details>
@@ -243,6 +244,73 @@ function stuCsv() {
   const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "Progress " + s.name + ".csv"; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
 }
 
+
+/* ---------- Excel: every student's progress for one class or all classes, for a whole quarter (or all dates) ---------- */
+const QUARTERS = [{ k: "Q1", from: "2026-08-30", to: "2026-10-22" }, { k: "Q2", from: "2026-11-01", to: "2027-01-28" }, { k: "Q3", from: "2027-02-01", to: "2027-03-31" }, { k: "Q4", from: "2027-04-04", to: "2027-06-24" }];
+const quarterNow = () => { const t = new Date(Date.now() + 3 * 3600e3).toISOString().slice(0, 10); return QUARTERS.find(q => t >= q.from && t <= q.to) || QUARTERS.find(q => t < q.from) || QUARTERS[3]; };
+let xlQ = "";   // "" = current quarter on first use, "ALL" = every date
+const xlBar = scope => `<div class="lg-bar noprint" style="margin:14px 0 0;flex-wrap:wrap;gap:8px"><label>Period <select id="pgQ">${QUARTERS.map(q => `<option value="${q.k}" ${(xlQ || quarterNow().k) === q.k ? "selected" : ""}>${q.k} (${q.from.split("-").reverse().join("/")} – ${q.to.split("-").reverse().join("/")})</option>`).join("")}<option value="ALL" ${xlQ === "ALL" ? "selected" : ""}>All dates</option></select></label>
+  <button class="primary" type="button" data-pg="xl" data-scope="${scope}">${scope === "all" ? "Download Excel: all classes" : "Download Excel: " + esc(selCls)}</button></div>`;
+document.addEventListener("change", e => { if (e.target && e.target.id === "pgQ") xlQ = e.target.value; });
+const loadXl = () => window.ExcelJS ? Promise.resolve() : new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1115r"; sc.onload = res; sc.onerror = () => rej(new Error("Could not load the Excel library")); document.head.appendChild(sc); });
+async function xlExport(scope, btn) {
+  const q = xlQ === "ALL" ? null : QUARTERS.find(x => x.k === (xlQ || quarterNow().k));
+  const t0 = q ? Date.parse(q.from + "T00:00:00+03:00") : 0, t1 = q ? Date.parse(q.to + "T23:59:59.999+03:00") : Infinity, inP = t => !q || (t >= t0 && t <= t1);
+  const label = q ? `${q.k} · ${q.from.split("-").reverse().join("/")} to ${q.to.split("-").reverse().join("/")}` : "All dates";
+  const old = btn.textContent; btn.disabled = true; btn.textContent = "Preparing…";
+  try {
+    await loadXl();
+    const classes = scope === "all" ? clsList() : [selCls];
+    const keepP = plays, keepW = wk;
+    plays = plays.filter(p => !/-cw$/.test(p.g) ? inP(p.u || p.t || 0) : inP(p.u || p.t || 0));
+    wk = { ...wk, works: wk.works.filter(w => inP(w.created || 0)), sess: wk.sess.filter(x => inP(x.created || 0)) };
+    const data = [];
+    try {
+      classes.forEach(c => inCls(c).forEach(s => {
+        const D = stuData(s), mk = D.work.filter(x => x.right !== null), gm = D.work.filter(x => x.type === "Graded worksheet" && x.right !== null), cw = D.work.filter(x => x.type === "Classwork");
+        const avg = a => a.length ? Math.round(100 * a.reduce((t, x) => t + x.right / x.n, 0) / a.length) : null;
+        const lp = D.live.filter(x => x.pct !== null), qz = D.quiz.filter(x => x.answered), gR = D.games.reduce((t, x) => t + x.r, 0), gW = D.games.reduce((t, x) => t + x.w, 0);
+        const last = Math.max(0, ...D.games.map(x => x.last), ...D.live.map(x => x.at), ...D.work.map(x => x.at), ...D.quiz.map(x => x.at));
+        data.push({ c, s, D, cwDone: cw.filter(x => x.done).length, cwN: cw.length, cwAvg: avg(cw.filter(x => x.right !== null)), grAvg: avg(gm), grN: D.work.filter(x => x.type === "Graded worksheet").length,
+          liveN: D.live.filter(x => x.ws).length, liveAvg: lp.length ? Math.round(lp.reduce((t, x) => t + x.pct, 0) / lp.length) : null,
+          qzJoin: qz.length, qzN: D.quiz.length, qzAvg: qz.length ? Math.round(100 * qz.reduce((t, x) => t + x.right / Math.max(1, x.total), 0) / qz.length) : null,
+          gAns: gR + gW, gPct: pct(gR, gW), last });
+      }));
+    } finally { plays = keepP; wk = keepW; }
+    const wb = new ExcelJS.Workbook(); wb.creator = "Math Island"; wb.created = new Date();
+    const NAVY = "FF1F3A6E", LINE = { style: "thin", color: { argb: "FFB8C2D6" } }, box = { top: LINE, left: LINE, bottom: LINE, right: LINE };
+    const fillP = v => ({ type: "pattern", pattern: "solid", fgColor: { argb: v === null || v === "" ? "FFFFFFFF" : v >= 80 ? "FFC6EFCE" : v >= 50 ? "FFFFEB9C" : "FFFFC7CE" } });
+    const dt = t => t ? new Date(t).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
+    const sheet = (name, heads, rows, pctCols, widths) => {
+      const ws = wb.addWorksheet(name.slice(0, 31), { views: [{ state: "frozen", ySplit: 3, showGridLines: false }], pageSetup: { orientation: "landscape", fitToPage: true, fitToWidth: 1, fitToHeight: 0, paperSize: 9 } });
+      ws.mergeCells(1, 1, 1, heads.length); ws.getCell(1, 1).value = `${name} · Students progress`; ws.getCell(1, 1).font = { bold: true, size: 15, color: { argb: NAVY } };
+      ws.mergeCells(2, 1, 2, heads.length); ws.getCell(2, 1).value = `Period: ${label} · prepared ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}`; ws.getCell(2, 1).font = { italic: true, size: 10, color: { argb: "FF55607A" } };
+      const h = ws.getRow(3); heads.forEach((x, i) => { const c = h.getCell(i + 1); c.value = x; c.font = { bold: true, color: { argb: "FFFFFFFF" } }; c.fill = { type: "pattern", pattern: "solid", fgColor: { argb: NAVY } }; c.alignment = { horizontal: "center", vertical: "middle", wrapText: true }; c.border = box; }); h.height = 34;
+      rows.forEach(r => { const row = ws.addRow(r); row.eachCell({ includeEmpty: true }, (c, i) => { c.border = box; c.alignment = { horizontal: i <= 2 ? "left" : "center", vertical: "middle", wrapText: true }; if (pctCols.includes(i)) { const v = c.value; c.fill = fillP(typeof v === "number" ? v : null); if (typeof v === "number") c.numFmt = '0"%"'; } }); });
+      widths.forEach((w, i) => { ws.getColumn(i + 1).width = w; });
+      return ws;
+    };
+    const H = ["#", "Student", "Classwork handed in", "Classwork mark", "Graded worksheet mark", "Live worksheets done", "Live worksheet avg", "Live quizzes joined", "Live quiz right", "Game answers", "Game right", "Last activity"];
+    const rowOf = (d, i) => [i + 1, d.s.name, d.cwN ? `${d.cwDone} / ${d.cwN}` : "-", d.cwAvg, d.grN ? (d.grAvg === null ? "Not marked" : d.grAvg) : "-", d.liveN, d.liveAvg, d.qzN ? `${d.qzJoin} / ${d.qzN}` : "-", d.qzAvg, d.gAns, d.gPct, dt(d.last)];
+    const W = [5, 26, 14, 12, 14, 12, 12, 12, 12, 11, 11, 20];
+    if (scope === "all") {
+      const avgOf = (a, k) => { const v = a.map(x => x[k]).filter(x => typeof x === "number"); return v.length ? Math.round(v.reduce((t, x) => t + x, 0) / v.length) : null; };
+      sheet("All classes", ["Class", "Students", "Classwork mark", "Graded worksheet mark", "Live worksheet avg", "Live quiz right", "Game right", "Active students"],
+        classes.map(c => { const a = data.filter(d => d.c === c); return [c, a.length, avgOf(a, "cwAvg"), avgOf(a, "grAvg"), avgOf(a, "liveAvg"), avgOf(a, "qzAvg"), avgOf(a, "gPct"), a.filter(d => d.last).length + " / " + a.length]; }), [3, 4, 5, 6, 7], [14, 10, 14, 16, 14, 14, 12, 14]);
+    }
+    classes.forEach(c => { const a = data.filter(d => d.c === c); sheet(c, H, a.map(rowOf), [4, 5, 7, 9, 11], W); });
+    const det = [];
+    data.forEach(d => { d.D.work.forEach(x => det.push([d.c, d.s.name, x.type, x.title, x.done ? "Handed in" : "MISSING", x.right === null ? "" : `${x.right} / ${x.n}`, dt(x.at)]));
+      d.D.live.forEach(x => det.push([d.c, d.s.name, "Live worksheet", x.title, (x.ex ? "Examples done. " : "") + (x.cw ? "Class work " + x.cw : ""), x.pct === null ? "" : x.pct, dt(x.at)]));
+      d.D.quiz.forEach(x => det.push([d.c, d.s.name, "Live quiz", x.title, `Answered ${x.answered} / ${x.total}`, `${x.right} / ${x.total}`, dt(x.at)]));
+      d.D.games.forEach(x => det.push([d.c, d.s.name, "Game", title(x.g), `${x.n} plays · ${x.r + x.w} answers`, pct(x.r, x.w) ?? "", dt(x.last)])); });
+    sheet("Details", ["Class", "Student", "Area", "Item", "Status", "Mark / % right", "When"], det, [], [8, 24, 16, 38, 28, 14, 20]);
+    const buf = await wb.xlsx.writeBuffer(), a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }));
+    a.download = `Students progress ${scope === "all" ? "all classes" : selCls} ${q ? q.k : "all dates"}.xlsx`; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  } catch (err) { alert("Could not make the Excel file: " + (err.message || err)); }
+  btn.disabled = false; btn.textContent = old;
+}
 document.addEventListener("change", e => { const c = e.target.closest && e.target.closest("[data-pgchk]"); if (!c) return; if (c.checked) pick.add(c.dataset.pgchk); else pick.delete(c.dataset.pgchk); chooseOpen = true; render(); });
 document.addEventListener("toggle", e => { const d = e.target; if (d.classList && d.classList.contains("pg-choose")) chooseOpen = d.open;
   if (d.classList && d.classList.contains("pg-mist")) openSid = d.open ? d.dataset.sid : ""; }, true);
@@ -272,6 +340,7 @@ document.addEventListener("click", async e => {
   if (a === "les") { selLes = b.dataset.l; render(); }
   if (a === "refresh") { b.disabled = true; await load(); render(); }
   if (a === "csv") csv();
+  if (a === "xl") xlExport(b.dataset.scope, b);
   if (a === "print") { document.querySelectorAll(".pg-mist").forEach(d => d.open = true); document.body.classList.add("pg-printing"); window.print(); setTimeout(() => document.body.classList.remove("pg-printing"), 500); }
 });
 export async function openProgress() {
