@@ -230,9 +230,24 @@
       <div class="ml-g">${NEG().map(p => `<button class="ml-b r s" type="button" data-a="give" data-id="${E(st.id)}" data-title="${E(p.title)}" data-xp="${p.xp}">${E(short(p.title))} ${p.xp}</button>`).join("")}</div>
       <div class="ml-cx"><input id="mlCx" type="number" inputmode="numeric" placeholder="XP, e.g. 5 or -5" aria-label="Custom XP"><button class="ml-b s" type="button" data-a="custom" data-id="${E(st.id)}">Add</button><button class="ml-b s" type="button" data-a="undo" data-id="${E(st.id)}">Undo last</button></div>`;
   }
+  /* Same first name in one class: add the father's first letter, then the next name's letter (grandfather or family), until each one is different. */
+  const PART = /^(al|el|bin|ben|ibn|abu|bu)$/i;
+  function labelsOf(list) {
+    const fnm = n => (typeof firstName === "function" ? firstName(n) : String(n).split(" ")[0]);
+    const info = list.map(st => { const f = fnm(st.name), rest = String(st.name).replace(/^Sh\.\s*/i, "Sheikh ").split(/\s+/).slice(f.split(/\s+/).length).filter(w => w && !PART.test(w)); return { st, f, rest }; });
+    const out = new Map(), groups = {}; info.forEach(x => (groups[x.f.toLowerCase()] = groups[x.f.toLowerCase()] || []).push(x));
+    Object.values(groups).forEach(g => {
+      if (g.length === 1) { out.set(g[0].st.id, g[0].f); return; }
+      const lab = x => k => x.f + (k ? " " + x.rest.slice(0, k).map(w => w[0].toUpperCase() + ".").join(" ") : "");
+      for (let k = 1; k <= 4; k++) { const ls = g.map(x => lab(x)(Math.min(k, x.rest.length))); const cnt = {}; ls.forEach(l => { cnt[l] = (cnt[l] || 0) + 1; });
+        g.forEach((x, i) => { if (!out.has(x.st.id) && cnt[ls[i]] === 1) out.set(x.st.id, ls[i]); }); }
+      g.forEach(x => { if (!out.has(x.st.id)) out.set(x.st.id, String(x.st.name)); });
+    });
+    return out;
+  }
   function paint() {
     if (!panel || panel.hidden) return;
-    const list = inClass(sel), keep = panel.querySelector(".ml-body"), top = keep ? keep.scrollTop : 0;
+    const list = inClass(sel), LB = labelsOf(list), keep = panel.querySelector(".ml-body"), top = keep ? keep.scrollTop : 0;
     let body;
     if (wcView) {
       const opts = POS().map((p, i) => `<option value="p${i}"${wcB === "p" + i ? " selected" : ""}>+${p.xp}  ${E(p.title)}</option>`).join("") + NEG().map((p, i) => `<option value="n${i}"${wcB === "n" + i ? " selected" : ""}>${p.xp}  ${E(p.title)}</option>`).join("") + `<option value="c"${wcB === "c" ? " selected" : ""}>Custom amount…</option>`;
@@ -240,10 +255,10 @@
         <label>Give to the selected students:<select class="ml-sel" id="mlWcB" aria-label="Behaviour">${opts}</select></label>
         ${wcB === "c" ? `<div class="ml-cx"><input class="ml-in" id="mlWcAmt" type="number" inputmode="numeric" placeholder="XP, e.g. 5 or -5" value="${E(wcAmt)}" aria-label="XP amount"><input class="ml-in" id="mlWcWhy" maxlength="60" placeholder="Reason (optional)" value="${E(wcWhy)}" aria-label="Reason"></div>` : ""}
         <div class="ml-g"><button class="ml-b s" type="button" data-a="wcall">Select all</button><button class="ml-b s" type="button" data-a="wcnone">Clear</button><b style="align-self:center">${list.filter(x => wcSel.has(x.id)).length} of ${list.length} selected</b></div>
-        <div class="ml-chips2">${list.map(x => `<button class="ml-chip" type="button" data-a="wct" data-id="${E(x.id)}" aria-pressed="${wcSel.has(x.id)}">${E(x.name.split(" ")[0])}</button>`).join("")}</div>
+        <div class="ml-chips2">${list.map(x => `<button class="ml-chip" type="button" data-a="wct" data-id="${E(x.id)}" aria-pressed="${wcSel.has(x.id)}">${E(LB.get(x.id) || x.name.split(" ")[0])}</button>`).join("")}</div>
         <p style="margin:0;font-size:13px">Tap a name to leave that student out (for example if he is absent).</p>
         <button class="ml-b g" type="button" data-a="wcgo">Give XP</button></div>`;
-    } else body = `<button class="ml-b g ml-wcb" type="button" data-a="wc">Whole class XP…</button>` + (list.length ? list.map(st => `<div class="ml-r"><button class="ml-rh" type="button" data-a="row" data-id="${E(st.id)}" aria-expanded="${openSid === st.id}"><b>${E(st.name)}</b><span>${st.xp} XP</span></button>${openSid === st.id ? `<div class="ml-ex">${awardsHTML(st)}</div>` : ""}</div>`).join("")               : `<p>No students in ${E(sel)}.</p>`);
+    } else body = `<button class="ml-b g ml-wcb" type="button" data-a="wc">Whole class XP…</button>` + (list.length ? list.map(st => `<div class="ml-r"><button class="ml-rh" type="button" data-a="row" data-id="${E(st.id)}" aria-expanded="${openSid === st.id}" title="${E(st.name)}"><b>${E(st.name)}</b><span>${st.xp} XP</span></button>${openSid === st.id ? `<div class="ml-ex">${awardsHTML(st)}</div>` : ""}</div>`).join("")               : `<p>No students in ${E(sel)}.</p>`);
     panel.innerHTML = `<div class="ml-h"><b>${E(sel)}${auto() === sel ? " · now" : ""}</b><button class="ml-t" type="button" data-mlx="hide" aria-label="Hide the panel">Hide ✕</button></div>
       <div class="ml-chips">${classes().map(c => `<button class="ml-c" type="button" data-a="cls" data-c="${E(c)}" aria-pressed="${c === sel}">${E(c)}</button>`).join("")}</div>
       <div class="ml-note" role="status">${E(note)}</div><div class="ml-body">${body}</div>`;
@@ -260,44 +275,80 @@
     try { av = avatarHTML(st, "xxl"); nm = nameHTML(st); } catch {}
     return `<div class="pk-stage${spinning ? " spinning" : " landed"}">${av}<div class="pk-name">${nm}</div></div>`;
   };
-  /* Pen, highlighter and eraser drawn over the lesson (works on any lesson, even a Google Slides link, because it is a transparent layer on top). */
+  /* Pen, pencil, marker, highlighter and eraser drawn over the lesson (works on any lesson, even a Google Slides link, because it is a transparent layer on top).
+     Fast: finished strokes live on a hidden layer, and each frame only the stroke being drawn is added on top, so long lessons never slow down. */
   function setupPen() {
     if (!document.getElementById("mlPenCss")) { const st = document.createElement("style"); st.id = "mlPenCss";
       st.textContent = ".ml-fab.p{top:10px;right:122px}.ml-fab.o{right:178px}.ml-fab.p.on{background:#f59e0b;color:#13213f;opacity:1}.ml-cv{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;touch-action:none}.ml-cv.on{pointer-events:auto;cursor:crosshair}"
-        + ".ml-pen{position:absolute;z-index:5;left:50%;bottom:12px;transform:translateX(-50%);display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center;max-width:calc(100% - 20px);padding:8px 10px;border-radius:999px;background:rgba(19,33,63,.94);border:2px solid #fff;box-shadow:0 4px 16px rgba(0,0,0,.5)}.ml-pen[hidden]{display:none}"
-        + ".ml-pen button{min-width:42px;height:42px;border-radius:50%;border:2px solid #fff;background:#243a66;color:#fff;font:800 16px/1 system-ui;cursor:pointer;padding:0 8px}.ml-pen button.sel{background:#f59e0b;color:#13213f;border-color:#fff}.ml-pen .sw{width:34px;min-width:34px;height:34px;border:3px solid #fff}.ml-pen .sw.sel{outline:3px solid #f59e0b;outline-offset:2px}.ml-pen .tx{border-radius:999px}";
+        + ".ml-pen{position:absolute;z-index:5;left:50%;bottom:10px;transform:translateX(-50%);display:flex;gap:4px 10px;align-items:flex-end;flex-wrap:wrap;justify-content:center;max-width:calc(100% - 16px);padding:6px 14px 8px;border-radius:22px;background:linear-gradient(#1b2d57,#13213f);border:2px solid #fff;box-shadow:0 8px 28px rgba(0,0,0,.55);user-select:none;-webkit-user-select:none}.ml-pen[hidden]{display:none}"
+        + ".ml-tools{display:flex;gap:2px;align-items:flex-end;height:74px;overflow:hidden;padding:0 4px;border-radius:14px 14px 0 0}.ml-tl{position:relative;width:34px;height:74px;border:0;background:none;padding:0;cursor:pointer;transform:translateY(22px);transition:transform .14s ease-out}.ml-tl svg{width:34px;height:74px;display:block;filter:drop-shadow(0 2px 2px rgba(0,0,0,.45))}.ml-tl:hover{transform:translateY(14px)}.ml-tl.sel{transform:translateY(0)}"
+        + ".ml-sp{width:2px;align-self:stretch;margin:6px 0;background:rgba(255,255,255,.22);border-radius:2px}.ml-cols{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center;padding:8px 0}.ml-pen .sw{width:30px;height:30px;border-radius:50%;border:3px solid #fff;padding:0;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.5)}.ml-pen .sw.sel{outline:3px solid #f59e0b;outline-offset:2px;transform:scale(1.12)}"
+        + ".ml-sizes{display:flex;gap:4px;align-items:center;padding:8px 0}.ml-sz{width:36px;height:36px;border-radius:50%;border:2px solid #fff;background:#243a66;display:grid;place-items:center;cursor:pointer;padding:0}.ml-sz i{display:block;border-radius:50%;background:#fff}.ml-sz.sel{background:#f59e0b;border-color:#fff}.ml-sz.sel i{background:#13213f}"
+        + ".ml-acts{display:flex;gap:6px;align-items:center;padding:8px 0}.ml-pen .ab{min-width:40px;height:40px;border-radius:12px;border:2px solid #fff;background:#243a66;color:#fff;font:800 17px/1 system-ui;cursor:pointer;padding:0 10px}.ml-pen .ab:active{transform:scale(.95)}.ml-pen .ab.dn{background:#16a34a}.ml-pen .ab:disabled{opacity:.4}"
+        + ".ml-ec{position:fixed;z-index:6;pointer-events:none;border:2px solid #111;border-radius:50%;background:rgba(255,255,255,.55);box-shadow:0 0 0 1px #fff;transform:translate(-50%,-50%);display:none}";
       document.head.appendChild(st); }
     const cv = document.createElement("canvas"); cv.className = "ml-cv"; ov.insertBefore(cv, ov.querySelector(".ml-fab"));
     const bar = document.createElement("div"); bar.className = "ml-pen"; bar.hidden = true; bar.setAttribute("aria-label", "Pen tools");
-    const COLS = ["#ef4444", "#2563eb", "#16a34a", "#111827", "#ffffff"];
-    bar.innerHTML = `<button type="button" data-t="pen" class="sel" aria-label="Pen">✎</button><button type="button" data-t="hi" aria-label="Highlighter">🖍</button><button type="button" data-t="er" aria-label="Eraser">⌫</button>`
-      + COLS.map((c, i) => `<button type="button" class="sw${i === 0 ? " sel" : ""}" data-c="${c}" style="background:${c}" aria-label="Colour ${i + 1}"></button>`).join("")
-      + `<button type="button" data-t="w" aria-label="Thicker or thinner">●</button><button type="button" data-t="undo" aria-label="Undo">↶</button><button type="button" class="tx" data-t="clear">Clear</button><button type="button" class="tx" data-t="done">Done</button>`;
+    const COLS = ["#111827", "#ef4444", "#2563eb", "#16a34a", "#f59e0b", "#9333ea", "#ffffff"];
+    let col = COLS[1];
+    /* the tools, drawn as real pens standing in a tray. The coloured part follows the chosen colour. */
+    const ICON = {
+      pen: c => `<svg viewBox="0 0 34 74"><path d="M17 1 L22 20 H12 Z" fill="#e5e7eb" stroke="#475569" stroke-width="1.2" stroke-linejoin="round"/><path d="M17 1 L19.4 9 H14.6 Z" fill="${c}"/><rect x="10" y="20" width="14" height="52" rx="3" fill="#f8fafc" stroke="#475569" stroke-width="1.4"/><rect x="10" y="30" width="14" height="9" fill="${c}"/><rect x="21" y="40" width="2.2" height="20" rx="1" fill="#cbd5e1"/></svg>`,
+      pencil: c => `<svg viewBox="0 0 34 74"><path d="M17 2 L24 22 H10 Z" fill="#f3d6a4" stroke="#7c5a2a" stroke-width="1.2" stroke-linejoin="round"/><path d="M17 2 L19.7 10 H14.3 Z" fill="${c}"/><rect x="10" y="22" width="14" height="40" fill="#facc15" stroke="#a16207" stroke-width="1.3"/><path d="M14 22 V62 M20 22 V62" stroke="#eab308" stroke-width="1.2"/><rect x="10" y="62" width="14" height="5" fill="#cbd5e1" stroke="#64748b" stroke-width="1"/><rect x="10" y="67" width="14" height="6" rx="2" fill="#f9a8d4" stroke="#be185d" stroke-width="1.1"/></svg>`,
+      mk: c => `<svg viewBox="0 0 34 74"><path d="M12 14 L14 3 H20 L22 14 Z" fill="${c}" stroke="#334155" stroke-width="1.2" stroke-linejoin="round"/><rect x="9" y="14" width="16" height="10" rx="2" fill="#334155"/><rect x="8" y="24" width="18" height="48" rx="5" fill="#f8fafc" stroke="#334155" stroke-width="1.4"/><rect x="8" y="34" width="18" height="16" fill="${c}"/><circle cx="17" cy="42" r="3" fill="#fff" opacity=".85"/></svg>`,
+      hi: c => `<svg viewBox="0 0 34 74"><path d="M9 16 L13 3 H25 L25 16 Z" fill="${c}" opacity=".9" stroke="#334155" stroke-width="1.2" stroke-linejoin="round"/><rect x="8" y="16" width="18" height="9" fill="#475569"/><rect x="6" y="25" width="22" height="47" rx="4" fill="#fef9c3" stroke="#334155" stroke-width="1.4"/><rect x="6" y="38" width="22" height="14" fill="${c}" opacity=".85"/></svg>`,
+      er: () => `<svg viewBox="0 0 34 74"><rect x="4" y="34" width="26" height="38" rx="5" fill="#f9a8d4" stroke="#9d174d" stroke-width="1.5"/><rect x="4" y="52" width="26" height="20" rx="5" fill="#60a5fa" stroke="#1e3a8a" stroke-width="1.5"/><rect x="4" y="52" width="26" height="6" fill="#1d4ed8" opacity=".55"/><path d="M9 40 H25" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".75"/></svg>`
+    };
+    const TOOLS = [["pen", "Pen"], ["pencil", "Pencil"], ["mk", "Marker"], ["hi", "Highlighter"], ["er", "Eraser"]];
+    const SZ = { pen: [2.5, 4.5, 8], pencil: [1.6, 2.8, 5], mk: [8, 14, 24], hi: [18, 28, 44], er: [20, 38, 70] };
+    let tool = "pen", wi = 1;
+    const toolsHTML = () => TOOLS.map(([k, n]) => `<button type="button" class="ml-tl${tool === k ? " sel" : ""}" data-t="${k}" aria-label="${n}" title="${n}">${ICON[k](col)}</button>`).join("");
+    const sizesHTML = () => [0, 1, 2].map(i => `<button type="button" class="ml-sz${wi === i ? " sel" : ""}" data-w="${i}" aria-label="Size ${i + 1}"><i style="width:${[6, 12, 20][i]}px;height:${[6, 12, 20][i]}px"></i></button>`).join("");
+    bar.innerHTML = `<div class="ml-tools" id="mlTools"></div><span class="ml-sp"></span><div class="ml-cols">${COLS.map((c, i) => `<button type="button" class="sw${c === col ? " sel" : ""}" data-c="${c}" style="background:${c}" aria-label="Colour ${i + 1}"></button>`).join("")}</div><span class="ml-sp"></span><div class="ml-sizes" id="mlSizes"></div><span class="ml-sp"></span>`
+      + `<div class="ml-acts"><button type="button" class="ab" data-a="undo" aria-label="Undo">↶</button><button type="button" class="ab" data-a="redo" aria-label="Redo">↷</button><button type="button" class="ab" data-a="clear">Clear</button><button type="button" class="ab dn" data-a="done">Done</button></div>`;
     ov.appendChild(bar);
-    const ctx = cv.getContext("2d"); let strokes = [], cur = null, tool = "pen", col = COLS[0], wi = 1, on = false;
-    const WS = [4, 8, 16];
-    const fit = () => { const r = ov.getBoundingClientRect(), d = Math.min(2, window.devicePixelRatio || 1); cv.width = Math.round(r.width * d); cv.height = Math.round(r.height * d); ctx.setTransform(d, 0, 0, d, 0, 0); redraw(); };
-    const seg = (a, b) => { ctx.save(); ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.lineWidth = a.w; ctx.strokeStyle = a.c; ctx.globalAlpha = a.t === "hi" ? .35 : 1; ctx.globalCompositeOperation = a.t === "er" ? "destination-out" : "source-over";
-      ctx.beginPath(); ctx.moveTo(a.p[0].x, a.p[0].y); if (a.p.length === 1) ctx.lineTo(a.p[0].x + .1, a.p[0].y); a.p.forEach(q => ctx.lineTo(q.x, q.y)); ctx.stroke(); ctx.restore(); };
-    const redraw = () => { ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height); ctx.restore(); strokes.forEach(s => seg(s)); };
+    const ec = document.createElement("div"); ec.className = "ml-ec"; ov.appendChild(ec);
+    const drawBar = () => { bar.querySelector("#mlTools").innerHTML = toolsHTML(); bar.querySelector("#mlSizes").innerHTML = sizesHTML(); bar.querySelectorAll(".sw").forEach(x => x.classList.toggle("sel", x.dataset.c === col)); };
+    drawBar();
+    const ctx = cv.getContext("2d"), base = document.createElement("canvas"), bx = base.getContext("2d");
+    let strokes = [], redo = [], cur = null, on = false, dpr = 1, raf = 0;
+    const widthOf = (t, i) => SZ[t][i];
+    /* one stroke drawn with smooth curves (middle points), the same way live and when rebuilding */
+    const paintStroke = (g, a) => {
+      g.save(); g.lineCap = a.t === "hi" ? "butt" : "round"; g.lineJoin = "round"; g.lineWidth = a.w; g.strokeStyle = a.c; g.fillStyle = a.c;
+      g.globalAlpha = a.t === "hi" ? .45 : a.t === "pencil" ? .88 : 1; g.globalCompositeOperation = a.t === "er" ? "destination-out" : "source-over";
+      const p = a.p;
+      if (p.length < 3) { g.beginPath(); g.arc(p[0].x, p[0].y, a.w / 2, 0, 6.2832); if (p.length === 2) { g.moveTo(p[1].x + a.w / 2, p[1].y); g.arc(p[1].x, p[1].y, a.w / 2, 0, 6.2832); g.fill(); g.beginPath(); g.moveTo(p[0].x, p[0].y); g.lineTo(p[1].x, p[1].y); g.stroke(); } else g.fill(); }
+      else { g.beginPath(); g.moveTo(p[0].x, p[0].y); for (let i = 1; i < p.length - 1; i++) { const m = { x: (p[i].x + p[i + 1].x) / 2, y: (p[i].y + p[i + 1].y) / 2 }; g.quadraticCurveTo(p[i].x, p[i].y, m.x, m.y); } g.lineTo(p[p.length - 1].x, p[p.length - 1].y); g.stroke(); }
+      g.restore();
+    };
+    const clearAll = g => { g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, g.canvas.width, g.canvas.height); g.restore(); };
+    const rebuild = () => { clearAll(bx); strokes.forEach(s => paintStroke(bx, s)); show(); };
+    const show = () => { clearAll(ctx); ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.drawImage(base, 0, 0); ctx.restore(); if (cur) paintStroke(ctx, cur); };
+    const sched = () => { if (raf) return; raf = requestAnimationFrame(() => { raf = 0; show(); }); };
+    const fit = () => { const r = ov.getBoundingClientRect(); if (!r.width) return; dpr = Math.min(2, window.devicePixelRatio || 1); cv.width = base.width = Math.round(r.width * dpr); cv.height = base.height = Math.round(r.height * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); bx.setTransform(dpr, 0, 0, dpr, 0, 0); rebuild(); };
     const pos = e => { const r = cv.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+    const moveEc = e => { if (!on || tool !== "er") { ec.style.display = "none"; return; } const d = widthOf("er", wi); ec.style.cssText = `display:block;width:${d}px;height:${d}px;left:${e.clientX}px;top:${e.clientY}px`; };
     cv.addEventListener("pointerdown", e => { if (!on) return; e.preventDefault(); try { cv.setPointerCapture(e.pointerId); } catch {}
-      cur = { t: tool, c: col, w: tool === "er" ? WS[wi] * 4 : tool === "hi" ? WS[wi] * 3 : WS[wi], p: [pos(e)] }; strokes.push(cur); redraw(); });
-    cv.addEventListener("pointermove", e => { if (!cur) return; e.preventDefault(); const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e]; (evs.length ? evs : [e]).forEach(x => cur.p.push(pos(x))); redraw(); });
-    const up = () => { cur = null; }; cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up);
-    const setOn = v => { on = v; cv.classList.toggle("on", v); bar.hidden = !v; const b = ov.querySelector('[data-mlx="pen"]'); if (b) b.classList.toggle("on", v); };
+      const w = widthOf(tool, wi) * (tool === "pen" && e.pointerType === "pen" && e.pressure ? .6 + e.pressure * .8 : 1);
+      cur = { t: tool, c: col, w, p: [pos(e)] }; redo = []; moveEc(e); sched(); });
+    cv.addEventListener("pointermove", e => { moveEc(e); if (!cur) return; e.preventDefault(); const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e], last = cur.p[cur.p.length - 1];
+      (evs.length ? evs : [e]).forEach(x => { const q = pos(x); if (Math.abs(q.x - last.x) + Math.abs(q.y - last.y) >= 1.2) cur.p.push(q); }); sched(); });
+    const up = () => { if (!cur) return; strokes.push(cur); paintStroke(bx, cur); cur = null; show(); updBtns(); };
+    cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up); cv.addEventListener("pointerleave", () => { ec.style.display = "none"; });
+    const updBtns = () => { const u = bar.querySelector('[data-a="undo"]'), r = bar.querySelector('[data-a="redo"]'); if (u) u.disabled = !strokes.length; if (r) r.disabled = !redo.length; };
+    const setOn = v => { on = v; cv.classList.toggle("on", v); bar.hidden = !v; if (!v) ec.style.display = "none"; const b = ov.querySelector('[data-mlx="pen"]'); if (b) b.classList.toggle("on", v); updBtns(); };
     bar.addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; e.stopPropagation();
-      if (b.dataset.c) { col = b.dataset.c; if (tool === "er") tool = "pen"; }
-      else if (b.dataset.t === "w") { wi = (wi + 1) % WS.length; b.style.transform = `scale(${[.7, 1, 1.3][wi]})`; }
-      else if (b.dataset.t === "undo") { strokes.pop(); redraw(); }
-      else if (b.dataset.t === "clear") { strokes = []; redraw(); }
-      else if (b.dataset.t === "done") { setOn(false); }
-      else if (b.dataset.t) tool = b.dataset.t;
-      bar.querySelectorAll("[data-t=pen],[data-t=hi],[data-t=er]").forEach(x => x.classList.toggle("sel", x.dataset.t === tool));
-      bar.querySelectorAll(".sw").forEach(x => x.classList.toggle("sel", x.dataset.c === col && tool !== "er")); });
+      if (b.dataset.c) { col = b.dataset.c; if (tool === "er") tool = "pen"; drawBar(); }
+      else if (b.dataset.w) { wi = +b.dataset.w; drawBar(); }
+      else if (b.dataset.t) { tool = b.dataset.t; drawBar(); }
+      else if (b.dataset.a === "undo") { const s = strokes.pop(); if (s) redo.push(s); rebuild(); updBtns(); }
+      else if (b.dataset.a === "redo") { const s = redo.pop(); if (s) { strokes.push(s); paintStroke(bx, s); show(); } updBtns(); }
+      else if (b.dataset.a === "clear") { strokes = []; redo = []; rebuild(); updBtns(); }
+      else if (b.dataset.a === "done") setOn(false); });
     ov.querySelector('[data-mlx="pen"]').addEventListener("click", e => { e.stopPropagation(); setOn(!on); });
     window.addEventListener("resize", fit); document.addEventListener("fullscreenchange", () => setTimeout(fit, 200));
-    new ResizeObserver(fit).observe(ov); fit();
+    new ResizeObserver(fit).observe(ov); fit(); updBtns();
   }
   /* Countdown timer like Canva's: big digits, presets, start/pause, +1 min, a bar, a sound and "Time's up" at zero. Draggable; shrinks to a small pill. */
   function setupTimer() {
