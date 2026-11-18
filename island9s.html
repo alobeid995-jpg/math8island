@@ -826,6 +826,8 @@ const GROUPS = [
   { id: 'g4', short: 'Saud', title: 'Saud', sub: 'Adding, skip counting, fractions' }
 ];
 const SECTIONS = [
+  { id: 'rep2b', group: 'g2', title: 'Repeated addition: groups of 2, set 2', date: 'Sun 15 Nov 2026', blurb: 'Same lesson. Six new games to practise.', cls: 'add', today: true },
+  { id: 'x2b', group: 'g4', title: 'Multiplying by 2: set 2', date: 'Sun 15 Nov 2026', blurb: 'Same lesson. Six new games to practise.', cls: 'blue', today: true },
   { id: 'rep2', group: 'g2', title: 'Repeated addition: groups of 2', date: 'Sun 15 Nov 2026', blurb: 'Add 2 again and again. Count the groups.', cls: 'add', today: true },
   { id: 'x2', group: 'g4', title: 'Multiplying by 2: the 2 times table', date: 'Sun 15 Nov 2026', blurb: 'Groups of 2. Skip count by 2. Learn the 2 times table.', cls: 'blue', today: true },
   { id: 'sub3', group: 'g2', title: 'Subtracting: teen minus one digit', date: 'Wed 11 Nov 2026', blurb: 'Take away from numbers up to 20. Go back to 10 first.', cls: 'blue' },
@@ -3393,6 +3395,247 @@ m2Type({
   },
   hint: R => R.form === 'miss' ? `Count by 2s until you reach ${R.p}. How many 2s did you say?` : R.form === 'flip' ? `2 ${M2X} ${R.n} is the same as ${R.n} ${M2X} 2. Count by 2s, ${R.n} times.` : R.form === 'word' ? `Each ${R.it[1]} has 2. Count by 2s, ${R.n} times.` : `Think: ${R.n} groups of 2. Count by 2s, or double ${R.n}.`,
   good: R => R.form === 'flip' ? `Yes! 2 ${M2X} ${R.n} = ${R.p}.` : `Yes! ${R.n} ${M2X} 2 = ${R.p}.`
+});
+
+/* ===== Lesson 6, set 2 (same lesson, same date): six new games for each group ===== */
+function m2Mem(cfg) {
+  GAMES.push({
+    id: cfg.id, sec: cfg.sec, title: cfg.title, desc: cfg.desc, thumb: cfg.thumb,
+    run(level) {
+      const g = this, np = [3, 3, 4, 4, 5, 5, 6, 6, 6, 6][level - 1];
+      const prs = cfg.pairs(level, np);
+      const cards = shuffle(prs.flatMap((p, id) => [
+        { id, type: 'q', content: `<b class="mt">${p.q}</b>` },
+        { id, type: 'a', content: `<b class="mt">${p.a}</b>` }]));
+      const total = cards.length, cols = total <= 6 ? 3 : total === 10 ? 5 : 4;
+      const sec = html(`<section class="game ${secCls(g)}">${head(level, 0, 0)}${promptRow(cfg.say, cfg.say)}
+      <div class="board"><div class="memgrid" style="--cols:${cols}">${cards.map((k, i) => `<button class="mem" type="button" data-i="${i}" aria-label="Card ${i + 1}"><span class="in"><span class="front">?</span><span class="back">${k.content}</span></span></button>`).join('')}</div>
+      <p class="counter"><b>0</b> of ${np} pairs</p></div><p class="msg" role="status" aria-live="polite"></p></section>`);
+      mount(sec);
+      const msg = $('.msg', sec), cnt = $('.counter b', sec), els = $$('.mem', sec);
+      let first = null, lock = false, found = 0, miss = 0;
+      els.forEach((el, i) => el.addEventListener('click', () => {
+        if (lock || el.classList.contains('up') || el.classList.contains('done')) return;
+        el.classList.add('up'); sfx.pick();
+        if (first === null) { first = i; return; }
+        const a = first, b = i; first = null;
+        if (cards[a].id === cards[b].id && cards[a].type !== cards[b].type) {
+          els[a].classList.replace('up', 'done'); els[b].classList.replace('up', 'done');
+          found++; track(true); cnt.textContent = found; sfx.ok();
+          setMsg(msg, `A match! ${prs[cards[a].id].q} = ${prs[cards[a].id].a}.`, 'good');
+          if (found === np) setTimeout(() => {
+            if (!document.body.contains(sec)) return;
+            const stars = miss <= np / 2 ? 3 : miss <= np * 1.5 ? 2 : 1;
+            finish(g, level, stars, miss === 0 ? 'No wrong flips. Great memory!' : `${miss} wrong flip${miss > 1 ? 's' : ''}. Try again to beat it.`);
+          }, 700);
+        } else {
+          miss++; track(false); lock = true; sfx.no();
+          setMsg(msg, 'Not a pair. Look again.', 'hint');
+          setTimeout(() => { els[a].classList.remove('up'); els[b].classList.remove('up'); lock = false; }, 900);
+        }
+      }));
+    }
+  });
+}
+function m2Pick3(c, items, rightIdx, goodText, badText) {
+  const box = html(`<div class="bigs">${items.map((t, i) => `<button class="bigsum" type="button" data-i="${i}">${t}</button>`).join('')}</div>`);
+  c.board.appendChild(box);
+  $$('.bigsum', box).forEach(b => b.addEventListener('click', () => {
+    if (c.done) return;
+    if (+b.dataset.i === rightIdx) { b.classList.add('right'); $$('.bigsum', box).forEach(x => { x.disabled = true; }); c.good(goodText); }
+    else { b.classList.add('wrong'); c.bad(badText); }
+  }));
+}
+const M2RW = (c, ok, goodText, badText) => {
+  const box = html('<div class="bigs"><button class="bigsum" type="button" data-v="1">Right</button><button class="bigsum" type="button" data-v="0">Wrong</button></div>');
+  c.board.appendChild(box);
+  $$('.bigsum', box).forEach(b => b.addEventListener('click', () => {
+    if (c.done) return;
+    if ((b.dataset.v === '1') === ok) { b.classList.add('right'); $$('.bigsum', box).forEach(x => { x.disabled = true; }); c.good(goodText); }
+    else { b.classList.add('wrong'); c.bad(badText); }
+  }));
+};
+
+/* ---- Ali and Abood (g2): repeated addition, set 2 ---- */
+/* 1. Count the Pairs: watch the counting, pick the total */
+GAMES.push({
+  id: 'r2bpairs', sec: 'rep2b', title: 'Count the Pairs', desc: 'Press the button. Watch the counting. Pick the total.',
+  thumb: () => '<span class="mini-seq"><i>2</i><i>4</i><i class="q">?</i></span>',
+  key: R => `${R.n}`,
+  make(level) { const g = m2RaGen(level); return { ...g, opts: m2Opts(g.t, level <= 4 ? 3 : 4, [g.t - 2, g.t + 2, g.n, g.t + 1], 2, 24) }; },
+  prompt: R => [`${R.n} pairs. How many in all?`, `${R.n} groups of 2. Press the button to count by 2s. How many in all?`],
+  view(c) {
+    const R = c.R;
+    c.board.innerHTML = m2Groups(R.n, false, R.n > 6);
+    const grps = $$('.rgrp', c.board); let busy = false;
+    const btn = c.addBtn('Count by 2s', () => {
+      if (busy) return; busy = true; btn.disabled = true;
+      grps.forEach((g, i) => setTimeout(() => { g.dataset.t = 2 * (i + 1); g.classList.add('on'); speak(String(2 * (i + 1))); }, i * 650));
+    }, 'alt');
+    m2Answers(c, R.opts, R.t, `Yes! ${m2Text(R.n)} = ${R.t}.${m2Bridge(R, c.level)}`, 'Press "Count by 2s". Say each number: 2, 4, 6 ...');
+  }
+});
+/* 2. How Many Groups? */
+GAMES.push({
+  id: 'r2bgroups', sec: 'rep2b', title: 'How Many Groups?', desc: 'Count the 2s. How many groups of 2?',
+  thumb: () => '<span class="mini-seq"><i>?</i><i>&times;</i><i>2</i></span>',
+  key: R => `${R.n}`,
+  make(level) { const g = m2RaGen(level, 9), want = level <= 4 ? 3 : 4, set = [g.n]; shuffle([g.n + 1, g.n - 1, g.n + 2, g.n - 2]).forEach(v => { if (v >= 2 && v <= 10 && !set.includes(v) && set.length < want) set.push(v); }); return { ...g, opts: shuffle(set) }; },
+  prompt: R => ['How many groups of 2?', `Look at the dots. How many groups of 2 make ${R.t}?`],
+  view(c) {
+    const R = c.R;
+    c.board.innerHTML = m2Eq([R.t, '=', '?', 'groups of 2'], true) + m2Groups(R.n, false, R.n > 6);
+    m2Answers(c, R.opts, R.n, `Yes! ${R.n} groups of 2 make ${R.t}. ${m2Text(R.n)} = ${R.t}.`, 'Look at the groups. Count each group of 2 once.');
+  }
+});
+/* 3. Skip Count by 2 (fill the gaps) */
+GAMES.push({
+  id: 'r2bseq', sec: 'rep2b', title: 'Fill the Gaps', desc: 'Count by 2s. Fill the missing numbers.',
+  thumb: () => '<span class="mini-seq"><i>2</i><i>4</i><i class="q">?</i><i>8</i></span>',
+  key: R => R.k,
+  make(level) {
+    const len = level <= 6 ? 5 : 6, nb = level <= 4 ? 1 : level <= 8 ? 2 : 3, start = level <= 3 ? 1 : 1 + rand(level <= 6 ? 3 : 5);
+    const idx = Array.from({ length: len }, (_, j) => start + j);
+    const blanks = shuffle(Array.from({ length: len }, (_, j) => j).filter(j => j > 0)).slice(0, nb).sort((a, b) => a - b);
+    return { vals: idx.map(i => 2 * i), blanks, k: `${start}-${blanks.join('')}` };
+  },
+  prompt: () => ['Fill in the missing numbers.', 'Count by 2s. Fill in the missing numbers.'],
+  view(c) {
+    const R = c.R; let s = 0;
+    const holder = html('<div></div>'); c.board.appendChild(holder);
+    const draw = () => `<div class="chain">${R.vals.map((v, j) => { const filled = !R.blanks.includes(j) || R.blanks.indexOf(j) < s, cur = s < R.blanks.length && j === R.blanks[s]; return `<span class="xcell"><span class="nbox${filled ? '' : cur ? ' q sel' : ' q'}">${filled ? v : '?'}</span></span>`; }).join('')}</div>`;
+    const step = () => {
+      holder.innerHTML = draw();
+      if (s >= R.blanks.length) { c.good(`Yes! Counting by 2s: ${R.vals.join(', ')}.`); return; }
+      const ans = R.vals[R.blanks[s]];
+      const opts = html(`<div class="opts">${m2Opts(ans, 4, [ans - 2, ans + 2, ans + 4, ans + 1], 2, 30).map(v => `<button class="ans num" type="button" data-v="${v}">${v}</button>`).join('')}</div>`);
+      holder.appendChild(opts);
+      $$('.ans', opts).forEach(btn => btn.addEventListener('click', () => {
+        if (c.done) return;
+        if (+btn.dataset.v === ans) {
+          btn.classList.add('right'); $$('.ans', opts).forEach(x => { x.disabled = true; }); speak(String(ans)); s++;
+          if (s >= R.blanks.length) { holder.innerHTML = draw(); c.good(`Yes! Counting by 2s: ${R.vals.join(', ')}.`); }
+          else { c.info('Good. Next one.'); setTimeout(step, 450); }
+        } else { btn.classList.add('wrong'); c.bad('Each number is 2 more than the one before.'); }
+      }));
+    };
+    step();
+  }
+});
+/* 4. Right or Wrong? */
+GAMES.push({
+  id: 'r2bcheck', sec: 'rep2b', title: 'Right or Wrong?', desc: 'Someone added the 2s. Is the total right?',
+  thumb: () => '<span class="mini-seq"><i>&#10003;</i><i class="q">?</i><i>&#10007;</i></span>',
+  key: R => `${R.n}=${R.shown}`,
+  make(level) { const g = m2RaGen(level), ok = Math.random() < 0.5, shown = ok ? g.t : g.t + pick([-2, 2, -1, 1].slice(0, level <= 4 ? 2 : 4)); return { ...g, ok, shown: shown < 2 ? g.t + 2 : shown }; },
+  prompt: R => ['Is the total right?', `${m2Text(R.n)} makes ${R.shown}. Is that right or wrong?`],
+  view(c) {
+    const R = c.R;
+    c.board.innerHTML = m2Eq([...m2Twos(R.n), '=', R.shown], R.n > 4) + (c.level <= 4 ? m2Groups(R.n, false, true) : '');
+    M2RW(c, R.ok, R.ok ? `Yes, it is right. ${m2Text(R.n)} = ${R.t}.` : `Yes, it is wrong. ${m2Text(R.n)} = ${R.t}, not ${R.shown}.`, 'Count by 2s again. Is the last number the same as the total?');
+  }
+});
+/* 5. Match the Totals (memory) */
+m2Mem({
+  id: 'r2bmem', sec: 'rep2b', title: 'Match the Totals', desc: 'Flip two cards. Match each addition with its total.',
+  say: 'Find the pairs. Match each addition with its total.',
+  thumb: () => `<span class="mini-card">?</span><span class="mini-card up">2+2</span><span class="mini-card up" style="background:var(--good-bg)">4</span>`,
+  pairs: (level, np) => shuffle(Array.from({ length: level <= 4 ? 5 : 8 }, (_, i) => i + 2)).slice(0, np).map(n => ({ q: m2Text(n), a: 2 * n }))
+});
+/* 6. Type How Many Groups */
+m2Type({
+  id: 'r2btype', sec: 'rep2b', title: 'Type the Groups', desc: 'Count the 2s. Type the number with the number pad.',
+  thumb: () => '<span class="mini-seq"><i>?</i><i>&times;</i><i>2</i></span>',
+  make(level) { const g = m2RaGen(level, 9), form = level >= 6 && Math.random() < 0.5 ? 'total' : 'groups'; return { ...g, form, ans: String(form === 'total' ? g.t : g.n), k: form + g.n }; },
+  prompt: R => R.form === 'total' ? ['Type the total.', `${R.n} groups of 2. Type the total.`] : ['Type how many groups.', `${R.t} in all. How many groups of 2?`],
+  show: (R, level) => (R.form === 'total' ? m2Eq([R.n, 'groups of 2', '=', '?'], true) : m2Eq([R.t, '=', '?', 'groups of 2'], true)) + (level <= 4 ? m2Groups(R.n, false, true) : ''),
+  hint: R => R.form === 'total' ? 'Count by 2s. Use your fingers: 2, 4, 6 ...' : `Count by 2s until you get to ${R.t}. How many 2s did you say?`,
+  good: R => `Yes! ${R.n} groups of 2 make ${R.t}.`
+});
+
+/* ---- Saud (g4): multiplying by 2, set 2 ---- */
+/* 1. Double It */
+GAMES.push({
+  id: 'x2bdouble', sec: 'x2b', title: 'Double It', desc: 'Doubling is the same as times 2. Pick the double.',
+  thumb: () => '<span class="mini-seq"><i>6</i><i>+</i><i>6</i></span>',
+  key: R => `${R.n}`,
+  make(level) { const g = m2XGen(level); return { ...g, opts: m2Opts(g.p, level <= 4 ? 3 : 4, [g.p - 2, g.p + 2, g.n + 2, g.p + 4, g.n], 2, 30) }; },
+  prompt: R => [`Double ${R.n}.`, `Double ${R.n}. Add ${R.n} and ${R.n}.`],
+  view(c) {
+    const R = c.R;
+    c.board.innerHTML = m2Eq([R.n, '+', R.n, '=', '?']) + `<p class="counter">${R.n} ${M2X} 2 = ?</p>`;
+    m2Answers(c, R.opts, R.p, `Yes! ${R.n} + ${R.n} = ${R.p}. Double ${R.n} is ${R.p}. ${R.n} ${M2X} 2 = ${R.p}.`, `Add ${R.n} to ${R.n}. Or count by 2s, ${R.n} times.`);
+  }
+});
+/* 2. Right or Wrong? */
+GAMES.push({
+  id: 'x2bcheck', sec: 'x2b', title: 'Right or Wrong?', desc: 'Someone wrote an answer. Is it right?',
+  thumb: () => '<span class="mini-seq"><i>&#10003;</i><i class="q">?</i><i>&#10007;</i></span>',
+  key: R => `${R.n}=${R.shown}${R.flip}`,
+  make(level) { const g = m2XGen(level), ok = Math.random() < 0.5, d = pick(level <= 4 ? [-2, 2] : [-2, 2, -1, 1, g.n]), shown = ok ? g.p : g.p + d; return { ...g, ok, flip: level >= 4 && Math.random() < 0.5, shown: shown < 2 || shown === g.p && !ok ? g.p + 2 : shown }; },
+  prompt: R => ['Is the answer right?', `${R.flip ? `2 times ${R.n}` : `${R.n} times 2`} is ${R.shown}. Right or wrong?`],
+  view(c) {
+    const R = c.R;
+    c.board.innerHTML = m2Eq(R.flip ? [2, M2X, R.n, '=', R.shown] : [R.n, M2X, 2, '=', R.shown]);
+    M2RW(c, R.ok, R.ok ? `Yes, it is right. ${R.n} ${M2X} 2 = ${R.p}.` : `Yes, it is wrong. ${R.n} ${M2X} 2 = ${R.p}, not ${R.shown}.`, `Count by 2s, ${R.n} times. Where do you land?`);
+  }
+});
+/* 3. Which Is Biggest? */
+GAMES.push({
+  id: 'x2bbig', sec: 'x2b', title: 'Which Is Biggest?', desc: 'Work out each answer. Tap the biggest.',
+  thumb: () => '<span class="mini-seq"><i>3&times;2</i><i>7&times;2</i><i>&#9733;</i></span>',
+  key: R => R.ns.join('-'),
+  make(level) { const maxN = [4, 5, 6, 7, 8, 9, 10, 12, 12, 12][level - 1]; const ns = shuffle(Array.from({ length: maxN }, (_, i) => i + 1)).slice(0, 3); return { ns, best: ns.indexOf(Math.max(...ns)), n: Math.max(...ns), p: 2 * Math.max(...ns) }; },
+  prompt: () => ['Tap the biggest answer.', 'Work out each one. Tap the biggest answer.'],
+  view(c) {
+    const R = c.R;
+    m2Pick3(c, R.ns.map(n => `${n} ${M2X} 2`), R.best, `Yes! ${R.n} ${M2X} 2 = ${R.p}. It is the biggest.`, 'Work out each answer. Count by 2s. Which is the biggest?');
+  }
+});
+/* 4. Story Pop */
+const M2STORY = [['bags', 'bag', 'apples'], ['boxes', 'box', 'pencils'], ['plates', 'plate', 'cookies'], ['baskets', 'basket', 'eggs'], ['cars', 'car', 'wheels'], ['pairs', 'pair', 'shoes']];
+GAMES.push({
+  id: 'x2bstory', sec: 'x2b', title: 'Story Pop', desc: 'Read the story. Pop the right answer.',
+  thumb: () => '<span class="mini-balloon"><b class="bn">14</b></span>',
+  key: R => `${R.n}${R.it[0]}`,
+  make(level) { const g = m2XGen(level), it = pick(M2STORY); return { ...g, it, opts: m2Opts(g.p, 4, [g.p - 2, g.p + 2, g.n + 2, g.n], 2, 30) }; },
+  prompt: R => { const t = `There are ${R.n} ${R.it[0]}. Each ${R.it[1]} has 2 ${R.it[2]}. How many ${R.it[2]} in all?`; return [t, t]; },
+  view(c) {
+    const R = c.R;
+    c.board.innerHTML = `<div class="story"><div class="sbar"><span class="sk">${R.it[0]}</span><b>${R.n}</b></div><div class="sbar b"><span class="sk">${R.it[2]} in each ${R.it[1]}</span><b>2</b></div></div>` + m2Eq([R.n, M2X, 2, '=', '?']);
+    m2Pop(c, R.opts, R.p, `Yes! ${R.n} ${M2X} 2 = ${R.p} ${R.it[2]}.`, `${R.n} ${R.it[0]}, 2 in each. Count by 2s, ${R.n} times.`);
+  }
+});
+/* 5. Match the Flip (memory) */
+m2Mem({
+  id: 'x2bmem', sec: 'x2b', title: 'Match the Flip', desc: 'Flip two cards. Match each 2 times sum with its flip.',
+  say: 'Find the pairs. Both sums have the same answer.',
+  thumb: () => `<span class="mini-card">?</span><span class="mini-card up">3&times;2</span><span class="mini-card up" style="background:var(--good-bg)">2&times;3</span>`,
+  pairs: (level, np) => { const maxN = [4, 5, 6, 7, 8, 9, 10, 12, 12, 12][level - 1]; return shuffle(Array.from({ length: maxN }, (_, i) => i + 1)).slice(0, np).map(n => ({ q: `${n}${M2X}2`, a: `2${M2X}${n}` })); }
+});
+/* 6. Type the Table */
+m2Type({
+  id: 'x2btype', sec: 'x2b', title: 'Type the Table', desc: 'Find the missing number. Type it with the number pad.',
+  thumb: () => '<span class="mini-seq"><i>?</i><i>&times;</i><i>2</i></span>',
+  make(level) {
+    const g = m2XGen(level), form = pick(level <= 2 ? ['dbl'] : level <= 5 ? ['dbl', 'miss', 'half'] : ['dbl', 'miss', 'half', 'times']);
+    const ans = form === 'miss' ? g.n : form === 'half' ? g.n : form === 'times' ? 2 : g.p;
+    return { ...g, form, ans: String(ans), k: `${form}${g.n}` };
+  },
+  prompt(R) {
+    if (R.form === 'dbl') return ['Type the double.', `Double ${R.n}. Type the answer.`];
+    if (R.form === 'miss') return ['Type the missing number.', `What number times 2 makes ${R.p}?`];
+    if (R.form === 'half') return ['Type half.', `Half of ${R.p}. Type the answer.`];
+    return ['Type the missing number.', `${R.n} times what makes ${R.p}?`];
+  },
+  show(R) {
+    if (R.form === 'dbl') return m2Eq([R.n, '+', R.n, '=', '?']);
+    if (R.form === 'miss') return m2Eq(['?', M2X, 2, '=', R.p]);
+    if (R.form === 'half') return m2Eq([R.p, '=', '?', '+', '?']);
+    return m2Eq([R.n, M2X, '?', '=', R.p]);
+  },
+  hint: R => R.form === 'half' ? `Which number added to itself makes ${R.p}?` : R.form === 'miss' ? `Count by 2s until you reach ${R.p}. How many 2s did you say?` : R.form === 'times' ? `${R.n} groups of what make ${R.p}?` : `Add ${R.n} and ${R.n}.`,
+  good: R => R.form === 'half' ? `Yes! ${R.ans} + ${R.ans} = ${R.p}. Half of ${R.p} is ${R.ans}.` : `Yes! ${R.n} ${M2X} 2 = ${R.p}.`
 });
 
 /* ---------- wiring ---------- */
