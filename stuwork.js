@@ -51,8 +51,8 @@ function draw() {
   if (w && !mine.has(w.id)) return drawSheet(box, w);
   const list = works.filter(x => x.open !== false || mine.has(x.id));
   const sheets = list.map(x => { const s = mine.get(x.id);
-    return `<div class="wk-card${s ? " done" : ""}"><div><b>${esc(x.title)}</b><small>Worksheet · ${(x.questions || []).length} questions${s ? ` · handed in ${esc(when(s.at))}` : ""}</small></div>
-      ${s ? `<span class="wk-tick">Done ✓</span>` : `<button class="primary small" type="button" data-wkact="open" data-id="${x.id}">Start</button>`}</div>`; }).join("");
+    return `<div class="wk-card${s ? " done" : ""}"><div><b>${esc(x.title)}</b><small>${x.test && x.test.on ? `<b>TEST · ${x.test.min} minutes</b>` : "Worksheet"} · ${(x.questions || []).length} questions${s ? ` · handed in ${esc(when(s.at))}` : ""}</small></div>
+      ${s ? `<span class="wk-tick">Done ✓</span>` : `<button class="primary small" type="button" data-wkact="open" data-id="${x.id}">${x.test && x.test.on ? "Start test" : "Start"}</button>`}</div>`; }).join("");
   const shown = showAll ? lessons : lessons.slice(0, 3);
   const games = shown.map((l, i) => `<div class="wk-lesson"><div class="wk-lh"><b>${esc(l.title)}</b><small>${esc(l.date)}</small></div>
       <div class="wk-games">${l.games.map(g => { const a = played.get(g.id), p = a && (a.r + a.w) ? Math.round(100 * a.r / (a.r + a.w)) : null;
@@ -83,7 +83,77 @@ function draw() {
     ${lessons.length > 3 ? `<button class="ghost small" type="button" data-wkact="more">${showAll ? "Show fewer lessons" : `Show older lessons (${lessons.length - 3})`}</button>` : ""}
     ${!sheets && !games && !lv.length ? `<p class="none">Nothing to do right now. Your teacher's work will appear here.</p>` : ""}</section>`;
 }
+/* ---------- Test mode: full screen, timer, shuffled questions, warnings when the student leaves the page ---------- */
+const hashSeed = str => { let h = 1779033703 ^ str.length; for (let i = 0; i < str.length; i++) { h = Math.imul(h ^ str.charCodeAt(i), 3432918353); h = (h << 13) | (h >>> 19); } return () => { h = Math.imul(h ^ (h >>> 16), 2246822507); h = Math.imul(h ^ (h >>> 13), 3266489909); h ^= h >>> 16; return (h >>> 0) / 4294967296; }; };
+const shuf = (a, rnd) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+let testOff = null;
+function drawTest(box, w) {
+  const T = w.test, mins = Math.max(1, +T.min || 30), maxW = Math.max(0, +T.warn >= 0 ? +T.warn : 3), KEY = `mi_test_${w.id}_${P.sid}`, qs = w.questions || [];
+  let st = null; try { st = JSON.parse(localStorage.getItem(KEY) || "null"); } catch {}
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch {} };
+  const fsOk = !!(document.documentElement.requestFullscreen), goFs = () => { try { if (fsOk && !document.fullscreenElement) return document.documentElement.requestFullscreen().catch(() => {}); } catch {} };
+  if (!st) {
+    box.innerHTML = `<section class="card wk-do"><h3>${esc(w.title)} · TEST</h3>
+      <p><b>${qs.length} questions · ${mins} minutes.</b> Read the rules before you start:</p>
+      <ul style="line-height:1.7;padding-left:20px"><li>The test opens in <b>full screen</b>. Stay in it until you hand in.</li><li>If you leave the page, change the tab or leave full screen, you get a <b>warning</b>. Your teacher can see every warning.</li><li>After <b>${maxW} warning${maxW === 1 ? "" : "s"}</b> your test is handed in by itself.</li><li>The timer keeps running. When it reaches zero your test is handed in by itself.</li><li>You cannot copy or paste. You can hand in only once.</li>${fsOk ? "" : "<li><b>This device cannot use full screen. Please use a laptop or computer if your teacher asks.</b></li>"}</ul>
+      <div class="sbtns"><button class="primary" type="button" id="tStart">Start the test</button><button class="ghost" type="button" data-wkact="back">Back</button></div></section>`;
+    $("tStart").onclick = () => { st = { start: Date.now(), log: [], ans: {}, seen: Date.now() }; save(); goFs(); run(); };
+    return;
+  }
+  run(true);
+  function run(resume) {
+    const rnd = hashSeed(w.id + "|" + P.sid), order = shuf(qs.map((_, i) => i), rnd), optOrd = qs.map(q => q.type === "mc" ? shuf(q.opts || [], hashSeed(w.id + "|" + P.sid + "|" + (q.q || ""))) : null);
+    let done = false, busy = false, lastW = 0, ov = null;
+    const secsUsed = () => Math.round((Date.now() - st.start) / 1000), left = () => st.start + mins * 60000 - Date.now();
+    const cleanup = () => { clearInterval(tm); document.removeEventListener("visibilitychange", onVis); window.removeEventListener("blur", onBlur); document.removeEventListener("fullscreenchange", onFs); document.removeEventListener("copy", block, true); document.removeEventListener("cut", block, true); document.removeEventListener("paste", block, true); document.removeEventListener("contextmenu", block, true); document.removeEventListener("selectstart", block, true); document.removeEventListener("keydown", onKey, true); testOff = null; if (ov) ov.remove(); try { if (document.fullscreenElement) document.exitFullscreen(); } catch {} document.body.classList.remove("wk-noscroll"); };
+    testOff = cleanup;
+    const answersOf = () => qs.map((q, i) => String(st.ans[i] ?? "").trim());
+    async function finish(reason) {
+      if (done) return; done = true; busy = true;
+      const answers = answersOf().concat(["@@test " + JSON.stringify({ w: st.log.length, l: st.log.slice(0, 25), s: Math.min(secsUsed(), mins * 60), r: reason })]);
+      const sub = { wid: w.id, sid: P.sid, name: me.name, cls: me.cls, answers, at: Date.now() };
+      try { await setDoc(doc(fs, ...base, "subs", w.id + "_" + P.sid), sub); mine.set(w.id, sub); try { localStorage.removeItem(KEY); } catch {} logEv("Handed in test: " + String(w.title || "test").slice(0, 40)); cleanup(); openId = ""; toast(reason === "hand" ? "Handed in. Well done!" : "Your test was handed in."); draw(); }
+      catch (er) { done = false; busy = false; const n = $("wkNote"); if (n) n.textContent = er && er.code === "permission-denied" ? "This test is closed or was already handed in." : "Could not hand in. Check your internet. Tap Hand in again."; }
+    }
+    function warn(kind) {
+      if (done || busy || Date.now() - lastW < 1200) return; lastW = Date.now();
+      st.log.push({ t: secsUsed(), k: kind }); save();
+      if (st.log.length > maxW) return finish("locked");
+      showWarn(kind);
+    }
+    function showWarn(kind) {
+      if (ov) ov.remove();
+      ov = document.createElement("div"); ov.style.cssText = "position:fixed;inset:0;z-index:99999;background:rgba(150,20,10,.96);color:#fff;display:grid;place-items:center;text-align:center;padding:24px";
+      ov.innerHTML = `<div style="max-width:420px"><div style="font-size:54px">⚠️</div><h2 style="margin:6px 0">Warning ${st.log.length} of ${maxW}</h2><p style="font-size:18px">${kind === "reload" ? "You reloaded the page." : "You left the test screen."} Your teacher can see this. ${st.log.length === maxW ? "<b>One more and your test is handed in.</b>" : ""}</p><button type="button" id="tBack" style="font:inherit;font-weight:800;padding:12px 22px;border-radius:12px;border:0;cursor:pointer">Back to the test</button></div>`;
+      document.body.appendChild(ov); $("tBack").onclick = () => { ov.remove(); ov = null; goFs(); };
+    }
+    const onVis = () => { if (document.hidden) warn("tab"); }, onBlur = () => { if (!busy) setTimeout(() => { if (!document.hasFocus() && !document.hidden) warn("blur"); }, 400); };
+    const onFs = () => { if (fsOk && !document.fullscreenElement && !busy) warn("fs"); };
+    const block = e => { if (e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName) && e.type === "paste") { e.preventDefault(); return; } e.preventDefault(); };
+    const onKey = e => { const k = (e.key || "").toLowerCase(); if ((e.ctrlKey || e.metaKey) && ["c", "v", "x", "p", "s", "u", "a"].includes(k)) e.preventDefault(); };
+    document.addEventListener("visibilitychange", onVis); window.addEventListener("blur", onBlur); document.addEventListener("fullscreenchange", onFs);
+    ["copy", "cut", "paste", "contextmenu", "selectstart"].forEach(t => document.addEventListener(t, block, true)); document.addEventListener("keydown", onKey, true);
+    document.body.classList.add("wk-noscroll");
+    box.innerHTML = `<section class="card wk-do" style="user-select:none;-webkit-user-select:none"><div style="position:sticky;top:0;z-index:5;background:var(--card,#fff);padding:8px 0;border-bottom:2px solid var(--line,#cdd5e3);display:flex;justify-content:space-between;align-items:center;gap:10px"><b>${esc(w.title)}</b><span id="tClock" style="font-weight:900;font-size:20px;font-variant-numeric:tabular-nums"></span></div>
+      <form id="wkForm" style="margin-top:10px">${order.map((qi, pos) => { const q = qs[qi]; return `<div class="wk-item"><p><b>${pos + 1}.</b> ${esc(q.q).replace(/\n/g, "<br>")}</p>${q.type === "mc"
+        ? `<div class="wk-mc">${optOrd[qi].map(o => `<label><input type="radio" name="q${qi}" value="${esc(o)}" ${st.ans[qi] === o ? "checked" : ""}> ${esc(o)}</label>`).join("")}</div>`
+        : `<input name="q${qi}" autocomplete="off" maxlength="300" placeholder="Your answer" value="${esc(st.ans[qi] || "")}" style="user-select:text;-webkit-user-select:text">`}</div>`; }).join("")}
+      <p class="wk-note" id="wkNote"></p><div class="sbtns"><button class="primary" type="submit" id="wkSend">Hand in</button></div></form></section>`;
+    const clock = $("tClock"), paint = () => { const r = Math.max(0, left()), m = Math.floor(r / 60000), sec = Math.floor(r / 1000) % 60; clock.textContent = `${m}:${String(sec).padStart(2, "0")}`; clock.style.color = r < 120000 ? "#b3261e" : ""; };
+    const tm = setInterval(() => { paint(); if (left() <= 0) finish("time"); }, 1000); paint();
+    $("wkForm").addEventListener("input", e => { const el = e.target; if (el && el.name) { st.ans[+el.name.slice(1)] = el.value; save(); } });
+    $("wkForm").addEventListener("change", e => { const el = e.target; if (el && el.name) { st.ans[+el.name.slice(1)] = el.value; save(); } });
+    $("wkForm").onsubmit = async e => {
+      e.preventDefault(); busy = true;
+      const empty = answersOf().filter(a => !a).length;
+      const ok = confirm(empty ? `${empty} question${empty === 1 ? " is" : "s are"} still empty. Hand in anyway?` : "Hand in now? You cannot change your answers after this.");
+      busy = false; lastW = Date.now(); if (ok) finish("hand"); else goFs();
+    };
+    if (resume) { warn("reload"); }
+  }
+}
 function drawSheet(box, w) {
+  if (w.test && w.test.on) { if (testOff) testOff(); return drawTest(box, w); }
   box.innerHTML = `<section class="card wk-do"><h3>${esc(w.title)}</h3>
     <form id="wkForm">${(w.questions || []).map((q, i) => `<div class="wk-item"><p><b>${i + 1}.</b> ${esc(q.q).replace(/\n/g, "<br>")}</p>${q.type === "mc"
       ? `<div class="wk-mc">${q.opts.map(o => `<label><input type="radio" name="q${i}" value="${esc(o)}"> ${esc(o)}</label>`).join("")}</div>`

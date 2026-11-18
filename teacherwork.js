@@ -33,6 +33,11 @@ const liveStudents = lw => { const cl = liveClasses(lw).map(x => x.toUpperCase()
 const liveStart = (lw, c) => { const o = liveOpen[lw.id]; return o && o[Object.keys(o).find(k => k.toUpperCase() === c.toUpperCase())] || 0; };
 const stuOf = w => students.filter(s => (w.classes || []).includes(s.cls)).sort((a, b) => a.cls.localeCompare(b.cls) || a.name.localeCompare(b.name));
 const subOf = (w, sid) => subs.find(x => x.wid === w.id && x.sid === sid);
+/* A test hands in its proctoring record as the last "answer": "@@test {json}" (w = warnings, l = log, s = seconds used, r = why it ended). */
+const tinfo = sub => { const a = (sub && sub.answers) || [], m = a[a.length - 1]; if (typeof m === "string" && m.startsWith("@@test ")) { try { return JSON.parse(m.slice(7)); } catch {} } return null; };
+const tKind = { tab: "left the tab", fs: "left full screen", blur: "left the window", reload: "reloaded the page" };
+const tText = t => t ? `${t.w} warning${t.w === 1 ? "" : "s"}${t.r === "locked" ? " · locked" : t.r === "time" ? " · time ended" : ""} · ${Math.round((t.s || 0) / 60 * 10) / 10} min` : "";
+const tTitle = t => t ? (t.l || []).map(x => `${Math.floor(x.t / 60)}:${String(x.t % 60).padStart(2, "0")} ${tKind[x.k] || x.k}`).join("\n") : "";
 function score(w, sub) {
   const key = keys.get(w.id) || [], marked = key.map((k, i) => k ? same(sub.answers[i], k) : null);
   const n = marked.filter(x => x !== null).length;
@@ -60,6 +65,8 @@ function render() {
       <label class="wk-f">Title<input id="wkTitle" maxlength="80" value="${esc(d.title)}" placeholder="e.g. Simultaneous equations · practice 1"></label>
       <div class="wk-f">Send to <div class="wk-cls">${CLASSES.map(c => `<label><input type="checkbox" data-wkcls="${esc(c)}" ${d.classes.includes(c) ? "checked" : ""}> ${esc(c)}</label>`).join("")}
         <button class="ghost small" type="button" data-wk="allcls">All my classes</button></div></div>
+      <div class="wk-f" style="border:2px solid var(--line,#cdd5e3);border-radius:12px;padding:10px 12px"><label><input type="checkbox" id="wkTest" data-wk="testtog" ${d.test ? "checked" : ""}> <b>Test mode</b> <small>(full screen, timer, shuffled questions, warnings when the student leaves the page)</small></label>
+        ${d.test ? `<div class="wk-row" style="margin-top:8px"><label>Time <input id="wkTMin" type="number" min="1" max="180" value="${d.tMin}" style="width:70px"> minutes</label><label>Warnings allowed <input id="wkTWarn" type="number" min="0" max="20" value="${d.tWarn}" style="width:70px"></label></div><small>After the last warning the test is handed in by itself. Use a laptop or computer: full screen does not work on most phones.</small>` : ""}</div>
       <ol class="wk-qs">${d.questions.map((q, i) => `<li>
         <textarea data-wkq="${i}" data-k="q" rows="2" maxlength="600" placeholder="Question ${i + 1}">${esc(q.q)}</textarea>
         <div class="wk-row"><select data-wkq="${i}" data-k="type"><option value="text" ${q.type === "text" ? "selected" : ""}>Answer box</option><option value="mc" ${q.type === "mc" ? "selected" : ""}>Multiple choice</option></select>
@@ -77,15 +84,15 @@ function render() {
       <div class="wk-res"><table class="lg-tbl"><thead><tr><th>Name</th><th>Class</th><th>Finished</th><th>Mistakes</th><th>Perfect</th></tr></thead><tbody>${rows.map(({ s, p }) => p ? `<tr><td>${esc(s.name)}</td><td>${esc(s.cls)}</td><td>${esc(when(p.u || p.t))}</td><td>${+p.w || 0}</td><td>${(+p.w || 0) === 0 && (lw.noWs || p.v === 2) ? "⭐" : ""}</td></tr>` : `<tr class="wk-miss"><td>${esc(s.name)}</td><td>${esc(s.cls)}</td><td><b style="color:#b3261e">MISSING</b></td><td></td><td></td></tr>`).join("")}</tbody></table></div>`;
   } else if (view === "res") {
     const w = works.find(x => x.id === cur); if (!w) { view = "list"; return render(); }
-    const all = stuOf(w), qs = w.questions || [], hasKey = (keys.get(w.id) || []).some(Boolean);
+    const all = stuOf(w), qs = w.questions || [], hasKey = (keys.get(w.id) || []).some(Boolean), anyT = subs.some(x => x.wid === w.id && tinfo(x));
     const rows = all.map(s => ({ s, sub: subOf(w, s.id) })), done = rows.filter(r => r.sub);
     b.innerHTML = `<h3>${esc(w.title)}</h3>
       <p>${esc((w.classes || []).join(", "))} · ${done.length} of ${all.length} handed in · made ${esc(when(w.created))}</p>
       <div class="lg-bar noprint"><button class="primary" type="button" data-wk="csv">Download Excel file</button><button class="ghost" type="button" data-wk="print">Print / save PDF</button><button class="ghost" type="button" data-wk="back">Back</button></div>
-      <div class="wk-res"><table class="lg-tbl"><thead><tr><th>Name</th><th>Class</th><th>Handed in</th>${hasKey ? "<th>Mark</th>" : ""}${qs.map((q, i) => `<th title="${esc(q.q)}">Q${i + 1}</th>`).join("")}</tr></thead><tbody>
-        ${rows.map(({ s, sub }) => { if (!sub) return `<tr class="wk-miss"><td>${esc(s.name)}</td><td>${esc(s.cls)}</td><td><b style="color:#b3261e">MISSING</b></td>${hasKey ? "<td></td>" : ""}${qs.map(() => "<td></td>").join("")}</tr>`;
+      <div class="wk-res"><table class="lg-tbl"><thead><tr><th>Name</th><th>Class</th><th>Handed in</th>${hasKey ? "<th>Mark</th>" : ""}${anyT ? "<th>Test</th>" : ""}${qs.map((q, i) => `<th title="${esc(q.q)}">Q${i + 1}</th>`).join("")}</tr></thead><tbody>
+        ${rows.map(({ s, sub }) => { if (!sub) return `<tr class="wk-miss"><td>${esc(s.name)}</td><td>${esc(s.cls)}</td><td><b style="color:#b3261e">MISSING</b></td>${hasKey ? "<td></td>" : ""}${anyT ? "<td></td>" : ""}${qs.map(() => "<td></td>").join("")}</tr>`;
           const sc = score(w, sub);
-          return `<tr><td>${esc(s.name)}</td><td>${esc(s.cls)}</td><td>${esc(when(sub.at))}</td>${hasKey ? `<td><b>${sc.right}/${sc.n}</b></td>` : ""}${qs.map((q, i) => `<td class="${sc.marked[i] === true ? "wk-ok" : sc.marked[i] === false ? "wk-no" : ""}">${esc(sub.answers[i] || "")}</td>`).join("")}</tr>`; }).join("")}
+          return `<tr><td>${esc(s.name)}</td><td>${esc(s.cls)}</td><td>${esc(when(sub.at))}</td>${hasKey ? `<td><b>${sc.right}/${sc.n}</b></td>` : ""}${anyT ? (() => { const t = tinfo(sub); return `<td title="${esc(tTitle(t))}" style="${t && t.w ? "background:#ffe0dc;font-weight:800" : ""}">${esc(tText(t))}</td>`; })() : ""}${qs.map((q, i) => `<td class="${sc.marked[i] === true ? "wk-ok" : sc.marked[i] === false ? "wk-no" : ""}">${esc(sub.answers[i] || "")}</td>`).join("")}</tr>`; }).join("")}
       </tbody></table></div>
       <details class="wk-q"><summary>Questions${hasKey ? " and correct answers" : ""}</summary><ol>${qs.map((q, i) => `<li>${esc(q.q)}${q.opts && q.opts.length ? ` <small>(${esc(q.opts.join(" · "))})</small>` : ""}${(keys.get(w.id) || [])[i] ? ` → <b>${esc(keys.get(w.id)[i])}</b>` : ""}</li>`).join("")}</ol></details>`;
   }
@@ -94,6 +101,7 @@ function render() {
 function readDraft() {
   if (view !== "edit") return;
   draft.title = ($("wkTitle") || {}).value || "";
+  if ($("wkTest")) { draft.test = $("wkTest").checked; draft.tMin = Math.max(1, Math.min(180, +($("wkTMin") || {}).value || 30)); draft.tWarn = Math.max(0, Math.min(20, +($("wkTWarn") || {}).value || 0)); }
   draft.classes = [...document.querySelectorAll("[data-wkcls]")].filter(x => x.checked).map(x => x.dataset.wkcls);
   document.querySelectorAll("[data-wkq]").forEach(el => { draft.questions[+el.dataset.wkq][el.dataset.k] = el.value; });
 }
@@ -101,11 +109,11 @@ function readDraft() {
 function csv(w) {
   const qs = w.questions || [], key = keys.get(w.id) || [], hasKey = key.some(Boolean);
   const cell = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
-  const head = ["Name", "Student ID", "Class", "Handed in", ...(hasKey ? ["Mark", "Out of"] : []), ...qs.map((q, i) => `Q${i + 1}: ${q.q}`)];
+  const head = ["Name", "Student ID", "Class", "Handed in", ...(hasKey ? ["Mark", "Out of"] : []), ...(w.test ? ["Test warnings", "Minutes used", "Ended by", "Warning details"] : []), ...qs.map((q, i) => `Q${i + 1}: ${q.q}`)];
   const lines = [head.map(cell).join(",")];
   stuOf(w).forEach(s => {
     const sub = subOf(w, s.id), sc = sub && score(w, sub);
-    lines.push([s.name, s.enrollment || "", s.cls, sub ? new Date(sub.at).toLocaleString("en-GB") : "not handed in", ...(hasKey ? [sc ? sc.right : "", sc ? sc.n : ""] : []), ...qs.map((q, i) => sub ? sub.answers[i] || "" : "")].map(cell).join(","));
+    lines.push([s.name, s.enrollment || "", s.cls, sub ? new Date(sub.at).toLocaleString("en-GB") : "not handed in", ...(hasKey ? [sc ? sc.right : "", sc ? sc.n : ""] : []), ...(w.test ? (() => { const t = tinfo(sub); return t ? [t.w, Math.round((t.s || 0) / 6) / 10, t.r || "handed in", (t.l || []).map(x => `${Math.floor(x.t / 60)}:${String(x.t % 60).padStart(2, "0")} ${tKind[x.k] || x.k}`).join("; ")] : ["", "", "", ""]; })() : []), ...qs.map((q, i) => sub ? sub.answers[i] || "" : "")].map(cell).join(","));
   });
   const blob = new Blob(["﻿" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
   const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = (w.title || "worksheet").replace(/[^\w\- ]+/g, "").trim() + ".csv";
@@ -124,7 +132,7 @@ async function saveDraft() {
   const questions = qs.map(q => ({ q: q.q.trim(), type: q.type, opts: q.type === "mc" ? q.opts.split(",").map(x => x.trim()).filter(Boolean) : [] }));
   try {
     await setDoc(bdoc("workkey", id), { answers: qs.map(q => q.key.trim()) });
-    await setDoc(bdoc("work", id), { title: d.title.trim(), classes: d.classes, questions, open: true, created: Date.now() });
+    await setDoc(bdoc("work", id), { title: d.title.trim(), classes: d.classes, questions, open: true, created: Date.now(), ...(d.test ? { test: { on: true, min: d.tMin, warn: d.tWarn } } : {}) });
   } catch (e) { return say("Could not send: " + (e.code || e.message) + ". Check that the new Firebase rules are published."); }
   await load(); view = "res"; cur = id; render();
 }
@@ -138,13 +146,14 @@ document.addEventListener("click", async e => {
   const b = e.target.closest("[data-wk]"); if (!b) return;
   const a = b.dataset.wk, w = works.find(x => x.id === b.dataset.id);
   if (a === "close") { $("workModal").hidden = true; return; }
-  if (a === "new") { draft = { title: "", classes: CLASSES.includes(cls) ? [cls] : [], questions: [{ q: "", type: "text", opts: "", key: "" }] }; view = "edit"; return render(); }
+  if (a === "new") { draft = { title: "", classes: CLASSES.includes(cls) ? [cls] : [], test: false, tMin: 30, tWarn: 3, questions: [{ q: "", type: "text", opts: "", key: "" }] }; view = "edit"; return render(); }
   if (a === "remind") { const c = b.dataset.c, k = Object.keys(remindAt).find(x => x.toUpperCase() === c.toUpperCase()), at = { ...remindAt };
     if (k && at[k]) delete at[k]; else at[c] = Date.now();
     const classes = Object.keys(at).filter(x => at[x]);
     b.disabled = true; try { await setDoc(bdoc("work", "remind"), { kind: "remind", at, classes, created: Date.now() }); remindAt = at; } catch { alert("Could not save the reminder."); } return render(); }
   if (a === "lres") { cur = b.dataset.lid; view = "lres"; await load(); return render(); }
   if (a === "back") { view = "list"; await load(); return render(); }
+  if (a === "testtog") { readDraft(); return render(); }
   if (a === "allcls") { readDraft(); draft.classes = CLASSES.slice(); return render(); }
   if (a === "addq") { readDraft(); draft.questions.push({ q: "", type: "text", opts: "", key: "" }); render(); const t = document.querySelectorAll("[data-k='q']"); t[t.length - 1].focus(); return; }
   if (a === "delq") { readDraft(); draft.questions.splice(+b.dataset.i, 1); if (!draft.questions.length) draft.questions.push({ q: "", type: "text", opts: "", key: "" }); return render(); }
