@@ -14,7 +14,7 @@
   input[type=number]{width:90px;padding:6px;border:1px solid #c5cad1;border-radius:6px}
   #log{white-space:pre-wrap;font:12.5px/1.45 ui-monospace,Consolas,monospace;max-height:220px;overflow:auto;background:#0f172a;color:#d1fae5;border-radius:8px;padding:10px}
 </style></head><body><main>
-<h1>Backup (read-only) <small style="font-size:12px;color:#6b7280">v3</small></h1>
+<h1>Backup (read-only) <small style="font-size:12px;color:#6b7280">v4</small></h1>
 <p>Copies every document of the site to this device. It only <b>reads</b>: nothing is changed or deleted. Reads count against the Firebase daily quota (50,000 on the free plan, resets at 11:00 AM Bahrain time).</p>
 <div class="card" id="state">Checking sign-in…</div>
 <div class="card" id="ctl" hidden>
@@ -25,7 +25,7 @@
 <div class="card" id="logc" hidden><div id="log"></div></div>
 <script type="module">
 import { fs, collection, getDocs, query, where, whenUser, profileOf } from "./fb.js?v=1115r";
-import { getCountFromServer } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getCountFromServer, orderBy, limit, startAfter, documentId } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const logEl = $("log"); const log = m => { logEl.textContent += m + "\n"; logEl.scrollTop = logEl.scrollHeight; };
@@ -72,9 +72,10 @@ async function makePlan() {
 async function paint() {
   const done = new Set(await allCols());
   let tot = 0, got = 0, rows = "";
-  plan.forEach(p => { const n = counts[p.path]; if (typeof n === "number") { tot += n; if (done.has(p.path)) got += n; }
+  plan.forEach(p => { const n = counts[p.path]; if (typeof n === "number") { tot += Math.max(0, n) + (n < 0 ? 1 : 0); if (done.has(p.path)) got += n; }
     if (n === 0 && !done.has(p.path)) return;   // hide the empty ones
-    rows += `<tr><td>${esc(p.label)}</td><td>${n == null ? "?" : n}</td><td class="${done.has(p.path) ? "ok" : "no"}">${done.has(p.path) ? "saved" : "not yet"}</td></tr>`; });
+    if (n == null && !done.has(p.path) && !(p.path.indexOf("/") < 0)) return;   // teachers' folders that cannot be read are listed in the log only
+    rows += `<tr><td>${esc(p.label)}</td><td>${n == null ? "not readable" : n < 0 ? "readable" : n}</td><td class="${done.has(p.path) ? "ok" : "no"}">${done.has(p.path) ? "saved" : "not yet"}</td></tr>`; });
   $("tbl").innerHTML = `<p><b>${got.toLocaleString()}</b> of <b>${tot.toLocaleString()}</b> documents saved on this device.</p><table><tr><th>Collection</th><th>Documents</th><th>Copy</th></tr>${rows}</table>`;
   $("run").disabled = !plan.length || !tot; $("dl").disabled = !done.size; $("clear").disabled = !done.size;
 }
@@ -86,7 +87,13 @@ $("count").onclick = async () => {
       try { await makePlan(); }
       catch (e) { log("Could not read the users list (" + (e.code || e.message) + "). Continuing with the owner's own collections only; teachers' folders are skipped."); plan = TOP.map(c => ({ path: c, label: c })); }
     }
-    for (const p of plan) { try { const r = await getCountFromServer(collection(fs, ...p.path.split("/"))); counts[p.path] = r.data().count; } catch (e) { counts[p.path] = null; log("  could not count " + p.path + ": " + (e.code || e.message)); } }
+    for (const p of plan) {
+      const ref = collection(fs, ...p.path.split("/"));
+      try { const r = await getCountFromServer(ref); counts[p.path] = r.data().count; continue; }
+      catch (e) { counts[p.path] = null; var why = (e.code || e.message); }
+      try { const t = await getDocs(query(ref, limit(1))); counts[p.path] = t.size ? -1 : 0; log("  " + p.path + ": count not available (" + why + ") but reading works" + (t.size ? "" : " (empty)")); }
+      catch (e2) { counts[p.path] = null; log("  " + p.path + ": NOT readable (" + (e2.code || e2.message) + ")"); }
+    }
     log("Counting done."); await paint();
   } catch (e) { log("Error: " + (e.code || e.message)); }
   $("count").disabled = false;
@@ -96,15 +103,22 @@ let stop = false;
 $("run").onclick = async () => {
   $("run").disabled = true; const budget = Math.max(1000, +$("budget").value || 30000); let spent = 0;
   const done = new Set(await allCols());
-  const todo = plan.filter(p => counts[p.path] > 0 && !done.has(p.path)).sort((a, b) => counts[a.path] - counts[b.path]);   // small ones first
+  const todo = plan.filter(p => counts[p.path] != null && counts[p.path] !== 0 && !done.has(p.path)).sort((a, b) => (counts[a.path] < 0 ? 1e9 : counts[a.path]) - (counts[b.path] < 0 ? 1e9 : counts[b.path]));   // small ones first, unknown sizes last
   log("Starting: " + todo.length + " collections to copy, budget " + budget.toLocaleString() + " reads.");
   for (const p of todo) {
     const n = counts[p.path];
-    if (spent + n > budget) { log("Skipped (would pass the budget): " + p.label + " (" + n + ")"); continue; }
+    if (n > 0 && spent + n > budget) { log("Skipped (would pass the budget): " + p.label + " (" + n + ")"); continue; }
     try {
-      const s = await getDocs(collection(fs, ...p.path.split("/")));
-      await saveCol(p.path, s.docs.map(d => ({ id: d.id, data: plain(d.data()) })));
-      spent += Math.max(1, s.size); log("Saved " + p.label + ": " + s.size + " docs (reads used so far ≈ " + spent.toLocaleString() + ")");
+      const ref = collection(fs, ...p.path.split("/")), rows = []; let last = null, over = false;
+      for (;;) {   // pages of 500, so the budget is respected even when the size is not known
+        const page = await getDocs(last ? query(ref, orderBy(documentId()), startAfter(last), limit(500)) : query(ref, orderBy(documentId()), limit(500)));
+        page.docs.forEach(d => rows.push({ id: d.id, data: plain(d.data()) })); spent += Math.max(1, page.size);
+        if (page.size < 500) break; last = page.docs[page.docs.length - 1];
+        if (spent >= budget) { over = true; break; }
+      }
+      if (over) { log("Stopped inside " + p.label + ": budget reached after " + rows.length + " docs. Not saved; run again later with a bigger budget."); break; }
+      await saveCol(p.path, rows);
+      log("Saved " + p.label + ": " + rows.length + " docs (reads used so far ≈ " + spent.toLocaleString() + ")");
     } catch (e) { log("FAILED " + p.label + ": " + (e.code || e.message) + (e.code === "resource-exhausted" ? "  ← daily limit reached, continue after 11:00 AM" : "")); if (e.code === "resource-exhausted") break; }
     await paint();
   }
