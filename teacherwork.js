@@ -1,9 +1,9 @@
 // Classwork for the teacher: make a worksheet, send it to classes, collect and export the answers.
 // Worksheets live in <base>/work, the answer key in <base>/workkey (students never read it),
 // and each student's submission in <base>/subs/<worksheet>_<student>.
-import { getDocs, setDoc, updateDoc, deleteDoc, getDoc, bcol, bdoc } from "./fb.js?v=1121k";
-import { autoMail } from "./mailer.js?v=1121k";
-import { LIVE_WS, isLive } from "./liveworks.js?v=1121k";
+import { getDocs, setDoc, updateDoc, deleteDoc, getDoc, bcol, bdoc } from "./fb.js?v=1121l";
+import { autoMail } from "./mailer.js?v=1121l";
+import { LIVE_WS, isLive } from "./liveworks.js?v=1121l";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

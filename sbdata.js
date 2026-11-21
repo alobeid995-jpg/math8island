@@ -199,3 +199,11 @@ export async function pinVersion(key) {
   } catch { return 0; }
 }
 export async function lease(path, holder, ttl) { return !!(await call("rpc/lease_acquire", { method: "POST", body: JSON.stringify({ p: path, holder, ttl }) })); }
+
+// Email through the send-mail function (Brevo). Only a signed-in teacher is accepted there.
+export async function sendMail(items, fromName, replyTo) {
+  const u = AUTH && AUTH.currentUser; if (!u) throw new Error("not signed in");
+  const token = await u.getIdToken();
+  const r = await fetch(URL_ + "/functions/v1/send-mail", { method: "POST", headers: { apikey: KEY, Authorization: "Bearer " + token, "Content-Type": "application/json" }, body: JSON.stringify({ items, fromName, replyTo }) });
+  const j = await r.json().catch(() => ({})); if (!j.ok) throw new Error(j.error || "email service error " + r.status); return j;
+}

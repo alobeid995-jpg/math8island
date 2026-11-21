@@ -1,6 +1,7 @@
 // Email students (school address = student ID + @hawarschool.com) through the teacher's own Google Apps Script.
 // Settings live in the teacher's own folder (settings/email), so students can never read the link or the token.
-import { getDoc, getDocs, setDoc, bcol, bdoc } from "./fb.js?v=1121k";
+import { getDoc, getDocs, setDoc, bcol, bdoc } from "./fb.js?v=1121l";
+import { sendMail } from "./sbdata.js?v=1121l";
 
 const SITE = "https://mathkn.fun";
 const $ = id => document.getElementById(id);
@@ -11,13 +12,10 @@ export async function mailCfg(force) {
   try { const s = await getDoc(bdoc("settings", "email")); cfg = s.exists() ? s.data() : {}; } catch { cfg = {}; }
   return cfg;
 }
-const ready = c => !!(c && c.url && c.token);
+const ready = c => !!c;
 const okId = v => /^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(String(v || "").trim());
 
-async function post(c, items) {
-  const r = await fetch(c.url, { method: "POST", body: JSON.stringify({ token: c.token, items, fromName: c.from || "Student Island", replyTo: c.reply || "" }) });
-  const j = await r.json(); if (!j.ok) throw new Error(j.error || "failed"); return j;
-}
+async function post(c, items) { return sendMail(items, c.from || "Student Island", c.reply || ""); }
 async function students(classes) {
   const all = (await getDocs(bcol("students"))).docs.map(d => ({ id: d.id, ...d.data() }));
   return all.filter(s => classes.includes(s.cls));
@@ -55,16 +53,14 @@ export async function openMail() {
   const chk = classes.map(k => `<label style="margin-right:12px"><input type="checkbox" class="mlCls" value="${esc(k)}"> ${esc(k)}</label>`).join("");
   box.innerHTML = `<div style="background:#fff;color:#111;max-width:640px;width:100%;border-radius:14px;padding:18px 20px;font:15px/1.5 system-ui,sans-serif">
     <div style="display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0">Email students</h2><button type="button" id="mlClose" class="ghost">Close</button></div>
-    <p id="mlStatus" style="color:#555;margin:6px 0 10px">${ready(c) ? "Email is set up." : "Email is not set up yet. Fill in the setup below first."}</p>
-    <details ${ready(c) ? "" : "open"} style="margin:8px 0"><summary><b>Setup</b></summary>
-      <p style="font-size:13px;color:#555">Paste the Web app link and the secret token of your Google script (the one made from your school account). They are saved in your own folder; students cannot read them.</p>
-      <label>Web app link<br><input id="mlUrl" style="width:100%" value="${esc(c.url || "")}" placeholder="https://script.google.com/macros/s/.../exec"></label>
-      <label>Token<br><input id="mlTok" type="password" style="width:100%" value="${esc(c.token || "")}"></label>
+    <p id="mlStatus" style="color:#555;margin:6px 0 10px">${ready(c) ? "Ready to send." : ""}</p>
+    <details style="margin:8px 0"><summary><b>Setup</b></summary>
+      <p style="font-size:13px;color:#555">Emails are sent from the Student Island address. Students see your name and replies go to the address you give.</p>
       <label>Your name in the emails<br><input id="mlFrom" style="width:100%" value="${esc(c.from || "")}" placeholder="Mr. Khalid"></label>
       <label>Replies go to<br><input id="mlReply" style="width:100%" value="${esc(c.reply || "")}" placeholder="your school email"></label>
       <label style="display:block;margin:8px 0"><input type="checkbox" id="mlAuto" ${c.auto ? "checked" : ""}> Email students automatically when I post a new worksheet or announcement</label>
       <button type="button" id="mlSave" class="primary">Save setup</button>
-      <span style="margin-left:10px"><input id="mlTest" placeholder="test address @hawarschool.com" style="width:230px"> <button type="button" id="mlTestGo">Send test</button></span>
+      <span style="margin-left:10px"><input id="mlTest" placeholder="your @hawarschool.com" style="width:230px"> <button type="button" id="mlTestGo">Send test</button></span>
     </details>
     <hr style="margin:14px 0">
     <h3 style="margin:0 0 6px">Email a class</h3>
@@ -82,9 +78,8 @@ export async function openMail() {
   const rep = r => `Sent ${r.sent}` + (r.skipped.length ? `, skipped ${r.skipped.length} without a valid student ID` : "") + (r.failed.length ? `, ${r.failed.length} failed (${r.failed[0].error})` : "") + (r.remaining != null ? `. Emails left today: ${r.remaining}.` : ".");
   $("mlClose").onclick = () => { box.remove(); box = null; };
   $("mlSave").onclick = async () => {
-    const n = { url: $("mlUrl").value.trim(), token: $("mlTok").value.trim(), from: $("mlFrom").value.trim(), reply: $("mlReply").value.trim(), auto: $("mlAuto").checked };
-    if (n.url && !/^https:\/\/script\.google\.com\/(a\/[^/]+\/)?(a\/)?macros\/([^/]+\/)?s\/[^/]+\/exec$/.test(n.url)) return say("That link does not look like a Google script Web app link (it ends with /exec).");
-    try { await setDoc(bdoc("settings", "email"), n); cfg = n; say("Saved."); $("mlStatus").textContent = ready(n) ? "Email is set up." : "Email is not set up yet."; } catch (e) { say("Could not save (" + (e.code || e.message) + ")."); }
+    const n = { from: $("mlFrom").value.trim(), reply: $("mlReply").value.trim(), auto: $("mlAuto").checked };
+    try { await setDoc(bdoc("settings", "email"), n); cfg = n; say("Saved."); $("mlStatus").textContent = "Saved."; } catch (e) { say("Could not save (" + (e.code || e.message) + ")."); }
   };
   $("mlTestGo").onclick = async () => {
     const to = $("mlTest").value.trim().toLowerCase(), id = to.replace(/@hawarschool\.com$/, "");
