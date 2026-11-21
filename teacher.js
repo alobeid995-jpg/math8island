@@ -1,22 +1,23 @@
 import { onSnapshot, changeEmail, auth, fs, firebaseConfig, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, collection, query, where, writeBatch, setBase, bcol, bdoc, signOut, whenUser, profileOf, emailFor, pinKey,
-  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1121h";
-import { db } from "./fbdb.js?v=1121h";
-import { peopleSet, peopleDel, peopleGet, peopleCls } from "./sbdata.js?v=1121h";
-import { startUsage } from "./usage.js?v=1121h";
-import { liveLesson, mountTeacherTT } from "./timetable.js?v=1121h";
-import { openWork, gradeData } from "./teacherwork.js?v=1121h";
-import "./lessonxp.js?v=1121h";
-import { openProgress } from "./progress.js?v=1121h";
-import { openMaterial } from "./material.js?v=1121h";
-import { openLiveWs } from "./liveteacher.js?v=1121h";
-import { openFunpark } from "./fpteacher.js?v=1121h";
-import { openCoconut } from "./coconut.js?v=1121h";
-import { hasFeature, hideCss } from "./features.js?v=1121h";
-import { xpAllowed } from "./ownerpin.js?v=1121h";
+  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1121i";
+import { db } from "./fbdb.js?v=1121i";
+import { peopleSet, peopleDel, peopleGet, peopleCls } from "./sbdata.js?v=1121i";
+import { downloadBackup } from "./backupxl.js?v=1121i";
+import { startUsage } from "./usage.js?v=1121i";
+import { liveLesson, mountTeacherTT } from "./timetable.js?v=1121i";
+import { openWork, gradeData } from "./teacherwork.js?v=1121i";
+import "./lessonxp.js?v=1121i";
+import { openProgress } from "./progress.js?v=1121i";
+import { openMaterial } from "./material.js?v=1121i";
+import { openLiveWs } from "./liveteacher.js?v=1121i";
+import { openFunpark } from "./fpteacher.js?v=1121i";
+import { openCoconut } from "./coconut.js?v=1121i";
+import { hasFeature, hideCss } from "./features.js?v=1121i";
+import { xpAllowed } from "./ownerpin.js?v=1121i";
 window.xpGate = n => xpAllowed(n); window.wkGradeData = gradeData;
-import { initChat } from "./chat.js?v=1121h";
-import { openLive } from "./live.js?v=1121h";
-import { openInbox } from "./inbox.js?v=1121h";
+import { initChat } from "./chat.js?v=1121i";
+import { openLive } from "./live.js?v=1121i";
+import { openInbox } from "./inbox.js?v=1121i";
 
 const $ = id => document.getElementById(id);
 const esc2 = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -164,6 +165,7 @@ $("outBtn").onclick = async () => { await signOut(auth); location.href = "index.
 /* ---------- the header buttons live in Hub > Tools > Manage ---------- */
 {
   const holder = document.createElement("div"); holder.hidden = true; document.body.appendChild(holder);
+  const bk = document.createElement("button"); bk.className = "ghost small"; bk.id = "backupBtn"; bk.type = "button"; bk.textContent = "Backup (Excel)"; bk.onclick = () => downloadBackup(bk); document.body.appendChild(bk);
   const eb = document.createElement("button"); eb.className = "ghost small"; eb.id = "emailBtn"; eb.type = "button"; eb.textContent = "My email & password reset";
   eb.onclick = async () => {
     const em = (prompt("Type your real email address. Firebase will send a link to it, and you can use it later to reset your password.") || "").trim();
@@ -173,7 +175,7 @@ $("outBtn").onclick = async () => { await signOut(auth); location.href = "index.
     catch (er) { alert(er && er.code === "auth/invalid-credential" || er && er.code === "auth/wrong-password" ? "The password is not right." : "Could not do it: " + ((er && (er.code || er.message)) || "error")); }
   };
   document.body.appendChild(eb);
-  const btns = ["workBtn", "mlBtn", "lwBtn", "liveBtn", "ccBtn", "funBtn", "inboxBtn", "matBtn", "loginsBtn", "impBtn", "islandBtn", "devBtn", "emailBtn"].map(id => $(id)).filter(Boolean);
+  const btns = ["workBtn", "mlBtn", "lwBtn", "liveBtn", "ccBtn", "funBtn", "inboxBtn", "matBtn", "loginsBtn", "impBtn", "islandBtn", "devBtn", "backupBtn", "emailBtn"].map(id => $(id)).filter(Boolean);
   btns.forEach(b => holder.appendChild(b));
   const place = () => { const h = $("hubMgmt"); if (h && !btns.every(b => b.parentNode === h)) btns.forEach(b => h.appendChild(b)); };
   const r0 = window.render;
