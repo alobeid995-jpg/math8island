@@ -82,6 +82,7 @@ td.n{text-align:right;font-variant-numeric:tabular-nums}th.n{text-align:right}
 import { fs, doc, getDoc, setDoc, updateDoc, collection, getDocs, onSnapshot, query, where, whenUser, profileOf } from "./fb.js?v=1115r";
 import { CATS, FEATURES, byKey, hasFeature } from "./features.js?v=1115r";
 import { startUsage } from "./usage.js?v=1115r";
+import { sbOn, sbWatch } from "./sb.js?v=1121a";
 import { loadPin, hasPin, askPin, savePin, checkPin } from "./ownerpin.js?v=1115r";
 const $ = id => document.getElementById(id), out = $("out");
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -155,6 +156,12 @@ let off = null, offU = null, usageDocs = [];
 function watch() {
   if (off) off();
   if (offU) offU();
+  if (sbOn()) {   // pilot: these two lists live in Supabase
+    offU = sbWatch("usage", rows => { usageDocs = rows.map(x => ({ id: x.id, ...x.data })); if (tab === "usage") paint(); }, () => {});
+    off = sbWatch("presence", rows => { pres = new Map(rows.map(d => [key(d.data.tid, d.data.sid), d.data])); liveOk = true; paint(); },
+      () => { liveOk = false; $("live").className = "live off"; $("liveTxt").textContent = "Offline"; });
+    return;
+  }
   offU = onSnapshot(collection(fs, "usage"), snap => { usageDocs = snap.docs.map(x => ({ id: x.id, ...x.data() })); if (tab === "usage") paint(); }, () => {});
   off = onSnapshot(collection(fs, "presence"), snap => {
     pres = new Map(snap.docs.map(d => { const v = d.data(); return [key(v.tid, v.sid), v]; }));

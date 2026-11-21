@@ -8,9 +8,11 @@ pre{white-space:pre-wrap;font:12.5px/1.45 ui-monospace,Consolas,monospace;backgr
 <p>Checks that Supabase recognises your Firebase login. It uses only a test table (<code>probe</code>), no real data.</p>
 <div class="card" id="who">Checking sign-in…</div>
 <div class="card"><button id="b1">1. Show what Supabase sees in my login</button> <button id="b2">2. Write a test row</button> <button id="b3">3. Read test rows</button> <button id="b4">4. Read WITHOUT login (must be refused)</button></div>
+<div class="card"><b>Pilot tests (step 2)</b><br><button id="p0">A. Who am I? (uid, owner?)</button> <button id="p1">B. Write my presence record</button> <button id="p2">C. Read my presence record</button> <button id="p3">D. List all presence (owner only)</button> <button id="p4">E. Write someone else's presence (must be refused)</button> <button id="p5">F. Write an unknown field (must be refused)</button></div>
 <pre id="log"></pre>
 <script type="module">
-import { auth, whenUser } from "./fb.js?v=1115r";
+import { auth, whenUser, profileOf } from "./fb.js?v=1115r";
+import { sbGet, sbSet, sbList } from "./sb.js?v=1121a";
 const URL_ = "https://xsbcdapkzynfoouobhav.supabase.co", KEY = "sb_publishable_V7TGwwZ1J6CNMypJn8wyig_uHQJRGui";
 const $ = id => document.getElementById(id), log = m => { $("log").textContent += m + "\n"; };
 const u = await whenUser();
@@ -27,4 +29,12 @@ $("b1").onclick = async () => { const t = await auth.currentUser.getIdToken(); c
 $("b2").onclick = () => call("probe", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify({ uid: u.uid, note: "hello from " + new Date().toISOString() }) });
 $("b3").onclick = () => call("probe?select=*");
 $("b4").onclick = () => call("probe?select=*", {}, false);
+
+const show = async (f) => { try { const r = await f(); log("OK  " + JSON.stringify(r).slice(0, 500)); } catch (e) { log("REFUSED/ERROR  " + e.message); } };
+$("p0").onclick = async () => { const p = await profileOf(u.uid); log("uid: " + u.uid + "\nrole: " + (p && p.role) + "   admin flag: " + (p && p.admin === true)); };
+$("p1").onclick = () => show(() => sbSet("presence/" + u.uid, { sid: "test", tid: "", name: "Pilot test", cls: "", first: Date.now(), last: Date.now(), n: 1, ev: [{ t: Date.now(), a: "pilot test" }], use: {} }));
+$("p2").onclick = () => show(() => sbGet("presence/" + u.uid));
+$("p3").onclick = () => show(async () => { const r = await sbList("presence"); return { count: r.length, ids: r.map(x => x.id.slice(0, 6)) }; });
+$("p4").onclick = () => show(() => sbSet("presence/someone-else-123", { sid: "x", ev: [] }));
+$("p5").onclick = () => show(() => sbSet("presence/" + u.uid, { sid: "test", evil: "not allowed", ev: [] }));
 </script></main></body></html>

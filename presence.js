@@ -1,8 +1,9 @@
 // Lets the owner see who is on the site. One small record per student: when he came, when he was last here, and his last few actions.
 // Written rarely (every 4 minutes while the page is open and visible), so it stays far inside the free plan.
 import { fs, doc, getDoc, setDoc, meter } from "./fb.js?v=1115r";
+import { sbOn, sbGet, sbSet } from "./sb.js?v=1121a";
 
-let ref = null, rec = null, ev = [], tmr = null, lastWrite = 0, getMe = () => null;
+let ref = null, uidStr = "", rec = null, ev = [], tmr = null, lastWrite = 0, getMe = () => null;
 const HEARTBEAT = 4 * 60 * 1000;
 
 async function write() {
@@ -11,6 +12,7 @@ async function write() {
   const me = getMe() || {};
   const body = { sid: rec.sid, tid: rec.tid, name: String(me.name || rec.name || "").slice(0, 80), cls: String(me.cls || rec.cls || "").slice(0, 12),
     first: rec.first, last: Date.now(), n: rec.n, ev: ev.slice(-15), use: meter() };
+  if (sbOn()) { try { await sbSet("presence/" + uidStr, body); return; } catch (e) { console.warn("presence: Supabase failed, using Firestore", e && e.message); } }
   try { await setDoc(ref, body); } catch {}
 }
 export function logEv(text) {
@@ -19,8 +21,10 @@ export function logEv(text) {
 }
 export async function startPresence(u, p, me) {
   getMe = me || getMe;
-  ref = doc(fs, "presence", u.uid);
-  let old = null; try { const s = await getDoc(ref); old = s.exists() ? s.data() : null; } catch {}
+  ref = doc(fs, "presence", u.uid); uidStr = u.uid;
+  let old = null;
+  if (sbOn()) { try { old = await sbGet("presence/" + u.uid); } catch {} }
+  else { try { const s = await getDoc(ref); old = s.exists() ? s.data() : null; } catch {} }
   rec = { sid: p.sid, tid: p.tid || "", first: (old && old.first) || Date.now(), n: ((old && old.n) || 0) + 1 };
   ev = old && Array.isArray(old.ev) ? old.ev.slice(-10) : [];
   ev.push({ t: Date.now(), a: "Logged in" });
