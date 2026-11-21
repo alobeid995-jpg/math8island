@@ -4,7 +4,7 @@ import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWith
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { doc, getDoc as _getDoc, setDoc as _setDoc, updateDoc as _updateDoc, deleteDoc as _deleteDoc, collection, getDocs as _getDocs, onSnapshot as _onSnapshot, runTransaction as _runTransaction, writeBatch as _writeBatch, query as _query, where as _where }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { setAuth, dataOn, locate, getOne, getMany, setOne, patchOne, removeMany, watch as sbWatchRows } from "./sbdata.js?v=1121d";
+import { setAuth, dataOn, locate, getOne, getMany, setOne, patchOne, removeMany, watch as sbWatchRows, watchDoc as sbWatchDoc, pinVersion } from "./sbdata.js?v=1121e";
 
 export const firebaseConfig = {
   apiKey: "AIzaSyC6dnkpj0L_S-em_9ibWKjglvQcf8Q3iXM",
@@ -72,6 +72,7 @@ export const getDoc = (ref, ...a) => {
   if (l) return getOne(l.path).then(d => mkDoc(l.path, l.id, d));
   bump(1, 0); return _getDoc(ref, ...a);
 };
+export const rawGetDocs = _getDocs;   // straight from Firestore, never routed (the copy and backup pages use it)
 export const getDocs = async (q, ...a) => {
   const l = colLoc(q);
   if (l) return mkSnap(l.parent, await getMany(l.parent, l.wh));
@@ -98,6 +99,11 @@ export const writeBatch = (...a) => { const b = _writeBatch(...a); let n = 0;
     b[k] = (ref, ...x) => { if (docLoc(ref)) throw new Error("batch writes are not supported for " + ref.path); n++; return f(ref, ...x); }; });
   const c = b.commit.bind(b); b.commit = () => { bump(0, n); return c(); }; return b; };
 export const onSnapshot = (...a) => {
+  const dl = docLoc(a[0]);
+  if (dl) {
+    const i = a.findIndex((x, k) => k > 0 && typeof x === "function"), ok = a[i], bad = typeof a[i + 1] === "function" ? a[i + 1] : null;
+    return sbWatchDoc(dl.path, dl.col, d => ok(mkDoc(dl.path, dl.id, d)), bad);
+  }
   const l = colLoc(a[0]);
   if (l) {
     const i = a.findIndex((x, k) => k > 0 && typeof x === "function"), ok = a[i], bad = typeof a[i + 1] === "function" ? a[i + 1] : null;
@@ -128,6 +134,7 @@ export const bdoc = (...seg) => doc(fs, ...BASE, ...seg);
 export const pinKey = u => String(u).trim().toLowerCase().replace(/\s+/g, "").replace(/\//g, "_");
 export const emailFor = (u, v = 0) => String(u).trim().toLowerCase().replace(/\s+/g, "") + (v ? ".r" + v : "") + "@math8island.app";
 export async function loginVersion(u) {
+  if (dataOn()) return pinVersion(pinKey(u));
   try { const s = await getDoc(doc(fs, "pinver", pinKey(u))); return s.exists() ? Number(s.data().v) || 0 : 0; } catch { return 0; }
 }
 

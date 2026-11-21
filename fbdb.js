@@ -1,5 +1,6 @@
 // Gives the teacher page the same "db" calls the Claude version used, but backed by Firebase.
-import { fs, bdoc, bcol, getDoc, setDoc, updateDoc, deleteDoc, getDocs, onSnapshot, runTransaction } from "./fb.js?v=1121d";
+import { fs, bdoc, bcol, getDoc, setDoc, updateDoc, deleteDoc, getDocs, onSnapshot, runTransaction } from "./fb.js?v=1121e";
+import { dataOn, locate, lease } from "./sbdata.js?v=1121e";
 
 const mapErr = e => { const err = new Error(e && e.message || "db error"); err.code = e && e.code === "permission-denied" ? "invalid_argument" : (e && e.code) || "unknown"; return err; };
 const guard = p => p.catch(e => { throw mapErr(e); });
@@ -13,7 +14,7 @@ function wrapDoc(ref) {
     update: d => guard(updateDoc(ref, d)),
     delete: () => guard(deleteDoc(ref)),
     // One open screen at a time hands out the weekly bonus: a short "lease" kept on the doc.
-    acquire: ({ holder, ttlMs }) => guard(runTransaction(fs, async tx => {
+    acquire: ({ holder, ttlMs }) => (dataOn() && locate(ref.path, true)) ? guard(lease(ref.path, holder, ttlMs || 60000).then(ok => ({ acquired: ok }))) : guard(runTransaction(fs, async tx => {
       const s = await tx.get(ref), d = s.exists() ? s.data() : {}, now = Date.now();
       if (d.leaseUntil && d.leaseUntil > now && d.holder !== holder) return { acquired: false };
       tx.set(ref, { ...d, holder, leaseUntil: now + (ttlMs || 60000) });

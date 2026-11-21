@@ -3,7 +3,13 @@
 // Firebase still does sign-in: its token is the key to this database (the rules there decide who may see what).
 const URL_ = "https://xsbcdapkzynfoouobhav.supabase.co";
 const KEY = "sb_publishable_V7TGwwZ1J6CNMypJn8wyig_uHQJRGui";   // public key: safe in the browser, the rules (RLS) do the protecting
-export const COLS = new Set(["plays", "subs", "work", "workkey", "live", "liveplayers", "msgs", "gmsgs", "groups"]);
+const COLS_A = ["plays", "subs", "work", "workkey", "live", "liveplayers", "msgs", "gmsgs", "groups"];
+const COLS_B = ["students", "logins", "users", "shop", "pinver", "ownersec", "settings", "meta", "cup", "seats", "parents", "att", "hw", "tests", "sotw"];
+export const COLS = new Set([...COLS_A, ...COLS_B]);
+const B_SET = new Set(COLS_B);
+// The second group (students, logins, profiles, shop...) stays on Firestore until it is switched on: localStorage si_sb3 = "1" on this device, or DEFAULT_B = true for everybody.
+const DEFAULT_B = false;
+const onB = () => { try { const v = localStorage.getItem("si_sb3"); if (v === "1") return true; if (v === "0") return false; } catch {} return DEFAULT_B; };
 // Off until the data has been copied over and checked. Flip to true when the copy is verified. A device can force it: localStorage si_sb2 = "1" (on) or "0" (off).
 const DEFAULT_ON = true;
 let AUTH = null;
@@ -15,7 +21,8 @@ export function dataOn() {
 
 // Where does a Firestore path live? { col, parent, id } when it is one of ours, otherwise null.
 // docs: "plays/x" or "teachers/<tid>/plays/x"; collections: "plays" or "teachers/<tid>/plays".
-export function locate(path, isDoc) {
+export function locate(path, isDoc) { const l = _loc(path, isDoc); return l && (!B_SET.has(l.col) || onB()) ? l : null; }
+function _loc(path, isDoc) {
   const s = String(path).split("/").filter(Boolean), n = s.length;
   if (isDoc ? (n !== 2 && n !== 4) : (n !== 1 && n !== 3)) return null;
   if (n >= 3 && s[0] !== "teachers") return null;
@@ -36,11 +43,22 @@ async function call(endpoint, opt = {}, tries = 1) {
       if (r.status >= 500 && tries > 0) return call(endpoint, opt, tries - 1);
       const t = await r.text().catch(() => "");
       const e = new Error("supabase " + r.status + " " + t.slice(0, 200)); e.status = r.status;
-      e.code = r.status === 401 || r.status === 403 ? "permission-denied" : r.status === 404 ? "not-found" : "unavailable";
+      e.code = r.status === 401 || r.status === 403 || /wrong code/.test(t) ? "permission-denied" : r.status === 404 ? "not-found" : "unavailable";
       throw e;
     }
     return r.status === 204 ? null : r.json().catch(() => null);
   } finally { clearTimeout(timer); }
+}
+
+// the same call, but answers with the Content-Range total and the newest updated_at (a cheap "did anything change?" question)
+async function probe(parent, wh) {
+  const u = AUTH && AUTH.currentUser; if (!u) throw Object.assign(new Error("not signed in"), { code: "unauthenticated" });
+  const token = await u.getIdToken();
+  const r = await fetch(URL_ + "/rest/v1/docs?" + ["parent=eq." + enc(parent), ...filterQS(wh), "select=updated_at", "order=updated_at.desc", "limit=1"].join("&"),
+    { headers: { apikey: KEY, Authorization: "Bearer " + token, Prefer: "count=exact" } });
+  if (!r.ok) { const e = new Error("supabase " + r.status); e.status = r.status; e.code = r.status === 401 || r.status === 403 ? "permission-denied" : "unavailable"; throw e; }
+  const rows = await r.json().catch(() => []);
+  return ((rows[0] && rows[0].updated_at) || "") + "|" + (r.headers.get("content-range") || "");
 }
 
 // ---- filters: the same few shapes the site uses ----
@@ -75,14 +93,14 @@ export async function getMany(parent, wh) {
 
 // ---- writes ----
 export async function setOne(path, data, merge) {
-  const l = locate(path, true);
+  const l = _loc(path, true);
   if (merge) { await call("rpc/doc_merge", { method: "POST", body: JSON.stringify({ p: path, d: data }) }); return; }
   await call("docs?on_conflict=path", { method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
     body: JSON.stringify({ path, parent: l.parent, col: l.col, id: l.id, data, updated_at: new Date().toISOString() }) });
 }
 export async function setMany(items, ignoreExisting) {   // [{ path, data }]; ignoreExisting: keep a row that is already there
   if (!items.length) return;
-  const rows = items.map(({ path, data }) => { const l = locate(path, true); return { path, parent: l.parent, col: l.col, id: l.id, data, updated_at: new Date().toISOString() }; });
+  const rows = items.map(({ path, data }) => { const l = _loc(path, true); return { path, parent: l.parent, col: l.col, id: l.id, data, updated_at: new Date().toISOString() }; });
   await call("docs?on_conflict=path", { method: "POST", headers: { Prefer: (ignoreExisting ? "resolution=ignore-duplicates" : "resolution=merge-duplicates") + ",return=minimal" }, body: JSON.stringify(rows) });
 }
 export async function patchOne(path, patch) {
@@ -98,14 +116,17 @@ export async function removeMany(paths) {
 
 // ---- watching: ask again every few seconds (school networks often block live connections) ----
 // Live quiz screens ask more often, the rest is relaxed. cb gets every row each time something changed.
-const EVERY = { live: 4000, liveplayers: 3000, plays: 8000, msgs: 8000, gmsgs: 8000, groups: 12000 };
+const EVERY = { live: 4000, liveplayers: 3000, plays: 8000, msgs: 8000, gmsgs: 8000, groups: 12000, students: 8000, shop: 30000, users: 30000, logins: 20000 };
 export function watch(parent, col, wh, cb, onErr) {
-  let stop = false, timer = 0, last = null;
+  let stop = false, timer = 0, last = null, lastProbe = "";
   const every = EVERY[col] || 15000;
   const tick = async () => {
     if (stop) return;
     if (document.visibilityState === "visible") {
-      try { const rows = await getMany(parent, wh), sig = JSON.stringify(rows); if (sig !== last) { last = sig; if (!stop) cb(rows); } }
+      try {
+        const ps = await probe(parent, wh);
+        if (ps !== lastProbe || last === null) { lastProbe = ps; const rows = await getMany(parent, wh), sig = JSON.stringify(rows); if (sig !== last) { last = sig; if (!stop) cb(rows); } }
+      }
       catch (e) { if (onErr && !stop) onErr(e); }
     }
     if (!stop) timer = setTimeout(tick, every);
@@ -135,8 +156,8 @@ export async function peopleCls(sid, tid, cls) {
   try { await call("people?role=eq.student&sid=eq." + enc(sid) + "&tid=eq." + enc(tid), { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ cls, updated_at: new Date().toISOString() }) }); return true; }
   catch (e) { console.warn("people class", e); return false; }
 }
-export async function claimTeacher(code) {   // a new teacher, right after the sign-up; the invite code is checked inside the database
-  try { await call("rpc/claim_teacher", { method: "POST", body: JSON.stringify({ code }) }); return true; } catch (e) { console.warn("claim teacher", e); return false; }
+export async function claimTeacher(code, nm) {   // a new teacher, right after the sign-up; the invite code is checked inside the database
+  await call("rpc/claim_teacher", { method: "POST", body: JSON.stringify({ code, nm: nm || "" }) });
 }
 
 // counts per collection folder, read straight from the database (owner page uses it to compare with Firestore)
@@ -148,3 +169,30 @@ export async function countDocs() {
   }
   return out;
 }
+
+// one document, watched the same way
+export function watchDoc(path, col, cb, onErr) {
+  let stop = false, timer = 0, last = undefined;
+  const every = EVERY[col] || 15000;
+  const tick = async () => {
+    if (stop) return;
+    if (document.visibilityState === "visible") {
+      try { const d = await getOne(path), sig = JSON.stringify(d); if (sig !== last) { last = sig; if (!stop) cb(d); } }
+      catch (e) { if (onErr && !stop) onErr(e); }
+    }
+    if (!stop) timer = setTimeout(tick, every);
+  };
+  const wake = () => { if (document.visibilityState === "visible" && !stop) { clearTimeout(timer); tick(); } };
+  document.addEventListener("visibilitychange", wake);
+  tick();
+  return () => { stop = true; clearTimeout(timer); document.removeEventListener("visibilitychange", wake); };
+}
+
+// The login page asks which login version an ID is on before anybody has signed in: the public key only, and the answer is a number.
+export async function pinVersion(key) {
+  try {
+    const r = await fetch(URL_ + "/rest/v1/rpc/pin_version", { method: "POST", headers: { apikey: KEY, Authorization: "Bearer " + KEY, "Content-Type": "application/json" }, body: JSON.stringify({ k: key }) });
+    if (!r.ok) return 0; return Number(await r.json()) || 0;
+  } catch { return 0; }
+}
+export async function lease(path, holder, ttl) { return !!(await call("rpc/lease_acquire", { method: "POST", body: JSON.stringify({ p: path, holder, ttl }) })); }

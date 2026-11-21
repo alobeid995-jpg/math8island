@@ -13,7 +13,7 @@
   .ok{color:#15803d} .bad{color:#b91c1c}
   #log{white-space:pre-wrap;font:12.5px/1.45 ui-monospace,Consolas,monospace;max-height:260px;overflow:auto;background:#0f172a;color:#d1fae5;border-radius:8px;padding:10px}
 </style></head><body><main>
-<h1>Copy to Supabase <small style="font-size:12px;color:#6b7280">v4</small></h1>
+<h1>Copy to Supabase <small style="font-size:12px;color:#6b7280">v5</small></h1>
 <p>Copies the data of worksheets, game results, live quizzes and messages (plus the list of who is who) from Firebase to Supabase. It only <b>reads</b> Firebase. Safe to run again: rows already in Supabase are never overwritten.</p>
 <div class="card" id="state">Checking sign-in…</div>
 <div class="card" id="ctl" hidden>
@@ -23,15 +23,17 @@
 <div class="card" id="tbl" hidden></div>
 <div class="card" id="logc" hidden><div id="log"></div></div>
 <script type="module">
-import { fs, collection, getDocs, whenUser, profileOf } from "./fb.js?v=1121d";
-import * as SB from "./sbdata.js?v=1121d";
+import { fs, collection, rawGetDocs, whenUser, profileOf } from "./fb.js?v=1121e";
+import * as SB from "./sbdata.js?v=1121e";
 const { COLS, setMany, peopleSet, countDocs } = SB;
 const $ = id => document.getElementById(id);
 const log = m => { const e = $("log"); e.textContent += m + "\n"; e.scrollTop = e.scrollHeight; };
 const clean = d => JSON.parse(JSON.stringify(d));
 let teachers = [];
 
-async function readAll(path) { return (await getDocs(collection(fs, ...path.split("/")))).docs; }
+async function readAll(path) { return (await rawGetDocs(collection(fs, ...path.split("/")))).docs; }
+const TOP_ONLY = new Set(["users", "shop", "pinver", "ownersec"]);
+const foldersFor = col => folders().filter(([tid]) => !tid || !TOP_ONLY.has(col));
 const folders = () => [["", ""], ...teachers.map(t => [t, "teachers/" + t + "/"])];   // [tid, prefix]
 
 async function loadUsers() {
@@ -58,7 +60,7 @@ $("run").onclick = async () => {
     for (let i = 0; i < people.length; i += 200) { if (!(await peopleSet(people.slice(i, i + 200)))) throw new Error("people could not be saved: " + SB.peopleErr); }
     log("people saved: " + people.length);
     let total = 0;
-    for (const col of COLS) for (const [tid, pre] of folders()) {
+    for (const col of COLS) for (const [tid, pre] of foldersFor(col)) {
       let docs; try { docs = await readAll(pre + col); } catch (e) { log("! " + pre + col + ": " + (e.code || e.message)); continue; }
       if (!docs.length) continue;
       const items = docs.map(d => ({ path: pre + col + "/" + d.id, data: clean(d.data()) }));
@@ -75,7 +77,7 @@ $("cmp").onclick = async () => {
   try {
     await loadUsers();
     const sb = await countDocs(); let html = "<table><tr><th>Folder</th><th>Firebase</th><th>Supabase</th><th></th></tr>", bad = 0;
-    for (const col of COLS) for (const [tid, pre] of folders()) {
+    for (const col of COLS) for (const [tid, pre] of foldersFor(col)) {
       let n = 0; try { n = (await readAll(pre + col)).length; } catch (e) { log("! " + pre + col + ": " + (e.code || e.message)); n = -1; }
       const m = sb[pre + col] || 0; if (!n && !m) continue;
       const ok = n === m; if (!ok) bad++;
