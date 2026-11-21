@@ -59,8 +59,9 @@ if (!prof || prof.role !== "teacher" || prof.admin !== true) { $("state").innerH
 $("state").innerHTML = 'Signed in as the owner. <span class="ok">Ready.</span>'; $("ctl").hidden = false; $("tbl").hidden = false; $("logc").hidden = false;
 
 async function teacherIds() {
-  const s = await getDocs(query(collection(fs, "users"), where("role", "==", "teacher")));
-  return s.docs.map(d => ({ uid: d.id, name: (d.data().name || "") }));
+  // same read the Developer page does (the whole users list), then keep the teachers
+  const s = await getDocs(collection(fs, "users"));
+  return s.docs.filter(d => { const r = d.data().role; return r === "teacher" || r === "paused"; }).map(d => ({ uid: d.id, name: (d.data().name || "") }));
 }
 async function makePlan() {
   const ts = (await teacherIds()).filter(t => t.uid !== u.uid);   // the owner's own data is the top level
