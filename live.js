@@ -124,7 +124,7 @@ function draw() {
   if (!S) { view = "home"; return draw(); }
   const n = players.length, qn = S.qs.length;
   if (S.status === "lobby") {
-    b.innerHTML = `<h3>${esc(S.title)}</h3><p>Classes: <b>${S.cls.join(", ")}</b>. Ask the students to open their Math Island page. A Live quiz button appears for them.</p>
+    b.innerHTML = `<h3>${esc(S.title)}</h3><p>Classes: <b>${S.cls.join(", ")}</b>. Ask the students to open their Student Island page. A Live quiz button appears for them.</p>
       <div class="lv-count">${n}</div><p style="margin-top:-8px">joined</p><div class="lv-pl">${players.map(p => `<span class="lv-chip">${avOf(p.sid, p.name)}<b>${esc(p.name)}</b></span>`).join("") || "<small>Waiting for students…</small>"}</div>` + foot(`<button class="ghost" type="button" data-lv="end">Cancel quiz</button><button class="primary" type="button" data-lv="start"${n ? "" : " disabled"}>Start the game</button>`);
     return;
   }

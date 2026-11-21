@@ -1,4 +1,4 @@
-/* Math Island · hats (accessories). hatSVG(id, kind) returns SVG markup that sits on top of an avatar's head.
+/* Student Island · hats (accessories). hatSVG(id, kind) returns SVG markup that sits on top of an avatar's head.
    Drawn in the avatar's 100 x 100 space; kind = "b" (boy), "g" (girl) or "e" (shop avatar). The avatar SVG has overflow visible, so brims may extend past the circle. */
 (function () {
   var P = function (d, f, x) { return '<path d="' + d + '" fill="' + f + '"' + (x ? " " + x : "") + "/>"; };

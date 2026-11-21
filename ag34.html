@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Lesson 3.4 · Upper and lower bounds · Math Island</title>
+<title>Lesson 3.4 · Upper and lower bounds · Student Island</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
 <style>
@@ -98,7 +98,7 @@ const unlocked = () => mode === "teacher" || (done.ex && done.tap && done.bound 
 let view = "ex";
 function shell(inner) {
   const st = (k, n, l, d) => `<button class="step ${d ? "done" : ""} ${k === "ws" && !unlocked() ? "lock" : ""}" data-go="${k}" aria-current="${view === k}"><span>${n}. ${l}</span><small>${k === "ws" ? (wsRes ? "done" : unlocked() ? "ready" : "after 1 and 2") : d ? "done ✓" : "to do"}</small></button>`;
-  app.innerHTML = `<div class="top"><div class="logo">π</div><h1>Lesson 3.4: Upper and lower bounds<small>Math Island · examples, games, then a worksheet</small></h1><button class="x" data-close="1" type="button">✕ Close</button></div>
+  app.innerHTML = `<div class="top"><div class="logo">π</div><h1>Lesson 3.4: Upper and lower bounds<small>Student Island · examples, games, then a worksheet</small></h1><button class="x" data-close="1" type="button">✕ Close</button></div>
     <div class="steps">${st("ex", 1, "Examples", done.ex)}${st("games", 2, "Games", done.tap && done.bound && done.ineq)}${st("ws", 3, "Worksheet", !!wsRes)}</div>${inner}`;
 }
 document.addEventListener("click", e => {

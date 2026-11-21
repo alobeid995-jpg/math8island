@@ -277,7 +277,7 @@ async function xlExport(scope, btn) {
           gAns: gR + gW, gPct: pct(gR, gW), last });
       }));
     } finally { plays = keepP; wk = keepW; }
-    const wb = new ExcelJS.Workbook(); wb.creator = "Math Island"; wb.created = new Date();
+    const wb = new ExcelJS.Workbook(); wb.creator = "Student Island"; wb.created = new Date();
     const NAVY = "FF1F3A6E", LINE = { style: "thin", color: { argb: "FFB8C2D6" } }, box = { top: LINE, left: LINE, bottom: LINE, right: LINE };
     const fillP = v => ({ type: "pattern", pattern: "solid", fgColor: { argb: v === null || v === "" ? "FFFFFFFF" : v >= 80 ? "FFC6EFCE" : v >= 50 ? "FFFFEB9C" : "FFFFC7CE" } });
     const dt = t => t ? new Date(t).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
