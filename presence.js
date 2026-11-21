@@ -1,7 +1,7 @@
 // Lets the owner see who is on the site. One small record per student: when he came, when he was last here, and his last few actions.
 // Written rarely (every 4 minutes while the page is open and visible), so it stays far inside the free plan.
-import { fs, doc, getDoc, setDoc, meter } from "./fb.js?v=1121b";
-import { sbOn, sbGet, sbSet } from "./sb.js?v=1121b";
+import { fs, doc, getDoc, setDoc, meter } from "./fb.js?v=1121c";
+import { sbOn, sbGet, sbSet } from "./sb.js?v=1121c";
 
 let ref = null, uidStr = "", rec = null, ev = [], tmr = null, lastWrite = 0, getMe = () => null;
 const HEARTBEAT = 4 * 60 * 1000;
