@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>Supabase test (temporary)</title>
+<style>body{font:15px/1.5 system-ui,Arial,sans-serif;margin:0;background:#f5f6f8;color:#1b2430}main{max-width:820px;margin:0 auto;padding:20px}
+.card{background:#fff;border:1px solid #e3e6ea;border-radius:12px;padding:14px 16px;margin:12px 0}button{font:inherit;padding:8px 14px;border-radius:8px;border:1px solid #c5cad1;background:#fff;cursor:pointer;margin:2px}
+pre{white-space:pre-wrap;font:12.5px/1.45 ui-monospace,Consolas,monospace;background:#0f172a;color:#d1fae5;border-radius:8px;padding:10px;max-height:300px;overflow:auto}</style></head><body><main>
+<h1>Supabase test <small style="font-size:12px;color:#6b7280">temporary</small></h1>
+<p>Checks that Supabase recognises your Firebase login. It uses only a test table (<code>probe</code>), no real data.</p>
+<div class="card" id="who">Checking sign-in…</div>
+<div class="card"><button id="b1">1. Show what Supabase sees in my login</button> <button id="b2">2. Write a test row</button> <button id="b3">3. Read test rows</button> <button id="b4">4. Read WITHOUT login (must be refused)</button></div>
+<pre id="log"></pre>
+<script type="module">
+import { auth, whenUser } from "./fb.js?v=1115r";
+const URL_ = "https://xsbcdapkzynfoouobhav.supabase.co", KEY = "sb_publishable_V7TGwwZ1J6CNMypJn8wyig_uHQJRGui";
+const $ = id => document.getElementById(id), log = m => { $("log").textContent += m + "\n"; };
+const u = await whenUser();
+if (!u) { $("who").innerHTML = "<b>Not signed in.</b> Open the main page, sign in, then open this page again."; throw new Error("no user"); }
+$("who").textContent = "Signed in (Firebase). Ready.";
+const dec = t => JSON.parse(decodeURIComponent(escape(atob(t.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")))));
+const call = async (path, opt = {}, login = true) => {
+  const h = { apikey: KEY, "Content-Type": "application/json", ...(opt.headers || {}) };
+  if (login) h.Authorization = "Bearer " + await auth.currentUser.getIdToken();
+  const r = await fetch(URL_ + "/rest/v1/" + path, { ...opt, headers: h });
+  const t = await r.text(); log("HTTP " + r.status + "  " + t.slice(0, 600)); return r;
+};
+$("b1").onclick = async () => { const t = await auth.currentUser.getIdToken(); const c = dec(t); log("token issuer: " + c.iss + "\ntoken has role claim: " + (c.role ? c.role : "no (expected)") + "\nuser id present: " + !!c.sub); };
+$("b2").onclick = () => call("probe", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify({ uid: u.uid, note: "hello from " + new Date().toISOString() }) });
+$("b3").onclick = () => call("probe?select=*");
+$("b4").onclick = () => call("probe?select=*", {}, false);
+</script></main></body></html>
