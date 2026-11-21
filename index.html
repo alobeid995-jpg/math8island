@@ -141,8 +141,8 @@ button:focus-visible{outline:3px solid var(--sea-300);outline-offset:2px}
 </div>
 
 <script type="module">
-import { resetPassword, auth, fs, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, doc, setDoc, emailFor, loginVersion, profileOf, whenUser, friendlyError } from "./fb.js?v=1121e";
-import { claimTeacher } from "./sbdata.js?v=1121e";
+import { resetPassword, auth, fs, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, doc, setDoc, emailFor, loginVersion, profileOf, whenUser, friendlyError } from "./fb.js?v=1121f";
+import { claimTeacher, usersOnSb } from "./sbdata.js?v=1121f";
 const $ = id => document.getElementById(id);
 let creating = false;
 const showErr = m => { $("err").textContent = m; $("err").hidden = !m; };
@@ -176,6 +176,7 @@ $("fT").onsubmit = async e => {
   try {
     if (creating) {
       const c = await createUserWithEmailAndPassword(auth, tEmail(), $("pw").value);
+      if (!usersOnSb()) await setDoc(doc(fs, "users", c.user.uid), { role: "teacher", code: $("inv").value.trim(), name: $("em").value.trim() });
       await claimTeacher($("inv").value.trim(), $("em").value.trim());
       await go(c.user.uid);
     } else {

@@ -156,8 +156,11 @@ export async function peopleCls(sid, tid, cls) {
   try { await call("people?role=eq.student&sid=eq." + enc(sid) + "&tid=eq." + enc(tid), { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ cls, updated_at: new Date().toISOString() }) }); return true; }
   catch (e) { console.warn("people class", e); return false; }
 }
-export async function claimTeacher(code, nm) {   // a new teacher, right after the sign-up; the invite code is checked inside the database
-  await call("rpc/claim_teacher", { method: "POST", body: JSON.stringify({ code, nm: nm || "" }) });
+export const usersOnSb = () => !!locate("users/x", true);
+// a new teacher, right after the sign-up; the invite code is checked inside the database
+// (profiles still in Firestore: only the people list is updated here, the caller writes the profile)
+export async function claimTeacher(code, nm) {
+  await call("rpc/claim_teacher", { method: "POST", body: JSON.stringify(usersOnSb() ? { code, nm: nm || "" } : { code }) });
 }
 
 // counts per collection folder, read straight from the database (owner page uses it to compare with Firestore)
