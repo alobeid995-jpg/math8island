@@ -4,7 +4,7 @@ import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWith
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { doc, getDoc as _getDoc, setDoc as _setDoc, updateDoc as _updateDoc, deleteDoc as _deleteDoc, collection, getDocs as _getDocs, onSnapshot as _onSnapshot, runTransaction as _runTransaction, writeBatch as _writeBatch, query as _query, where as _where }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { setAuth, dataOn, locate, getOne, getMany, setOne, patchOne, removeMany, watch as sbWatchRows, watchDoc as sbWatchDoc, pinVersion } from "./sbdata.js?v=1121f";
+import { setAuth, dataOn, locate, getOne, getMany, setOne, patchOne, removeMany, watch as sbWatchRows, watchDoc as sbWatchDoc, pinVersion } from "./sbdata.js?v=1121g";
 
 export const firebaseConfig = {
   apiKey: "AIzaSyC6dnkpj0L_S-em_9ibWKjglvQcf8Q3iXM",
@@ -134,7 +134,7 @@ export const bdoc = (...seg) => doc(fs, ...BASE, ...seg);
 export const pinKey = u => String(u).trim().toLowerCase().replace(/\s+/g, "").replace(/\//g, "_");
 export const emailFor = (u, v = 0) => String(u).trim().toLowerCase().replace(/\s+/g, "") + (v ? ".r" + v : "") + "@math8island.app";
 export async function loginVersion(u) {
-  if (dataOn()) return pinVersion(pinKey(u));
+  if (locate("pinver/x", true)) return pinVersion(pinKey(u));
   try { const s = await getDoc(doc(fs, "pinver", pinKey(u))); return s.exists() ? Number(s.data().v) || 0 : 0; } catch { return 0; }
 }
 
