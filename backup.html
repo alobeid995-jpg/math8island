@@ -14,7 +14,7 @@
   input[type=number]{width:90px;padding:6px;border:1px solid #c5cad1;border-radius:6px}
   #log{white-space:pre-wrap;font:12.5px/1.45 ui-monospace,Consolas,monospace;max-height:220px;overflow:auto;background:#0f172a;color:#d1fae5;border-radius:8px;padding:10px}
 </style></head><body><main>
-<h1>Backup (read-only)</h1>
+<h1>Backup (read-only) <small style="font-size:12px;color:#6b7280">v3</small></h1>
 <p>Copies every document of the site to this device. It only <b>reads</b>: nothing is changed or deleted. Reads count against the Firebase daily quota (50,000 on the free plan, resets at 11:00 AM Bahrain time).</p>
 <div class="card" id="state">Checking sign-in…</div>
 <div class="card" id="ctl" hidden>
@@ -82,7 +82,10 @@ async function paint() {
 $("count").onclick = async () => {
   $("count").disabled = true; log("Counting (this costs about 1 read per 1,000 documents)…");
   try {
-    if (!plan.length) await makePlan();
+    if (!plan.length) {
+      try { await makePlan(); }
+      catch (e) { log("Could not read the users list (" + (e.code || e.message) + "). Continuing with the owner's own collections only; teachers' folders are skipped."); plan = TOP.map(c => ({ path: c, label: c })); }
+    }
     for (const p of plan) { try { const r = await getCountFromServer(collection(fs, ...p.path.split("/"))); counts[p.path] = r.data().count; } catch (e) { counts[p.path] = null; log("  could not count " + p.path + ": " + (e.code || e.message)); } }
     log("Counting done."); await paint();
   } catch (e) { log("Error: " + (e.code || e.message)); }
