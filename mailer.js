@@ -1,6 +1,6 @@
 // Email students (school address = student ID + @hawarschool.com) through the teacher's own Google Apps Script.
 // Settings live in the teacher's own folder (settings/email), so students can never read the link or the token.
-import { getDoc, getDocs, setDoc, bcol, bdoc } from "./fb.js?v=1121j";
+import { getDoc, getDocs, setDoc, bcol, bdoc } from "./fb.js?v=1121k";
 
 const SITE = "https://mathkn.fun";
 const $ = id => document.getElementById(id);
@@ -83,7 +83,7 @@ export async function openMail() {
   $("mlClose").onclick = () => { box.remove(); box = null; };
   $("mlSave").onclick = async () => {
     const n = { url: $("mlUrl").value.trim(), token: $("mlTok").value.trim(), from: $("mlFrom").value.trim(), reply: $("mlReply").value.trim(), auto: $("mlAuto").checked };
-    if (n.url && !/^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec$/.test(n.url)) return say("That link does not look like a Google script Web app link (it ends with /exec).");
+    if (n.url && !/^https:\/\/script\.google\.com\/(a\/[^/]+\/)?(a\/)?macros\/([^/]+\/)?s\/[^/]+\/exec$/.test(n.url)) return say("That link does not look like a Google script Web app link (it ends with /exec).");
     try { await setDoc(bdoc("settings", "email"), n); cfg = n; say("Saved."); $("mlStatus").textContent = ready(n) ? "Email is set up." : "Email is not set up yet."; } catch (e) { say("Could not save (" + (e.code || e.message) + ")."); }
   };
   $("mlTestGo").onclick = async () => {
