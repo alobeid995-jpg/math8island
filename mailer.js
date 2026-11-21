@@ -1,7 +1,7 @@
 // Email students (school address = student ID + @hawarschool.com) through the teacher's own Google Apps Script.
 // Settings live in the teacher's own folder (settings/email), so students can never read the link or the token.
-import { getDoc, getDocs, setDoc, bcol, bdoc } from "./fb.js?v=1121l";
-import { sendMail } from "./sbdata.js?v=1121l";
+import { getDoc, getDocs, setDoc, bcol, bdoc } from "./fb.js?v=1121m";
+import { sendMail } from "./sbdata.js?v=1121m";
 
 const SITE = "https://mathkn.fun";
 const $ = id => document.getElementById(id);
@@ -60,8 +60,8 @@ export async function openMail() {
       <label>Replies go to<br><input id="mlReply" style="width:100%" value="${esc(c.reply || "")}" placeholder="your school email"></label>
       <label style="display:block;margin:8px 0"><input type="checkbox" id="mlAuto" ${c.auto ? "checked" : ""}> Email students automatically when I post a new worksheet or announcement</label>
       <button type="button" id="mlSave" class="primary">Save setup</button>
-      <span style="margin-left:10px"><input id="mlTest" placeholder="your @hawarschool.com" style="width:230px"> <button type="button" id="mlTestGo">Send test</button></span>
     </details>
+    <div style="margin:10px 0"><b>Send a test email to yourself</b><br><input id="mlTest" placeholder="your @hawarschool.com" style="width:260px"> <button type="button" id="mlTestGo" class="primary">Send test</button></div>
     <hr style="margin:14px 0">
     <h3 style="margin:0 0 6px">Email a class</h3>
     <div style="margin:6px 0">${chk || "No classes yet."}</div>

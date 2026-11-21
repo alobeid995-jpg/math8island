@@ -1,8 +1,8 @@
 // Coconut Crack: a team game for the whole class on one screen (the teacher's projector). Teams take turns to crack a coconut.
 // A coconut hides a question or a surprise. Questions come from your own Coconut sets (uploaded from Excel/CSV or pasted). They are kept apart from Live quiz. Nothing is saved to students.
-import { getDocs, setDoc, deleteDoc, bcol, bdoc } from "./fb.js?v=1121l";
-import { PRESETS } from "./presets.js?v=1121l";
-import { parseQuiz, readFile } from "./live.js?v=1121l";
+import { getDocs, setDoc, deleteDoc, bcol, bdoc } from "./fb.js?v=1121m";
+import { PRESETS } from "./presets.js?v=1121m";
+import { parseQuiz, readFile } from "./live.js?v=1121m";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
