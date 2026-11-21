@@ -24,7 +24,8 @@
 <div class="card" id="logc" hidden><div id="log"></div></div>
 <script type="module">
 import { fs, collection, getDocs, whenUser, profileOf } from "./fb.js?v=1121b";
-import { COLS, setMany, peopleSet, countDocs } from "./sbdata.js?v=1121b";
+import * as SB from "./sbdata.js?v=1121b";
+const { COLS, setMany, peopleSet, countDocs } = SB;
 const $ = id => document.getElementById(id);
 const log = m => { const e = $("log"); e.textContent += m + "\n"; e.scrollTop = e.scrollHeight; };
 const clean = d => JSON.parse(JSON.stringify(d));
@@ -54,7 +55,7 @@ $("run").onclick = async () => {
   try {
     const users = await loadUsers(); log("users read: " + users.length + " (teachers: " + teachers.length + ")");
     const people = await peoplePart(users);
-    for (let i = 0; i < people.length; i += 200) { if (!(await peopleSet(people.slice(i, i + 200)))) throw new Error("people could not be saved (see console)"); }
+    for (let i = 0; i < people.length; i += 200) { if (!(await peopleSet(people.slice(i, i + 200)))) throw new Error("people could not be saved: " + SB.peopleErr); }
     log("people saved: " + people.length);
     let total = 0;
     for (const col of COLS) for (const [tid, pre] of folders()) {

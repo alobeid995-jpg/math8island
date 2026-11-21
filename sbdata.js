@@ -119,9 +119,11 @@ export function watch(parent, col, wh, cb, onErr) {
 // ---- who is who (the "people" table): the rules need to know a person's role, teacher and class ----
 // These calls never throw: a failure here must not stop a teacher from creating a login or moving a student.
 const stamp = r => ({ ...r, updated_at: new Date().toISOString() });
+export let peopleErr = "";
 export async function peopleSet(rows) {
+  rows = rows.map(r => ({ uid: r.uid, role: r.role, sid: r.sid ?? null, tid: r.tid ?? "", cls: r.cls ?? null }));
   try { if (rows.length) await call("people?on_conflict=uid", { method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=minimal" }, body: JSON.stringify(rows.map(stamp)) }); return true; }
-  catch (e) { console.warn("people sync", e); return false; }
+  catch (e) { peopleErr = String(e.message || e); console.warn("people sync", e); return false; }
 }
 export async function peopleDel(uid) {
   try { await call("people?uid=eq." + enc(uid), { method: "DELETE", headers: { Prefer: "return=minimal" } }); return true; } catch (e) { console.warn("people delete", e); return false; }
