@@ -4,7 +4,7 @@ import { auth } from "./fb.js?v=1115r";
 
 const URL_ = "https://xsbcdapkzynfoouobhav.supabase.co";
 const KEY = "sb_publishable_V7TGwwZ1J6CNMypJn8wyig_uHQJRGui";   // public key: safe in the browser, the rules (RLS) do the protecting
-const DEFAULT_ON = false;   // flipped to true for everybody once the pilot is proven
+const DEFAULT_ON = true;   // pilot proven (presence + usage): on for everybody; a device can still switch it off with localStorage si_sb = "0"
 
 // On for this device when localStorage si_sb = "1"; off when "0"; otherwise the default above.
 export function sbOn() {
