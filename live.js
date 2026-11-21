@@ -283,7 +283,14 @@ modal.addEventListener("click", async e => {
     try {
       if (!draft.setId) await setDoc(bdoc("live", "q" + Date.now().toString(36)), { kind: "set", tool: "live", title: draft.title.trim(), qs, dur: draft.dur, cls: [], created: Date.now() });
       await createSession(draft.title.trim(), qs, draft.dur, draft.cls); await load();
-    } catch { msg = "Could not open the quiz. Check your internet."; view = "build"; }
+    } catch (e) {
+      const c = (e && e.code) || "";
+      msg = c === "resource-exhausted" ? "Could not open the quiz: the free Firebase limit for today is finished. It starts again at 11:00 AM Bahrain time."
+        : c === "permission-denied" ? "Could not open the quiz: Firebase did not allow it (permission-denied). The latest Firebase rules may not be published."
+        : c === "unavailable" || c === "deadline-exceeded" ? "Could not open the quiz. Check your internet and try again."
+        : "Could not open the quiz" + (c ? " (" + c + ")" : e && e.message ? " (" + String(e.message).slice(0, 80) + ")" : "") + ".";
+      view = "build";
+    }
     busy = false; return draw();
   }
   if (!S) return;
