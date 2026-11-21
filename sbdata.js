@@ -5,7 +5,7 @@ const URL_ = "https://xsbcdapkzynfoouobhav.supabase.co";
 const KEY = "sb_publishable_V7TGwwZ1J6CNMypJn8wyig_uHQJRGui";   // public key: safe in the browser, the rules (RLS) do the protecting
 export const COLS = new Set(["plays", "subs", "work", "workkey", "live", "liveplayers", "msgs", "gmsgs", "groups"]);
 // Off until the data has been copied over and checked. Flip to true when the copy is verified. A device can force it: localStorage si_sb2 = "1" (on) or "0" (off).
-const DEFAULT_ON = false;
+const DEFAULT_ON = true;
 let AUTH = null;
 export const setAuth = a => { AUTH = a; };
 export function dataOn() {

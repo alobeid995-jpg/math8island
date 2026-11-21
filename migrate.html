@@ -13,7 +13,7 @@
   .ok{color:#15803d} .bad{color:#b91c1c}
   #log{white-space:pre-wrap;font:12.5px/1.45 ui-monospace,Consolas,monospace;max-height:260px;overflow:auto;background:#0f172a;color:#d1fae5;border-radius:8px;padding:10px}
 </style></head><body><main>
-<h1>Copy to Supabase <small style="font-size:12px;color:#6b7280">v3</small></h1>
+<h1>Copy to Supabase <small style="font-size:12px;color:#6b7280">v4</small></h1>
 <p>Copies the data of worksheets, game results, live quizzes and messages (plus the list of who is who) from Firebase to Supabase. It only <b>reads</b> Firebase. Safe to run again: rows already in Supabase are never overwritten.</p>
 <div class="card" id="state">Checking sign-in…</div>
 <div class="card" id="ctl" hidden>
@@ -23,8 +23,8 @@
 <div class="card" id="tbl" hidden></div>
 <div class="card" id="logc" hidden><div id="log"></div></div>
 <script type="module">
-import { fs, collection, getDocs, whenUser, profileOf } from "./fb.js?v=1121c";
-import * as SB from "./sbdata.js?v=1121c";
+import { fs, collection, getDocs, whenUser, profileOf } from "./fb.js?v=1121d";
+import * as SB from "./sbdata.js?v=1121d";
 const { COLS, setMany, peopleSet, countDocs } = SB;
 const $ = id => document.getElementById(id);
 const log = m => { const e = $("log"); e.textContent += m + "\n"; e.scrollTop = e.scrollHeight; };
