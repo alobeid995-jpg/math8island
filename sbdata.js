@@ -8,7 +8,7 @@ const COLS_B = ["students", "logins", "users", "shop", "pinver", "ownersec", "se
 export const COLS = new Set([...COLS_A, ...COLS_B]);
 const B_SET = new Set(COLS_B);
 // The second group (students, logins, profiles, shop...) stays on Firestore until it is switched on: localStorage si_sb3 = "1" on this device, or DEFAULT_B = true for everybody.
-const DEFAULT_B = false;
+const DEFAULT_B = true;
 const onB = () => { try { const v = localStorage.getItem("si_sb3"); if (v === "1") return true; if (v === "0") return false; } catch {} return DEFAULT_B; };
 // Off until the data has been copied over and checked. Flip to true when the copy is verified. A device can force it: localStorage si_sb2 = "1" (on) or "0" (off).
 const DEFAULT_ON = true;

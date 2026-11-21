@@ -1,13 +1,13 @@
-import { shopClosedNow } from "./shopstatus.js?v=1121g";
-import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1121g";
-import { initWork } from "./stuwork.js?v=1121g";
-import { initMsgs } from "./stumsg.js?v=1121g";
-import { initLive } from "./livequiz.js?v=1121g";
-import { initChat } from "./chat.js?v=1121g";
-import { initFunpark } from "./funpark.js?v=1121g";
-import { startPresence, logEv } from "./presence.js?v=1121g";
-import { mountStudentTT } from "./timetable.js?v=1121g";
-import { achCard, initAch } from "./achieve.js?v=1121g";
+import { shopClosedNow } from "./shopstatus.js?v=1121h";
+import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1121h";
+import { initWork } from "./stuwork.js?v=1121h";
+import { initMsgs } from "./stumsg.js?v=1121h";
+import { initLive } from "./livequiz.js?v=1121h";
+import { initChat } from "./chat.js?v=1121h";
+import { initFunpark } from "./funpark.js?v=1121h";
+import { startPresence, logEv } from "./presence.js?v=1121h";
+import { mountStudentTT } from "./timetable.js?v=1121h";
+import { achCard, initAch } from "./achieve.js?v=1121h";
 
 const sub = (t, n) => t.split("{n}").join(n);
 let shopSt = null, lastClosed = false;
