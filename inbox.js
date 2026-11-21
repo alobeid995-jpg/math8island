@@ -1,7 +1,8 @@
 // Teacher side: announcements (shown to chosen classes) and messages with students.
 // Announcements are documents in <base>/work (kind "announcement"), which students already read for their class.
 // Messages are documents in <base>/msgs; a student reads and writes only his own thread (see the rules block).
-import { getDocs, setDoc, updateDoc, deleteDoc, bcol, bdoc } from "./fb.js?v=1121i";
+import { getDocs, setDoc, updateDoc, deleteDoc, bcol, bdoc } from "./fb.js?v=1121j";
+import { autoMail } from "./mailer.js?v=1121j";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -89,7 +90,7 @@ document.addEventListener("click", async e => {
     if (!text) { msg = "Write the announcement first."; render(); return; }
     if (!draft.classes.length) { msg = "Choose at least one class."; render(); return; }
     busy = true; msg = "Posting…"; render();
-    try { const id = "ann-" + Date.now().toString(36); const d = { kind: "announcement", open: false, title, text, classes: [...draft.classes], created: Date.now() }; await setDoc(bdoc("work", id), d); anns.unshift({ id, ...d }); draft = { title: "", text: "", classes: null }; msg = "Posted. Students see it now."; }
+    try { const id = "ann-" + Date.now().toString(36); const d = { kind: "announcement", open: false, title, text, classes: [...draft.classes], created: Date.now() }; await setDoc(bdoc("work", id), d); anns.unshift({ id, ...d }); autoMail("ann", d.classes, d.title, d.text); draft = { title: "", text: "", classes: null }; msg = "Posted. Students see it now."; }
     catch (er) { msg = "Could not post (" + (er.code || er.message) + ")."; }
     busy = false; render(); return;
   }

@@ -1,8 +1,9 @@
 // Classwork for the teacher: make a worksheet, send it to classes, collect and export the answers.
 // Worksheets live in <base>/work, the answer key in <base>/workkey (students never read it),
 // and each student's submission in <base>/subs/<worksheet>_<student>.
-import { getDocs, setDoc, updateDoc, deleteDoc, getDoc, bcol, bdoc } from "./fb.js?v=1121i";
-import { LIVE_WS, isLive } from "./liveworks.js?v=1121i";
+import { getDocs, setDoc, updateDoc, deleteDoc, getDoc, bcol, bdoc } from "./fb.js?v=1121j";
+import { autoMail } from "./mailer.js?v=1121j";
+import { LIVE_WS, isLive } from "./liveworks.js?v=1121j";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -134,6 +135,7 @@ async function saveDraft() {
     await setDoc(bdoc("workkey", id), { answers: qs.map(q => q.key.trim()) });
     await setDoc(bdoc("work", id), { title: d.title.trim(), classes: d.classes, questions, open: true, created: Date.now(), ...(d.test ? { test: { on: true, min: d.tMin, warn: d.tWarn } } : {}) });
   } catch (e) { return say("Could not send: " + (e.code || e.message) + ". Check that the new Firebase rules are published."); }
+  autoMail("work", d.classes, d.title.trim()).then(r => { if (r) say(`Sent. Emailed ${r.sent} student(s).`); });
   await load(); view = "res"; cur = id; render();
 }
 
