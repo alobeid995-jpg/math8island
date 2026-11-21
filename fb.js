@@ -2,8 +2,9 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updatePassword }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { doc, getDoc as _getDoc, setDoc as _setDoc, updateDoc as _updateDoc, deleteDoc as _deleteDoc, collection, getDocs as _getDocs, onSnapshot as _onSnapshot, runTransaction as _runTransaction, writeBatch as _writeBatch, query, where }
+import { doc, getDoc as _getDoc, setDoc as _setDoc, updateDoc as _updateDoc, deleteDoc as _deleteDoc, collection, getDocs as _getDocs, onSnapshot as _onSnapshot, runTransaction as _runTransaction, writeBatch as _writeBatch, query as _query, where as _where }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { setAuth, dataOn, locate, getOne, getMany, setOne, patchOne, removeMany, watch as sbWatchRows } from "./sbdata.js?v=1121b";
 
 export const firebaseConfig = {
   apiKey: "AIzaSyC6dnkpj0L_S-em_9ibWKjglvQcf8Q3iXM",
@@ -16,12 +17,13 @@ export const firebaseConfig = {
 
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+setAuth(auth);
 import * as FSNS from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 // Many school networks block Firestore's default streaming connection, which then takes about a minute to give up.
 // Auto-detect switches to plain long-polling within seconds there; on normal networks nothing changes.
 export const fs = FSNS.initializeFirestore ? FSNS.initializeFirestore(app, { experimentalAutoDetectLongPolling: true }) : FSNS.getFirestore(app);
 export { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updatePassword,
-  doc, collection, query, where, initializeApp, getAuth };
+  doc, collection, initializeApp, getAuth };
 
 // ---- Usage meter: counts the reads and writes THIS device makes, so the owner can see how close the site is to the free daily limit.
 // It is an estimate (it counts documents the page asked for), kept on the device and sent along with the "who is online" record.
@@ -42,15 +44,72 @@ function flush() {
 function bump(r, w) { P.r += r; P.w += w; if (!mTimer) mTimer = setTimeout(flush, 3000); }
 addEventListener("pagehide", () => { if (P.r || P.w) flush(); });
 export const meter = () => { const o = flush(); return { d: o.d, dr: o.dr, dw: o.dw, m: o.m, mr: o.mr, mw: o.mw }; };
-export const getDoc = (...a) => { bump(1, 0); return _getDoc(...a); };
-export const getDocs = async (...a) => { const s = await _getDocs(...a); bump(Math.max(1, s.size), 0); return s; };
-export const setDoc = (...a) => { bump(0, 1); return _setDoc(...a); };
-export const updateDoc = (...a) => { bump(0, 1); return _updateDoc(...a); };
-export const deleteDoc = (...a) => { bump(0, 1); return _deleteDoc(...a); };
+// ---- Supabase routing ----
+// Documents of the collections in sbdata.js (plays, subs, work, workkey, live, liveplayers, msgs, gmsgs, groups) live in Supabase once dataOn() is true.
+// Everything else stays in Firestore. The page code does not change: it keeps calling these same functions.
+export const where = (f, o, v) => { const c = _where(f, o, v); c.__w = [f, o, v]; return c; };
+export const query = (ref, ...cs) => {
+  const q = _query(ref, ...cs), b = ref.__sb || { path: ref.path, wh: [], other: false };
+  q.__sb = { path: b.path, wh: [...b.wh, ...cs.filter(c => c && c.__w).map(c => c.__w)], other: b.other || cs.some(c => !(c && c.__w)) };
+  return q;
+};
+const docLoc = ref => (dataOn() && ref && ref.type === "document") ? locate(ref.path, true) : null;
+const colLoc = ref => {
+  if (!dataOn() || !ref) return null;
+  if (ref.__sb) return ref.__sb.other ? null : (() => { const l = locate(ref.__sb.path, false); return l && { ...l, wh: ref.__sb.wh }; })();
+  if (ref.type === "collection") { const l = locate(ref.path, false); return l && { ...l, wh: [] }; }
+  return null;
+};
+const mkDoc = (path, id, data) => ({ id, ref: { path, id }, exists: () => data != null, data: () => data == null ? undefined : data, get: k => data == null ? undefined : data[k], metadata: { fromCache: false, hasPendingWrites: false } });
+const mkSnap = (parent, rows, changes) => {
+  const docs = rows.map(r => mkDoc(parent + "/" + r.id, r.id, r.data));
+  return { docs, size: docs.length, empty: !docs.length, forEach: f => docs.forEach(f), docChanges: () => changes || docs.map((d, i) => ({ type: "added", doc: d, oldIndex: -1, newIndex: i })), metadata: { fromCache: false, hasPendingWrites: false } };
+};
+const clean = d => JSON.parse(JSON.stringify(d));
+
+export const getDoc = (ref, ...a) => {
+  const l = docLoc(ref);
+  if (l) return getOne(l.path).then(d => mkDoc(l.path, l.id, d));
+  bump(1, 0); return _getDoc(ref, ...a);
+};
+export const getDocs = async (q, ...a) => {
+  const l = colLoc(q);
+  if (l) return mkSnap(l.parent, await getMany(l.parent, l.wh));
+  const s = await _getDocs(q, ...a); bump(Math.max(1, s.size), 0); return s;
+};
+export const setDoc = (ref, data, opt) => {
+  const l = docLoc(ref);
+  if (l) return setOne(l.path, clean(data), !!(opt && opt.merge));
+  bump(0, 1); return _setDoc(ref, data, opt);
+};
+export const updateDoc = (ref, ...a) => {
+  const l = docLoc(ref);
+  if (l) return patchOne(l.path, clean(a[0]));
+  bump(0, 1); return _updateDoc(ref, ...a);
+};
+export const deleteDoc = ref => {
+  const l = docLoc(ref);
+  if (l) return removeMany([l.path]);
+  bump(0, 1); return _deleteDoc(ref);
+};
 export const runTransaction = (...a) => { bump(1, 1); return _runTransaction(...a); };
-export const writeBatch = (...a) => { const b = _writeBatch(...a); let n = 0; ["set", "update", "delete"].forEach(k => { if (typeof b[k] !== "function") return; const f = b[k].bind(b); b[k] = (...x) => { n++; return f(...x); }; });
+export const writeBatch = (...a) => { const b = _writeBatch(...a); let n = 0;
+  ["set", "update", "delete"].forEach(k => { if (typeof b[k] !== "function") return; const f = b[k].bind(b);
+    b[k] = (ref, ...x) => { if (docLoc(ref)) throw new Error("batch writes are not supported for " + ref.path); n++; return f(ref, ...x); }; });
   const c = b.commit.bind(b); b.commit = () => { bump(0, n); return c(); }; return b; };
 export const onSnapshot = (...a) => {
+  const l = colLoc(a[0]);
+  if (l) {
+    const i = a.findIndex((x, k) => k > 0 && typeof x === "function"), ok = a[i], bad = typeof a[i + 1] === "function" ? a[i + 1] : null;
+    let prev = null;
+    return sbWatchRows(l.parent, l.col, l.wh, rows => {
+      const cur = new Map(rows.map(r => [r.id, r])), ch = [];
+      const snap = mkSnap(l.parent, rows, ch);
+      rows.forEach((r, k) => { const o = prev && prev.get(r.id); if (!o) ch.push({ type: "added", doc: snap.docs[k], oldIndex: -1, newIndex: k }); else if (JSON.stringify(o.data) !== JSON.stringify(r.data)) ch.push({ type: "modified", doc: snap.docs[k], oldIndex: k, newIndex: k }); });
+      if (prev) prev.forEach((o, id) => { if (!cur.has(id)) ch.push({ type: "removed", doc: mkDoc(l.parent + "/" + id, id, o.data), oldIndex: -1, newIndex: -1 }); });
+      prev = cur; ok(snap);
+    }, bad);
+  }
   const i = a.findIndex(x => typeof x === "function"); let first = true;
   if (i >= 0) { const f = a[i]; a[i] = s => { try { bump(first ? Math.max(1, s.size || 1) : Math.max(1, (s.docChanges ? s.docChanges().length : 1)), 0); } catch { bump(1, 0); } first = false; return f(s); }; }
   return _onSnapshot(...a);

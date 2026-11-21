@@ -1,21 +1,22 @@
 import { onSnapshot, changeEmail, auth, fs, firebaseConfig, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, collection, query, where, writeBatch, setBase, bcol, bdoc, signOut, whenUser, profileOf, emailFor, pinKey,
-  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1115r";
-import { db } from "./fbdb.js?v=1115r";
-import { startUsage } from "./usage.js?v=1115r";
-import { liveLesson, mountTeacherTT } from "./timetable.js?v=1115r";
-import { openWork, gradeData } from "./teacherwork.js?v=1115r";
-import "./lessonxp.js";
-import { openProgress } from "./progress.js?v=1115r";
-import { openMaterial } from "./material.js?v=1115r";
-import { openLiveWs } from "./liveteacher.js?v=1115r";
-import { openFunpark } from "./fpteacher.js?v=1115r";
-import { openCoconut } from "./coconut.js?v=1115r";
-import { hasFeature, hideCss } from "./features.js?v=1115r";
-import { xpAllowed } from "./ownerpin.js?v=1115r";
+  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1121b";
+import { db } from "./fbdb.js?v=1121b";
+import { peopleSet, peopleDel, peopleGet, peopleCls } from "./sbdata.js?v=1121b";
+import { startUsage } from "./usage.js?v=1121b";
+import { liveLesson, mountTeacherTT } from "./timetable.js?v=1121b";
+import { openWork, gradeData } from "./teacherwork.js?v=1121b";
+import "./lessonxp.js?v=1121b";
+import { openProgress } from "./progress.js?v=1121b";
+import { openMaterial } from "./material.js?v=1121b";
+import { openLiveWs } from "./liveteacher.js?v=1121b";
+import { openFunpark } from "./fpteacher.js?v=1121b";
+import { openCoconut } from "./coconut.js?v=1121b";
+import { hasFeature, hideCss } from "./features.js?v=1121b";
+import { xpAllowed } from "./ownerpin.js?v=1121b";
 window.xpGate = n => xpAllowed(n); window.wkGradeData = gradeData;
-import { initChat } from "./chat.js?v=1115r";
-import { openLive } from "./live.js?v=1115r";
-import { openInbox } from "./inbox.js?v=1115r";
+import { initChat } from "./chat.js?v=1121b";
+import { openLive } from "./live.js?v=1121b";
+import { openInbox } from "./inbox.js?v=1121b";
 
 const $ = id => document.getElementById(id);
 const esc2 = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -28,6 +29,16 @@ if (!p || p.role !== "teacher") { location.href = "index.html"; throw new Error(
 const ADMIN = p.admin === true;
 startUsage(u, p);
 setBase(ADMIN ? [] : ["teachers", u.uid]);
+// Supabase keeps a small list of who is who (role, teacher, class) for its security rules. Moving a student to another class updates it right away;
+// the check below also repairs it, at most once every 6 hours per device.
+window.__peopleCls = (sid, cls) => peopleCls(String(sid), ADMIN ? "" : u.uid, String(cls));
+(async () => { try {
+  const k = "si_roster_" + u.uid; if (Date.now() - (Number(localStorage.getItem(k)) || 0) < 6 * 3600e3) return;
+  const mine = await peopleGet(ADMIN ? "" : u.uid); if (!mine || !mine.length) return;
+  const st = new Map((await getDocs(bcol("students"))).docs.map(d => [d.id, String(d.data().cls || "")]));
+  for (const p of mine) { const c = st.get(p.sid); if (c && c !== p.cls) await peopleCls(p.sid, ADMIN ? "" : u.uid, c); }
+  localStorage.setItem(k, String(Date.now()));
+} catch {} })();
 // The name printed on certificates and parent emails: the owner is Mr. Khalid O; every other teacher types her own once and it is kept.
 if (!ADMIN) TNAME = "";
 try { const ts = await getDoc(bdoc("settings", "profile")); if (ts.exists() && typeof ts.data().name === "string") TNAME = ts.data().name.slice(0, 40); } catch {}
@@ -242,7 +253,7 @@ async function listLogins() {
     try {
       const us = (ADMIN ? (await getDocs(query(collection(fs, "users"), where("role", "==", "student")))).docs.filter(d => !d.data().tid || d.data().tid === u.uid)
                         : (await getDocs(query(collection(fs, "users"), where("tid", "==", u.uid)))).docs);
-      for (const o of us.filter(d => d.data().sid === r.sid)) await deleteDoc(doc(fs, "users", o.id));
+      for (const o of us.filter(d => d.data().sid === r.sid)) { await deleteDoc(doc(fs, "users", o.id)); await peopleDel(o.id); }
       await deleteDoc(bdoc("logins", r.sid));
       msg(`Login of ${r.name} removed. Press "Create logins" to make a new one.`); await listLogins();
     } catch (e) { msg("Could not remove: " + (e.code || e.message)); x.disabled = false; }
@@ -297,6 +308,7 @@ async function makeLogins() {
           catch (e) { if (e.code === "auth/email-already-in-use" && k < 7) ver++; else throw e; }
         }
         await setDoc(doc(fs, "users", c.user.uid), ADMIN ? { role: "student", sid: d.id } : { role: "student", sid: d.id, tid: u.uid });
+        await peopleSet([{ uid: c.user.uid, role: "student", sid: d.id, tid: ADMIN ? "" : u.uid, cls: cl }]);
         if (ver) await setDoc(doc(fs, "pinver", pinKey(username)), { v: ver, tid: u.uid });
         await setDoc(bdoc("logins", d.id), ver ? { username, pin, name: String(v.name || ""), cls: cl, first: true, ver, uid: c.user.uid } : { username, pin, name: String(v.name || ""), cls: cl, first: true });
         await signOut(sauth); ok++;
@@ -346,8 +358,9 @@ async function fixIds(stale) {
         if (!c) throw new Error(`the ID ${r.want} already has a login (maybe from another teacher). Check the ID.`);
         const nu = c.user.uid;
         await setDoc(doc(fs, "users", nu), ADMIN ? { role: "student", sid: r.sid } : { role: "student", sid: r.sid, tid: u.uid });
+        await peopleSet([{ uid: nu, role: "student", sid: r.sid, tid: ADMIN ? "" : u.uid, cls: r.cls }]);
         if (ver) await setDoc(doc(fs, "pinver", pinKey(r.want)), { v: ver, tid: u.uid });
-        for (const o of us.filter(x => x.sid === r.sid && x.id !== nu)) await deleteDoc(doc(fs, "users", o.id));
+        for (const o of us.filter(x => x.sid === r.sid && x.id !== nu)) { await deleteDoc(doc(fs, "users", o.id)); await peopleDel(o.id); }
         const { sid, want, ...keep } = r;
         await setDoc(bdoc("logins", r.sid), { ...keep, username: r.want, ver, uid: nu });
         await signOut(sauth); ok++;
@@ -389,8 +402,9 @@ async function resetLogins(classes, onlySid) {
       if (!c) throw new Error("could not make a new login");
       const nu = c.user.uid;
       await setDoc(doc(fs, "users", nu), ADMIN ? { role: "student", sid } : { role: "student", sid, tid: u.uid });
+      await peopleSet([{ uid: nu, role: "student", sid, tid: ADMIN ? "" : u.uid, cls: r.cls }]);
       await setDoc(doc(fs, "pinver", pinKey(username)), { v: ver, tid: u.uid });
-      for (const o of us.filter(x => x.sid === sid && x.id !== nu)) await deleteDoc(doc(fs, "users", o.id));
+      for (const o of us.filter(x => x.sid === sid && x.id !== nu)) { await deleteDoc(doc(fs, "users", o.id)); await peopleDel(o.id); }
       await setDoc(bdoc("logins", sid), { ...r, pin: start, first: true, ver, uid: nu });
       await signOut(sauth); ok++;
     } catch (e) {

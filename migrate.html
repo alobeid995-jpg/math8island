@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>Copy to Supabase · Student Island (owner only)</title>
+<style>
+  body{font:15px/1.5 system-ui,Segoe UI,Arial,sans-serif;margin:0;background:#f5f6f8;color:#1b2430}
+  main{max-width:880px;margin:0 auto;padding:20px}
+  h1{font-size:22px;margin:0 0 4px} p{margin:6px 0;color:#4b5563}
+  .card{background:#fff;border:1px solid #e3e6ea;border-radius:12px;padding:14px 16px;margin:14px 0}
+  button{font:inherit;padding:8px 14px;border-radius:8px;border:1px solid #c5cad1;background:#fff;cursor:pointer}
+  button.go{background:#0f766e;color:#fff;border-color:#0f766e} button:disabled{opacity:.5;cursor:default}
+  table{border-collapse:collapse;width:100%;font-size:13.5px} th,td{text-align:left;padding:5px 8px;border-bottom:1px solid #eef0f3}
+  .ok{color:#15803d} .bad{color:#b91c1c}
+  #log{white-space:pre-wrap;font:12.5px/1.45 ui-monospace,Consolas,monospace;max-height:260px;overflow:auto;background:#0f172a;color:#d1fae5;border-radius:8px;padding:10px}
+</style></head><body><main>
+<h1>Copy to Supabase <small style="font-size:12px;color:#6b7280">v1</small></h1>
+<p>Copies the data of worksheets, game results, live quizzes and messages (plus the list of who is who) from Firebase to Supabase. It only <b>reads</b> Firebase. Safe to run again: rows already in Supabase are never overwritten.</p>
+<div class="card" id="state">Checking sign-in…</div>
+<div class="card" id="ctl" hidden>
+  <p><button id="run" class="go">1. Copy now</button> <button id="cmp">2. Compare counts</button></p>
+  <p style="font-size:13px">Step 1 takes about a minute. Step 2 shows Firebase and Supabase side by side: every row should say OK.</p>
+</div>
+<div class="card" id="tbl" hidden></div>
+<div class="card" id="logc" hidden><div id="log"></div></div>
+<script type="module">
+import { fs, collection, getDocs, whenUser, profileOf } from "./fb.js?v=1121b";
+import { COLS, setMany, peopleSet, countDocs } from "./sbdata.js?v=1121b";
+const $ = id => document.getElementById(id);
+const log = m => { const e = $("log"); e.textContent += m + "\n"; e.scrollTop = e.scrollHeight; };
+const clean = d => JSON.parse(JSON.stringify(d));
+let teachers = [];
+
+async function readAll(path) { return (await getDocs(collection(fs, ...path.split("/")))).docs; }
+const folders = () => [["", ""], ...teachers.map(t => [t, "teachers/" + t + "/"])];   // [tid, prefix]
+
+async function loadUsers() {
+  const us = await readAll("users");
+  teachers = us.filter(d => d.data().role === "teacher" || d.data().role === "paused").map(d => d.id);
+  return us;
+}
+async function peoplePart(users) {
+  const rows = []; const cls = new Map();
+  for (const [tid, pre] of folders()) { try { (await readAll(pre + "students")).forEach(d => cls.set(tid + "|" + d.id, String(d.data().cls || ""))); } catch (e) { log("! students of " + (tid || "owner") + ": " + e.code); } }
+  for (const d of users) {
+    const v = d.data();
+    if (v.role === "teacher" || v.role === "paused") rows.push({ uid: d.id, role: v.role, tid: "" });
+    else if (v.role === "student" && v.sid) { const tid = v.tid || ""; rows.push({ uid: d.id, role: "student", sid: String(v.sid), tid, cls: cls.get(tid + "|" + v.sid) || null }); }
+  }
+  return rows;
+}
+
+$("run").onclick = async () => {
+  $("run").disabled = true; $("logc").hidden = false; $("log").textContent = "";
+  try {
+    const users = await loadUsers(); log("users read: " + users.length + " (teachers: " + teachers.length + ")");
+    const people = await peoplePart(users);
+    for (let i = 0; i < people.length; i += 200) { if (!(await peopleSet(people.slice(i, i + 200)))) throw new Error("people could not be saved (see console)"); }
+    log("people saved: " + people.length);
+    let total = 0;
+    for (const col of COLS) for (const [tid, pre] of folders()) {
+      let docs; try { docs = await readAll(pre + col); } catch (e) { log("! " + pre + col + ": " + (e.code || e.message)); continue; }
+      if (!docs.length) continue;
+      const items = docs.map(d => ({ path: pre + col + "/" + d.id, data: clean(d.data()) }));
+      for (let i = 0; i < items.length; i += 100) await setMany(items.slice(i, i + 100), true);
+      total += items.length; log(pre + col + ": " + items.length);
+    }
+    log("DONE. documents copied: " + total);
+  } catch (e) { log("STOPPED: " + (e.code || "") + " " + (e.message || e)); }
+  $("run").disabled = false;
+};
+
+$("cmp").onclick = async () => {
+  $("tbl").hidden = false; $("tbl").textContent = "Comparing…"; $("logc").hidden = false;
+  try {
+    await loadUsers();
+    const sb = await countDocs(); let html = "<table><tr><th>Folder</th><th>Firebase</th><th>Supabase</th><th></th></tr>", bad = 0;
+    for (const col of COLS) for (const [tid, pre] of folders()) {
+      let n = 0; try { n = (await readAll(pre + col)).length; } catch (e) { log("! " + pre + col + ": " + (e.code || e.message)); n = -1; }
+      const m = sb[pre + col] || 0; if (!n && !m) continue;
+      const ok = n === m; if (!ok) bad++;
+      html += `<tr><td>${pre}${col}</td><td>${n < 0 ? "error" : n}</td><td>${m}</td><td class="${ok ? "ok" : "bad"}">${ok ? "OK" : "differs"}</td></tr>`;
+    }
+    $("tbl").innerHTML = html + "</table><p class='" + (bad ? "bad" : "ok") + "'><b>" + (bad ? bad + " folder(s) differ." : "Everything matches.") + "</b></p>";
+  } catch (e) { $("tbl").textContent = "Could not compare: " + (e.code || "") + " " + (e.message || e); }
+};
+
+const u = await whenUser();
+if (!u) { $("state").innerHTML = "Please <a href='index.html'>sign in</a> as the owner first."; }
+else {
+  const p = await profileOf(u.uid).catch(() => null);
+  if (p && p.admin === true) { $("state").innerHTML = "Signed in as the owner. Ready."; $("ctl").hidden = false; }
+  else $("state").textContent = "This page is for the owner only.";
+}
+</script></main></body></html>
