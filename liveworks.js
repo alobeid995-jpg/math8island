@@ -21,3 +21,6 @@ export const LIVE_WS = [
 ];
 // Is this worksheet open for this class? Once the teacher has pressed Start/Stop, her saved choice wins; before that, "was" decides.
 export const isLive = (w, open, cls) => { const c = String(cls || "").trim().toUpperCase(), o = open && open[w.id]; return o ? Object.keys(o).some(k => k.toUpperCase() === c && o[k]) : (w.was || []).some(k => k.toUpperCase() === c); };
+
+// The worksheets above are the owner's. Other teachers (and their students) do not get them.
+export function liveScope(ownerBase) { if (!ownerBase) LIVE_WS.length = 0; }

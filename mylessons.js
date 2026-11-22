@@ -4,6 +4,7 @@
 (function () {
   "use strict";
   // To add a lesson: put its .html file next to this one and add a line here.
+  const MINE = () => (window.__owner ? LESSONS : []);   // the built-in lessons belong to the owner only; other teachers see only their own
   const LESSONS = [
     { id: "l42d1", title: "Lesson 4.2: Solving simultaneous equations graphically", sub: "Day 1", file: "lesson42d1.html" },
   ];
@@ -91,7 +92,7 @@
     const el = $$("mlList"); if (!el) return;
     const row = (l, mine, i) => `<div style="display:flex;gap:6px;align-items:stretch;margin:8px 0"><button type="button" class="ghost" data-ml-open="${E(l.id)}" style="flex:1;text-align:left;padding:12px 14px"><b>${E(l.title)}</b><br><small>${E(l.sub || "")}</small></button>${mine ? `<button type="button" class="ghost small" data-ml-up="${i}" aria-label="Move up">▲</button><button type="button" class="ghost small" data-ml-down="${i}" aria-label="Move down">▼</button><button type="button" class="ghost small" data-ml-del="${i}" aria-label="Remove ${E(l.title)}">Remove</button>` : ""}</div>`;
     el.innerHTML = `<h3>My lessons</h3><p style="margin:4px 0 10px">Tap a lesson to open it full screen. Inside it you get a small class panel (students, XP) and a random picker, so you never have to leave.</p>`
-      + (LESSONS.length || custom.length ? LESSONS.map(l => row(l, false)).join("") + custom.map((l, i) => row(l, true, i)).join("") : `<p class="none">No lessons yet. Add one below.</p>`)
+      + (MINE().length || custom.length ? MINE().map(l => row(l, false)).join("") + custom.map((l, i) => row(l, true, i)).join("") : `<p class="none">No lessons yet. Add one below.</p>`)
       + `<h4 style="margin:16px 0 4px">Add a lesson from a link</h4><p style="margin:0 0 6px"><small>Put your slides on Google Drive or Google Slides and share them as "Anyone with the link can view". Then paste the link here.</small></p>
       <div style="display:grid;gap:6px"><input id="mlNewTitle" maxlength="80" placeholder="Lesson name, for example 4.3 Day 1" autocomplete="off"><input id="mlNewUrl" inputmode="url" placeholder="Paste the Drive or Slides link" autocomplete="off"><div class="sbtns" style="justify-content:flex-start"><button class="primary" type="button" data-ml="add">Add lesson</button></div></div>`
       + `<p role="status" style="min-height:1.3em;font-weight:700">${E(cmsg)}</p><div class="sbtns"><button class="ghost" type="button" data-ml="close">Close</button></div>`;
@@ -105,7 +106,7 @@
       document.body.appendChild(m);
       m.addEventListener("click", async e => {
         if (e.target === m || e.target.closest("[data-ml=close]")) { m.hidden = true; return; }
-        const b = e.target.closest("[data-ml-open]"); if (b) { const l = LESSONS.concat(custom).find(x => x.id === b.dataset.mlOpen); m.hidden = true; openLesson(l); return; }
+        const b = e.target.closest("[data-ml-open]"); if (b) { const l = MINE().concat(custom).find(x => x.id === b.dataset.mlOpen); m.hidden = true; openLesson(l); return; }
         if (e.target.closest("[data-ml=add]")) {
           const title = ($$("mlNewTitle").value || "").trim(), url = embedUrl($$("mlNewUrl").value);
           if (!title) { cmsg = "Type the lesson name."; return renderList(); }

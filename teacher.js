@@ -1,24 +1,25 @@
+import { liveScope } from "./liveworks.js?v=1122j";
 import { onSnapshot, changeEmail, auth, fs, firebaseConfig, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, collection, query, where, writeBatch, setBase, bcol, bdoc, signOut, whenUser, profileOf, emailFor, pinKey,
-  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1122i";
-import { db } from "./fbdb.js?v=1122i";
-import { peopleSet, peopleDel, peopleGet, peopleCls } from "./sbdata.js?v=1122i";
-import { downloadBackup } from "./backupxl.js?v=1122i";
-import { openMail, sendRaw } from "./mailer.js?v=1122i";
-import { startUsage } from "./usage.js?v=1122i";
-import { liveLesson, mountTeacherTT } from "./timetable.js?v=1122i";
-import { openWork, gradeData } from "./teacherwork.js?v=1122i";
-import "./lessonxp.js?v=1122i";
-import { openProgress } from "./progress.js?v=1122i";
-import { openMaterial } from "./material.js?v=1122i";
-import { openLiveWs } from "./liveteacher.js?v=1122i";
-import { openFunpark } from "./fpteacher.js?v=1122i";
-import { openCoconut } from "./coconut.js?v=1122i";
-import { hasFeature, hideCss } from "./features.js?v=1122i";
-import { xpAllowed } from "./ownerpin.js?v=1122i";
+  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1122j";
+import { db } from "./fbdb.js?v=1122j";
+import { peopleSet, peopleDel, peopleGet, peopleCls } from "./sbdata.js?v=1122j";
+import { downloadBackup } from "./backupxl.js?v=1122j";
+import { openMail, sendRaw } from "./mailer.js?v=1122j";
+import { startUsage } from "./usage.js?v=1122j";
+import { liveLesson, mountTeacherTT } from "./timetable.js?v=1122j";
+import { openWork, gradeData } from "./teacherwork.js?v=1122j";
+import "./lessonxp.js?v=1122j";
+import { openProgress } from "./progress.js?v=1122j";
+import { openMaterial } from "./material.js?v=1122j";
+import { openLiveWs } from "./liveteacher.js?v=1122j";
+import { openFunpark } from "./fpteacher.js?v=1122j";
+import { openCoconut } from "./coconut.js?v=1122j";
+import { hasFeature, hideCss } from "./features.js?v=1122j";
+import { xpAllowed } from "./ownerpin.js?v=1122j";
 window.xpGate = n => xpAllowed(n); window.wkGradeData = gradeData; window.mailSend = sendRaw;
-import { initChat } from "./chat.js?v=1122i";
-import { openLive } from "./live.js?v=1122i";
-import { openInbox } from "./inbox.js?v=1122i";
+import { initChat } from "./chat.js?v=1122j";
+import { openLive } from "./live.js?v=1122j";
+import { openInbox } from "./inbox.js?v=1122j";
 
 const $ = id => document.getElementById(id);
 const esc2 = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -105,7 +106,7 @@ document.addEventListener("click", async ev => {
 window.__resolveClaude({ use: async n => n === "db" ? db : n === "user" ? { can: async () => true, isOwner: () => true, canEdit: () => true } : null });
 
 // Students may only spend what the shop price list allows, so the list lives in the database.
-window.__owner = ADMIN; if (ADMIN) { mountTeacherTT(); window.__liveLesson = liveLesson; }   // only the owner can change prices
+liveScope(ADMIN); window.__owner = ADMIN; if (ADMIN) { mountTeacherTT(); window.__liveLesson = liveLesson; }   // only the owner can change prices
 {
   const pref = doc(fs, "shop", "prices"); let saved = {};
   try { const s = window.__pricesSnap || await getDoc(pref); if (s && s.exists()) saved = s.data().prices || {}; } catch {}
