@@ -1,9 +1,9 @@
 // Classwork for the teacher: make a worksheet, send it to classes, collect and export the answers.
 // Worksheets live in <base>/work, the answer key in <base>/workkey (students never read it),
 // and each student's submission in <base>/subs/<worksheet>_<student>.
-import { getDocs, setDoc, updateDoc, deleteDoc, getDoc, bcol, bdoc } from "./fb.js?v=1121m";
-import { autoMail } from "./mailer.js?v=1121m";
-import { LIVE_WS, isLive } from "./liveworks.js?v=1121m";
+import { getDocs, setDoc, updateDoc, deleteDoc, getDoc, bcol, bdoc } from "./fb.js?v=1121n";
+import { autoMail } from "./mailer.js?v=1121n";
+import { LIVE_WS, isLive } from "./liveworks.js?v=1121n";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -54,12 +54,20 @@ function render() {
       <div class="lg-bar"><button class="primary" type="button" data-wk="new">+ New worksheet</button><button class="ghost" type="button" data-wk="close">Close</button></div>
       ${(() => { const cl = CLASSES.concat(["8G", "8D"]).filter((c, i, x) => x.indexOf(c) === i).map(c => ({ c, n: students.filter(s => String(s.cls).toUpperCase() === c.toUpperCase() && missingOf(s).length).length, on: Object.keys(remindAt).some(k => remindAt[k] && k.toUpperCase() === c.toUpperCase()) })).filter(x => x.n || x.on);
         return cl.length ? `<div class="wk-miss-bar noprint"><b>Missing work</b> <small>Students see a reminder only after you press it.</small><div class="lg-bar">${cl.map(x => `<button class="${x.on ? "primary" : "ghost"} small" type="button" data-wk="remind" data-c="${esc(x.c)}">${x.on ? "✓ Reminding " + esc(x.c) + " (tap to stop)" : "📣 Show missing to " + esc(x.c) + " (" + x.n + " student" + (x.n === 1 ? "" : "s") + ")"}</button>`).join("")}</div></div>` : ""; })()}
-      ${LIVE_WS.filter(lw => liveClasses(lw).length).length ? `<h4 style="margin:14px 0 4px">Live worksheets <small>(part of classwork)</small></h4><table class="lg-tbl"><thead><tr><th>Worksheet</th><th>Classes</th><th>Finished</th><th></th></tr></thead><tbody>${LIVE_WS.filter(lw => liveClasses(lw).length).map(lw => { const all = liveStudents(lw), done = all.filter(s => livePlays(lw, s.id).length).length; return `<tr><td><b>${esc(lw.title)}</b></td><td>${esc(liveClasses(lw).join(", "))}</td><td>${done} / ${all.length}</td><td><button class="primary small" type="button" data-wk="lres" data-lid="${esc(lw.id)}">Results</button></td></tr>`; }).join("")}</tbody></table>` : ""}
-      ${works.length ? `<table class="lg-tbl wk-list"><thead><tr><th>Worksheet</th><th>Classes</th><th>Handed in</th><th></th></tr></thead><tbody>${works.map(w => {
-        const all = stuOf(w), done = all.filter(s => subOf(w, s.id)).length;
-        return `<tr><td><b>${esc(w.title)}</b><br><small>${(w.questions || []).length} questions · ${esc(when(w.created))}${w.open === false ? " · <b>closed</b>" : ""}${w.graded ? " · <b>GRADED WORKSHEET</b>" : ""}</small></td><td>${esc((w.classes || []).join(", "))}</td><td>${done} / ${all.length}</td>
-          <td class="wk-acts"><button class="primary small" type="button" data-wk="res" data-id="${w.id}">Answers</button><button class="${w.graded ? "primary" : "ghost"} small" type="button" data-wk="graded" data-id="${w.id}" title="The final assessment: its mark goes in the Grades sheet as Graded worksheet, not as classwork">${w.graded ? "Graded ✓" : "Make graded"}</button><button class="ghost small" type="button" data-wk="toggle" data-id="${w.id}">${w.open === false ? "Open again" : "Close it"}</button><button class="ghost small" type="button" data-wk="del" data-id="${w.id}">Delete</button></td></tr>`;
-      }).join("")}</tbody></table>` : `<p class="none">No worksheets yet. Tap "New worksheet" to make the first one.</p>`}`;
+      ${(() => {
+        const liveRow = lw => { const all = liveStudents(lw), done = all.filter(s => livePlays(lw, s.id).length).length, t = Math.max(0, ...liveClasses(lw).map(c => liveStart(lw, c)));
+          return { t, html: `<tr><td><b>${esc(lw.title)}</b><br><small>Live worksheet${t ? " · " + esc(when(t)) : ""}</small></td><td>${esc(liveClasses(lw).join(", "))}</td><td>${done} / ${all.length}</td><td class="wk-acts"><button class="primary small" type="button" data-wk="lres" data-lid="${esc(lw.id)}">Results</button></td></tr>` }; };
+        const workRow = w => { const all = stuOf(w), done = all.filter(s => subOf(w, s.id)).length;
+          return `<tr><td><b>${esc(w.title)}</b><br><small>${(w.questions || []).length} questions · ${esc(when(w.created))}${w.open === false ? " · <b>closed</b>" : ""}</small></td><td>${esc((w.classes || []).join(", "))}</td><td>${done} / ${all.length}</td>
+          <td class="wk-acts"><button class="primary small" type="button" data-wk="res" data-id="${w.id}">Answers</button><button class="${w.graded ? "primary" : "ghost"} small" type="button" data-wk="graded" data-id="${w.id}" title="${w.graded ? "Move it back to Classwork" : "Move it to Graded classwork: its mark goes in the Grades sheet as Graded worksheet, not as classwork"}">${w.graded ? "Back to classwork" : "Make graded"}</button><button class="ghost small" type="button" data-wk="toggle" data-id="${w.id}">${w.open === false ? "Open again" : "Close it"}</button><button class="ghost small" type="button" data-wk="del" data-id="${w.id}">Delete</button></td></tr>`; };
+        const thead = `<thead><tr><th>Worksheet</th><th>Classes</th><th>Handed in</th><th></th></tr></thead>`;
+        const cw = works.filter(w => !w.graded).map(w => ({ t: w.created || 0, html: workRow(w) })).concat(LIVE_WS.filter(lw => liveClasses(lw).length).map(liveRow)).sort((x, y) => y.t - x.t);
+        const gw = works.filter(w => w.graded);
+        return `<h4 style="margin:14px 0 4px">Classwork <small>(live worksheets and normal worksheets together; all count in the Classwork mark)</small></h4>`
+          + (cw.length ? `<table class="lg-tbl wk-list">${thead}<tbody>${cw.map(x => x.html).join("")}</tbody></table>` : `<p class="none">No worksheets yet. Tap "New worksheet" to make the first one.</p>`)
+          + `<h4 style="margin:18px 0 4px">Graded classwork <small>(its own list: the mark goes in the Grades sheet as Graded worksheet, not as classwork)</small></h4>`
+          + (gw.length ? `<table class="lg-tbl wk-list">${thead}<tbody>${gw.map(workRow).join("")}</tbody></table>` : `<p class="none">Nothing here yet. Press "Make graded" on a worksheet above to move it to this list.</p>`);
+      })()}`;
   } else if (view === "edit") {
     const d = draft;
     b.innerHTML = `<h3>New worksheet</h3>
@@ -80,7 +88,7 @@ function render() {
   } else if (view === "lres") {
     const lw = LIVE_WS.find(x => x.id === cur); if (!lw) { view = "list"; return render(); }
     const all = liveStudents(lw), rows = all.map(s => { const pl = livePlays(lw, s.id).sort((x, y) => (y.u || y.t || 0) - (x.u || x.t || 0)), p = pl[0]; return { s, p }; }), done = rows.filter(r => r.p);
-    b.innerHTML = `<h3>${esc(lw.title)}</h3><p>${esc(liveClasses(lw).join(", "))} · ${done.length} of ${all.length} finished. This is classwork: it counts in the Classwork mark.</p>
+    b.innerHTML = `<h3>${esc(lw.title)}</h3><p>${esc(liveClasses(lw).join(", "))} · ${done.length} of ${all.length} finished. This is classwork: finishing it counts in the Classwork mark.</p>
       <div class="lg-bar noprint"><button class="ghost" type="button" data-wk="back">Back</button></div>
       <div class="wk-res"><table class="lg-tbl"><thead><tr><th>Name</th><th>Class</th><th>Finished</th><th>Mistakes</th><th>Perfect</th></tr></thead><tbody>${rows.map(({ s, p }) => p ? `<tr><td>${esc(s.name)}</td><td>${esc(s.cls)}</td><td>${esc(when(p.u || p.t))}</td><td>${+p.w || 0}</td><td>${(+p.w || 0) === 0 && (lw.noWs || p.v === 2) ? "⭐" : ""}</td></tr>` : `<tr class="wk-miss"><td>${esc(s.name)}</td><td>${esc(s.cls)}</td><td><b style="color:#b3261e">MISSING</b></td><td></td><td></td></tr>`).join("")}</tbody></table></div>`;
   } else if (view === "res") {
