@@ -551,6 +551,54 @@ button, .srow { touch-action: manipulation; -webkit-tap-highlight-color: transpa
 #hubView { display: grid; gap: 14px; align-content: start; } #hubView .card h3 { margin: 0; font-family: var(--f-display); font-size: 20px; } #hubView .card h3 small { font-size: 13px; color: var(--muted); font-weight: 500; }
 .hub-body { display: grid; gap: 14px; } .hub-bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; } .hub-bar input[type="text"], .hub-bar input:not([type]) { flex: 1 1 200px; min-width: 0; }
 .mx { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; color: var(--muted); } .mx input { width: 80px; }
+
+/* ---- Insights: class cards ---- */
+.ig-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.ig-card{position:relative;display:flex;flex-direction:column;gap:12px;padding:16px 16px 14px;border:1px solid var(--line);border-radius:16px;background:var(--card);box-shadow:var(--shadow);overflow:hidden}
+.ig-card::before{content:"";position:absolute;left:0;top:0;right:0;height:4px;background:var(--accent)}
+.ig-hd{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.ig-cn{display:block;font-family:var(--f-display);font-size:26px;line-height:1;color:var(--ink)}
+.ig-sub{display:block;margin-top:4px;font-size:12.5px;color:var(--muted)}
+.ig-xp{text-align:right;padding:6px 10px;border-radius:12px;background:var(--accent-soft)}
+.ig-xp b{display:block;font-family:var(--f-display);font-size:20px;line-height:1.05;color:var(--accent)}
+.ig-xp span{font-size:11px;color:var(--muted)}
+.ig-pn{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ig-pn small{grid-column:1/-1;margin-top:-4px;font-size:11px;color:var(--muted)}
+.ig-p{padding:8px 10px;border-radius:10px}
+.ig-p b{display:block;font-family:var(--f-display);font-size:19px;line-height:1.1}
+.ig-p span{font-size:11.5px}
+.ig-p.g{background:var(--good-soft);color:var(--good)} .ig-p.r{background:var(--bad-soft);color:var(--bad)}
+.ig-m{display:grid;gap:5px}
+.ig-ml,.ig-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:12.5px;color:var(--muted)}
+.ig-ml b,.ig-row b{color:var(--ink);font-weight:600;text-align:right}
+.ig-row small{display:block;font-weight:400;color:var(--muted);font-size:11px}
+.ig-card em{font-style:normal;font-weight:400;color:var(--muted)}
+.ig-bar{height:7px;border-radius:99px;background:var(--line);overflow:hidden}
+.ig-bar i{display:block;height:100%;border-radius:inherit}
+.ig-row{padding-top:10px;border-top:1px solid var(--line)}
+.ig-ft{display:grid;gap:6px;font-size:11.5px;color:var(--muted)}
+.ig-ft div{display:flex;flex-wrap:wrap;gap:5px}
+.ig-ft i{font-style:normal;padding:3px 8px;border-radius:99px;background:var(--paper);border:1px solid var(--line);color:var(--ink);font-size:11.5px}
+.ig-ft i b{color:var(--bad)}
+/* ---- Tools: Manage tiles ---- */
+.mg-wrap{display:grid;gap:18px;margin-top:6px}
+.mg-grp h4{margin:0 0 8px;font-size:13px;font-weight:600;color:var(--muted)}
+.mg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.mtile{position:relative;display:grid;grid-template-columns:42px 1fr;grid-template-rows:auto auto;column-gap:12px;align-items:center;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--card);transition:border-color .15s,box-shadow .15s,transform .15s}
+.mtile:hover{border-color:var(--accent);box-shadow:var(--shadow)}
+.mtile:active{transform:translateY(1px)}
+.mtile:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+.mtile[hidden]{display:none!important}
+.mt-ic{grid-row:1/3;display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:var(--accent-soft);color:var(--accent)}
+.mt-ic svg{width:22px;height:22px}
+.mtile.c2 .mt-ic{background:var(--good-soft);color:var(--good)}
+.mtile.c3 .mt-ic{background:var(--gold-soft);color:var(--gold)}
+.mtile.c4 .mt-ic{background:var(--paper);color:var(--muted)}
+.mtile button{all:unset;cursor:pointer;font-family:var(--f-body);font-weight:600;font-size:14.5px;color:var(--ink);line-height:1.25}
+.mtile button::after{content:"";position:absolute;inset:0;border-radius:14px}
+.mtile button:disabled{cursor:wait;opacity:.7}
+.mt-d{font-size:12px;color:var(--muted);line-height:1.35}
+@media(max-width:520px){.mg-grid{grid-template-columns:1fr 1fr}.mtile{grid-template-columns:1fr;row-gap:6px}.mt-ic{grid-row:auto;width:36px;height:36px}.mt-d{display:none}}
 .ins-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; }
 .ins-c { border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: grid; gap: 4px; font-size: 13px; } .ins-c .cn { font-family: var(--f-display); font-size: 22px; }
 .ins-c i { font-style: normal; } .ins-c .g, .why .g { color: var(--good); } .ins-c .r { color: var(--bad); } .why { font-size: 12px; color: var(--muted); }
@@ -1288,7 +1336,7 @@ header.book .geo { max-height: 190px; }
 /* --- Student Island logo mark --- */
 header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !important; color: transparent !important; font-size: 0 !important; border: 0 !important; box-shadow: none !important; border-radius: 22% !important; }
 
-</style><link rel="stylesheet" href="island.css?v=1122d"><style>
+</style><link rel="stylesheet" href="island.css?v=1122e"><style>
 .cls-panel{margin:12px 0;padding:14px;border:2px solid var(--edge);border-radius:12px;background:var(--card);display:grid;gap:10px}
 .cls-panel h4{margin:0}.cls-panel p{margin:0;font-size:14px}
 .cls-panel label{display:grid;gap:4px;font-size:13px;font-weight:600}
@@ -1459,7 +1507,7 @@ header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !import
 window.__ready = new Promise(r => { window.__resolveClaude = r; });
 window.claude = { use: async n => (await window.__ready).use(n) };
 </script>
-<script src="hats.js?v=1122d"></script>
+<script src="hats.js?v=1122e"></script>
 <script>
 const POSITIVE = [
   { title: "Active Participation", xp: 10 },
@@ -3255,11 +3303,13 @@ function renderHub() {
 function hubInsights() {
   const I = insights();
   const chip = (p, t) => `<li>${avatarHTML(p.st, "sm")}<div><b>${esc(shortName(p.st.name))}</b> <small>${p.st.cls}</small><div class="why">${t}</div></div></li>`;
-  return `<section class="card"><h3>Classes at a glance</h3><div class="ins-grid">${I.clsRows.map(r => `<div class="ins-c"><b class="cn">${r.c}</b><span>${r.n} students · average ${r.avg} XP</span>
-      <span>Last 14 days: <i class="g">${r.pos} positive</i> · <i class="r">${r.neg} deductions</i></span>
-      <span>Attendance (30 days): ${r.att === null ? "not recorded" : r.att + "%"}</span><span>Homework done: ${r.hw === null ? "no tasks yet" : r.hw + "%"}</span>
-      <span>${r.test ? `Latest test "${esc(r.test.t)}": ${r.test.avg}% average` : "No test marks yet"}</span>
-      ${r.ded.length ? `<span class="why">Most common deductions: ${r.ded.map(([t, n]) => esc(t) + " ×" + n).join(", ")}</span>` : ""}</div>`).join("")}</div></section>
+  const bar = (lab, v, none) => `<div class="ig-m"><div class="ig-ml"><span>${lab}</span><b>${v === null ? `<em>${none}</em>` : v + "%"}</b></div><div class="ig-bar"><i style="width:${v === null ? 0 : Math.max(0, Math.min(100, v))}%;background:${v === null ? "transparent" : v >= 85 ? "var(--good)" : v >= 70 ? "var(--gold)" : "var(--bad)"}"></i></div></div>`;
+  return `<section class="card"><h3>Classes at a glance</h3><div class="ig-grid">${I.clsRows.map(r => `<article class="ig-card">
+      <header class="ig-hd"><div><b class="ig-cn">${r.c}</b><span class="ig-sub">${r.n} students</span></div><div class="ig-xp"><b>${r.avg}</b><span>avg XP</span></div></header>
+      <div class="ig-pn"><div class="ig-p g"><b>${r.pos}</b><span>positive</span></div><div class="ig-p r"><b>${r.neg}</b><span>deductions</span></div><small>last 14 days</small></div>
+      ${bar("Attendance · 30 days", r.att, "not recorded")}${bar("Homework done", r.hw, "no tasks yet")}
+      <div class="ig-row"><span>Latest test</span><b>${r.test ? `${r.test.avg}% <small>${esc(r.test.t)}</small>` : "<em>none yet</em>"}</b></div>
+      ${r.ded.length ? `<footer class="ig-ft"><span>Most common deductions</span><div>${r.ded.map(([t, n]) => `<i>${esc(t)} <b>×${n}</b></i>`).join("")}</div></footer>` : ""}</article>`).join("")}</div></section>
     <section class="card"><h3>Needs attention (${I.attention.length})</h3>${I.attention.length ? `<ul class="plist">${I.attention.map(p => chip(p, p.reasons.map(esc).join(" · "))).join("")}</ul>` : `<div class="none">No concerns found from the recorded data.</div>`}</section>
     <section class="card"><h3>Not recognised recently</h3><p class="rep-note">No positive entry in the last 14 days. A quick word of praise or an easy question could help.</p>${I.unseen.length ? `<ul class="plist">${I.unseen.map(p => chip(p, "no positive entries in 14 days")).join("")}</ul>` : `<div class="none">Everyone has been recognised recently, or there is no data yet.</div>`}</section>
     <section class="card"><h3>Top earners, last 30 days</h3>${I.top.length ? `<ul class="plist">${I.top.map((p, i) => chip(p, `${i + 1}. +${p.posXP30} XP from behaviour`)).join("")}</ul>` : `<div class="none">No data yet.</div>`}</section>`;
@@ -3357,7 +3407,7 @@ function hubGrades() {
 
 function grLoadLib() {
   if (window.ExcelJS) return Promise.resolve();
-  return new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1122d"; sc.onload = res; sc.onerror = () => rej(new Error("lib")); document.head.appendChild(sc); });
+  return new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1122e"; sc.onload = res; sc.onerror = () => rej(new Error("lib")); document.head.appendChild(sc); });
 }
 async function grXlsx(btn) {
   const keep = cls;
@@ -3489,7 +3539,7 @@ function resetCard() {
 }
 function hubTools() {
   const presets = [[60, "1 min"], [180, "3 min"], [300, "5 min"], [600, "10 min"], [900, "15 min"]];
-  return `<section class="card"><h3>Manage</h3><p class="rep-note">Classwork, student logins, importing old data and more.</p><div class="sbtns" id="hubMgmt" style="justify-content:flex-start"></div></section>` + resetCard() + `<section class="card tmr" data-feat="timer"><h3>Lesson timer</h3><div id="tmDisp" class="tmdisp ${tm.left <= 10 ? "low" : ""}">${fmtT(tm.left)}</div>
+  return `<section class="card"><h3>Manage</h3><p class="rep-note">Everything you use to run your classes, in one place.</p><div id="hubMgmt" class="mg-wrap"></div></section>` + resetCard() + `<section class="card tmr" data-feat="timer"><h3>Lesson timer</h3><div id="tmDisp" class="tmdisp ${tm.left <= 10 ? "low" : ""}">${fmtT(tm.left)}</div>
     <div class="sbtns">${presets.map(([s, l]) => `<button class="shop-tab" data-act="tmSet" data-s="${s}" aria-pressed="${tm.total === s}">${l}</button>`).join("")}<label class="mx"><input id="tmMin" type="number" inputmode="decimal" min="0.5" step="0.5" placeholder="min" style="width:70px"><button class="ghost small" data-act="tmCustom">Set</button></label></div>
     <div class="sbtns"><button class="primary" data-act="tmGo">${tm.run ? "Pause" : tm.left < tm.total && tm.left > 0 ? "Resume" : "Start"}</button><button class="ghost" data-act="tmReset">Reset</button></div>
     <p class="rep-note">Keeps running if you switch tabs. Plays a sound and says "Time is up" at zero (follows the sound setting).</p></section>
@@ -4531,8 +4581,8 @@ document.getElementById("expBtn")?.addEventListener("click", async () => {
     <div class="acts noprint"><button class="ghost" id="lgPrint" type="button">Print this list</button><button class="ghost" id="lgClose" type="button">Close</button></div>
   </div>
 </div>
-<script type="module" src="teacher.js?v=1122d"></script>
-<script src="mylessons.js?v=1122d"></script>
+<script type="module" src="teacher.js?v=1122e"></script>
+<script src="mylessons.js?v=1122e"></script>
 
 <script>
 /* Post a certificate straight to Google Classroom.

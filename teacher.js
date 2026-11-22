@@ -1,24 +1,24 @@
 import { onSnapshot, changeEmail, auth, fs, firebaseConfig, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, collection, query, where, writeBatch, setBase, bcol, bdoc, signOut, whenUser, profileOf, emailFor, pinKey,
-  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1122d";
-import { db } from "./fbdb.js?v=1122d";
-import { peopleSet, peopleDel, peopleGet, peopleCls } from "./sbdata.js?v=1122d";
-import { downloadBackup } from "./backupxl.js?v=1122d";
-import { openMail, sendRaw } from "./mailer.js?v=1122d";
-import { startUsage } from "./usage.js?v=1122d";
-import { liveLesson, mountTeacherTT } from "./timetable.js?v=1122d";
-import { openWork, gradeData } from "./teacherwork.js?v=1122d";
-import "./lessonxp.js?v=1122d";
-import { openProgress } from "./progress.js?v=1122d";
-import { openMaterial } from "./material.js?v=1122d";
-import { openLiveWs } from "./liveteacher.js?v=1122d";
-import { openFunpark } from "./fpteacher.js?v=1122d";
-import { openCoconut } from "./coconut.js?v=1122d";
-import { hasFeature, hideCss } from "./features.js?v=1122d";
-import { xpAllowed } from "./ownerpin.js?v=1122d";
+  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1122e";
+import { db } from "./fbdb.js?v=1122e";
+import { peopleSet, peopleDel, peopleGet, peopleCls } from "./sbdata.js?v=1122e";
+import { downloadBackup } from "./backupxl.js?v=1122e";
+import { openMail, sendRaw } from "./mailer.js?v=1122e";
+import { startUsage } from "./usage.js?v=1122e";
+import { liveLesson, mountTeacherTT } from "./timetable.js?v=1122e";
+import { openWork, gradeData } from "./teacherwork.js?v=1122e";
+import "./lessonxp.js?v=1122e";
+import { openProgress } from "./progress.js?v=1122e";
+import { openMaterial } from "./material.js?v=1122e";
+import { openLiveWs } from "./liveteacher.js?v=1122e";
+import { openFunpark } from "./fpteacher.js?v=1122e";
+import { openCoconut } from "./coconut.js?v=1122e";
+import { hasFeature, hideCss } from "./features.js?v=1122e";
+import { xpAllowed } from "./ownerpin.js?v=1122e";
 window.xpGate = n => xpAllowed(n); window.wkGradeData = gradeData; window.mailSend = sendRaw;
-import { initChat } from "./chat.js?v=1122d";
-import { openLive } from "./live.js?v=1122d";
-import { openInbox } from "./inbox.js?v=1122d";
+import { initChat } from "./chat.js?v=1122e";
+import { openLive } from "./live.js?v=1122e";
+import { openInbox } from "./inbox.js?v=1122e";
 
 const $ = id => document.getElementById(id);
 const esc2 = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -179,7 +179,23 @@ $("outBtn").onclick = async () => { await signOut(auth); location.href = "index.
   document.body.appendChild(eb);
   const btns = ["workBtn", "mlBtn", "lwBtn", "liveBtn", "ccBtn", "funBtn", "inboxBtn", "matBtn", "loginsBtn", "impBtn", "islandBtn", "devBtn", "backupBtn", "mailBtn", "emailBtn"].map(id => $(id)).filter(Boolean);
   btns.forEach(b => holder.appendChild(b));
-  const place = () => { const h = $("hubMgmt"); if (h && !btns.every(b => b.parentNode === h)) btns.forEach(b => h.appendChild(b)); };
+  const MG_ICON = {"doc": "<path d=\"M7 3h7l4 4v14H7z\"/><path d=\"M14 3v4h4M10 12h5M10 16h5\"/>", "book": "<path d=\"M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z\"/><path d=\"M4 19V5\"/>", "bolt": "<path d=\"M13 2 5 14h6l-1 8 8-12h-6z\"/>", "quiz": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .8-1 1.5M12 17h.01\"/>", "nut": "<circle cx=\"12\" cy=\"13\" r=\"8\"/><path d=\"M8 9c1.5-1 6.5-1 8 0M12 5V2\"/>", "park": "<path d=\"M3 21h18M5 21V10l7-6 7 6v11\"/><path d=\"M10 21v-6h4v6\"/>", "mega": "<path d=\"M3 10v4h3l7 4V6L6 10z\"/><path d=\"M17 9a4 4 0 0 1 0 6\"/>", "mail": "<rect x=\"3\" y=\"5\" width=\"18\" height=\"14\" rx=\"2\"/><path d=\"m4 7 8 6 8-6\"/>", "folder": "<path d=\"M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"/>", "key": "<circle cx=\"8\" cy=\"15\" r=\"4\"/><path d=\"m11 12 9-9M17 6l3 3\"/>", "chart": "<path d=\"M4 20V10M10 20V4M16 20v-7M22 20H2\"/>", "imp": "<path d=\"M12 3v12M7 10l5 5 5-5\"/><path d=\"M4 21h16\"/>", "save": "<path d=\"M5 3h11l3 3v15H5z\"/><path d=\"M8 3v6h8V3M8 21v-7h8v7\"/>", "code": "<path d=\"m8 8-5 4 5 4M16 8l5 4-5 4M14 4l-4 16\"/>", "user": "<circle cx=\"12\" cy=\"8\" r=\"4\"/><path d=\"M4 21a8 8 0 0 1 16 0\"/>"};
+  const MG_META = {"workBtn": ["teach", "Classwork", "Worksheets and answers", "doc", ""], "mlBtn": ["teach", "My lessons", "Your lesson slides and links", "book", ""], "lwBtn": ["teach", "Live worksheets", "Start interactive worksheets", "bolt", ""], "liveBtn": ["teach", "Live quiz", "Run a quiz on the board", "quiz", ""], "ccBtn": ["teach", "Coconut Crack", "Whole-class game", "nut", ""], "funBtn": ["teach", "Fun Park", "Revision games", "park", ""], "inboxBtn": ["msg", "Announcements", "Post news to your classes", "mega", "c2"], "mailBtn": ["msg", "Email students", "Emails and reminders", "mail", "c2"], "matBtn": ["msg", "My material", "Files and links for students", "folder", "c2"], "loginsBtn": ["data", "Student logins", "Accounts and PINs", "key", "c3"], "islandBtn": ["data", "Students progress", "Games and lesson results", "chart", "c3"], "impBtn": ["data", "Import old data", "Bring in a saved file", "imp", "c3"], "backupBtn": ["data", "Backup (Excel)", "Download all student data", "save", "c3"], "devBtn": ["acct", "Developer", "Usage and settings", "code", "c4"], "emailBtn": ["acct", "My email & password", "Change email, reset password", "user", "c4"]};
+  const MG_GROUPS = [["teach", "Teaching"], ["msg", "Messages and material"], ["data", "Students and data"], ["acct", "Account"]];
+  const mgSync = h => { h.querySelectorAll(".mtile").forEach(t => { const b = t.querySelector("button"); t.hidden = !b || getComputedStyle(b).display === "none"; });
+    h.querySelectorAll(".mg-grp").forEach(g => { g.hidden = ![...g.querySelectorAll(".mtile")].some(t => !t.hidden); }); };
+  const place = () => {
+    const h = $("hubMgmt"); if (!h) return;
+    if (!btns.every(b => h.contains(b))) {
+      h.innerHTML = MG_GROUPS.map(([k, l]) => `<div class="mg-grp" data-g="${k}"><h4>${l}</h4><div class="mg-grid"></div></div>`).join("");
+      btns.forEach(b => { const m = MG_META[b.id] || ["acct", b.textContent, "", "doc", "c4"], g = h.querySelector(`.mg-grp[data-g="${m[0]}"] .mg-grid`);
+        const t = document.createElement("div"); t.className = "mtile " + m[4];
+        t.innerHTML = `<span class="mt-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${MG_ICON[m[3]] || ""}</svg></span><span class="mt-d">${m[2]}</span>`;
+        if (!b.disabled) b.textContent = m[1];
+        t.insertBefore(b, t.children[1]); g.appendChild(t); });
+    }
+    mgSync(h);
+  };
   const r0 = window.render;
   window.render = function () { const out = r0.apply(this, arguments); place(); return out; };
   place();
