@@ -1,9 +1,9 @@
 // Classwork for the teacher: make a worksheet, send it to classes, collect and export the answers.
 // Worksheets live in <base>/work, the answer key in <base>/workkey (students never read it),
 // and each student's submission in <base>/subs/<worksheet>_<student>.
-import { getDocs, setDoc, updateDoc, deleteDoc, getDoc, bcol, bdoc } from "./fb.js?v=1121n";
-import { autoMail } from "./mailer.js?v=1121n";
-import { LIVE_WS, isLive } from "./liveworks.js?v=1121n";
+import { getDocs, setDoc, updateDoc, deleteDoc, getDoc, bcol, bdoc } from "./fb.js?v=1121o";
+import { autoMail, sendTo } from "./mailer.js?v=1121o";
+import { LIVE_WS, isLive } from "./liveworks.js?v=1121o";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -53,7 +53,7 @@ function render() {
       <p class="noprint">Make a worksheet, send it to one class or all of them. Students find it when they log in. Their answers and the time they handed in stay here as evidence.</p>
       <div class="lg-bar"><button class="primary" type="button" data-wk="new">+ New worksheet</button><button class="ghost" type="button" data-wk="close">Close</button></div>
       ${(() => { const cl = CLASSES.concat(["8G", "8D"]).filter((c, i, x) => x.indexOf(c) === i).map(c => ({ c, n: students.filter(s => String(s.cls).toUpperCase() === c.toUpperCase() && missingOf(s).length).length, on: Object.keys(remindAt).some(k => remindAt[k] && k.toUpperCase() === c.toUpperCase()) })).filter(x => x.n || x.on);
-        return cl.length ? `<div class="wk-miss-bar noprint"><b>Missing work</b> <small>Students see a reminder only after you press it.</small><div class="lg-bar">${cl.map(x => `<button class="${x.on ? "primary" : "ghost"} small" type="button" data-wk="remind" data-c="${esc(x.c)}">${x.on ? "✓ Reminding " + esc(x.c) + " (tap to stop)" : "📣 Show missing to " + esc(x.c) + " (" + x.n + " student" + (x.n === 1 ? "" : "s") + ")"}</button>`).join("")}</div></div>` : ""; })()}
+        return cl.length ? `<div class="wk-miss-bar noprint"><b>Missing work</b> <small>Students see a reminder only after you press it.</small><div class="lg-bar">${cl.map(x => `<button class="${x.on ? "primary" : "ghost"} small" type="button" data-wk="remind" data-c="${esc(x.c)}">${x.on ? "✓ Reminding " + esc(x.c) + " (tap to stop)" : "📣 Show missing to " + esc(x.c) + " (" + x.n + " student" + (x.n === 1 ? "" : "s") + ")"}</button>${x.n ? `<button class="ghost small" type="button" data-wk="remindmail" data-c="${esc(x.c)}" title="Show the reminder on the site and also email each student what he is missing">✉ Remind + email ${esc(x.c)}</button>` : ""}`).join("")}</div></div>` : ""; })()}
       ${(() => {
         const liveRow = lw => { const all = liveStudents(lw), done = all.filter(s => livePlays(lw, s.id).length).length, t = Math.max(0, ...liveClasses(lw).map(c => liveStart(lw, c)));
           return { t, html: `<tr><td><b>${esc(lw.title)}</b><br><small>Live worksheet${t ? " · " + esc(when(t)) : ""}</small></td><td>${esc(liveClasses(lw).join(", "))}</td><td>${done} / ${all.length}</td><td class="wk-acts"><button class="primary small" type="button" data-wk="lres" data-lid="${esc(lw.id)}">Results</button></td></tr>` }; };
@@ -161,6 +161,16 @@ document.addEventListener("click", async e => {
     if (k && at[k]) delete at[k]; else at[c] = Date.now();
     const classes = Object.keys(at).filter(x => at[x]);
     b.disabled = true; try { await setDoc(bdoc("work", "remind"), { kind: "remind", at, classes, created: Date.now() }); remindAt = at; } catch { alert("Could not save the reminder."); } return render(); }
+  if (a === "remindmail") { const c = b.dataset.c, list = students.filter(s => String(s.cls).toUpperCase() === c.toUpperCase() && missingOf(s).length);
+    if (!list.length) return alert("Nobody in " + c + " is missing work.");
+    if (!confirm("Remind " + c + " on the site and email " + list.length + " student(s) what they are missing?")) return;
+    b.disabled = true; const old = b.textContent; b.textContent = "Sending…";
+    try {
+      const at = { ...remindAt }; if (!Object.keys(at).some(x => at[x] && x.toUpperCase() === c.toUpperCase())) { at[c] = Date.now(); await setDoc(bdoc("work", "remind"), { kind: "remind", at, classes: Object.keys(at).filter(x => at[x]), created: Date.now() }); remindAt = at; }
+      const r = await sendTo(list, s => ({ subject: "Missing work in Student Island", text: "Hello " + String(s.name || "").split(/\s+/)[0] + ",\n\nYou have not finished:\n" + missingOf(s).map(t => "- " + t).join("\n") + "\n\nLog in and complete it: https://mathkn.fun" }));
+      alert("Reminder is on the site. Emails sent: " + r.sent + (r.skipped.length ? ". Skipped (no valid student ID): " + r.skipped.length : "") + (r.failed.length ? ". Failed: " + r.failed.length + " (" + r.failed[0].error + ")" : "") + ".");
+    } catch (e) { alert("The site reminder may be on, but the email was not sent: " + (e.message || e)); }
+    return render(); }
   if (a === "lres") { cur = b.dataset.lid; view = "lres"; await load(); return render(); }
   if (a === "back") { view = "list"; await load(); return render(); }
   if (a === "testtog") { readDraft(); return render(); }
