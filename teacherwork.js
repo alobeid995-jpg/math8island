@@ -1,9 +1,9 @@
 // Classwork for the teacher: make a worksheet, send it to classes, collect and export the answers.
 // Worksheets live in <base>/work, the answer key in <base>/workkey (students never read it),
 // and each student's submission in <base>/subs/<worksheet>_<student>.
-import { getDocs, setDoc, updateDoc, deleteDoc, getDoc, bcol, bdoc } from "./fb.js?v=1122j";
-import { autoMail, sendTo } from "./mailer.js?v=1122j";
-import { LIVE_WS, isLive } from "./liveworks.js?v=1122j";
+import { getDocs, setDoc, updateDoc, deleteDoc, getDoc, bcol, bdoc } from "./fb.js?v=1122k";
+import { autoMail, sendTo } from "./mailer.js?v=1122k";
+import { LIVE_WS, isLive } from "./liveworks.js?v=1122k";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -211,7 +211,7 @@ export async function gradeData() {
 }
 
 /* ---------- Import questions from Excel (.xlsx) or CSV ---------- */
-const loadXl = () => window.ExcelJS ? Promise.resolve() : new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1122j"; sc.onload = res; sc.onerror = () => rej(new Error("Could not load the Excel reader.")); document.head.appendChild(sc); });
+const loadXl = () => window.ExcelJS ? Promise.resolve() : new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1122k"; sc.onload = res; sc.onerror = () => rej(new Error("Could not load the Excel reader.")); document.head.appendChild(sc); });
 function csvRows(t) {
   const rows = []; let row = [], cur = "", q = false;
   t = t.replace(/^\ufeff/, "");
