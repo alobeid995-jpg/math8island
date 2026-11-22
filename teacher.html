@@ -1385,7 +1385,7 @@ header.book .geo { max-height: 190px; }
 /* --- Student Island logo mark --- */
 header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !important; color: transparent !important; font-size: 0 !important; border: 0 !important; box-shadow: none !important; border-radius: 22% !important; }
 
-</style><link rel="stylesheet" href="island.css?v=1122m"><style>
+</style><link rel="stylesheet" href="island.css?v=1122n"><style>
 .cls-panel{margin:12px 0;padding:14px;border:2px solid var(--edge);border-radius:12px;background:var(--card);display:grid;gap:10px}
 .cls-panel h4{margin:0}.cls-panel p{margin:0;font-size:14px}
 .cls-panel label{display:grid;gap:4px;font-size:13px;font-weight:600}
@@ -1556,7 +1556,7 @@ header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !import
 window.__ready = new Promise(r => { window.__resolveClaude = r; });
 window.claude = { use: async n => (await window.__ready).use(n) };
 </script>
-<script src="hats.js?v=1122m"></script>
+<script src="hats.js?v=1122n"></script>
 <script>
 const POSITIVE = [
   { title: "Active Participation", xp: 10 },
@@ -2182,7 +2182,7 @@ function readShop(v) {
     certs: Array.isArray(v.certs) ? v.certs.filter(c => c && c.title) : [],
     lx: Object.fromEntries(Object.entries(v.lx && typeof v.lx === "object" ? v.lx : {}).filter(([k, x]) => /^[\w-]+$/.test(k) && x && typeof x === "object").map(([k, x]) => [k, { done: Number(x.done) || 0, perfect: Number(x.perfect) || 0 }])),
     rt: Object.fromEntries(Object.entries(v.rt && typeof v.rt === "object" ? v.rt : {}).filter(([k, x]) => /^[\w-]+$/.test(k) && typeof x === "number")),
-    books: Object.fromEntries(Object.entries(v.books && typeof v.books === "object" ? v.books : {}).filter(([d, x]) => /^\d{4}-\d{2}-\d{2}$/.test(d) && /^[ynl]$/.test(x))),
+    books: Object.fromEntries(Object.entries(v.books && typeof v.books === "object" ? v.books : {}).filter(([d, x]) => /^\d{4}-\d{2}-\d{2}$/.test(d) && /^[ynlp]$/.test(x))),
     hist: Array.isArray(v.hist) ? v.hist.filter(e => e && typeof e.xp === "number") : [],
     sp: Array.isArray(v.sp) ? v.sp.filter(e => e && shopItem(e.k)) : []
   };
@@ -3398,7 +3398,7 @@ function renderTools() {
 function renderHub() {
   const el = $("hubView");
   const on = window.__featOn || (() => true);
-  const tabs = [["insights", "Insights"], ["att", "Attendance"], ["hw", "Homework"], ["marks", "Marks"], ["grades", "Grades /10"], ["books", "Notebooks"], ["seats", "Seat plan"], ["groups", "Group maker"]].filter(([k]) => k === "groups" ? on("groups") : on("hub_" + k));
+  const tabs = [["insights", "Insights"], ["att", "Attendance"], ["hw", "Homework"], ["marks", "Marks"], ["grades", "Grades /10"], ["books", "Notebook classwork"], ["seats", "Seat plan"], ["groups", "Group maker"]].filter(([k]) => k === "groups" ? on("groups") : on("hub_" + k));
   if (!tabs.some(([k]) => k === hubTab)) hubTab = tabs.length ? tabs[0][0] : "none";
   const chips = hubTab === "insights" ? "" : `<div class="shop-tabs">${CLASSES.map(c => `<button class="shop-tab" data-act="hubCls" data-cls="${c}" aria-pressed="${c === cls}">${c} <small>${students.filter(s => s.cls === c).length}</small></button>`).join("")}</div>`;
   let body = "";
@@ -3474,16 +3474,17 @@ function grRows() {
   const list = clsStu(cls);
   const ws = (grData ? grData.works : []).filter(w => w.classes.includes(cls) && okD(dOf(w.created)));
   const cw = ws.filter(w => !w.graded), gw = ws.filter(w => w.graded);
+  const nbDays = [...new Set(list.flatMap(st => Object.keys(st.books || {})))].filter(okD).sort();   // each day notebook classwork was marked counts as one classwork
   const rows = list.map(st => {
     const ev = (st.hist || []).concat(st.log || []).filter(e => e && e.title && okD((e.at || "").slice(0, 10)) && !e.reset);
     const part = ev.filter(e => e.xp > 0 && GR_PART.includes(e.title)).length;
     const pen = ev.filter(e => e.xp < 0 && GR_BEH.includes(e.title)).length;
     const subs = grData ? grData.subs.filter(x => x.sid === st.id) : [];
-    const done = cw.filter(w => subs.some(x => x.wid === w.id)).length;
+    const done = cw.filter(w => subs.some(x => x.wid === w.id)).length + nbDays.filter(d => /^[yl]$/.test((st.books || {})[d] || "")).length;
     const gm = gw.map(w => { const x = subs.find(y => y.wid === w.id); return x && x.n ? 10 * x.right / x.n : 0; });
     return { st, part, pen, done, g: gm.length ? gm.reduce((a, v) => a + v, 0) / gm.length : null };
   });
-  const total = c.total > 0 ? c.total : cw.length;
+  const total = c.total > 0 ? c.total : cw.length + nbDays.length;
   rows.forEach(r => {
     r.p = Math.min(10, 10 * r.part / Math.max(1, c.pTarget));
     r.b = Math.max(0, 10 - r.pen * c.perMiss);
@@ -3509,7 +3510,7 @@ function hubGrades() {
       <label>Participation target <input type="number" id="grPT" min="1" max="100" style="width:70px" value="${c.pTarget}"></label>
       <label>Per deduction <input type="number" id="grPM" min="0" max="10" step="0.25" style="width:70px" value="${c.perMiss}"></label>
       <button class="ghost small" data-act="grReset">Reset</button></div>
-    <p class="rep-note">Classworks held used: <b>${total}</b>${c.total ? "" : " (worksheets sent to " + esc(cls) + " in this period, graded ones excluded)"}. ${hasG ? `Graded worksheets in this period: <b>${gN}</b>.` : "No graded worksheet in this period yet, so the total is out of 30."} Leave the dates empty to count everything.${grData.err ? " <b>Could not read the worksheets (check the Firebase rules).</b>" : ""}</p>
+    <p class="rep-note">Classworks held used: <b>${total}</b>${c.total ? "" : " (worksheets and live worksheets sent to " + esc(cls) + " in this period plus the days notebook classwork was marked; graded ones excluded)"}. ${hasG ? `Graded worksheets in this period: <b>${gN}</b>.` : "No graded worksheet in this period yet, so the total is out of 30."} Leave the dates empty to count everything.${grData.err ? " <b>Could not read the worksheets (check the Firebase rules).</b>" : ""}</p>
     <div style="overflow:auto"><table class="rep-tbl" id="grTbl"><thead><tr><th>Student</th><th>Participation</th><th>Behaviour</th><th>Deductions</th><th>Classwork</th><th>Done / held</th><th>Graded worksheet</th><th>Total /${comps * 10}</th></tr></thead><tbody>
     ${rows.map(r => `<tr><td>${esc(r.st.name)}</td>${cell(r.p)}${cell(r.b)}<td class="xpc">${r.pen}</td>${cell(r.w)}<td class="xpc">${r.done} / ${total}</td>${cell(r.g)}<td class="xpc"><b>${gr1(r.t)}</b></td></tr>`).join("") || `<tr><td colspan="8">No students.</td></tr>`}
     </tbody><tfoot><tr><td><b>Class average</b></td><td class="xpc"><b>${gr1(grAvg(rows, "p"))}</b></td><td class="xpc"><b>${gr1(grAvg(rows, "b"))}</b></td><td></td><td class="xpc"><b>${gr1(grAvg(rows, "w"))}</b></td><td></td><td class="xpc"><b>${hasG ? gr1(grAvg(rows, "g")) : "–"}</b></td><td class="xpc"><b>${gr1(grAvg(rows, "t"))}</b></td></tr></tfoot></table></div>
@@ -3521,7 +3522,7 @@ function hubGrades() {
 
 function grLoadLib() {
   if (window.ExcelJS) return Promise.resolve();
-  return new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1122m"; sc.onload = res; sc.onerror = () => rej(new Error("lib")); document.head.appendChild(sc); });
+  return new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1122n"; sc.onload = res; sc.onerror = () => rej(new Error("lib")); document.head.appendChild(sc); });
 }
 async function grXlsx(btn) {
   const keep = cls;
@@ -3570,7 +3571,7 @@ async function grXlsx(btn) {
       const notes = ["How the marks are worked out",
         `Participation: ${c.pTarget} good moments in class (participation, great reasoning, helping a peer) = 10.`,
         `Behaviour: starts at 10; each behaviour deduction takes off ${c.perMiss}.`,
-        `Classwork: worksheets completed in class out of ${total} sent to the class, scaled to 10.`]
+        `Classwork: worksheets, live worksheets and notebook classwork done, out of ${total} held, scaled to 10. Finishing counts in full, mistakes do not lose marks.`]
         .concat(hasG ? ["Graded worksheet: the auto-marked score of the final assessment worksheet, scaled to 10."] : []).concat(["Colours: green 8 and above · yellow 5 to 7.9 · red below 5."]);
       notes.forEach((tx, i) => { ws.mergeCells(nr + i, 1, nr + i, N); const x = ws.getCell(nr + i, 1); x.value = tx; x.font = i ? { size: 10, color: { argb: "FF55607A" } } : { bold: true, size: 11, color: { argb: NAVY } }; x.alignment = { indent: 1 }; });
       summary.push([k, rows.length, grAvg(rows, "p"), grAvg(rows, "b"), grAvg(rows, "w"), hasG ? grAvg(rows, "g") : null, grAvg(rows, "t") / comps]);
@@ -3614,12 +3615,12 @@ function hubBooks() {
   const cnt = k => list.filter(s => val(s) === k).length, today = todayStr();
   const owing = list.filter(s => bkOwing(s).length);
   return `<section class="card"><div class="hub-bar"><button class="ghost small" data-act="bkDay" data-n="-1" aria-label="Previous day">‹</button><input type="date" id="bkDate" value="${bkDate}"><button class="ghost small" data-act="bkDay" data-n="1" aria-label="Next day">›</button>${isT ? "" : `<button class="ghost small" data-act="bkToday">Today</button>`}</div>
-    <h3>Notebooks collected ${dayLabel(bkDate)} · ${cls}</h3>
-    <div class="rep-sum"><div class="g"><b>${cnt("y") + cnt("l")}</b><span>handed in</span></div><div class="r"><b>${cnt("n")}</b><span>not handed in</span></div><div><b>${list.length - cnt("y") - cnt("l") - cnt("n")}</b><span>not marked</span></div></div>
-    <p class="rep-note">Tick the students who handed in their notebook today and cross the ones who did not. A student with a cross sees a message in his account with 3 days to hand it in.</p>
-    ${readOnly ? "" : `<button class="primary small" data-act="bkAll" style="justify-self:start">Mark everyone handed in</button>`}
-    <div class="hlist">${list.map(s => hubStudentRow(s, `<span class="seg"><button class="sg d" data-act="bkSet" data-id="${s.id}" data-v="y" aria-pressed="${val(s) === "y" || val(s) === "l"}" aria-label="Handed in">✓</button><button class="sg a" data-act="bkSet" data-id="${s.id}" data-v="n" aria-pressed="${val(s) === "n"}" aria-label="Not handed in">✗</button></span>`)).join("") || `<div class="none">No students in ${cls}.</div>`}</div></section>
-    <section class="card"><h3>Still owing a notebook (${owing.length})</h3>${owing.length ? `<div class="hlist">${owing.map(s => hubStudentRow(s, `<span class="rep-note">${bkOwing(s).map(d => { const due = addDays(d, 3); return `${shortDay(d)} → due ${shortDay(due)}${due < today ? " (overdue)" : ""}`; }).join(" · ")}</span>${readOnly ? "" : `<button class="ghost small" data-act="bkLate" data-id="${s.id}">Handed in now</button>`}`)).join("")}</div>` : `<div class="none">Nobody owes a notebook.</div>`}</section>`;
+    <h3>Notebook classwork · ${dayLabel(bkDate)} · ${cls}</h3>
+    <div class="rep-sum"><div class="g"><b>${cnt("y") + cnt("l")}</b><span>done</span></div><div style="color:var(--gold)"><b>${cnt("p")}</b><span>still working</span></div><div class="r"><b>${cnt("n")}</b><span>not done</span></div><div><b>${list.length - cnt("y") - cnt("l") - cnt("n") - cnt("p")}</b><span>not marked</span></div></div>
+    <p class="rep-note">Every day: mark each student's notebook classwork as <b>Done</b>, <b>Still working</b> (not finished yet, no message) or <b>Not done</b>. A student marked Not done sees a message in his account with 3 days to hand it in. Done counts in the Classwork mark in Grades /10.</p>
+    ${readOnly ? "" : `<button class="primary small" data-act="bkAll" style="justify-self:start">Mark everyone done</button>`}
+    <div class="hlist">${list.map(s => hubStudentRow(s, `<span class="seg"><button class="sg d" data-act="bkSet" data-id="${s.id}" data-v="y" aria-pressed="${val(s) === "y" || val(s) === "l"}">✓ Done</button><button class="sg l" data-act="bkSet" data-id="${s.id}" data-v="p" aria-pressed="${val(s) === "p"}">⏳ Still working</button><button class="sg a" data-act="bkSet" data-id="${s.id}" data-v="n" aria-pressed="${val(s) === "n"}">✗ Not done</button></span>`)).join("") || `<div class="none">No students in ${cls}.</div>`}</div></section>
+    <section class="card"><h3>Notebook classwork not done (${owing.length})</h3>${owing.length ? `<div class="hlist">${owing.map(s => hubStudentRow(s, `<span class="rep-note">${bkOwing(s).map(d => { const due = addDays(d, 3); return `${shortDay(d)} → due ${shortDay(due)}${due < today ? " (overdue)" : ""}`; }).join(" · ")}</span>${readOnly ? "" : `<button class="ghost small" data-act="bkLate" data-id="${s.id}">Handed in now</button>`}`)).join("")}</div>` : `<div class="none">Nobody owes a notebook.</div>`}</section>`;
 }
 function setBook(id, v) {
   const st = students.find(s => s.id === id); if (!st || readOnly) return;
@@ -4693,8 +4694,8 @@ document.getElementById("expBtn")?.addEventListener("click", async () => {
     <div class="acts noprint"><button class="ghost" id="lgPrint" type="button">Print this list</button><button class="ghost" id="lgClose" type="button">Close</button></div>
   </div>
 </div>
-<script type="module" src="teacher.js?v=1122m"></script>
-<script src="mylessons.js?v=1122m"></script>
+<script type="module" src="teacher.js?v=1122n"></script>
+<script src="mylessons.js?v=1122n"></script>
 
 <script>
 /* Post a certificate straight to Google Classroom.
