@@ -1,9 +1,9 @@
 // Classwork for the teacher: make a worksheet, send it to classes, collect and export the answers.
 // Worksheets live in <base>/work, the answer key in <base>/workkey (students never read it),
 // and each student's submission in <base>/subs/<worksheet>_<student>.
-import { getDocs, setDoc, updateDoc, deleteDoc, getDoc, bcol, bdoc } from "./fb.js?v=1122k";
-import { autoMail, sendTo } from "./mailer.js?v=1122k";
-import { LIVE_WS, isLive } from "./liveworks.js?v=1122k";
+import { getDocs, setDoc, updateDoc, deleteDoc, getDoc, bcol, bdoc } from "./fb.js?v=1122l";
+import { autoMail, sendTo } from "./mailer.js?v=1122l";
+import { LIVE_WS, isLive } from "./liveworks.js?v=1122l";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -195,11 +195,13 @@ document.addEventListener("click", async e => {
   if (a === "print") { document.body.classList.add("wk-printing"); window.print(); setTimeout(() => document.body.classList.remove("wk-printing"), 500); }
 });
 
-export async function openWork() {
+export async function openWork(mode) {
   $("workModal").hidden = false; view = "list"; $("wkBody").innerHTML = "<p>Loading…</p>";
   try { await load(); } catch (e) { $("wkBody").innerHTML = `<p class="lg-msg">Could not load classwork (${esc(e.code || e.message)}). Check that the new Firebase rules are published.</p><button class="ghost" data-wk="close">Close</button>`; return; }
+  if (mode === "new") { draft = { title: "", classes: CLASSES.includes(cls) ? [cls] : [], test: false, tMin: 30, tWarn: 3, questions: [{ q: "", type: "text", opts: "", key: "" }] }; view = "edit"; }
   render();
 }
+window.__newWorksheet = () => openWork("new");
 
 /* data for the Grades sheet in the Teacher Hub */
 export async function gradeData() {
@@ -211,7 +213,7 @@ export async function gradeData() {
 }
 
 /* ---------- Import questions from Excel (.xlsx) or CSV ---------- */
-const loadXl = () => window.ExcelJS ? Promise.resolve() : new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1122k"; sc.onload = res; sc.onerror = () => rej(new Error("Could not load the Excel reader.")); document.head.appendChild(sc); });
+const loadXl = () => window.ExcelJS ? Promise.resolve() : new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1122l"; sc.onload = res; sc.onerror = () => rej(new Error("Could not load the Excel reader.")); document.head.appendChild(sc); });
 function csvRows(t) {
   const rows = []; let row = [], cur = "", q = false;
   t = t.replace(/^\ufeff/, "");

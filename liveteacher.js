@@ -1,7 +1,7 @@
 // Teacher side: "Live worksheets". Each interactive worksheet is hidden until the teacher presses Start for a class.
 // State is one document, work/liveopen: { kind:"liveopen", open:{ <worksheet id>:{ "8B": startedAtMs } }, classes:[every class with something open] }.
-import { getDoc, setDoc, bdoc } from "./fb.js?v=1122k";
-import { LIVE_WS, isLive } from "./liveworks.js?v=1122k";
+import { getDoc, setDoc, bdoc } from "./fb.js?v=1122l";
+import { LIVE_WS, isLive } from "./liveworks.js?v=1122l";
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 let modal = null, open = {}, msg = "", busy = false, exp = "";
@@ -27,6 +27,7 @@ function ui() {
     if (e.target === modal) { modal.hidden = true; return; }
     const b = e.target.closest("[data-lw]"); if (!b || busy) return;
     const a = b.dataset.lw; if (a === "close") { modal.hidden = true; return; }
+    if (a === "create") { modal.hidden = true; if (window.__newWorksheet) window.__newWorksheet(); return; }
     if (a === "exp") { exp = exp === b.dataset.id ? "" : b.dataset.id; paint(); return; }
     const id = b.dataset.id, c = b.dataset.c, now = Date.now(), o = {};
     LIVE_WS.forEach(w => { o[w.id] = {}; cl().forEach(k => { if (isOn(w.id, k)) o[w.id][k] = (open[w.id] && open[w.id][k]) || now; }); });
@@ -46,6 +47,7 @@ function paint() {
   const b = document.getElementById("lwBody"); if (!b) return;
   const classes = cl();
   b.innerHTML = `<h3>Live worksheets</h3><p style="margin:4px 0 8px">Prepare them ahead. Students only see a worksheet after you press <b>Start</b> for their class, and it disappears again when you press <b>Stop</b>.</p>`
+    + `<div class="sbtns" style="justify-content:flex-start;margin:4px 0 10px"><button class="primary" type="button" data-lw="create">+ Create live worksheet</button></div>`
     + (LIVE_WS.length ? `<div class="lw-list">` + LIVE_WS.map(w => {
       const on = classes.filter(c => isOn(w.id, c)), x = exp === w.id;
       return `<div class="lw-item${x ? " open" : ""}"><button type="button" class="lw-hd" data-lw="exp" data-id="${esc(w.id)}" aria-expanded="${x}">
