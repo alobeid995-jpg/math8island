@@ -4,7 +4,7 @@ import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWith
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { doc, getDoc as _getDoc, setDoc as _setDoc, updateDoc as _updateDoc, deleteDoc as _deleteDoc, collection, getDocs as _getDocs, onSnapshot as _onSnapshot, runTransaction as _runTransaction, writeBatch as _writeBatch, query as _query, where as _where }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { setAuth, dataOn, locate, getOne, getMany, setOne, patchOne, removeMany, watch as sbWatchRows, watchDoc as sbWatchDoc, pinVersion } from "./sbdata.js?v=1122g";
+import { setAuth, dataOn, locate, getOne, getMany, setOne, patchOne, removeMany, watch as sbWatchRows, watchDoc as sbWatchDoc, pinVersion } from "./sbdata.js?v=1122h";
 
 export const firebaseConfig = {
   apiKey: "AIzaSyC6dnkpj0L_S-em_9ibWKjglvQcf8Q3iXM",

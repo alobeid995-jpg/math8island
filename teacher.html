@@ -645,6 +645,7 @@ button, .srow { touch-action: manipulation; -webkit-tap-highlight-color: transpa
 .mtile button{all:unset;cursor:pointer;font-family:var(--f-body);font-weight:600;font-size:14.5px;color:var(--ink);line-height:1.25}
 .mtile button::after{content:"";position:absolute;inset:0;border-radius:14px}
 .mtile button:disabled{cursor:wait;opacity:.7}
+#hubMgmt .mtile button{border:0!important;background:none!important;box-shadow:none!important;padding:0!important;margin:0!important;min-height:0!important;outline:0;border-radius:0!important;text-align:left!important;width:auto!important;height:auto!important}
 .mt-d{font-size:12px;color:var(--muted);line-height:1.35}
 @media(max-width:520px){.mg-grid{grid-template-columns:1fr 1fr}.mtile{grid-template-columns:1fr;row-gap:6px}.mt-ic{grid-row:auto;width:36px;height:36px}.mt-d{display:none}}
 .ins-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; }
@@ -1384,7 +1385,7 @@ header.book .geo { max-height: 190px; }
 /* --- Student Island logo mark --- */
 header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !important; color: transparent !important; font-size: 0 !important; border: 0 !important; box-shadow: none !important; border-radius: 22% !important; }
 
-</style><link rel="stylesheet" href="island.css?v=1122g"><style>
+</style><link rel="stylesheet" href="island.css?v=1122h"><style>
 .cls-panel{margin:12px 0;padding:14px;border:2px solid var(--edge);border-radius:12px;background:var(--card);display:grid;gap:10px}
 .cls-panel h4{margin:0}.cls-panel p{margin:0;font-size:14px}
 .cls-panel label{display:grid;gap:4px;font-size:13px;font-weight:600}
@@ -1555,7 +1556,7 @@ header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !import
 window.__ready = new Promise(r => { window.__resolveClaude = r; });
 window.claude = { use: async n => (await window.__ready).use(n) };
 </script>
-<script src="hats.js?v=1122g"></script>
+<script src="hats.js?v=1122h"></script>
 <script>
 const POSITIVE = [
   { title: "Active Participation", xp: 10 },
@@ -3337,7 +3338,7 @@ function ftBuild() {
     </div>`;
   document.body.appendChild(w);
   let pos = null; try { pos = JSON.parse(localStorage.getItem("mathkn.ftpos") || "null"); } catch {}
-  const place = (x, y) => { const r = w.getBoundingClientRect(), W = innerWidth - 84, H = innerHeight - 100; x = Math.max(6, Math.min(W, x)); y = Math.max(6, Math.min(H, y)); w.style.left = x + "px"; w.style.top = y + "px"; return { x, y }; };
+  const place = (x, y) => { const r = w.getBoundingClientRect(), W = innerWidth - 96, H = innerHeight - 110; x = Math.max(6, Math.min(W, x)); y = Math.max(6, Math.min(H, y)); w.style.left = x + "px"; w.style.top = y + "px"; return { x, y }; };
   pos = place(pos ? pos.x : innerWidth - 96, pos ? pos.y : innerHeight - 290);
   addEventListener("resize", () => { pos = place(pos.x, pos.y); });
   const badge = $("ftBadge"); let drag = null;
@@ -3392,7 +3393,7 @@ function groupsText() { return grp ? grp.groups.map((g, i) => `Group ${i + 1}: `
 function hubStudentRow(st, right) { return `<div class="hrow"><span class="hn">${avatarHTML(st, "sm")}<span class="hnm">${esc(shortName(st.name))}</span></span>${right}</div>`; }
 function renderTools() {
   const chips = `<div class="shop-tabs">${CLASSES.map(c => `<button class="shop-tab" data-act="hubCls" data-cls="${c}" aria-pressed="${c === cls}">${c} <small>${students.filter(s => s.cls === c).length}</small></button>`).join("")}</div>`;
-  $("toolsView").innerHTML = `<div class="shop-intro"><h2>Tools</h2><p>Classwork, student logins, announcements, material and more.</p></div>${chips}<div class="hub-body">${hubTools()}</div>`;
+  $("toolsView").innerHTML = `<div class="shop-intro"><h2>Tools</h2><p>Classwork, student logins, announcements, material and more.</p></div><div class="hub-body">${hubTools()}</div>`;
 }
 function renderHub() {
   const el = $("hubView");
@@ -3520,7 +3521,7 @@ function hubGrades() {
 
 function grLoadLib() {
   if (window.ExcelJS) return Promise.resolve();
-  return new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1122g"; sc.onload = res; sc.onerror = () => rej(new Error("lib")); document.head.appendChild(sc); });
+  return new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1122h"; sc.onload = res; sc.onerror = () => rej(new Error("lib")); document.head.appendChild(sc); });
 }
 async function grXlsx(btn) {
   const keep = cls;
@@ -4692,8 +4693,8 @@ document.getElementById("expBtn")?.addEventListener("click", async () => {
     <div class="acts noprint"><button class="ghost" id="lgPrint" type="button">Print this list</button><button class="ghost" id="lgClose" type="button">Close</button></div>
   </div>
 </div>
-<script type="module" src="teacher.js?v=1122g"></script>
-<script src="mylessons.js?v=1122g"></script>
+<script type="module" src="teacher.js?v=1122h"></script>
+<script src="mylessons.js?v=1122h"></script>
 
 <script>
 /* Post a certificate straight to Google Classroom.
