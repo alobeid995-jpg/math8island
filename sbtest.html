@@ -12,8 +12,8 @@ pre{white-space:pre-wrap;font:12.5px/1.45 ui-monospace,Consolas,monospace;backgr
 <div class="card"><b>Pilot tests (step 2)</b><br><button id="p0">A. Who am I? (uid, owner?)</button> <button id="p1">B. Write my presence record</button> <button id="p2">C. Read my presence record</button> <button id="p3">D. List all presence (owner only)</button> <button id="p4">E. Write someone else's presence (must be refused)</button> <button id="p5">F. Write an unknown field (must be refused)</button></div>
 <pre id="log"></pre>
 <script type="module">
-import { auth, whenUser, profileOf } from "./fb.js?v=1122h";
-import { sbGet, sbSet, sbList } from "./sb.js?v=1122h";
+import { auth, whenUser, profileOf } from "./fb.js?v=1122i";
+import { sbGet, sbSet, sbList } from "./sb.js?v=1122i";
 const URL_ = "https://xsbcdapkzynfoouobhav.supabase.co", KEY = "sb_publishable_V7TGwwZ1J6CNMypJn8wyig_uHQJRGui";
 const $ = id => document.getElementById(id), log = m => { $("log").textContent += m + "\n"; };
 const u = await whenUser();

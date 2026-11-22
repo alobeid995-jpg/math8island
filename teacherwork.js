@@ -1,9 +1,9 @@
 // Classwork for the teacher: make a worksheet, send it to classes, collect and export the answers.
 // Worksheets live in <base>/work, the answer key in <base>/workkey (students never read it),
 // and each student's submission in <base>/subs/<worksheet>_<student>.
-import { getDocs, setDoc, updateDoc, deleteDoc, getDoc, bcol, bdoc } from "./fb.js?v=1122h";
-import { autoMail, sendTo } from "./mailer.js?v=1122h";
-import { LIVE_WS, isLive } from "./liveworks.js?v=1122h";
+import { getDocs, setDoc, updateDoc, deleteDoc, getDoc, bcol, bdoc } from "./fb.js?v=1122i";
+import { autoMail, sendTo } from "./mailer.js?v=1122i";
+import { LIVE_WS, isLive } from "./liveworks.js?v=1122i";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -83,6 +83,8 @@ function render() {
           <input data-wkq="${i}" data-k="key" value="${esc(q.key)}" placeholder="Correct answer (optional, for automatic marking)">
           <button class="ghost small" type="button" data-wk="delq" data-i="${i}" aria-label="Remove question ${i + 1}">Remove</button></div></li>`).join("")}</ol>
       <div class="lg-bar"><button class="ghost" type="button" data-wk="addq">+ Add question</button></div>
+      <div class="wk-f" style="border:2px dashed var(--line,#cdd5e3);border-radius:12px;padding:10px 12px"><b>Import from Excel or CSV</b> <small>One row per question: Type (MC or Blank), Question, A, B, C, D, Answer. The questions are added here so you can check them before you send.</small>
+        <div class="lg-bar" style="margin-top:8px"><button class="primary small" type="button" data-wk="imp">Upload Excel / CSV</button><button class="ghost small" type="button" data-wk="tpl">Download the template</button><input type="file" id="wkImpFile" accept=".xlsx,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden></div></div>
       <div class="lg-msg" id="wkMsg"></div>
       <div class="acts"><button class="primary" type="button" data-wk="save">Send to students</button><button class="ghost" type="button" data-wk="back">Cancel</button></div>`;
   } else if (view === "lres") {
@@ -175,6 +177,8 @@ document.addEventListener("click", async e => {
   if (a === "back") { view = "list"; await load(); return render(); }
   if (a === "testtog") { readDraft(); return render(); }
   if (a === "allcls") { readDraft(); draft.classes = CLASSES.slice(); return render(); }
+  if (a === "imp") { readDraft(); const f = $("wkImpFile"); f.value = ""; f.onchange = () => f.files[0] && importSheet(f.files[0]); f.click(); return; }
+  if (a === "tpl") { readDraft(); return downloadTemplate(); }
   if (a === "addq") { readDraft(); draft.questions.push({ q: "", type: "text", opts: "", key: "" }); render(); const t = document.querySelectorAll("[data-k='q']"); t[t.length - 1].focus(); return; }
   if (a === "delq") { readDraft(); draft.questions.splice(+b.dataset.i, 1); if (!draft.questions.length) draft.questions.push({ q: "", type: "text", opts: "", key: "" }); return render(); }
   if (a === "save") { b.disabled = true; await saveDraft(); b.disabled = false; return; }
@@ -204,4 +208,55 @@ export async function gradeData() {
   const lsubs = []; LIVE_WS.forEach(lw => liveStudents(lw).forEach(s => { if (livePlays(lw, s.id).length) lsubs.push({ wid: "live:" + lw.id, sid: s.id, right: 0, n: 0 }); }));
   return { works: works.map(w => ({ id: w.id, classes: w.classes || [], graded: !!w.graded, created: w.created || 0, title: w.title })).concat(lws),
     subs: lsubs.concat(subs.map(x => { const w = works.find(y => y.id === x.wid); const sc = w && x.answers ? score(w, x) : null; return { wid: x.wid, sid: x.sid, right: sc ? sc.right : 0, n: sc ? sc.n : 0 }; })) };
+}
+
+/* ---------- Import questions from Excel (.xlsx) or CSV ---------- */
+const loadXl = () => window.ExcelJS ? Promise.resolve() : new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1122i"; sc.onload = res; sc.onerror = () => rej(new Error("Could not load the Excel reader.")); document.head.appendChild(sc); });
+function csvRows(t) {
+  const rows = []; let row = [], cur = "", q = false;
+  t = t.replace(/^\ufeff/, "");
+  const sep = (t.split(/\r?\n/)[0].match(/;/g) || []).length > (t.split(/\r?\n/)[0].match(/,/g) || []).length ? ";" : ",";
+  for (let i = 0; i < t.length; i++) { const c = t[i];
+    if (q) { if (c === '"') { if (t[i + 1] === '"') { cur += '"'; i++; } else q = false; } else cur += c; }
+    else if (c === '"') q = true; else if (c === sep) { row.push(cur); cur = ""; } else if (c === "\n" || c === "\r") { if (c === "\r" && t[i + 1] === "\n") i++; row.push(cur); rows.push(row); row = []; cur = ""; } else cur += c; }
+  if (cur !== "" || row.length) { row.push(cur); rows.push(row); }
+  return rows;
+}
+const cellText = v => { if (v == null) return ""; if (typeof v === "object") { if (v.richText) return v.richText.map(x => x.text).join(""); if ("result" in v) return String(v.result ?? ""); if (v.text) return String(v.text); if (v instanceof Date) return v.toLocaleDateString("en-GB"); } return String(v); };
+async function importSheet(file) {
+  const say = t => { const m = $("wkMsg"); if (m) m.textContent = t; };
+  try {
+    let rows;
+    if (/\.csv$/i.test(file.name) || file.type === "text/csv") rows = csvRows(await file.text());
+    else { await loadXl(); const wb = new ExcelJS.Workbook(); await wb.xlsx.load(await file.arrayBuffer()); const ws = wb.worksheets[0]; rows = []; ws.eachRow({ includeEmpty: false }, r => { const a = []; for (let i = 1; i <= 8; i++) a.push(cellText(r.getCell(i).value).trim()); rows.push(a); }); }
+    rows = rows.map(r => r.map(x => String(x ?? "").trim())).filter(r => r.some(Boolean));
+    if (rows.length && /^type$/i.test(rows[0][0])) rows.shift();
+    const out = [], bad = [];
+    rows.forEach((r, i) => {
+      const [type, q, A, B, C, D, ans] = r, kind = (type || "").toLowerCase();
+      if (!q) { bad.push(i + 2); return; }
+      if (/^(mc|multiple|choice)/.test(kind)) {
+        const opts = [A, B, C, D].filter(Boolean).map(x => x.replace(/,/g, " ")); if (opts.length < 2) { bad.push(i + 2); return; }
+        const L = (ans || "").trim(), idx = /^[a-d]$/i.test(L) ? "abcd".indexOf(L.toLowerCase()) : -1;
+        const key = idx >= 0 ? ([A, B, C, D][idx] || "").replace(/,/g, " ") : (opts.find(o => o.toLowerCase() === L.toLowerCase()) || "");
+        out.push({ q, type: "mc", opts: opts.join(", "), key });
+      } else out.push({ q, type: "text", opts: "", key: ans || A || "" });
+    });
+    if (!out.length) return say("No questions found. Check the file follows the template.");
+    draft.questions = draft.questions.filter(x => x.q.trim()).concat(out);
+    if (!draft.title.trim()) draft.title = file.name.replace(/\.(xlsx|csv)$/i, "").replace(/[_-]+/g, " ").slice(0, 80);
+    render(); say(`Added ${out.length} question${out.length === 1 ? "" : "s"} from the file.` + (bad.length ? ` Skipped row${bad.length === 1 ? "" : "s"} ${bad.join(", ")} (no question, or fewer than 2 choices).` : "") + " Check them, choose the classes, then press Send.");
+  } catch (e) { say("Could not read the file: " + (e.message || e)); }
+}
+async function downloadTemplate() {
+  try {
+    await loadXl(); const wb = new ExcelJS.Workbook(), ws = wb.addWorksheet("Questions");
+    ws.columns = [{ header: "Type", width: 9 }, { header: "Question", width: 46 }, { header: "A", width: 12 }, { header: "B", width: 12 }, { header: "C", width: 12 }, { header: "D", width: 12 }, { header: "Answer", width: 12 }];
+    [["MC", "3 × 4 = ?", "7", "12", "34", "1", "B"], ["MC", "Which number is prime?", "9", "15", "17", "21", "C"], ["Blank", "5x + 2 = 17. x = ___", "", "", "", "", "3"], ["Blank", "Round 4.67 to 1 decimal place.", "", "", "", "", "4.7"]].forEach(r => ws.addRow(r));
+    ws.getRow(1).font = { bold: true, color: { argb: "FFFFFFFF" } }; ws.getRow(1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF2F4FD6" } };
+    const n = wb.addWorksheet("How to fill it"); n.getColumn(1).width = 95;
+    ["One row per question. Keep the first row (the headings).", "Type: MC = multiple choice, Blank = fill in the blank.", "MC: write 2 to 4 choices in A, B, C, D. Answer = the letter of the right choice (A, B, C or D).", "Blank: leave A to D empty. Answer = the right answer (a number or a word).", "Save it as .xlsx (or .csv) and upload it in Classwork > New worksheet > Upload Excel / CSV."].forEach(t => n.addRow([t]));
+    const b = new Blob([await wb.xlsx.writeBuffer()], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = "Worksheet template.xlsx"; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  } catch (e) { const m = $("wkMsg"); if (m) m.textContent = "Could not make the template: " + (e.message || e); }
 }
