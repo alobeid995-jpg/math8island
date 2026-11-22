@@ -552,6 +552,54 @@ button, .srow { touch-action: manipulation; -webkit-tap-highlight-color: transpa
 .hub-body { display: grid; gap: 14px; } .hub-bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; } .hub-bar input[type="text"], .hub-bar input:not([type]) { flex: 1 1 200px; min-width: 0; }
 .mx { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; color: var(--muted); } .mx input { width: 80px; }
 
+
+/* ---- floating timer ---- */
+#ftWrap{position:fixed;z-index:2800;left:0;top:0;touch-action:none}
+#ftBadge{all:unset;display:block;width:86px;height:100px;cursor:grab;filter:drop-shadow(0 6px 10px rgba(20,35,70,.28));-webkit-tap-highlight-color:transparent}
+#ftBadge:active{cursor:grabbing}
+#ftBadge:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:50%}
+#ftBadge svg{width:100%;height:100%;overflow:visible}
+.ft-crown{fill:#2b3a55}
+.ft-case{fill:#2b3a55}
+.ft-face{fill:#fff}
+.ft-arc{fill:none;stroke:var(--accent);stroke-width:5;stroke-linecap:round;stroke-dasharray:100 100;opacity:.22;transition:stroke-dasharray .25s linear}
+#ftWrap.run .ft-arc{opacity:.9}
+#ftWrap.low .ft-arc{stroke:var(--bad)}
+.ft-ticks line{stroke:#2b3a55}
+.ft-dig{font-family:var(--f-num);font-weight:700;font-size:13px;text-anchor:middle;fill:#2b3a55}
+#ftWrap.low .ft-dig{fill:var(--bad)}
+.ft-min{stroke:#2b3a55;stroke-width:4;stroke-linecap:round}
+.ft-sec{stroke:var(--bad);stroke-width:1.8;stroke-linecap:round}
+.ft-pin{fill:var(--bad);stroke:#fff;stroke-width:1.2}
+#ftWrap.ring #ftBadge{animation:ftRing .5s ease-in-out 10}
+@keyframes ftRing{0%,100%{transform:rotate(0)}25%{transform:rotate(-12deg)}75%{transform:rotate(12deg)}}
+#ftPanel{position:fixed;width:300px;max-width:calc(100vw - 20px);padding:16px 18px 18px;border-radius:26px;background:#141b2b;color:#fff;box-shadow:0 18px 48px rgba(10,18,40,.45);font-family:var(--f-body)}
+.ft-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.ft-top b{font-size:15px;font-weight:600;color:#c9d3ea}
+.ft-x{all:unset;cursor:pointer;width:32px;height:32px;display:grid;place-items:center;border-radius:50%;background:#26304a;font-size:20px;color:#fff}
+.ft-ring{position:relative;width:210px;height:210px;margin:6px auto 12px}
+.ft-ring svg{width:100%;height:100%}
+.ft-track{fill:none;stroke:#26304a;stroke-width:10}
+.ft-prog{fill:none;stroke:#ff9f43;stroke-width:10;stroke-linecap:round;stroke-dasharray:100 100;transition:stroke-dasharray .25s linear}
+#ftWrap.low .ft-prog{stroke:#ff5b5b}
+.ft-mid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ft-mid span{font-family:var(--f-num);font-weight:500;font-size:46px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.ft-mid small{color:#8f9bb8;font-size:13px;margin-top:2px}
+.ft-pre{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:10px}
+.ft-pre button{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;padding:7px 0;border-radius:12px;background:#222b42;font-weight:600;font-size:15px}
+.ft-pre button small{font-size:10px;font-weight:400;color:#8f9bb8}
+.ft-pre button.on{background:#ff9f43;color:#141b2b}.ft-pre button.on small{color:#141b2b}
+.ft-adj{display:flex;gap:6px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.ft-adj>button,.ft-adj label button{all:unset;cursor:pointer;padding:7px 10px;border-radius:10px;background:#222b42;font-size:13px;font-weight:600}
+.ft-adj label{display:flex;gap:4px}
+.ft-adj input{width:52px;padding:6px;border-radius:10px;border:1px solid #33405e;background:#0f1522;color:#fff;font:inherit;font-size:13px}
+.ft-ctl{display:flex;justify-content:space-between;gap:12px}
+.ft-ctl button{all:unset;cursor:pointer;flex:1;text-align:center;padding:14px 0;border-radius:999px;font-weight:600;font-size:16px}
+.ft-reset{background:#2c3856;color:#fff}
+.ft-go{background:#2fbf71;color:#0b1a12}
+.ft-go.pause{background:#ff9f43;color:#1d1204}
+#ftPanel button:focus-visible{outline:2px solid #8ea4ff;outline-offset:2px}
+@media (prefers-reduced-motion: reduce){#ftWrap.ring #ftBadge{animation:none}}
 /* ---- Insights: class cards ---- */
 .ig-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
 .ig-card{position:relative;display:flex;flex-direction:column;gap:12px;padding:16px 16px 14px;border:1px solid var(--line);border-radius:16px;background:var(--card);box-shadow:var(--shadow);overflow:hidden}
@@ -1336,7 +1384,7 @@ header.book .geo { max-height: 190px; }
 /* --- Student Island logo mark --- */
 header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !important; color: transparent !important; font-size: 0 !important; border: 0 !important; box-shadow: none !important; border-radius: 22% !important; }
 
-</style><link rel="stylesheet" href="island.css?v=1122e"><style>
+</style><link rel="stylesheet" href="island.css?v=1122f"><style>
 .cls-panel{margin:12px 0;padding:14px;border:2px solid var(--edge);border-radius:12px;background:var(--card);display:grid;gap:10px}
 .cls-panel h4{margin:0}.cls-panel p{margin:0;font-size:14px}
 .cls-panel label{display:grid;gap:4px;font-size:13px;font-weight:600}
@@ -1507,7 +1555,7 @@ header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !import
 window.__ready = new Promise(r => { window.__resolveClaude = r; });
 window.claude = { use: async n => (await window.__ready).use(n) };
 </script>
-<script src="hats.js?v=1122e"></script>
+<script src="hats.js?v=1122f"></script>
 <script>
 const POSITIVE = [
   { title: "Active Participation", xp: 10 },
@@ -3252,21 +3300,84 @@ function insights() {
 const tm = { total: 300, left: 300, run: false, end: 0, id: null };
 const fmtT = s => String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(Math.max(0, Math.ceil(s % 60)) % 60).padStart(2, "0");
 function tmTick() {
-  if (!tm.run) return;
-  tm.left = Math.max(0, (tm.end - Date.now()) / 1000);
-  const el = $("tmDisp"); if (el) { el.textContent = fmtT(tm.left); el.classList.toggle("low", tm.left <= 10); }
-  if (tm.left <= 0) {
-    tm.run = false; clearInterval(tm.id); tm.left = 0;
+  if (tm.run) tm.left = Math.max(0, (tm.end - Date.now()) / 1000);
+  ftPaint();
+  if (tm.run && tm.left <= 0) {
+    tm.run = false; clearInterval(tm.id); tm.left = 0; ftPaint();
     if (sndMode !== "off") { [0, 0.5, 1].forEach(t => [880, 1174.7].forEach((f, i) => tone(f, t + i * 0.15, 0.3, "square", 0.2))); if (sndMode === "voice") setTimeout(() => speak("Time is up!"), 1700); }
-    toast("Time is up!"); if (view === "tools") render();
+    toast("Time is up!"); const w = $("ftWrap"); if (w) { w.classList.add("ring"); setTimeout(() => w.classList.remove("ring"), 6000); }
   }
 }
-function tmSet(sec) { clearInterval(tm.id); tm.run = false; tm.total = sec; tm.left = sec; render(); }
+function tmSet(sec) { clearInterval(tm.id); tm.run = false; tm.total = sec; tm.left = sec; ftPaint(); }
 function tmGo() {
   if (tm.run) { tm.left = Math.max(0, (tm.end - Date.now()) / 1000); tm.run = false; clearInterval(tm.id); }
-  else { if (tm.left <= 0) tm.left = tm.total; tm.end = Date.now() + tm.left * 1000; tm.run = true; clearInterval(tm.id); tm.id = setInterval(tmTick, 250); }
-  render();
+  else { if (tm.left <= 0) tm.left = tm.total; tm.end = Date.now() + tm.left * 1000; tm.run = true; clearInterval(tm.id); tm.id = setInterval(tmTick, 200); }
+  ftPaint();
 }
+function tmAdd(sec) { if (tm.run) { tm.end += sec * 1000; tm.left = Math.max(0, (tm.end - Date.now()) / 1000); } else tm.left = Math.max(0, tm.left + sec); tm.total = Math.max(tm.total, Math.ceil(tm.left)); ftPaint(); }
+/* ---------- floating timer: a stopwatch you can drag anywhere; tap it for the full timer ---------- */
+function ftBuild() {
+  if ($("ftWrap")) return;
+  const ticks = Array.from({ length: 60 }, (_, i) => `<line x1="50" y1="${i % 5 ? 9 : 8}" x2="50" y2="${i % 5 ? 12 : 15}" stroke-width="${i % 5 ? 1 : 2}" transform="rotate(${i * 6} 50 50)"/>`).join("");
+  const w = document.createElement("div"); w.id = "ftWrap"; w.dataset.feat = "timer";
+  w.innerHTML = `<button type="button" id="ftBadge" aria-label="Lesson timer">
+      <svg viewBox="0 0 100 116" aria-hidden="true"><rect x="43" y="0" width="14" height="9" rx="3" class="ft-crown"/><rect x="47" y="8" width="6" height="7" class="ft-crown"/><rect x="74" y="16" width="10" height="7" rx="2" class="ft-crown" transform="rotate(45 79 19)"/>
+      <g transform="translate(0 16)"><circle cx="50" cy="50" r="47" class="ft-case"/><circle cx="50" cy="50" r="41" class="ft-face"/>
+      <circle cx="50" cy="50" r="41" class="ft-arc" id="ftArc" pathLength="100" transform="rotate(-90 50 50)"/>
+      <g class="ft-ticks">${ticks}</g>
+      <text x="50" y="70" class="ft-dig" id="ftDig">05:00</text>
+      <line x1="50" y1="50" x2="50" y2="27" class="ft-min" id="ftMin"/><line x1="50" y1="58" x2="50" y2="15" class="ft-sec" id="ftSec"/><circle cx="50" cy="50" r="3.6" class="ft-pin"/></g></svg></button>
+    <div id="ftPanel" hidden role="dialog" aria-label="Lesson timer">
+      <div class="ft-top"><b>Timer</b><button type="button" class="ft-x" data-ft="min" aria-label="Minimise">&#8722;</button></div>
+      <div class="ft-ring"><svg viewBox="0 0 200 200"><circle cx="100" cy="100" r="88" class="ft-track"/><circle cx="100" cy="100" r="88" class="ft-prog" id="ftProg" pathLength="100" transform="rotate(-90 100 100)"/></svg>
+        <div class="ft-mid"><span id="ftBig">05:00</span><small id="ftOf">of 5 min</small></div></div>
+      <div class="ft-pre">${[[60, "1"], [180, "3"], [300, "5"], [600, "10"], [900, "15"], [1200, "20"]].map(([s, l]) => `<button type="button" data-ft="set" data-s="${s}">${l}<small>min</small></button>`).join("")}</div>
+      <div class="ft-adj"><button type="button" data-ft="add" data-s="-60">&#8722;1 min</button><label><input id="ftMinIn" type="number" inputmode="decimal" min="0.5" step="0.5" placeholder="min"><button type="button" data-ft="custom">Set</button></label><button type="button" data-ft="add" data-s="60">+1 min</button></div>
+      <div class="ft-ctl"><button type="button" class="ft-reset" data-ft="reset">Reset</button><button type="button" class="ft-go" data-ft="go" id="ftGo">Start</button></div>
+    </div>`;
+  document.body.appendChild(w);
+  let pos = null; try { pos = JSON.parse(localStorage.getItem("mathkn.ftpos") || "null"); } catch {}
+  const place = (x, y) => { const r = w.getBoundingClientRect(), W = innerWidth - 84, H = innerHeight - 100; x = Math.max(6, Math.min(W, x)); y = Math.max(6, Math.min(H, y)); w.style.left = x + "px"; w.style.top = y + "px"; return { x, y }; };
+  pos = place(pos ? pos.x : innerWidth - 96, pos ? pos.y : innerHeight - 290);
+  addEventListener("resize", () => { pos = place(pos.x, pos.y); });
+  const badge = $("ftBadge"); let drag = null;
+  badge.addEventListener("pointerdown", e => { drag = { sx: e.clientX, sy: e.clientY, x: pos.x, y: pos.y, moved: false }; badge.setPointerCapture(e.pointerId); });
+  badge.addEventListener("pointermove", e => { if (!drag) return; const dx = e.clientX - drag.sx, dy = e.clientY - drag.sy; if (Math.abs(dx) + Math.abs(dy) > 6) drag.moved = true; if (drag.moved) pos = place(drag.x + dx, drag.y + dy); });
+  badge.addEventListener("pointerup", () => { if (!drag) return; const m = drag.moved; drag = null; if (m) { try { localStorage.setItem("mathkn.ftpos", JSON.stringify(pos)); } catch {} } else ftOpen(true); });
+  badge.addEventListener("pointercancel", () => { drag = null; });
+  w.addEventListener("click", e => {
+    const b = e.target.closest("[data-ft]"); if (!b) return; const a = b.dataset.ft;
+    if (a === "min") ftOpen(false);
+    else if (a === "set") tmSet(+b.dataset.s);
+    else if (a === "add") tmAdd(+b.dataset.s);
+    else if (a === "custom") { const v = Number($("ftMinIn").value); if (v > 0) { tmSet(Math.round(v * 60)); $("ftMinIn").value = ""; } }
+    else if (a === "go") tmGo();
+    else if (a === "reset") tmSet(tm.total);
+  });
+  document.addEventListener("pointerdown", e => { const p = $("ftPanel"); if (p && !p.hidden && !w.contains(e.target)) ftOpen(false); });
+  ftPaint();
+}
+function ftOpen(on) {
+  const p = $("ftPanel"), w = $("ftWrap"); if (!p) return; p.hidden = !on; w.classList.toggle("open", on); if (!on) return;
+  const b = $("ftBadge").getBoundingClientRect(), pw = p.offsetWidth, ph = p.offsetHeight;
+  let x = b.left + b.width / 2 - pw / 2, y = b.top - ph - 10; if (y < 8) y = b.bottom + 10;
+  p.style.left = Math.max(8, Math.min(innerWidth - pw - 8, x)) + "px"; p.style.top = Math.max(8, Math.min(innerHeight - ph - 8, y)) + "px";
+}
+function ftPaint() {
+  const w = $("ftWrap"); if (!w) return;
+  const left = Math.max(0, tm.left), t = fmtT(left), frac = tm.total ? Math.min(1, left / tm.total) : 0, low = left <= 10 && (tm.run || left === 0) && tm.total > 0;
+  $("ftDig").textContent = t; $("ftBig").textContent = t;
+  $("ftOf").textContent = "of " + (tm.total % 60 ? fmtT(tm.total) : (tm.total / 60) + " min");
+  const sec = left % 60, mins = left / 60;
+  $("ftSec").setAttribute("transform", `rotate(${(Math.ceil(sec) % 60) * 6} 50 50)`);
+  $("ftMin").setAttribute("transform", `rotate(${(mins % 60) * 6} 50 50)`);
+  $("ftArc").style.strokeDasharray = `${frac * 100} 100`; $("ftProg").style.strokeDasharray = `${frac * 100} 100`;
+  $("ftGo").textContent = tm.run ? "Pause" : left < tm.total && left > 0 ? "Resume" : "Start";
+  $("ftGo").classList.toggle("pause", tm.run);
+  w.classList.toggle("run", tm.run); w.classList.toggle("low", low);
+  w.querySelectorAll('[data-ft="set"]').forEach(b => b.classList.toggle("on", +b.dataset.s === tm.total));
+}
+if (document.body) ftBuild(); else document.addEventListener("DOMContentLoaded", ftBuild);
 function makeGroups() {
   const size = Number(($("grpSize") || {}).value) || 4, d = attDoc(todayStr(), cls);
   const pool = clsStu(cls).filter(s => !["a", "s"].includes((d.m || {})[s.id]));
@@ -3280,12 +3391,12 @@ function groupsText() { return grp ? grp.groups.map((g, i) => `Group ${i + 1}: `
 function hubStudentRow(st, right) { return `<div class="hrow"><span class="hn">${avatarHTML(st, "sm")}<span class="hnm">${esc(shortName(st.name))}</span></span>${right}</div>`; }
 function renderTools() {
   const chips = `<div class="shop-tabs">${CLASSES.map(c => `<button class="shop-tab" data-act="hubCls" data-cls="${c}" aria-pressed="${c === cls}">${c} <small>${students.filter(s => s.cls === c).length}</small></button>`).join("")}</div>`;
-  $("toolsView").innerHTML = `<div class="shop-intro"><h2>Tools</h2><p>Classwork, student logins, announcements, material, reset, the lesson timer and the group maker.</p></div>${chips}<div class="hub-body">${hubTools()}</div>`;
+  $("toolsView").innerHTML = `<div class="shop-intro"><h2>Tools</h2><p>Classwork, student logins, announcements, material and more.</p></div>${chips}<div class="hub-body">${hubTools()}</div>`;
 }
 function renderHub() {
   const el = $("hubView");
   const on = window.__featOn || (() => true);
-  const tabs = [["insights", "Insights"], ["att", "Attendance"], ["hw", "Homework"], ["marks", "Marks"], ["grades", "Grades /10"], ["books", "Notebooks"], ["seats", "Seat plan"]].filter(([k]) => on("hub_" + k));
+  const tabs = [["insights", "Insights"], ["att", "Attendance"], ["hw", "Homework"], ["marks", "Marks"], ["grades", "Grades /10"], ["books", "Notebooks"], ["seats", "Seat plan"], ["groups", "Group maker"]].filter(([k]) => k === "groups" ? on("groups") : on("hub_" + k));
   if (!tabs.some(([k]) => k === hubTab)) hubTab = tabs.length ? tabs[0][0] : "none";
   const chips = hubTab === "insights" ? "" : `<div class="shop-tabs">${CLASSES.map(c => `<button class="shop-tab" data-act="hubCls" data-cls="${c}" aria-pressed="${c === cls}">${c} <small>${students.filter(s => s.cls === c).length}</small></button>`).join("")}</div>`;
   let body = "";
@@ -3296,8 +3407,9 @@ function renderHub() {
   else if (hubTab === "grades") body = hubGrades();
   else if (hubTab === "books") body = hubBooks();
   else if (hubTab === "seats") body = hubSeats();
+  else if (hubTab === "groups") body = hubGroups();
   else body = tabs.length ? hubInsights() : "<p class=\"none\">Nothing here is switched on for you.</p>";
-  el.innerHTML = `<div class="shop-intro"><h2>Teacher Hub</h2><p>Your classroom tools in one place: who needs attention, attendance, homework, test marks, a lesson timer and group maker.</p></div>
+  el.innerHTML = `<div class="shop-intro"><h2>Teacher Hub</h2><p>Your classroom tools in one place: who needs attention, attendance, homework, marks, seat plan and group maker.</p></div>
     <div class="shop-tabs hub-tabs">${tabs.map(([k, l]) => `<button class="shop-tab" data-act="hubTab" data-tab="${k}" aria-pressed="${k === hubTab}">${l}</button>`).join("")}</div>${chips}<div class="hub-body">${body}</div>`;
 }
 function hubInsights() {
@@ -3407,7 +3519,7 @@ function hubGrades() {
 
 function grLoadLib() {
   if (window.ExcelJS) return Promise.resolve();
-  return new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1122e"; sc.onload = res; sc.onerror = () => rej(new Error("lib")); document.head.appendChild(sc); });
+  return new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1122f"; sc.onload = res; sc.onerror = () => rej(new Error("lib")); document.head.appendChild(sc); });
 }
 async function grXlsx(btn) {
   const keep = cls;
@@ -3538,12 +3650,10 @@ function resetCard() {
   </section>`;
 }
 function hubTools() {
-  const presets = [[60, "1 min"], [180, "3 min"], [300, "5 min"], [600, "10 min"], [900, "15 min"]];
-  return `<section class="card"><h3>Manage</h3><p class="rep-note">Everything you use to run your classes, in one place.</p><div id="hubMgmt" class="mg-wrap"></div></section>` + resetCard() + `<section class="card tmr" data-feat="timer"><h3>Lesson timer</h3><div id="tmDisp" class="tmdisp ${tm.left <= 10 ? "low" : ""}">${fmtT(tm.left)}</div>
-    <div class="sbtns">${presets.map(([s, l]) => `<button class="shop-tab" data-act="tmSet" data-s="${s}" aria-pressed="${tm.total === s}">${l}</button>`).join("")}<label class="mx"><input id="tmMin" type="number" inputmode="decimal" min="0.5" step="0.5" placeholder="min" style="width:70px"><button class="ghost small" data-act="tmCustom">Set</button></label></div>
-    <div class="sbtns"><button class="primary" data-act="tmGo">${tm.run ? "Pause" : tm.left < tm.total && tm.left > 0 ? "Resume" : "Start"}</button><button class="ghost" data-act="tmReset">Reset</button></div>
-    <p class="rep-note">Keeps running if you switch tabs. Plays a sound and says "Time is up" at zero (follows the sound setting).</p></section>
-    <section class="card" data-feat="groups"><h3>Group maker · ${cls}</h3><div class="hub-bar"><label class="mx">Students per group <select id="grpSize">${[2, 3, 4, 5, 6].map(n => `<option ${((grp && grp.size) || 4) === n ? "selected" : ""}>${n}</option>`).join("")}</select></label><button class="primary" data-act="grpMake">${grp && grp.cls === cls ? "Shuffle again" : "Make groups"}</button>${grp && grp.cls === cls ? `<button class="ghost small" data-act="grpCopy">Copy</button>` : ""}</div>
+  return `<section class="card"><h3>Manage</h3><p class="rep-note">Everything you use to run your classes, in one place.</p><div id="hubMgmt" class="mg-wrap"></div></section>` + resetCard();
+}
+function hubGroups() {
+  return `<section class="card" data-feat="groups"><h3>Group maker · ${cls}</h3><div class="hub-bar"><label class="mx">Students per group <select id="grpSize">${[2, 3, 4, 5, 6].map(n => `<option ${((grp && grp.size) || 4) === n ? "selected" : ""}>${n}</option>`).join("")}</select></label><button class="primary" data-act="grpMake">${grp && grp.cls === cls ? "Shuffle again" : "Make groups"}</button>${grp && grp.cls === cls ? `<button class="ghost small" data-act="grpCopy">Copy</button>` : ""}</div>
     <p class="rep-note">Students marked absent today in Attendance are left out.</p>
     ${grp && grp.cls === cls ? `<div class="grp-grid">${grp.groups.map((g, i) => `<div class="grp"><b>Group ${i + 1}</b>${g.map(id => { const st = students.find(s => s.id === id); return st ? `<span>${avatarHTML(st, "xs")}${esc(shortName(st.name))}</span>` : ""; }).join("")}</div>`).join("")}</div>${grp.skipped ? `<p class="rep-note">${grp.skipped} absent student(s) left out.</p>` : ""}` : ""}</section>`;
 }
@@ -4581,8 +4691,8 @@ document.getElementById("expBtn")?.addEventListener("click", async () => {
     <div class="acts noprint"><button class="ghost" id="lgPrint" type="button">Print this list</button><button class="ghost" id="lgClose" type="button">Close</button></div>
   </div>
 </div>
-<script type="module" src="teacher.js?v=1122e"></script>
-<script src="mylessons.js?v=1122e"></script>
+<script type="module" src="teacher.js?v=1122f"></script>
+<script src="mylessons.js?v=1122f"></script>
 
 <script>
 /* Post a certificate straight to Google Classroom.
