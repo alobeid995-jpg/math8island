@@ -1,9 +1,9 @@
 // Classwork for the teacher: make a worksheet, send it to classes, collect and export the answers.
 // Worksheets live in <base>/work, the answer key in <base>/workkey (students never read it),
 // and each student's submission in <base>/subs/<worksheet>_<student>.
-import { getDocs, setDoc, updateDoc, deleteDoc, getDoc, bcol, bdoc } from "./fb.js?v=1122l";
-import { autoMail, sendTo } from "./mailer.js?v=1122l";
-import { LIVE_WS, isLive } from "./liveworks.js?v=1122l";
+import { getDocs, setDoc, updateDoc, deleteDoc, getDoc, bcol, bdoc } from "./fb.js?v=1122m";
+import { autoMail, sendTo } from "./mailer.js?v=1122m";
+import { LIVE_WS, isLive, setUploaded } from "./liveworks.js?v=1122m";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -11,11 +11,12 @@ const norm = s => String(s ?? "").trim().toLowerCase().replace(/\s+/g, "").repla
 const same = (a, b) => { const x = norm(a), y = norm(b); if (!x || !y) return false; if (x === y) return true; const n = Number(x), m = Number(y); return x !== "" && !isNaN(n) && !isNaN(m) && Math.abs(n - m) < 1e-9; };
 const when = t => t ? new Date(t).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
 
-let works = [], subs = [], keys = new Map(), view = "list", cur = null, draft = null;
+let works = [], subs = [], keys = new Map(), view = "list", cur = null, draft = null, gmode = false;
 
 async function load() {
   const [w, s, k] = await Promise.all([getDocs(bcol("work")), getDocs(bcol("subs")), getDocs(bcol("workkey"))]);
-  works = w.docs.map(d => ({ id: d.id, ...d.data() })).filter(x => x.kind !== "material" && x.kind !== "announcement" && x.kind !== "funpark" && x.kind !== "liveopen" && x.kind !== "remind" && x.kind !== "mylessons").sort((a, b) => (b.created || 0) - (a.created || 0));
+  works = w.docs.map(d => ({ id: d.id, ...d.data() })).filter(x => x.kind !== "material" && x.kind !== "announcement" && x.kind !== "funpark" && x.kind !== "liveopen" && x.kind !== "remind" && x.kind !== "mylessons" && x.kind !== "htmlws").sort((a, b) => (b.created || 0) - (a.created || 0));
+  setUploaded(w.docs.map(d => ({ id: d.id, ...d.data() })));
   subs = s.docs.map(d => ({ id: d.id, ...d.data() }));
   keys = new Map(k.docs.map(d => [d.id, d.data().answers || []]));
   try { const rd = w.docs.find(d => d.id === "remind"); remindAt = (rd && rd.data().at) || {}; } catch { remindAt = {}; }
@@ -49,8 +50,16 @@ function score(w, sub) {
 function render() {
   const b = $("wkBody");
   if (view === "list") {
+    if (gmode) { const gw = works.filter(x => x.graded), thead = `<thead><tr><th>Worksheet</th><th>Classes</th><th>Handed in</th><th></th></tr></thead>`;
+      b.innerHTML = `<h3>Graded worksheets</h3>
+      <p class="noprint">The marked assessments, once or twice a quarter. Every mistake loses marks: the mark is the number right out of the number of questions, scaled to 10, and it goes in Grades /10 as <b>Graded worksheet</b>. (Classwork and live worksheets are different: finishing them gives the full mark.)</p>
+      <div class="lg-bar"><button class="primary" type="button" data-wk="newg">+ New graded worksheet</button><button class="ghost" type="button" data-wk="close">Close</button></div>
+      ${gw.length ? `<table class="lg-tbl wk-list">${thead}<tbody>${gw.map(x => { const all = stuOf(x), done = all.filter(s => subOf(x, s.id)).length, hasKey = (keys.get(x.id) || []).some(Boolean);
+        return `<tr><td><b>${esc(x.title)}</b><br><small>${(x.questions || []).length} questions · ${esc(when(x.created))}${x.open === false ? " · <b>closed</b>" : ""}${hasKey ? "" : ' · <b style="color:#b3261e">no answer key: add correct answers or it cannot be marked</b>'}</small></td><td>${esc((x.classes || []).join(", "))}</td><td>${done} / ${all.length}</td>
+          <td class="wk-acts"><button class="primary small" type="button" data-wk="res" data-id="${x.id}">Marks</button><button class="ghost small" type="button" data-wk="toggle" data-id="${x.id}">${x.open === false ? "Open again" : "Close it"}</button><button class="ghost small" type="button" data-wk="graded" data-id="${x.id}">Move to classwork</button><button class="ghost small" type="button" data-wk="del" data-id="${x.id}">Delete</button></td></tr>`; }).join("")}</tbody></table>` : `<p class="none">No graded worksheets yet. Tap "New graded worksheet".</p>`}`;
+      return; }
     b.innerHTML = `<h3>Classwork</h3>
-      <p class="noprint">Make a worksheet, send it to one class or all of them. Students find it when they log in. Their answers and the time they handed in stay here as evidence.</p>
+      <p class="noprint">Make a worksheet, send it to one class or all of them. Students find it when they log in. Finishing it gives the full classwork mark, even with mistakes. Their answers and the time they handed in stay here as evidence.</p>
       <div class="lg-bar"><button class="primary" type="button" data-wk="new">+ New worksheet</button><button class="ghost" type="button" data-wk="close">Close</button></div>
       ${(() => { const cl = CLASSES.concat(["8G", "8D"]).filter((c, i, x) => x.indexOf(c) === i).map(c => ({ c, n: students.filter(s => String(s.cls).toUpperCase() === c.toUpperCase() && missingOf(s).length).length, on: Object.keys(remindAt).some(k => remindAt[k] && k.toUpperCase() === c.toUpperCase()) })).filter(x => x.n || x.on);
         return cl.length ? `<div class="wk-miss-bar noprint"><b>Missing work</b> <small>Students see a reminder only after you press it.</small><div class="lg-bar">${cl.map(x => `<button class="${x.on ? "primary" : "ghost"} small" type="button" data-wk="remind" data-c="${esc(x.c)}">${x.on ? "✓ Reminding " + esc(x.c) + " (tap to stop)" : "📣 Show missing to " + esc(x.c) + " (" + x.n + " student" + (x.n === 1 ? "" : "s") + ")"}</button>${x.n ? `<button class="ghost small" type="button" data-wk="remindmail" data-c="${esc(x.c)}" title="Show the reminder on the site and also email each student what he is missing">✉ Remind + email ${esc(x.c)}</button>` : ""}`).join("")}</div></div>` : ""; })()}
@@ -65,12 +74,11 @@ function render() {
         const gw = works.filter(w => w.graded);
         return `<h4 style="margin:14px 0 4px">Classwork <small>(live worksheets and normal worksheets together; all count in the Classwork mark)</small></h4>`
           + (cw.length ? `<table class="lg-tbl wk-list">${thead}<tbody>${cw.map(x => x.html).join("")}</tbody></table>` : `<p class="none">No worksheets yet. Tap "New worksheet" to make the first one.</p>`)
-          + `<h4 style="margin:18px 0 4px">Graded classwork <small>(its own list: the mark goes in the Grades sheet as Graded worksheet, not as classwork)</small></h4>`
-          + (gw.length ? `<table class="lg-tbl wk-list">${thead}<tbody>${gw.map(workRow).join("")}</tbody></table>` : `<p class="none">Nothing here yet. Press "Make graded" on a worksheet above to move it to this list.</p>`);
+          + (gw.length ? `<p class="rep-note" style="margin-top:12px">${gw.length} graded worksheet${gw.length === 1 ? " is" : "s are"} in <b>Tools › Graded worksheets</b>.</p>` : "");
       })()}`;
   } else if (view === "edit") {
     const d = draft;
-    b.innerHTML = `<h3>New worksheet</h3>
+    b.innerHTML = `<h3>${d.graded ? "New graded worksheet" : "New worksheet"}</h3>${d.graded ? `<p class="rep-note">Marked: each question needs its correct answer. The mark = right answers out of all questions.</p>` : ""}
       <label class="wk-f">Title<input id="wkTitle" maxlength="80" value="${esc(d.title)}" placeholder="e.g. Simultaneous equations · practice 1"></label>
       <div class="wk-f">Send to <div class="wk-cls">${CLASSES.map(c => `<label><input type="checkbox" data-wkcls="${esc(c)}" ${d.classes.includes(c) ? "checked" : ""}> ${esc(c)}</label>`).join("")}
         <button class="ghost small" type="button" data-wk="allcls">All my classes</button></div></div>
@@ -143,7 +151,7 @@ async function saveDraft() {
   const questions = qs.map(q => ({ q: q.q.trim(), type: q.type, opts: q.type === "mc" ? q.opts.split(",").map(x => x.trim()).filter(Boolean) : [] }));
   try {
     await setDoc(bdoc("workkey", id), { answers: qs.map(q => q.key.trim()) });
-    await setDoc(bdoc("work", id), { title: d.title.trim(), classes: d.classes, questions, open: true, created: Date.now(), ...(d.test ? { test: { on: true, min: d.tMin, warn: d.tWarn } } : {}) });
+    await setDoc(bdoc("work", id), { title: d.title.trim(), classes: d.classes, questions, open: true, created: Date.now(), ...(d.graded ? { graded: true } : {}), ...(d.test ? { test: { on: true, min: d.tMin, warn: d.tWarn } } : {}) });
   } catch (e) { return say("Could not send: " + (e.code || e.message) + ". Check that the new Firebase rules are published."); }
   autoMail("work", d.classes, d.title.trim()).then(r => { if (r) say(`Sent. Emailed ${r.sent} student(s).`); });
   await load(); view = "res"; cur = id; render();
@@ -158,6 +166,7 @@ document.addEventListener("click", async e => {
   const b = e.target.closest("[data-wk]"); if (!b) return;
   const a = b.dataset.wk, w = works.find(x => x.id === b.dataset.id);
   if (a === "close") { $("workModal").hidden = true; return; }
+  if (a === "newg") { draft = { title: "", classes: CLASSES.includes(cls) ? [cls] : [], test: false, tMin: 30, tWarn: 3, graded: true, questions: [{ q: "", type: "text", opts: "", key: "" }] }; view = "edit"; return render(); }
   if (a === "new") { draft = { title: "", classes: CLASSES.includes(cls) ? [cls] : [], test: false, tMin: 30, tWarn: 3, questions: [{ q: "", type: "text", opts: "", key: "" }] }; view = "edit"; return render(); }
   if (a === "remind") { const c = b.dataset.c, k = Object.keys(remindAt).find(x => x.toUpperCase() === c.toUpperCase()), at = { ...remindAt };
     if (k && at[k]) delete at[k]; else at[c] = Date.now();
@@ -196,12 +205,13 @@ document.addEventListener("click", async e => {
 });
 
 export async function openWork(mode) {
-  $("workModal").hidden = false; view = "list"; $("wkBody").innerHTML = "<p>Loading…</p>";
+  $("workModal").hidden = false; view = "list"; gmode = mode === "graded"; $("wkBody").innerHTML = "<p>Loading…</p>";
   try { await load(); } catch (e) { $("wkBody").innerHTML = `<p class="lg-msg">Could not load classwork (${esc(e.code || e.message)}). Check that the new Firebase rules are published.</p><button class="ghost" data-wk="close">Close</button>`; return; }
   if (mode === "new") { draft = { title: "", classes: CLASSES.includes(cls) ? [cls] : [], test: false, tMin: 30, tWarn: 3, questions: [{ q: "", type: "text", opts: "", key: "" }] }; view = "edit"; }
   render();
 }
 window.__newWorksheet = () => openWork("new");
+window.__openGraded = () => openWork("graded");
 
 /* data for the Grades sheet in the Teacher Hub */
 export async function gradeData() {
@@ -213,7 +223,7 @@ export async function gradeData() {
 }
 
 /* ---------- Import questions from Excel (.xlsx) or CSV ---------- */
-const loadXl = () => window.ExcelJS ? Promise.resolve() : new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1122l"; sc.onload = res; sc.onerror = () => rej(new Error("Could not load the Excel reader.")); document.head.appendChild(sc); });
+const loadXl = () => window.ExcelJS ? Promise.resolve() : new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1122m"; sc.onload = res; sc.onerror = () => rej(new Error("Could not load the Excel reader.")); document.head.appendChild(sc); });
 function csvRows(t) {
   const rows = []; let row = [], cur = "", q = false;
   t = t.replace(/^\ufeff/, "");

@@ -24,3 +24,14 @@ export const isLive = (w, open, cls) => { const c = String(cls || "").trim().toU
 
 // The worksheets above are the owner's. Other teachers (and their students) do not get them.
 export function liveScope(ownerBase) { if (!ownerBase) LIVE_WS.length = 0; }
+
+// Worksheets the teacher uploaded as an HTML file (work/<id> with kind "htmlws"). They join the list above, newest first.
+export function setUploaded(docs) {
+  for (let i = LIVE_WS.length - 1; i >= 0; i--) if (LIVE_WS[i].up) LIVE_WS.splice(i, 1);
+  docs.filter(d => d && d.kind === "htmlws" && d.title).sort((a, b) => (a.created || 0) - (b.created || 0))
+    .forEach(d => LIVE_WS.unshift({ id: d.id, title: d.title, sub: d.sub || "Uploaded worksheet", up: true, created: d.created || 0, desc: "Open the worksheet and finish it." }));
+}
+// What an uploaded worksheet gets on top of its own code: window.MI.done(right, wrong, mistakes) hands the result to the site.
+export const MI_BRIDGE = '<script>window.MI={done:function(r,w,m){try{parent.postMessage({mi:"done",r:+r||0,w:+w||0,m:Array.isArray(m)?m.slice(-20).map(String):[]},"*")}catch(e){}},close:function(){try{parent.postMessage({mi:"close"},"*")}catch(e){}}};<\/script>';
+export const withBridge = html => { const s = String(html || ""); return /<head[^>]*>/i.test(s) ? s.replace(/<head[^>]*>/i, m => m + MI_BRIDGE) : MI_BRIDGE + s; };
+export const reportsItself = html => /MI\.done\s*\(/.test(String(html || ""));

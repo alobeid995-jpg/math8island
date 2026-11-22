@@ -1,8 +1,8 @@
 // "My classwork" on the student page: worksheets from the teacher, and (for the 9S boys) the lesson games.
-import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1122l";
-import { playerOf, catalog } from "./islandmap.js?v=1122l";
-import { logEv } from "./presence.js?v=1122l";
-import { LIVE_WS, isLive, liveScope } from "./liveworks.js?v=1122l";
+import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1122m";
+import { playerOf, catalog } from "./islandmap.js?v=1122m";
+import { logEv } from "./presence.js?v=1122m";
+import { LIVE_WS, isLive, liveScope, setUploaded, withBridge, reportsItself } from "./liveworks.js?v=1122m";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -17,13 +17,14 @@ export async function initWork(profile, getMe, toastFn) {
   await load(); draw();
 }
 const liveList = () => LIVE_WS.filter(w => isLive(w, liveOpen, String((me && me.cls) || "").trim()));
-let remindOn = false;   // the teacher pressed "Remind about missing work" for this class
+let remindOn = false, htmlOf = new Map();   // the teacher pressed "Remind about missing work" for this class
 async function load() {
   try {
     const w = await getDocs(query(collection(fs, ...base, "work"), where("classes", "array-contains", me.cls)));
     const all = w.docs.map(d => ({ id: d.id, ...d.data() }));
     materials = all.filter(x => x.kind === "material" && Array.isArray(x.units)).sort((a, b) => (b.created || 0) - (a.created || 0));
-    works = all.filter(x => x.kind !== "material" && x.kind !== "announcement" && x.kind !== "funpark" && x.kind !== "liveopen" && x.kind !== "remind" && x.kind !== "mylessons").sort((a, b) => (b.created || 0) - (a.created || 0));
+    works = all.filter(x => x.kind !== "material" && x.kind !== "announcement" && x.kind !== "funpark" && x.kind !== "liveopen" && x.kind !== "remind" && x.kind !== "mylessons" && x.kind !== "htmlws").sort((a, b) => (b.created || 0) - (a.created || 0));
+    setUploaded(all); htmlOf = new Map(all.filter(x => x.kind === "htmlws").map(x => [x.id, x.html || ""]));
     { const lo = all.find(x => x.id === "liveopen" && x.kind === "liveopen"); liveOpen = (lo && lo.open) || {}; }
     { const rd = all.find(x => x.id === "remind" && x.kind === "remind"), at = (rd && rd.at) || {}; remindOn = Object.keys(at).some(k => at[k] && k.toUpperCase() === String(me.cls || "").trim().toUpperCase()); }
     const s = await getDocs(query(collection(fs, ...base, "subs"), where("sid", "==", P.sid)));
@@ -62,8 +63,8 @@ function draw() {
   const lv = liveList();
   const liveCards = lv.map(w => w.pages ? `<div class="wk-lesson"><div class="wk-lh"><b>${esc(w.title)}</b><small>${esc(w.sub || "")}</small></div>
       <small>${esc(w.desc || "")}</small><div class="wk-games">${w.pages.map(([f, l], k) => `<button class="wk-game" type="button" data-wkact="live" data-id="${esc(w.id)}" data-p="${k}"><b>${esc(l)}</b></button>`).join("")}</div></div>` : `<div class="wk-lesson"><div class="wk-lh"><b>${esc(w.title)}</b><small>${esc(w.sub || "")}</small></div>
-      <div class="wk-games"><button class="wk-game${agPlays.has(w.id + "-ws") ? " done" : ""}" type="button" data-wkact="live" data-id="${esc(w.id)}"><b>${w.games ? "Examples, games and worksheet" : w.noWs ? "Worked example" : "Worked examples, then a worksheet"}</b><small>${esc(w.desc || "Go through the worked examples first. Then the worksheet opens.")}</small>${w.noWs ? "" : xpNote(w.xp || w.id)}
-      <span>${agPart(w.id + "-examples", "Examples")}${(w.games || []).map(([k, l]) => agPart(w.id + "-" + k, l)).join("")}${w.noWs ? "" : agPart(w.id + "-ws", "Worksheet")}</span></button></div></div>`).join("");
+      <div class="wk-games">${w.up ? `<button class="wk-game${agPlays.has(w.id + "-ws") ? " done" : ""}" type="button" data-wkact="live" data-id="${esc(w.id)}"><b>Open the worksheet</b><small>${esc(w.desc)}</small>${agPlays.has(w.id + "-ws") ? '<span class="wk-tick">Done ✓</span>' : ""}</button>` : `<button class="wk-game${agPlays.has(w.id + "-ws") ? " done" : ""}" type="button" data-wkact="live" data-id="${esc(w.id)}"><b>${w.games ? "Examples, games and worksheet" : w.noWs ? "Worked example" : "Worked examples, then a worksheet"}</b><small>${esc(w.desc || "Go through the worked examples first. Then the worksheet opens.")}</small>${w.noWs ? "" : xpNote(w.xp || w.id)}
+      <span>${agPart(w.id + "-examples", "Examples")}${(w.games || []).map(([k, l]) => agPart(w.id + "-" + k, l)).join("")}${w.noWs ? "" : agPart(w.id + "-ws", "Worksheet")}</span></button>`}</div></div>`).join("");
   const matCard = (() => {
     if (!materials.length) return "";
     return `<section class="card wk-box mt-box"><h3>My material</h3>` + materials.map((m, i) => {
@@ -177,6 +178,25 @@ function openAG(file = "ag34.html", ttl = "Lesson 3.4") {
   ov.innerHTML = `<button class="wk-x" type="button" data-wkact="closegame" aria-label="Close the lesson">✕ Close</button><iframe src="${file}" title="${ttl}"></iframe>`;
   document.body.appendChild(ov); document.body.classList.add("wk-noscroll");
 }
+
+/* An uploaded HTML worksheet runs in a sealed box (no access to the site or the login). It hands its result over with MI.done(). */
+function openUp(w) {
+  const html = htmlOf.get(w.id) || ""; if (!html) { toast("This worksheet could not be opened. Ask your teacher."); return; }
+  const self = !reportsItself(html);
+  const ov = document.createElement("div"); ov.className = "wk-play"; ov.id = "wkPlay";
+  ov.innerHTML = `<div style="display:flex;justify-content:flex-end;gap:6px">${self ? `<button class="wk-x" type="button" id="upDone" style="background:#1f9d55;color:#fff">✓ I finished</button>` : ""}<button class="wk-x" type="button" data-wkact="closegame" aria-label="Close the worksheet">✕ Close</button></div><iframe sandbox="allow-scripts allow-forms allow-modals allow-popups" title="${esc(w.title)}"></iframe>`;
+  const fr = ov.querySelector("iframe"); fr.srcdoc = withBridge(html);
+  document.body.appendChild(ov); document.body.classList.add("wk-noscroll");
+  let saved = false;
+  const save = async (r, wr, m) => {
+    if (saved) return; saved = true; const t = Date.now();
+    try { await setDoc(doc(fs, ...base, "plays", `${P.sid}_${w.id}-ws_${t}`), { s: "ag", g: w.id + "-ws", l: 1, r, w: wr, t, u: t, m: (m || []).slice(-20), sid: P.sid, name: (me && me.name) || "" }); agPlays.add(w.id + "-ws"); logEv("Finished: " + String(w.title).slice(0, 50)); toast("Saved. Well done!"); }
+    catch { saved = false; toast("Could not save. Check your internet and try again."); }
+  };
+  const onMsg = e => { if (e.source !== fr.contentWindow || !e.data || typeof e.data !== "object") return; if (e.data.mi === "done") save(+e.data.r || 0, +e.data.w || 0, e.data.m); if (e.data.mi === "close") { removeEventListener("message", onMsg); closeGame(); } };
+  addEventListener("message", onMsg);
+  const d = ov.querySelector("#upDone"); if (d) d.onclick = async () => { if (!confirm("Did you finish the whole worksheet?")) return; await save(0, 0, []); removeEventListener("message", onMsg); closeGame(); };
+}
 function openGame(id) {
   const gm = lessons.flatMap(l => l.games).find(g => g.id === id); logEv("Opened game: " + (gm ? gm.title : id));
   const ov = document.createElement("div"); ov.className = "wk-play"; ov.id = "wkPlay";
@@ -196,7 +216,7 @@ document.addEventListener("click", e => {
   if (a === "more") { showAll = !showAll; draw(); }
   if (a === "jump") { const c = $("cwBox"); if (c) c.scrollIntoView({ behavior: "smooth", block: "center" }); }
   if (a === "game") openGame(b.dataset.id);
-  if (a === "live") { const w = LIVE_WS.find(x => x.id === b.dataset.id); if (w && liveList().includes(w)) { const pg = w.pages && w.pages[+b.dataset.p || 0]; openAG(pg ? pg[0] : w.file, w.title); } }
+  if (a === "live") { const w = LIVE_WS.find(x => x.id === b.dataset.id); if (w && w.up && liveList().includes(w)) { openUp(w); return; } if (w && liveList().includes(w)) { const pg = w.pages && w.pages[+b.dataset.p || 0]; openAG(pg ? pg[0] : w.file, w.title); } }
   if (a === "closegame") closeGame();
 });
 
