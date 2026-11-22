@@ -1,6 +1,6 @@
 // Gives the teacher page the same "db" calls the Claude version used, but backed by Firebase.
-import { fs, bdoc, bcol, getDoc, setDoc, updateDoc, deleteDoc, getDocs, onSnapshot, runTransaction } from "./fb.js?v=1121o";
-import { dataOn, locate, lease } from "./sbdata.js?v=1121o";
+import { fs, bdoc, bcol, getDoc, setDoc, updateDoc, deleteDoc, getDocs, onSnapshot, runTransaction } from "./fb.js?v=1122b";
+import { dataOn, locate, lease } from "./sbdata.js?v=1122b";
 
 const mapErr = e => { const err = new Error(e && e.message || "db error"); err.code = e && e.code === "permission-denied" ? "invalid_argument" : (e && e.code) || "unknown"; return err; };
 const guard = p => p.catch(e => { throw mapErr(e); });
