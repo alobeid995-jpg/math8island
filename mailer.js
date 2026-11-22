@@ -1,7 +1,7 @@
 // Email students (school address = student ID + @hawarschool.com) through the teacher's own Google Apps Script.
 // Settings live in the teacher's own folder (settings/email), so students can never read the link or the token.
-import { getDoc, getDocs, setDoc, bcol, bdoc } from "./fb.js?v=1122b";
-import { sendMail } from "./sbdata.js?v=1122b";
+import { getDoc, getDocs, setDoc, bcol, bdoc } from "./fb.js?v=1122c";
+import { sendMail } from "./sbdata.js?v=1122c";
 
 const SITE = "https://mathkn.fun";
 const $ = id => document.getElementById(id);
@@ -31,6 +31,9 @@ export async function sendTo(list, make) {
 }
 const sig = c => "\n\n" + (c.from || "Your maths teacher");
 const hello = s => "Hello " + String(s.name || "").split(/\s+/)[0] + ",\n\n";
+
+// send ready-made items [{to, subject, text, attachment?:{name,content(base64)}}]; any valid address (parents too)
+export async function sendRaw(items) { const c = await mailCfg(); return post(c, items); }
 
 // called after a worksheet or announcement is saved; does nothing unless the teacher turned automatic emails on
 export async function autoMail(kind, classes, title, extra) {

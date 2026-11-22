@@ -1288,7 +1288,7 @@ header.book .geo { max-height: 190px; }
 /* --- Student Island logo mark --- */
 header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !important; color: transparent !important; font-size: 0 !important; border: 0 !important; box-shadow: none !important; border-radius: 22% !important; }
 
-</style><link rel="stylesheet" href="island.css?v=1122b"><style>
+</style><link rel="stylesheet" href="island.css?v=1122c"><style>
 .cls-panel{margin:12px 0;padding:14px;border:2px solid var(--edge);border-radius:12px;background:var(--card);display:grid;gap:10px}
 .cls-panel h4{margin:0}.cls-panel p{margin:0;font-size:14px}
 .cls-panel label{display:grid;gap:4px;font-size:13px;font-weight:600}
@@ -1459,7 +1459,7 @@ header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !import
 window.__ready = new Promise(r => { window.__resolveClaude = r; });
 window.claude = { use: async n => (await window.__ready).use(n) };
 </script>
-<script src="hats.js?v=1122b"></script>
+<script src="hats.js?v=1122c"></script>
 <script>
 const POSITIVE = [
   { title: "Active Participation", xp: 10 },
@@ -3357,7 +3357,7 @@ function hubGrades() {
 
 function grLoadLib() {
   if (window.ExcelJS) return Promise.resolve();
-  return new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1122b"; sc.onload = res; sc.onerror = () => rej(new Error("lib")); document.head.appendChild(sc); });
+  return new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1122c"; sc.onload = res; sc.onerror = () => rej(new Error("lib")); document.head.appendChild(sc); });
 }
 async function grXlsx(btn) {
   const keep = cls;
@@ -3741,7 +3741,7 @@ function openCert(id, force) {
       <label class="wide">Reason (one or two lines)<textarea id="certReason" rows="2" maxlength="190">${esc(d.reason)}</textarea></label>
       <label>Date<input type="date" id="certDate" value="${cert.date}"></label><label>Teacher name<input id="certTeacher" maxlength="40" value="${esc(cert.teacher)}"></label></div>
     <div class="cert-print" id="certPrev"></div>
-    <div class="acts cert-ctl"><span class="sbtns"><button class="primary" data-act="certPrint">Print / Save as PDF</button><button class="ghost" data-act="certPng">Download picture</button><button class="ghost" data-act="certClass">Post to Classroom</button></span><button class="ghost" data-act="certClose">Close</button></div></div>`;
+    <div class="acts cert-ctl"><span class="sbtns"><button class="primary" data-act="certPrint">Print / Save as PDF</button><button class="ghost" data-act="certPng">Download picture</button><button class="ghost" data-act="certClass">Post to Classroom</button><button class="ghost" data-act="certMail">Email</button></span><button class="ghost" data-act="certClose">Close</button></div></div>`;
   m.hidden = false; updateCert();
 }
 function updateCert() { const p = $("certPrev"); if (p && cert) p.innerHTML = certSVG(cert); }
@@ -4232,7 +4232,7 @@ document.addEventListener("click", e => {
     case "topDay": topDay = Number(b.dataset.d) ? 1 : 0; render(); break;
     case "certClose": cert = null; $("certModal").hidden = true; break;
     case "certPrint": printCert(); break;
-    case "certPng": pngCert(); break; case "certClass": certClassroom(); break;
+    case "certPng": pngCert(); break; case "certClass": certClassroom(); break; case "certMail": certMail(); break;
     case "wcOpen": openWholeClass(); break;
     case "wcClose": $("wcModal").hidden = true; break;
     case "wcToggle": wcSel.has(id) ? wcSel.delete(id) : wcSel.add(id); renderWholeClass(); break;
@@ -4531,8 +4531,8 @@ document.getElementById("expBtn")?.addEventListener("click", async () => {
     <div class="acts noprint"><button class="ghost" id="lgPrint" type="button">Print this list</button><button class="ghost" id="lgClose" type="button">Close</button></div>
   </div>
 </div>
-<script type="module" src="teacher.js?v=1122b"></script>
-<script src="mylessons.js?v=1122b"></script>
+<script type="module" src="teacher.js?v=1122c"></script>
+<script src="mylessons.js?v=1122c"></script>
 
 <script>
 /* Post a certificate straight to Google Classroom.
@@ -4620,20 +4620,58 @@ document.getElementById("expBtn")?.addEventListener("click", async () => {
 })();
 
 /* ---------- the panel inside the certificate window ---------- */
-function certPngBlob() {
+function certPngBlob(W, type, q) {
+  W = W || 2000; const H = Math.round(W * 0.7);
   return new Promise((res, rej) => {
     const svg = certSVG(cert), url = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml;charset=utf-8" })), img = new Image();
     img.onload = () => {
       try {
-        const cv = document.createElement("canvas"); cv.width = 2000; cv.height = 1400;
-        const cx = cv.getContext("2d"); cx.fillStyle = "#fffdf4"; cx.fillRect(0, 0, 2000, 1400);
-        cx.drawImage(img, 0, 0, 2000, 1400); URL.revokeObjectURL(url);
-        cv.toBlob(b => b ? res(b) : rej(new Error("Couldn't make the picture.")), "image/png");
+        const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+        const cx = cv.getContext("2d"); cx.fillStyle = "#fffdf4"; cx.fillRect(0, 0, W, H);
+        cx.drawImage(img, 0, 0, W, H); URL.revokeObjectURL(url);
+        cv.toBlob(b => b ? res(b) : rej(new Error("Couldn't make the picture.")), type || "image/png", q);
       } catch (e) { rej(e); }
     };
     img.onerror = () => rej(new Error("Couldn't make the picture."));
     img.src = url;
   });
+}
+
+function certMail() {
+  if (!cert) return;
+  let p = $("mailPanel");
+  if (p) { p.hidden = !p.hidden; if (!p.hidden) p.scrollIntoView({ block: "nearest", behavior: "smooth" }); return; }
+  const st = students.find(s => s.id === cert.sid); if (!st) return;
+  p = document.createElement("div"); p.id = "mailPanel"; p.className = "cls-panel";
+  const anchor = $("clsPanel") || $("certSave") || $("certPrev"); anchor.after(p);
+  const sid = String(st.enrollment || "").trim(), sOk = /^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(sid), pe = parentEmails(st);
+  const body = "Hello,\n\nWe are proud to share a certificate for " + st.name + ":\n" + cert.title + (cert.reason ? "\n" + cert.reason : "") + "\n\nThe certificate is attached to this email. Congratulations!\n\n" + sigOf();
+  p.innerHTML = `<h4>Email the certificate</h4>
+    <div class="cert-ctl"><label class="wide"><input type="checkbox" id="cmStu" ${sOk ? "checked" : "disabled"}> Student: ${sOk ? esc(sid.toLowerCase()) + "@hawarschool.com" : "no valid student ID"}</label>
+    ${pe.length ? pe.map((e, i) => `<label class="wide"><input type="checkbox" class="cmPar" value="${esc(e)}"> Parent: ${esc(e)}</label>`).join("") : `<label class="wide"><small>No parent email saved for this student.</small></label>`}
+    <label class="wide">Subject<input id="cmSub" maxlength="120" value="${esc("Certificate: " + cert.title + " - " + st.name)}"></label>
+    <label class="wide">Message<textarea id="cmTxt" rows="6" maxlength="1500">${esc(body)}</textarea></label></div>
+    <div class="sbtns"><button class="primary" type="button" id="cmSend">Send email</button></div><div id="cmMsg" class="cls-msg"></div>`;
+  $("cmSend").onclick = async () => {
+    const to = []; if ($("cmStu") && $("cmStu").checked) to.push(sid.toLowerCase() + "@hawarschool.com");
+    p.querySelectorAll(".cmPar:checked").forEach(x => to.push(x.value));
+    const say = (t, bad) => { const m = $("cmMsg"); m.textContent = t; m.className = "cls-msg" + (bad ? " bad" : ""); };
+    if (!to.length) return say("Choose who to send it to.", true);
+    if (!window.mailSend) return say("Email is not available on this page.", true);
+    const btn = $("cmSend"), c0 = cert; btn.disabled = true;
+    try {
+      say("Making the picture…");
+      const blob = await certPngBlob(1500, "image/jpeg", 0.92);
+      const b64 = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(",")[1]); r.onerror = rej; r.readAsDataURL(blob); });
+      const att = { name: "Certificate - " + st.name.replace(/[^\w\- ]+/g, "").trim() + ".jpg", content: b64 };
+      say("Sending…");
+      const r = await window.mailSend(to.map(a => ({ to: a, subject: $("cmSub").value.trim() || "Certificate", text: $("cmTxt").value, attachment: att })));
+      say("Sent to " + r.sent + " of " + to.length + (r.failed && r.failed.length ? ". Failed: " + r.failed.map(f => f.to + " (" + f.error + ")").join("; ") : "."), !!(r.failed && r.failed.length));
+      if (r.sent && cert === c0) issueCert();
+    } catch (e) { say(e.message || String(e), true); }
+    btn.disabled = false;
+  };
+  p.scrollIntoView({ block: "nearest", behavior: "smooth" });
 }
 
 function clsMsg(html, bad) { const m = $("clsMsg"); if (m) { m.innerHTML = html; m.className = "cls-msg" + (bad ? " bad" : ""); } }
