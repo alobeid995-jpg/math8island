@@ -162,6 +162,7 @@
   function close(silent) {
     clearInterval(timer);
     if (document.fullscreenElement) { try { document.exitFullscreen(); } catch {} }
+    if (window.ftAttach) window.ftAttach(document.body);
     if (ov) { ov.remove(); ov = null; panel = null; }
     document.body.classList.remove("wk-noscroll");
   }
@@ -340,6 +341,7 @@
   }
   /* Countdown timer like Canva's: big digits, presets, start/pause, +1 min, a bar, a sound and "Time's up" at zero. Draggable; shrinks to a small pill. */
   function setupTimer() {
+    if (window.ftAttach) { window.ftAttach(ov); const fb = ov.querySelector('[data-mlx="timer"]'); if (fb) fb.remove(); return; }   // the same floating stopwatch as the rest of the site
     if (!document.getElementById("mlTimerCss")) { const st = document.createElement("style"); st.id = "mlTimerCss";
       st.textContent = ".ml-fab.t{top:10px;right:178px}.ml-fab.t.on{background:#7c3aed;opacity:1}.ml-fab.o{right:234px}"
         + ".ml-tm{position:absolute;z-index:5;left:50%;top:70px;transform:translateX(-50%);width:min(340px,calc(100% - 20px));background:#fff;color:#1f1147;border-radius:22px;box-shadow:0 12px 40px rgba(0,0,0,.5);overflow:hidden;font-family:system-ui,sans-serif;touch-action:none}.ml-tm[hidden]{display:none}"

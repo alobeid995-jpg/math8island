@@ -1384,7 +1384,7 @@ header.book .geo { max-height: 190px; }
 /* --- Student Island logo mark --- */
 header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !important; color: transparent !important; font-size: 0 !important; border: 0 !important; box-shadow: none !important; border-radius: 22% !important; }
 
-</style><link rel="stylesheet" href="island.css?v=1122f"><style>
+</style><link rel="stylesheet" href="island.css?v=1122g"><style>
 .cls-panel{margin:12px 0;padding:14px;border:2px solid var(--edge);border-radius:12px;background:var(--card);display:grid;gap:10px}
 .cls-panel h4{margin:0}.cls-panel p{margin:0;font-size:14px}
 .cls-panel label{display:grid;gap:4px;font-size:13px;font-weight:600}
@@ -1555,7 +1555,7 @@ header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !import
 window.__ready = new Promise(r => { window.__resolveClaude = r; });
 window.claude = { use: async n => (await window.__ready).use(n) };
 </script>
-<script src="hats.js?v=1122f"></script>
+<script src="hats.js?v=1122g"></script>
 <script>
 const POSITIVE = [
   { title: "Active Participation", xp: 10 },
@@ -3378,6 +3378,7 @@ function ftPaint() {
   w.querySelectorAll('[data-ft="set"]').forEach(b => b.classList.toggle("on", +b.dataset.s === tm.total));
 }
 if (document.body) ftBuild(); else document.addEventListener("DOMContentLoaded", ftBuild);
+window.ftAttach = parent => { ftBuild(); const w = $("ftWrap"); if (w && parent && w.parentNode !== parent) { parent.appendChild(w); w.style.zIndex = parent === document.body ? "" : "20"; } ftOpen(false); };
 function makeGroups() {
   const size = Number(($("grpSize") || {}).value) || 4, d = attDoc(todayStr(), cls);
   const pool = clsStu(cls).filter(s => !["a", "s"].includes((d.m || {})[s.id]));
@@ -3519,7 +3520,7 @@ function hubGrades() {
 
 function grLoadLib() {
   if (window.ExcelJS) return Promise.resolve();
-  return new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1122f"; sc.onload = res; sc.onerror = () => rej(new Error("lib")); document.head.appendChild(sc); });
+  return new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1122g"; sc.onload = res; sc.onerror = () => rej(new Error("lib")); document.head.appendChild(sc); });
 }
 async function grXlsx(btn) {
   const keep = cls;
@@ -4691,8 +4692,8 @@ document.getElementById("expBtn")?.addEventListener("click", async () => {
     <div class="acts noprint"><button class="ghost" id="lgPrint" type="button">Print this list</button><button class="ghost" id="lgClose" type="button">Close</button></div>
   </div>
 </div>
-<script type="module" src="teacher.js?v=1122f"></script>
-<script src="mylessons.js?v=1122f"></script>
+<script type="module" src="teacher.js?v=1122g"></script>
+<script src="mylessons.js?v=1122g"></script>
 
 <script>
 /* Post a certificate straight to Google Classroom.
