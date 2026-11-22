@@ -1007,6 +1007,8 @@ header.book .sync { z-index: 1; background: rgba(0,0,0,.4); border-color: rgba(2
 .bdg.t-legendary svg { animation: none; }
 .nmx.fn { will-change: auto; }
 .item { content-visibility: auto; contain-intrinsic-size: auto 84px; }
+.item.absent { filter: grayscale(1); opacity: .5; }
+.item.absent .abs-tag { background: #6b7280; color: #fff; filter: none; }
 .sitem { contain: layout; }
 
 header.book .acct{position:relative;z-index:1;display:flex;gap:6px;flex-wrap:wrap;align-self:flex-start}
@@ -2626,10 +2628,30 @@ function playUnlocks() {
 /* ---------- whole class ---------- */
 let wcSel = new Set();
 const classList = () => students.filter(s => s.cls === cls).sort((a, b) => a.name.localeCompare(b.name));
+/* Absent today (attendance "Absent" or "Absent, in school"): greyed out in the list, left out of Whole class, the picker and groups. */
+function isAbsent(st) { try { const d = att.get(todayStr() + "_" + st.cls), v = d && d.m && d.m[st.id]; return v === "a" || v === "s"; } catch { return false; } }
+const presentList = () => classList().filter(s => !isAbsent(s));
+window.__isAbsent = isAbsent;
+/* Short display names for one class: first name + father's first letter ("Ahmed M."). If two students end up with the same label, both show first name + family name instead. */
+function nameLabels(list) {
+  const PART = /^(al|el|bin|ben|ibn|abu|bu)$/i, out = new Map(), info = list.map(st => {
+    const f = firstName(st.name), w = String(st.name).replace(/^Sh\.\s*/i, "Sheikh ").split(/\s+/), rest = w.slice(f.split(/\s+/).length);
+    const core = rest.filter(x => x && !PART.test(x)), last = rest.length ? rest[rest.length - 1] : "";
+    const fam = rest.length > 1 ? (rest.length > 2 && PART.test(rest[rest.length - 2]) ? rest[rest.length - 2] + " " : "") + last : "";
+    return { st, f, ini: core.length ? core[0][0].toUpperCase() + "." : "", fam };
+  });
+  const key = x => (x.f + " " + x.ini).toLowerCase(), cnt = {};
+  info.forEach(x => { cnt[key(x)] = (cnt[key(x)] || 0) + 1; });
+  const lab = info.map(x => ({ x, t: cnt[key(x)] > 1 && x.fam ? x.f + " " + x.fam : (x.f + " " + x.ini).trim() })), c2 = {};
+  lab.forEach(y => { c2[y.t.toLowerCase()] = (c2[y.t.toLowerCase()] || 0) + 1; });
+  lab.forEach(y => out.set(y.x.st.id, c2[y.t.toLowerCase()] > 1 ? String(y.x.st.name) : y.t));
+  return out;
+}
+window.__nameLabels = nameLabels;
 const spokenClass = c => "class " + c.split("").join(" ");
 function shortName(n) { const w = n.split(/\s+/); return w.length > 2 ? w[0] + " " + w[w.length - 1] : n; }
 function openWholeClass() {
-  const list = classList();
+  const list = presentList();
   if (!list.length) { toast("Add students to " + cls + " first."); return; }
   wcSel = new Set(list.map(s => s.id));
   $("wcTitle").textContent = "Whole class · " + cls;
@@ -2642,16 +2664,17 @@ function openWholeClass() {
 }
 function wcBehaviour() { const v = $("wcBeh").value || "p0"; return (v[0] === "p" ? POSITIVE : NEGATIVE)[+v.slice(1)]; }
 function renderWholeClass() {
-  const list = classList(), b = wcBehaviour(), n = list.filter(s => wcSel.has(s.id)).length;
+  const list = presentList(), b = wcBehaviour(), n = list.filter(s => wcSel.has(s.id)).length;
   $("wcChips").innerHTML = list.map(s =>
     `<button class="chip" type="button" data-act="wcToggle" data-id="${s.id}" aria-pressed="${wcSel.has(s.id)}">${avatarHTML(s, "xs")}<span>${esc(shortName(s.name))}</span></button>`).join("");
-  $("wcCount").textContent = `${n} of ${list.length} selected`;
+  const nAbs = classList().length - list.length;
+  $("wcCount").textContent = `${n} of ${list.length} selected` + (nAbs ? ` · ${nAbs} absent left out` : "");
   $("wcApply").textContent = n ? `Give ${b.xp > 0 ? "+" : ""}${b.xp} XP to ${n === list.length ? "all " : ""}${n} student${n === 1 ? "" : "s"}` : "Select students";
   $("wcApply").disabled = !n || readOnly;
   $("wcApply").className = b.xp > 0 ? "plus" : "minus";
 }
 async function applyWholeClass() {
-  const b = wcBehaviour(), list = classList();
+  const b = wcBehaviour(), list = presentList();
   const targets = list.filter(s => wcSel.has(s.id));
   if (!targets.length || readOnly) return;
   const batch = "b" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
@@ -2707,7 +2730,7 @@ function picked() {
 }
 function savePicked() { try { localStorage.setItem("xp_picked_" + cls, JSON.stringify([...picked()])); } catch {} }
 function updatePkCount() {
-  const list = classList(), p = list.filter(s => picked().has(s.id)).length;
+  const list = presentList(), p = list.filter(s => picked().has(s.id)).length;
   const left = $("pkNoRepeat").checked ? list.length - p : list.length;
   $("pkCount").textContent = `${p} of ${list.length} have had a turn · P(each) = 1/${left > 0 ? left : list.length}`;
 }
@@ -2720,6 +2743,7 @@ function renderPkStage(st, spinning) {
 }
 function openPicker() {
   if (!classList().length) { toast("Add students to " + cls + " first."); return; }
+  if (!presentList().length) { toast("Everyone in " + cls + " is marked absent today."); return; }
   $("pkTitle").textContent = "Pick a student · " + cls;
   pkCurrent = null;
   renderPkStage(null);
@@ -2732,7 +2756,7 @@ function openPicker() {
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 async function spin(excludeId) {
   if (pkBusy) return;
-  const list = classList(); if (!list.length) return;
+  const list = presentList(); if (!list.length) { toast("Everyone in " + cls + " is marked absent."); return; }
   const noRepeat = $("pkNoRepeat").checked;
   let pool = list.filter(s => s.id !== excludeId && (!noRepeat || !picked().has(s.id)));
   if (!pool.length) {
@@ -4006,7 +4030,7 @@ function renderClass(students) {
     const head = `<button class="srow" data-act="toggle" data-id="${st.id}" aria-expanded="${open}" aria-controls="p-${st.id}">
         ${avatarHTML(st, "sm")}
         <span class="smain">
-          <span class="snm">${nameHTML(st)}${titleTag(st)}</span>
+          <span class="snm">${nameHTML(st)}${titleTag(st)}${isAbsent(st) ? `<span class="ttag abs-tag">Absent</span>` : ""}</span>
           <span class="lvrow">
             <span class="lvpill">Lv ${lv}</span>
             <span class="lvbar" role="progressbar" aria-label="Progress to level ${lv + 1}" aria-valuemin="0" aria-valuemax="${LEVEL_XP}" aria-valuenow="${into}"><i style="width:${pct}%"></i></span>
@@ -4018,12 +4042,13 @@ function renderClass(students) {
         <span class="xp ${st.xp < 0 ? "neg" : ""}">${st.xp}<small>XP</small></span>
         <span class="chev" aria-hidden="true">›</span>
       </button>`;
-    if (!open) return `<li class="item">${head}</li>`;
+    const ab = isAbsent(st) ? " absent" : "";
+    if (!open) return `<li class="item${ab}">${head}</li>`;
     const picker = pickerFor === st.id ? `<div class="picker">
         <div class="pk-grid">${pickerSeeds.map(sd => `<button class="pk" data-act="avSet" data-id="${st.id}" data-seed="${sd}" aria-label="Choose this avatar">${avatarHTML({ id: "", avatar: sd, cls: st.cls })}</button>`).join("")}</div>
         <div class="pk-acts"><button class="ghost small" data-act="avMore" data-id="${st.id}">Show more</button><button class="ghost small" data-act="avClose">Cancel</button></div>
       </div>` : "";
-    return `<li class="item open">${head}<div class="panel" id="p-${st.id}">
+    return `<li class="item open${ab}">${head}<div class="panel" id="p-${st.id}">
       <div class="who2">${avatarHTML(st, "lg")}<div><div class="nm nm2">${nameHTML(st)}${titleTag(st)}</div><div class="lvl">Level ${lv} · ${st.xp} XP · Wallet ${walletOf(st)}</div>
         <div class="sbtns" style="justify-content:flex-start;margin-top:6px">${readOnly ? "" : `<button class="ghost small" data-act="avPick" data-id="${st.id}" style="margin:0">${pickerFor === st.id ? "Choosing…" : "Change avatar"}</button>`}<button class="primary small" data-act="shopOpen" data-id="${st.id}" style="margin:0">Shop</button>${readOnly ? "" : `<button class="ghost small" data-act="sotwSet" data-id="${st.id}" style="margin:0">${isSotw(st) ? "Remove Student of the Week" : "★ Student of the Week"}</button>`}</div></div></div>
       ${picker}
@@ -4211,7 +4236,7 @@ document.addEventListener("click", e => {
     case "wcOpen": openWholeClass(); break;
     case "wcClose": $("wcModal").hidden = true; break;
     case "wcToggle": wcSel.has(id) ? wcSel.delete(id) : wcSel.add(id); renderWholeClass(); break;
-    case "wcAll": classList().forEach(s => wcSel.add(s.id)); renderWholeClass(); break;
+    case "wcAll": presentList().forEach(s => wcSel.add(s.id)); renderWholeClass(); break;
     case "wcNone": wcSel.clear(); renderWholeClass(); break;
     case "wcApply": applyWholeClass(); break;
     case "pkOpen": openPicker(); break;
@@ -4428,7 +4453,7 @@ render();
     const ids = new Set();
     snap.docs.forEach(d => { ids.add(d.id); const v = d.data() || {}; map.set(d.id, { ...v, ...(coll === "att" ? { m: v.m || {} } : coll === "hw" ? { done: v.done || {} } : { scores: v.scores || {} }) }); });
     [...map.keys()].forEach(k => { if (!ids.has(k)) map.delete(k); });
-    if (view === "hub" || view === "tools" || reportFor) render();
+    if (view === "hub" || view === "tools" || view === "students" || reportFor) render();
   }, () => {}));
 
   // Student of the Week, live across devices

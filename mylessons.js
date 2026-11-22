@@ -187,11 +187,11 @@
     }
     const b = e.target.closest("[data-a]"); if (!b || !panel || !panel.contains(b)) return;
     const a = b.dataset.a;
-    if (a === "cls") { sel = b.dataset.c; current = null; openSid = ""; note = ""; wcSel = new Set(inClass(sel).map(x => x.id)); paint(); }
-    else if (a === "wc") { wcView = true; wcSel = new Set(inClass(sel).map(x => x.id)); note = ""; paint(); }
+    if (a === "cls") { sel = b.dataset.c; current = null; openSid = ""; note = ""; wcSel = new Set(inClass(sel).filter(x => !absent(x)).map(x => x.id)); paint(); }
+    else if (a === "wc") { wcView = true; wcSel = new Set(inClass(sel).filter(x => !absent(x)).map(x => x.id)); note = ""; paint(); }
     else if (a === "wcback") { wcView = false; note = ""; paint(); }
     else if (a === "wct") { wcSel.has(b.dataset.id) ? wcSel.delete(b.dataset.id) : wcSel.add(b.dataset.id); paint(); }
-    else if (a === "wcall") { inClass(sel).forEach(x => wcSel.add(x.id)); paint(); }
+    else if (a === "wcall") { inClass(sel).filter(x => !absent(x)).forEach(x => wcSel.add(x.id)); paint(); }
     else if (a === "wcnone") { wcSel.clear(); paint(); }
     else if (a === "wcgo") wholeClass();
     else if (a === "row") { openSid = openSid === b.dataset.id ? "" : b.dataset.id; note = ""; paint(); }
@@ -207,7 +207,7 @@
   /* give the same XP to the selected students of one class (same effect as the Whole class button on the main page) */
   async function wholeClass() {
     if (typeof readOnly !== "undefined" && readOnly) { note = "View only."; return paint(); }
-    const list = inClass(sel), targets = list.filter(x => wcSel.has(x.id));
+    const list = inClass(sel).filter(x => !absent(x)), targets = list.filter(x => wcSel.has(x.id));
     let b;
     if (wcB === "c") { const n = Math.round(Number(wcAmt)); if (!wcAmt.trim() || !Number.isFinite(n) || n === 0) { note = "Type an amount like 5 or -5."; return paint(); } if (Math.abs(n) > 500) { note = "Up to 500 XP here."; return paint(); } b = { title: (wcWhy || "").trim().slice(0, 60) || (n > 0 ? "Bonus XP" : "XP adjustment"), xp: n }; }
     else b = (wcB[0] === "p" ? POS() : NEG())[+wcB.slice(1)];
@@ -230,24 +230,12 @@
       <div class="ml-g">${NEG().map(p => `<button class="ml-b r s" type="button" data-a="give" data-id="${E(st.id)}" data-title="${E(p.title)}" data-xp="${p.xp}">${E(short(p.title))} ${p.xp}</button>`).join("")}</div>
       <div class="ml-cx"><input id="mlCx" type="number" inputmode="numeric" placeholder="XP, e.g. 5 or -5" aria-label="Custom XP"><button class="ml-b s" type="button" data-a="custom" data-id="${E(st.id)}">Add</button><button class="ml-b s" type="button" data-a="undo" data-id="${E(st.id)}">Undo last</button></div>`;
   }
-  /* Same first name in one class: add the father's first letter, then the next name's letter (grandfather or family), until each one is different. */
-  const PART = /^(al|el|bin|ben|ibn|abu|bu)$/i;
-  function labelsOf(list) {
-    const fnm = n => (typeof firstName === "function" ? firstName(n) : String(n).split(" ")[0]);
-    const info = list.map(st => { const f = fnm(st.name), rest = String(st.name).replace(/^Sh\.\s*/i, "Sheikh ").split(/\s+/).slice(f.split(/\s+/).length).filter(w => w && !PART.test(w)); return { st, f, rest }; });
-    const out = new Map(), groups = {}; info.forEach(x => (groups[x.f.toLowerCase()] = groups[x.f.toLowerCase()] || []).push(x));
-    Object.values(groups).forEach(g => {
-      if (g.length === 1) { out.set(g[0].st.id, g[0].f); return; }
-      const lab = x => k => x.f + (k ? " " + x.rest.slice(0, k).map(w => w[0].toUpperCase() + ".").join(" ") : "");
-      for (let k = 1; k <= 4; k++) { const ls = g.map(x => lab(x)(Math.min(k, x.rest.length))); const cnt = {}; ls.forEach(l => { cnt[l] = (cnt[l] || 0) + 1; });
-        g.forEach((x, i) => { if (!out.has(x.st.id) && cnt[ls[i]] === 1) out.set(x.st.id, ls[i]); }); }
-      g.forEach(x => { if (!out.has(x.st.id)) out.set(x.st.id, String(x.st.name)); });
-    });
-    return out;
-  }
+  /* Display names: first name + father's first letter; if two collide, first name + family name (shared helper in teacher.html). */
+  const labelsOf = list => { try { return window.__nameLabels(list); } catch { return new Map(); } };
+  const absent = st => { try { return !!window.__isAbsent(st); } catch { return false; } };
   function paint() {
     if (!panel || panel.hidden) return;
-    const list = inClass(sel), LB = labelsOf(list), keep = panel.querySelector(".ml-body"), top = keep ? keep.scrollTop : 0;
+    const all = inClass(sel), LB = labelsOf(all), list = all.filter(x => !absent(x)), keep = panel.querySelector(".ml-body"), top = keep ? keep.scrollTop : 0;
     let body;
     if (wcView) {
       const opts = POS().map((p, i) => `<option value="p${i}"${wcB === "p" + i ? " selected" : ""}>+${p.xp}  ${E(p.title)}</option>`).join("") + NEG().map((p, i) => `<option value="n${i}"${wcB === "n" + i ? " selected" : ""}>${p.xp}  ${E(p.title)}</option>`).join("") + `<option value="c"${wcB === "c" ? " selected" : ""}>Custom amount…</option>`;
@@ -256,9 +244,9 @@
         ${wcB === "c" ? `<div class="ml-cx"><input class="ml-in" id="mlWcAmt" type="number" inputmode="numeric" placeholder="XP, e.g. 5 or -5" value="${E(wcAmt)}" aria-label="XP amount"><input class="ml-in" id="mlWcWhy" maxlength="60" placeholder="Reason (optional)" value="${E(wcWhy)}" aria-label="Reason"></div>` : ""}
         <div class="ml-g"><button class="ml-b s" type="button" data-a="wcall">Select all</button><button class="ml-b s" type="button" data-a="wcnone">Clear</button><b style="align-self:center">${list.filter(x => wcSel.has(x.id)).length} of ${list.length} selected</b></div>
         <div class="ml-chips2">${list.map(x => `<button class="ml-chip" type="button" data-a="wct" data-id="${E(x.id)}" aria-pressed="${wcSel.has(x.id)}">${E(LB.get(x.id) || x.name.split(" ")[0])}</button>`).join("")}</div>
-        <p style="margin:0;font-size:13px">Tap a name to leave that student out (for example if he is absent).</p>
+        <p style="margin:0;font-size:13px">Tap a name to leave that student out.${all.length > list.length ? ` ${all.length - list.length} absent student(s) are not shown.` : ""}</p>
         <button class="ml-b g" type="button" data-a="wcgo">Give XP</button></div>`;
-    } else body = `<button class="ml-b g ml-wcb" type="button" data-a="wc">Whole class XP…</button>` + (list.length ? list.map(st => `<div class="ml-r"><button class="ml-rh" type="button" data-a="row" data-id="${E(st.id)}" aria-expanded="${openSid === st.id}" title="${E(st.name)}"><b>${E(st.name)}</b><span>${st.xp} XP</span></button>${openSid === st.id ? `<div class="ml-ex">${awardsHTML(st)}</div>` : ""}</div>`).join("")               : `<p>No students in ${E(sel)}.</p>`);
+    } else body = `<button class="ml-b g ml-wcb" type="button" data-a="wc">Whole class XP…</button>` + (all.length ? all.map(st => `<div class="ml-r"${absent(st) ? ' style="opacity:.45;filter:grayscale(1)"' : ""}><button class="ml-rh" type="button" data-a="row" data-id="${E(st.id)}" aria-expanded="${openSid === st.id}" title="${E(st.name)}"><b>${E(LB.get(st.id) || st.name)}${absent(st) ? " · absent" : ""}</b><span>${st.xp} XP</span></button>${openSid === st.id ? `<div class="ml-ex">${awardsHTML(st)}</div>` : ""}</div>`).join("")               : `<p>No students in ${E(sel)}.</p>`);
     panel.innerHTML = `<div class="ml-h"><b>${E(sel)}${auto() === sel ? " · now" : ""}</b><button class="ml-t" type="button" data-mlx="hide" aria-label="Hide the panel">Hide ✕</button></div>
       <div class="ml-chips">${classes().map(c => `<button class="ml-c" type="button" data-a="cls" data-c="${E(c)}" aria-pressed="${c === sel}">${E(c)}</button>`).join("")}</div>
       <div class="ml-note" role="status">${E(note)}</div><div class="ml-body">${body}</div>`;
@@ -421,7 +409,7 @@
   }
   function paintFloat(spinning) {
     if (!fw || fw.hidden) return;
-    const list = inClass(rc), set = getPicked(rc);
+    const list = inClass(rc).filter(x => !absent(x)), set = getPicked(rc);
     fw.innerHTML = `<div class="ml-fwh"><b>Pick a student</b><select id="mlRc" aria-label="Class">${classes().map(c => `<option${c === rc ? " selected" : ""}>${E(c)}</option>`).join("")}</select><button class="ml-t" type="button" data-f="min" aria-label="Minimise" title="Minimise">–</button></div>
       <div class="ml-fwb">${stageHTML(current, spinning)}
         ${current && !spinning && !(typeof readOnly !== "undefined" && readOnly) ? `<div class="pk-quick">${[0, 5].filter(i => POS()[i]).map(i => `<button class="plus" type="button" data-f="award" data-id="${E(current.id)}" data-title="${E(POS()[i].title)}" data-xp="${POS()[i].xp}">+${POS()[i].xp} ${E(POS()[i].title)}</button>`).join("")}</div>` : ""}
@@ -429,7 +417,7 @@
         <small>${list.filter(s => set.has(s.id)).length} of ${list.length} have had a turn · <button class="ml-b s" type="button" data-f="reset">Reset turns</button></small><small role="status">${E(fNote)}</small></div>`;
   }
   async function spinF() {
-    if (pickBusy) return; const list = inClass(rc); if (!list.length) { fNote = "No students in " + rc + "."; return paintFloat(); }
+    if (pickBusy) return; const list = inClass(rc).filter(x => !absent(x)); if (!list.length) { fNote = "No present students in " + rc + "."; return paintFloat(); }
     const set = getPicked(rc); let pool = list.filter(s => !set.has(s.id) && (!current || list.length < 2 || s.id !== current.id));
     if (!pool.length) { set.clear(); setPicked(rc, set); pool = list.filter(s => !current || list.length < 2 || s.id !== current.id); fNote = "Everyone had a turn. Starting again."; } else fNote = "";
     const win = pool[Math.floor(Math.random() * pool.length)];
