@@ -1,8 +1,8 @@
 // Teacher side: Live quiz (a Kahoot-style game). The teacher builds or imports questions, opens a lobby, students join from their own
 // page, then every question is shown to all of them at the same time. After each question: the right answer and the ranking.
 // Data: <base>/live/<id>  kind "set" (saved questions) or "session" (a running game);  <base>/liveplayers/<session>_<sid>  one per joined student.
-import { PRESETS, toTsv } from "./presets.js?v=1123k";
-import { getDocs, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, query, where, bcol, bdoc } from "./fb.js?v=1123k";
+import { PRESETS, toTsv } from "./presets.js?v=1123l";
+import { getDocs, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, query, where, bcol, bdoc } from "./fb.js?v=1123l";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -57,25 +57,39 @@ function cells(text) {
   row.push(cur); out.push(row);
   return out.map(r => r.map(c => c.trim())).filter(r => r.some(c => c));
 }
+// The Correct cell can be a letter (B, b, "b)", "Option B"), the answer itself (4, x = 4, 0.5), or a position 1–4.
+// The answer itself wins over a position: "4" with answers 3, 4, 5, 6 means the answer 4, not the 4th answer.
+const norm = v => String(v ?? "").toLowerCase().replace(/[−–—]/g, "-").replace(/[×]/g, "x").replace(/\s+/g, "");
+const num = v => { const t = norm(v); return /^-?\d*\.?\d+$/.test(t) ? Number(t) : NaN; };
+const same = (a, b) => { if (norm(a) === norm(b)) return true; const x = num(a), y = num(b); return !isNaN(x) && !isNaN(y) && Math.abs(x - y) < 1e-9; };
 export function parseQuiz(text) {
-  const R = cells(text), qs = [], errs = [];
+  let R = cells(text); const qs = [], errs = [];
   if (!R.length) return { qs, errs };
+  // drop columns that are empty in every row (an empty first column in Excel moved every answer one place)
+  const w = Math.max(...R.map(r => r.length)), keepCol = [...Array(w).keys()].filter(c => R.some(r => (r[c] || "") !== ""));
+  R = R.map(r => keepCol.map(c => r[c] || ""));
+  // the header row can be the first, second or third row (a title row above it is fine)
+  const isHead = r => r.some(c => /question/i.test(c)) || (r.some(c => /correct|answer|key/i.test(c)) && r.some(c => /^(option\s*|choice\s*|answer\s*)?a$/i.test(c)));
+  const hi = R.slice(0, 3).findIndex(isHead);
   let ix = { q: 0, o: [1, 2, 3, 4], c: 5, t: 6 }, from = 0;
-  if (/question/i.test(R[0][0] || "") || R[0].some(c => /^correct$/i.test(c))) {
-    const h = R[0], f = re => h.findIndex(c => re.test(c)); from = 1;
-    const o = LET.map(l => f(new RegExp("^(option\\s*|choice\\s*)?" + l + "$", "i")));
-    ix = { q: Math.max(0, f(/^q/i)), o: o.map((x, i) => x < 0 ? i + 1 : x), c: f(/correct|answer|key|right/i), t: f(/time|sec/i) };
-    if (ix.c < 0) ix.c = 5;
+  if (hi >= 0) {
+    const h = R[hi], f = re => h.findIndex(c => re.test(c)); from = hi + 1;
+    const o = LET.map(l => f(new RegExp("^(option\\s*|choice\\s*|answer\\s*)?\\(?" + l + "\\)?$", "i")));
+    let c = f(/correct/i); if (c < 0) c = f(/^(answer|key|right)/i); if (c < 0) c = f(/answer|key|right/i);
+    const q = f(/question/i);
+    ix = { q: q >= 0 ? q : Math.max(0, f(/^q/i)), o: o.map((x, i) => x < 0 ? i + 1 : x), c: c >= 0 && !o.includes(c) ? c : 5, t: f(/time|sec/i) };
   }
   R.slice(from).forEach((r, n) => {
     const line = n + 1 + from, text = r[ix.q] || ""; if (!text) return;
     const raw = ix.o.map(i => r[i] || ""), keep = raw.map((v, i) => v ? i : -1).filter(i => i >= 0);
     if (keep.length < 2) { errs.push(`Row ${line}: needs at least two answers.`); return; }
     const cr = String(r[ix.c] || "").trim(); let ci = -1;
-    if (/^[A-Da-d]$/.test(cr)) ci = cr.toUpperCase().charCodeAt(0) - 65;
-    else if (/^[1-4]$/.test(cr)) ci = Number(cr) - 1;
-    else if (cr) ci = raw.findIndex(v => v && v.toLowerCase() === cr.toLowerCase());
-    if (ci < 0 || !raw[ci]) { errs.push(`Row ${line}: the Correct column must be A, B, C or D and point to a filled answer.`); return; }
+    const lm = cr.match(/^(?:option|choice|answer)?\s*\(?([A-Da-d])\s*[).:]?$/i);
+    const byText = raw.findIndex(v => v && same(v, cr));
+    if (lm && !(byText >= 0 && byText !== lm[1].toUpperCase().charCodeAt(0) - 65 && raw.some(v => /^[a-d]$/i.test(v)))) ci = lm[1].toUpperCase().charCodeAt(0) - 65;
+    else if (byText >= 0) ci = byText;
+    else if (/^(?:option|choice|answer)?\s*[1-4]$/i.test(cr)) ci = Number(cr.slice(-1)) - 1;
+    if (ci < 0 || !raw[ci]) { errs.push(`Row ${line}: the Correct column must be A, B, C, D or the right answer itself.`); return; }
     const t = Number(r[ix.t]); qs.push({ q: text, o: keep.map(i => raw[i]), c: keep.indexOf(ci), t: t >= 5 && t <= 180 ? Math.round(t) : null });
   });
   if (qs.length > 60) { errs.push("Only the first 60 questions are used."); qs.length = 60; }

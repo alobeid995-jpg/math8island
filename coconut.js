@@ -1,8 +1,8 @@
 // Coconut Crack: a team game for the whole class on one screen (the teacher's projector). Teams take turns to crack a coconut.
 // A coconut hides a question or a surprise. Questions come from your own Coconut sets (uploaded from Excel/CSV or pasted). They are kept apart from Live quiz. Nothing is saved to students.
-import { getDocs, setDoc, deleteDoc, bcol, bdoc } from "./fb.js?v=1123k";
-import { PRESETS } from "./presets.js?v=1123k";
-import { parseQuiz, readFile } from "./live.js?v=1123k";
+import { getDocs, setDoc, deleteDoc, bcol, bdoc } from "./fb.js?v=1123l";
+import { PRESETS } from "./presets.js?v=1123l";
+import { parseQuiz, readFile } from "./live.js?v=1123l";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -11,7 +11,7 @@ const TEAMS = [["Parrots", "🦜", "#e0443e"], ["Crabs", "🦀", "#e5a50a"], ["T
 const SUR = { bonus: ["🎁", "Treasure!", "+10 points for your team"], bomb: ["💣", "Boom!", "Your team loses 5 points"], steal: ["🏴‍☠️", "Pirate!", "Steal 5 points from a team you choose"], swap: ["🔄", "Swap!", "Swap scores with a team you choose"], gift: ["🎉", "Party!", "Every team gets +3 points"] };
 
 let sets = [], qs = [], tiles = [], teams = [], turn = 0, open = -1, step = "", pts = 10, nT = 4, text = "", note = "", sname = "", reveal = false, over = false;
-let ov = null, selId = "";
+let ov = null, selId = "", chk = false, dirty = false;
 const sel = () => selId && sets.some(x => x.id === selId);
 
 { const st = document.createElement("style"); st.textContent = `
@@ -40,13 +40,16 @@ const sel = () => selId && sets.some(x => x.id === selId);
 #ccOv .cc-opt{padding:14px;border-radius:14px;background:#e8f4f8;border:3px solid #b6d3de;font-weight:800;font-size:clamp(18px,3vw,30px)}#ccOv .cc-opt.ok{background:#bbf7d0;border-color:#16a34a}
 #ccOv .cc-big{font-size:clamp(60px,12vw,120px);text-align:center}#ccOv .cc-c{text-align:center}
 #ccOv .cc-msg{color:#b3261e;font-weight:700;min-height:1.2em}
+#ccOv .cc-chk{margin:10px 0;border:2px solid #b6c4cf;border-radius:12px;padding:8px 12px;background:#f6fafc}#ccOv .cc-chk>button.cc-sum{all:unset;cursor:pointer;font-weight:900;display:block;width:100%}
+#ccOv .cc-cq{padding:8px 0;border-top:1px solid #dbe4ea}#ccOv .cc-cq:first-of-type{border-top:0}#ccOv .cc-cq b{display:block;margin-bottom:6px}
+#ccOv .cc-co{font:inherit;font-weight:700;border:2px solid #b6c4cf;background:#fff;border-radius:10px;padding:6px 10px;margin:0 6px 6px 0;cursor:pointer;color:#10222b}#ccOv .cc-co.ok{background:#bbf7d0;border-color:#16a34a}
 #ccOv .cc-pick{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:12px 0}
 @media (max-height:560px){#ccOv{padding:6px 10px}#ccOv h2{font-size:20px}#ccOv .cc-top{margin-bottom:2px}#ccOv .cc-x{padding:5px 10px}#ccOv .cc-team{min-width:70px;padding:3px 8px;border-width:3px}#ccOv .cc-team b{font-size:20px}#ccOv .cc-score{margin-bottom:4px;gap:6px}#ccOv .cc-pr{font-size:15px!important;margin:2px 0!important}}
 `; document.head.appendChild(st); }
 
-function ui() { if (!ov) { ov = document.createElement("div"); ov.id = "ccOv"; ov.hidden = true; document.body.appendChild(ov); ov.addEventListener("click", onClick); ov.addEventListener("input", e => { if (e.target.id === "ccText") text = e.target.value; if (e.target.id === "ccName") sname = e.target.value; }); ov.addEventListener("change", e => { if (e.target.id === "ccSet") { selId = e.target.value; pickSet(e.target.value); if (sel()) paint(); } if (e.target.id === "ccFile" && e.target.files[0]) { const f = e.target.files[0]; readFile(f).then(t => { text = t; const r = parseQuiz(text); qs = r.qs; sname = sname || f.name.replace(/\.[^.]+$/, ""); note = r.qs.length ? `${r.qs.length} question${r.qs.length === 1 ? "" : "s"} ready. Press Save to keep this set.` + (r.errs.length ? " " + r.errs[0] : "") : (r.errs[0] || "No questions found in that file."); paint(); }).catch(() => { note = "Could not read that file. Save it as CSV, or paste the cells."; paint(); }); } if (e.target.id === "ccN") nT = +e.target.value; if (e.target.id === "ccPts") pts = +e.target.value; }); } return ov; }
+function ui() { if (!ov) { ov = document.createElement("div"); ov.id = "ccOv"; ov.hidden = true; document.body.appendChild(ov); ov.addEventListener("click", onClick); ov.addEventListener("input", e => { if (e.target.id === "ccText") text = e.target.value; if (e.target.id === "ccName") sname = e.target.value; }); ov.addEventListener("change", e => { if (e.target.id === "ccSet") { selId = e.target.value; pickSet(e.target.value); if (sel()) paint(); } if (e.target.id === "ccFile" && e.target.files[0]) { const f = e.target.files[0]; readFile(f).then(t => { text = t; const r = parseQuiz(text); qs = r.qs; selId = ""; dirty = false; sname = sname || f.name.replace(/\.[^.]+$/, ""); note = r.qs.length ? `${r.qs.length} question${r.qs.length === 1 ? "" : "s"} ready. Press Save to keep this set.` + (r.errs.length ? " " + r.errs[0] : "") : (r.errs[0] || "No questions found in that file."); paint(); }).catch(() => { note = "Could not read that file. Save it as CSV, or paste the cells."; paint(); }); } if (e.target.id === "ccN") nT = +e.target.value; if (e.target.id === "ccPts") pts = +e.target.value; }); } return ov; }
 const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
-function pickSet(id) { const s = id.startsWith("preset:") ? PRESETS[+id.slice(7)] : sets.find(x => x.id === id); if (s) { qs = s.qs.slice(); sname = s.title || ""; note = `${qs.length} question${qs.length === 1 ? "" : "s"} ready.`; } else { qs = []; note = ""; } paint(); }
+function pickSet(id) { dirty = false; const s = id.startsWith("preset:") ? PRESETS[+id.slice(7)] : sets.find(x => x.id === id); if (s) { qs = s.qs.map(q => ({ ...q, o: q.o.slice() })); sname = s.title || ""; note = `${qs.length} question${qs.length === 1 ? "" : "s"} ready.`; } else { qs = []; note = ""; } paint(); }
 
 function build() {
   let q = shuffle(qs).slice(0, 24); if (!q.length) return;
@@ -86,6 +89,7 @@ function paint() {
       <div class="cc-row"><button class="cc-btn o" type="button" data-cc="parse">Use pasted questions</button><input class="cc-in" id="ccName" placeholder="Name to save this set" value="${esc(sname)}" style="width:200px"><button class="cc-btn o" type="button" data-cc="saveset"${qs.length ? "" : " disabled"}>💾 Save to my Coconut sets</button>
       <label>Teams <select id="ccN" style="width:auto">${[2, 3, 4, 5, 6].map(n => `<option${n === nT ? " selected" : ""}>${n}</option>`).join("")}</select></label>
       <label>Points per question <select id="ccPts" style="width:auto">${[5, 10, 20].map(n => `<option${n === pts ? " selected" : ""}>${n}</option>`).join("")}</select></label></div>
+      ${qs.length ? `<div class="cc-chk"><button type="button" class="cc-sum" data-cc="chk" aria-expanded="${chk}">${chk ? "▾" : "▸"} Check the answers (${qs.length} questions)</button>${chk ? `<p style="margin:6px 0">The green answer is the one the game marks as right. Tap another answer to change it.</p>` + qs.map((q, i) => `<div class="cc-cq"><b>${i + 1}. ${esc(q.q)}</b>${q.o.map((x, j) => `<button type="button" class="cc-co${j === q.c ? " ok" : ""}" data-cc="fix" data-q="${i}" data-o="${j}" aria-pressed="${j === q.c}">${LET[j]}. ${esc(x)}</button>`).join("")}</div>`).join("") + (sel() && dirty ? `<div class="cc-row"><button class="cc-btn g" type="button" data-cc="savefix">💾 Save the corrected answers</button></div>` : "") : ""}</div>` : ""}
       <p class="cc-msg">${esc(note)}</p><div class="cc-row"><button class="cc-btn" type="button" data-cc="start"${qs.length ? "" : " disabled"}>Start the game 🥥</button></div></div>`;
     return;
   }
@@ -124,11 +128,15 @@ function finish(t, icon, msg) { t.icon = icon; t.done = true; note = msg; step =
 function onClick(e) {
   const b = e.target.closest("[data-cc]"); if (!b) return; const a = b.dataset.cc;
   if (a === "x") { if (tiles.length && !over && !confirm("Leave the game? The scores will be lost.")) return; ov.hidden = true; tiles = []; qs = []; return; }
-  if (a === "parse") { const r = parseQuiz(text); qs = r.qs; note = r.qs.length ? `${r.qs.length} question${r.qs.length === 1 ? "" : "s"} ready.` + (r.errs.length ? " " + r.errs[0] : "") : (r.errs[0] || "Paste at least one question."); return paint(); }
+  if (a === "parse") { const r = parseQuiz(text); qs = r.qs; selId = ""; dirty = false; note = r.qs.length ? `${r.qs.length} question${r.qs.length === 1 ? "" : "s"} ready.` + (r.errs.length ? " " + r.errs[0] : "") : (r.errs[0] || "Paste at least one question."); return paint(); }
   if (a === "saveset") { const nm = (sname || "").trim(); if (!nm) { note = "Type a name for the set first."; return paint(); } if (!qs.length) return;
-    return void setDoc(bdoc("live", "c" + Date.now().toString(36)), { kind: "set", tool: "coco", title: nm, qs, created: Date.now() }).then(async () => { note = "Saved to your Coconut sets."; await openCoconut(); }).catch(() => { note = "Could not save. Check your internet."; paint(); }); }
+    const nid = "c" + Date.now().toString(36); return void setDoc(bdoc("live", nid), { kind: "set", tool: "coco", title: nm, qs, created: Date.now() }).then(async () => { selId = nid; dirty = false; await openCoconut(); note = "Saved to your Coconut sets."; paint(); }).catch(() => { note = "Could not save. Check your internet."; paint(); }); }
   if (a === "delset") { const id = selId; const s0 = sets.find(x => x.id === id); if (!s0 || !confirm("Delete the set " + (s0.title || "") + "?")) return;
     return void deleteDoc(bdoc("live", id)).then(async () => { selId = ""; qs = []; note = "Deleted."; await openCoconut(); }).catch(() => { note = "Could not delete."; paint(); }); }
+  if (a === "chk") { chk = !chk; return paint(); }
+  if (a === "fix") { const q = qs[+b.dataset.q]; if (q) { q.c = +b.dataset.o; dirty = true; note = sel() ? "Changed. Press Save the corrected answers to keep it." : "Changed."; } return paint(); }
+  if (a === "savefix") { const s0 = sets.find(x => x.id === selId); if (!s0) return; const { id, ...rest } = s0;
+    return void setDoc(bdoc("live", selId), { ...rest, qs, updated: Date.now() }).then(() => { s0.qs = qs.map(q => ({ ...q, o: q.o.slice() })); dirty = false; note = "Saved. The game now uses these answers."; paint(); }).catch(() => { note = "Could not save. Check your internet."; paint(); }); }
   if (a === "start") { build(); return paint(); }
   if (a === "again") { build(); return paint(); }
   if (a === "new") { tiles = []; qs = []; note = ""; return paint(); }
@@ -154,5 +162,5 @@ export async function openCoconut() {
   ui(); note = "Loading…"; paint();
   try { const d = await getDocs(bcol("live")); sets = d.docs.map(x => ({ id: x.id, ...x.data() })).filter(x => x.kind === "set" && x.tool === "coco" && Array.isArray(x.qs) && x.qs.length).sort((a, b) => (b.created || 0) - (a.created || 0)); note = ""; }
   catch { sets = []; note = "Could not load saved sets. You can still paste questions."; }
-  if (!tiles.length) paint();
+  if (!tiles.length) { if (selId && !sel()) selId = ""; if (sel() && !qs.length) return pickSet(selId); paint(); }
 }
