@@ -1,9 +1,9 @@
 // "My classwork" on the student page: worksheets from the teacher, and (for the 9S boys) the lesson games.
-import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1123d";
-import { playerOf, catalog } from "./islandmap.js?v=1123d";
-import { SCR, layer, rt } from "./screenpen.js?v=1123d";
-import { logEv } from "./presence.js?v=1123d";
-import { LIVE_WS, isLive, liveScope, setUploaded, withBridge, reportsItself } from "./liveworks.js?v=1123d";
+import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1123e";
+import { playerOf, catalog } from "./islandmap.js?v=1123e";
+import { SCR, layer, rt } from "./screenpen.js?v=1123e";
+import { logEv } from "./presence.js?v=1123e";
+import { LIVE_WS, isLive, liveScope, setUploaded, withBridge, reportsItself, WATCH_JS } from "./liveworks.js?v=1123e";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -209,11 +209,44 @@ function watchMe(w, form) {
   };
   poll();
 }
-function openAG(file = "ag34.html", ttl = "Lesson 3.4") {
-  const ov = document.createElement("div"); ov.className = "wk-play"; ov.id = "wkPlay";
+function openAG(file = "ag34.html", ttl = "Lesson 3.4", wid) {
+  const ov = document.createElement("div"); ov.className = "wk-play"; ov.id = "wkPlay"; ov.style.position = ov.style.position || "fixed";
   ov.innerHTML = `<button class="wk-x" type="button" data-wkact="closegame" aria-label="Close the lesson">✕ Close</button><iframe src="${file}" title="${ttl}"></iframe>`;
   document.body.appendChild(ov); document.body.classList.add("wk-noscroll");
+  if (wid) watchFrame(ov, ov.querySelector("iframe"), wid, ttl, true);
 }
+/* Watch & help on a live worksheet page: the page sends a picture of itself while the teacher watches, and shows the teacher's pen. */
+function watchFrame(ov, fr, wid, title, sameOrigin) {
+  const id = SCR + "_" + P.sid; let on = false, ch = null, chTok = "", rtAt = 0, rtStrokes = [], snapLast = null, dbT = 0, beat = 0, wasOn = false;
+  const base0 = () => ({ sess: SCR, sid: P.sid, name: String((me && me.name) || "").slice(0, 80), joined: Date.now() });
+  const light = () => setDoc(doc(fs, ...base, "liveplayers", id), { ...base0(), ans: { g: "lw", wid, t: String(title || "").slice(0, 80) } }).catch(() => {});
+  const full = () => { if (!snapLast) return; setDoc(doc(fs, ...base, "liveplayers", id), { ...base0(), ans: { g: "lw", wid, t: String(title || "").slice(0, 80), ...snapLast } }).catch(() => {}); };
+  const post = m => { try { fr.contentWindow && fr.contentWindow.postMessage(m, "*"); } catch {} };
+  if (sameOrigin) fr.addEventListener("load", () => { try { const d = fr.contentDocument, sc = d.createElement("script"); sc.textContent = WATCH_JS; d.body.appendChild(sc); if (on) post({ mi: "watch", on: true }); } catch {} });
+  const banner = document.createElement("div"); banner.className = "scr-banner"; banner.hidden = true; banner.style.cssText = "position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:5;margin:0"; banner.innerHTML = "<i></i><span>Your teacher is looking at your worksheet now.</span>"; ov.appendChild(banner);
+  const onMsg = e => { if (e.source !== fr.contentWindow || !e.data || e.data.mi !== "snap") return; const { h, w, vh, y, dh } = e.data; snapLast = { h: String(h || ""), w, vh, y, dh };
+    if (ch) ch.send("s", snapLast); if (!dbT) dbT = setTimeout(() => { dbT = 0; full(); }, 2000); };
+  addEventListener("message", onMsg);
+  const onRt = (ev, p) => { rtAt = Date.now(); if (ev === "d") { rtStrokes = p.strokes || []; post({ mi: "strokes", list: rtStrokes }); } else if (ev === "m") post({ mi: "strokes", list: rtStrokes, extra: p.s }); else if (ev === "hi") post({ mi: "snapnow" }); };
+  light();
+  const poll = async () => {
+    if (!document.body.contains(ov)) { removeEventListener("message", onMsg); if (ch) ch.close(); return; }
+    try {
+      const sn = await getDoc(doc(fs, ...base, "live", id)), d = sn.exists() ? sn.data() : null;
+      on = !!(d && d.on && d.wid === wid && Date.now() - (d.at || 0) < 90e3);
+      const st = on ? (d.strokes || []) : [];
+      banner.hidden = !on; banner.querySelector("span").textContent = st.length ? "Your teacher is showing you something." : "Your teacher is looking at your worksheet now.";
+      if (on !== wasOn) { post({ mi: "watch", on }); wasOn = on; }
+      if (on && d.rt && d.rt !== chTok) { if (ch) ch.close(); chTok = d.rt; rtStrokes = st; ch = rt(d.rt, onRt); }
+      if (!on && ch) { ch.close(); ch = null; chTok = ""; }
+      if (Date.now() - rtAt > 5000) { rtStrokes = st; post({ mi: "strokes", list: st }); }
+      if (++beat % 20 === 0) { if (on) full(); else light(); }
+    } catch {}
+    setTimeout(poll, on ? 1500 : 3000);
+  };
+  poll();
+}
+
 
 /* An uploaded HTML worksheet runs in a sealed box (no access to the site or the login). It hands its result over with MI.done(). */
 function openUp(w) {
@@ -223,6 +256,7 @@ function openUp(w) {
   ov.innerHTML = `<div style="display:flex;justify-content:flex-end;gap:6px">${self ? `<button class="wk-x" type="button" id="upDone" style="background:#1f9d55;color:#fff">✓ I finished</button>` : ""}<button class="wk-x" type="button" data-wkact="closegame" aria-label="Close the worksheet">✕ Close</button></div><iframe sandbox="allow-scripts allow-forms allow-modals allow-popups" title="${esc(w.title)}"></iframe>`;
   const fr = ov.querySelector("iframe"); fr.srcdoc = withBridge(html);
   document.body.appendChild(ov); document.body.classList.add("wk-noscroll");
+  watchFrame(ov, fr, "lw:" + w.id, w.title, false);
   let saved = false;
   const save = async (r, wr, m) => {
     if (saved) return; saved = true; const t = Date.now();
@@ -252,7 +286,7 @@ document.addEventListener("click", e => {
   if (a === "more") { showAll = !showAll; draw(); }
   if (a === "jump") { const c = $("cwBox"); if (c) c.scrollIntoView({ behavior: "smooth", block: "center" }); }
   if (a === "game") openGame(b.dataset.id);
-  if (a === "live") { const w = LIVE_WS.find(x => x.id === b.dataset.id); if (w && w.up && liveList().includes(w)) { openUp(w); return; } if (w && liveList().includes(w)) { const pg = w.pages && w.pages[+b.dataset.p || 0]; openAG(pg ? pg[0] : w.file, w.title); } }
+  if (a === "live") { const w = LIVE_WS.find(x => x.id === b.dataset.id); if (w && w.up && liveList().includes(w)) { openUp(w); return; } if (w && liveList().includes(w)) { const pg = w.pages && w.pages[+b.dataset.p || 0]; openAG(pg ? pg[0] : w.file, w.title, "lw:" + w.id); } }
   if (a === "closegame") closeGame();
 });
 

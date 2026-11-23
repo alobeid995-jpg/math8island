@@ -1,10 +1,10 @@
 // Classwork for the teacher: make a worksheet, send it to classes, collect and export the answers.
 // Worksheets live in <base>/work, the answer key in <base>/workkey (students never read it),
 // and each student's submission in <base>/subs/<worksheet>_<student>.
-import { getDocs, setDoc, updateDoc, deleteDoc, getDoc, bcol, bdoc, query, where } from "./fb.js?v=1123d";
-import { SCR, COLORS, layer, rt, token } from "./screenpen.js?v=1123d";
-import { autoMail, sendTo } from "./mailer.js?v=1123d";
-import { LIVE_WS, isLive, setUploaded } from "./liveworks.js?v=1123d";
+import { getDocs, setDoc, updateDoc, deleteDoc, getDoc, bcol, bdoc, query, where } from "./fb.js?v=1123e";
+import { SCR, COLORS, layer, rt, token } from "./screenpen.js?v=1123e";
+import { autoMail, sendTo } from "./mailer.js?v=1123e";
+import { LIVE_WS, isLive, setUploaded } from "./liveworks.js?v=1123e";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -252,8 +252,8 @@ async function scrLoad() { try { const s = await getDocs(query(bcol("liveplayers
 async function watchList(b) {
   scrStop(); await scrLoad(); if (view !== "watch") return;
   const rows = scr.live.map(x => { const st = students.find(s => s.id === x.sid) || { name: x.name, cls: "" }, w = works.find(y => y.id === x.ans.wid), a = x.ans.a || [];
-    return { x, st, w: w || (x.ans.g === "9s" ? { title: "9S Island game" } : null), done: a.filter(v => String(v).trim()).length, n: (w && (w.questions || []).length) || a.length, g9: x.ans.g === "9s" }; }).filter(r => r.w).sort((p, q) => (q.x.joined || 0) - (p.x.joined || 0));
-  b.innerHTML = `<h3>Watch &amp; help</h3><p class="noprint">Students who have a worksheet or a 9S Island game open now (updates every few seconds). Tap one to see his answers as he types and to draw on his worksheet. He sees a note that you are looking.</p>
+    return { x, st, w: w || (x.ans.g === "9s" ? { title: "9S Island game" } : x.ans.g === "lw" ? { title: "Live worksheet: " + (x.ans.t || "") } : null), done: a.filter(v => String(v).trim()).length, n: (w && (w.questions || []).length) || a.length, g9: x.ans.g === "9s" || x.ans.g === "lw" }; }).filter(r => r.w).sort((p, q) => (q.x.joined || 0) - (p.x.joined || 0));
+  b.innerHTML = `<h3>Watch &amp; help</h3><p class="noprint">Students who have a worksheet, a live worksheet or a 9S Island game open now (updates every few seconds). Tap one to see his answers as he types and to draw on his worksheet. He sees a note that you are looking.</p>
     <div class="lg-bar"><button class="ghost" type="button" data-wk="wlist">Back</button></div>
     ${rows.length ? `<table class="lg-tbl"><thead><tr><th>Student</th><th>Worksheet</th><th>Answered</th><th>Active</th><th></th></tr></thead><tbody>${rows.map(r => `<tr><td><b>${esc(r.st.name)}</b><br><small>${esc(r.st.cls)}</small></td><td>${esc(r.w.title)}</td><td>${r.g9 ? "–" : r.done + " / " + r.n}</td><td>${Date.now() - (r.x.joined || 0) < 90e3 ? '<b style="color:#1f9d55">● now</b>' : esc(ago(r.x.joined))}</td><td><button class="primary small" type="button" data-wk="wone" data-sid="${esc(r.x.sid)}">Watch</button></td></tr>`).join("")}</tbody></table>`
       : `<p class="none">Nobody has a worksheet open right now. When a student opens one, he appears here.</p>`}`;
@@ -264,6 +264,31 @@ let scrSaveT = 0;
 async function scrHelp(on) {
   const x = scr.live.find(y => y.sid === scr.sid), st = students.find(s => s.id === scr.sid); if (!x || !st) return;
   try { await setDoc(bdoc("live", SCR + "_" + scr.sid), { kind: "screen", cls: [st.cls], sid: scr.sid, wid: x.ans.wid || x.ans.g, on, strokes: on ? scr.strokes.slice(-60) : [], at: Date.now(), ...(on && scr.tok ? { rt: scr.tok } : {}) }); } catch {}
+}
+function watchLw(b, x, st) {
+  b.innerHTML = `<h3>${esc((st && st.name) || x.name)} · ${esc(x.ans.t || "Live worksheet")}</h3>
+    <div class="lg-bar noprint" style="position:sticky;top:0;z-index:5;background:var(--card,#fff);padding:6px 0;align-items:center"><button class="${scr.pen ? "primary" : "ghost"} small" type="button" data-wk="wpen">${scr.pen ? "✏️ Pen on" : "✏️ Pen off"}</button>${COLORS.map(c => `<button type="button" data-wk="wcol" data-c="${c}" aria-label="Colour" style="width:30px;height:30px;border-radius:50%;border:2px solid #fff;background:${c};cursor:pointer;${c === scr.color ? "outline:3px solid var(--ink,#17233b)" : ""}"></button>`).join("")}<button class="ghost small" type="button" data-wk="wundo">Undo</button><button class="ghost small" type="button" data-wk="wclear">Clear</button><button class="ghost small" type="button" data-wk="wback">Stop helping</button></div>
+    <p class="rep-note" id="scrAct">Waiting for his screen…</p>
+    <div id="scrWrap" style="position:relative;overflow:hidden;border:2px solid var(--line,#cdd5e3);border-radius:12px;background:#fff;margin:0 auto;width:600px;height:400px"><iframe id="scrFr" sandbox="" title="Student screen" style="border:0;position:absolute;left:0;top:0;transform-origin:0 0;pointer-events:none;background:#fff"></iframe></div>`;
+  const wrap = $("scrWrap"), fr = $("scrFr");
+  scr.layers = [layer(wrap, -1, { draw: true, color: () => scr.color, onMove: scrMove, onStroke: s => { scr.strokes.push(s); if (scr.strokes.length > 60) scr.strokes.shift(); scrSendAll(); clearTimeout(scrSaveT); scrSaveT = setTimeout(() => scrHelp(true), 250); } })];
+  wrap.querySelectorAll(".scr-cv").forEach(c => c.classList.toggle("pen", scr.pen));
+  let last = "";
+  const withBase = h => { const tag = `<base href="${location.origin}/">`; return /<head[^>]*>/i.test(h) ? h.replace(/<head[^>]*>/i, m => m + tag) : tag + h; };
+  const show = () => {
+    const y = scr.live.find(z => z.sid === scr.sid); if (!y || !y.ans) return; const a = y.ans;
+    if (a.h) {
+      const W = Math.max(320, +a.w || 800), H = Math.max(400, +a.vh || 1000), D = Math.max(H, +a.dh || H), avail = Math.min(b.clientWidth - 4, 1100), k = Math.min(1, avail / W, (innerHeight * 0.72) / H);
+      wrap.style.width = Math.round(W * k) + "px"; wrap.style.height = Math.round(H * k) + "px"; fr.style.width = W + "px"; fr.style.height = D + "px";
+      fr.style.transform = `scale(${k}) translate(0, ${-(+a.y || 0)}px)`;
+      if (a.h !== last) { fr.srcdoc = withBase(a.h); last = a.h; }
+    }
+    scrPaint();
+    const s = $("scrAct"); if (s) s.textContent = !a.h ? "Waiting for his screen… (it appears in a second or two)" : (Date.now() - (y.joined || 0) < 90e3 ? "● Working now" : "Last active " + ago(y.joined)) + ". This is his worksheet as he sees it. Draw on it: he sees it on his screen.";
+  };
+  scr.show = show; scrHelp(true); show();
+  let n = 0; const tick = async () => { if (view !== "watch1" || $("workModal").hidden) return; await scrLoad(); show(); if (++n % 20 === 0) scrHelp(true); scr.t = setTimeout(tick, 1500); };
+  scr.t = setTimeout(tick, 1500);
 }
 function watch9s(b, x, st) {
   b.innerHTML = `<h3>${esc((st && st.name) || x.name)} · 9S Island</h3>
@@ -291,6 +316,7 @@ async function watchOne(b) {
   scrStop(); await scrLoad(); if (view !== "watch1") return;
   const x = scr.live.find(y => y.sid === scr.sid), st = students.find(s => s.id === scr.sid), w = x && works.find(y => y.id === x.ans.wid);
   if (x && x.ans.g === "9s") return watch9s(b, x, st);
+  if (x && x.ans.g === "lw") return watchLw(b, x, st);
   if (!x || !w) { b.innerHTML = `<h3>Watch &amp; help</h3><p class="none">This student closed the worksheet.</p><div class="lg-bar"><button class="ghost" type="button" data-wk="wback">Back</button></div>`; return; }
   const key = keys.get(w.id) || [], qs = w.questions || [];
   b.innerHTML = `<h3>${esc((st && st.name) || x.name)} · ${esc(w.title)}</h3>
@@ -313,7 +339,7 @@ async function watchOne(b) {
 }
 
 /* ---------- Import questions from Excel (.xlsx) or CSV ---------- */
-const loadXl = () => window.ExcelJS ? Promise.resolve() : new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1123d"; sc.onload = res; sc.onerror = () => rej(new Error("Could not load the Excel reader.")); document.head.appendChild(sc); });
+const loadXl = () => window.ExcelJS ? Promise.resolve() : new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1123e"; sc.onload = res; sc.onerror = () => rej(new Error("Could not load the Excel reader.")); document.head.appendChild(sc); });
 function csvRows(t) {
   const rows = []; let row = [], cur = "", q = false;
   t = t.replace(/^\ufeff/, "");
