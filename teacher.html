@@ -1385,7 +1385,7 @@ header.book .geo { max-height: 190px; }
 /* --- Student Island logo mark --- */
 header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !important; color: transparent !important; font-size: 0 !important; border: 0 !important; box-shadow: none !important; border-radius: 22% !important; }
 
-</style><link rel="stylesheet" href="island.css?v=1123f"><style>
+</style><link rel="stylesheet" href="island.css?v=1123g"><style>
 .cls-panel{margin:12px 0;padding:14px;border:2px solid var(--edge);border-radius:12px;background:var(--card);display:grid;gap:10px}
 .cls-panel h4{margin:0}.cls-panel p{margin:0;font-size:14px}
 .cls-panel label{display:grid;gap:4px;font-size:13px;font-weight:600}
@@ -1556,7 +1556,7 @@ header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !import
 window.__ready = new Promise(r => { window.__resolveClaude = r; });
 window.claude = { use: async n => (await window.__ready).use(n) };
 </script>
-<script src="hats.js?v=1123f"></script>
+<script src="hats.js?v=1123g"></script>
 <script>
 const POSITIVE = [
   { title: "Active Participation", xp: 10 },
@@ -3428,7 +3428,8 @@ function hubInsights() {
       ${r.ded.length ? `<footer class="ig-ft"><span>Most common deductions</span><div>${r.ded.map(([t, n]) => `<i>${esc(t)} <b>×${n}</b></i>`).join("")}</div></footer>` : ""}</article>`).join("")}</div></section>
     <section class="card"><h3>Needs attention (${I.attention.length})</h3>${I.attention.length ? `<ul class="plist">${I.attention.map(p => chip(p, p.reasons.map(esc).join(" · "))).join("")}</ul>` : `<div class="none">No concerns found from the recorded data.</div>`}</section>
     <section class="card"><h3>Not recognised recently</h3><p class="rep-note">No positive entry in the last 14 days. A quick word of praise or an easy question could help.</p>${I.unseen.length ? `<ul class="plist">${I.unseen.map(p => chip(p, "no positive entries in 14 days")).join("")}</ul>` : `<div class="none">Everyone has been recognised recently, or there is no data yet.</div>`}</section>
-    <section class="card"><h3>Top earners, last 30 days</h3>${I.top.length ? `<ul class="plist">${I.top.map((p, i) => chip(p, `${i + 1}. +${p.posXP30} XP from behaviour`)).join("")}</ul>` : `<div class="none">No data yet.</div>`}</section>`;
+    <section class="card"><h3>Top earners by class, last 30 days</h3>${(() => { const g = CLASSES.map(c => [c, I.per.filter(p => p.st.cls === c && p.posXP30 > 0).sort((a, b) => b.posXP30 - a.posXP30).slice(0, 3)]).filter(x => x[1].length);
+      return g.length ? g.map(([c, ps]) => `<h4 style="margin:12px 0 4px">${esc(c)}</h4><ul class="plist">${ps.map((p, i) => chip(p, `${i + 1}. +${p.posXP30} XP from behaviour`)).join("")}</ul>`).join("") : `<div class="none">No data yet.</div>`; })()}</section>`;
 }
 function hubAtt() {
   const d = attDoc(attDate, cls), list = clsStu(cls), m = d.m || {}, cnt = k => list.filter(s => m[s.id] === k).length;
@@ -3524,7 +3525,7 @@ function hubGrades() {
 
 function grLoadLib() {
   if (window.ExcelJS) return Promise.resolve();
-  return new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1123f"; sc.onload = res; sc.onerror = () => rej(new Error("lib")); document.head.appendChild(sc); });
+  return new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1123g"; sc.onload = res; sc.onerror = () => rej(new Error("lib")); document.head.appendChild(sc); });
 }
 async function grXlsx(btn) {
   const keep = cls;
@@ -4712,9 +4713,9 @@ document.getElementById("expBtn")?.addEventListener("click", async () => {
     <div class="acts noprint"><button class="ghost" id="lgPrint" type="button">Print this list</button><button class="ghost" id="lgClose" type="button">Close</button></div>
   </div>
 </div>
-<script type="module" src="teacher.js?v=1123f"></script>
-<script src="mylessons.js?v=1123f"></script>
-<script src="newdesign.js?v=1123f"></script>
+<script type="module" src="teacher.js?v=1123g"></script>
+<script src="mylessons.js?v=1123g"></script>
+<script src="newdesign.js?v=1123g"></script>
 
 <script>
 /* Post a certificate straight to Google Classroom.

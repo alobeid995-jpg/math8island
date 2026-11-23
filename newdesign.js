@@ -60,6 +60,10 @@
     "#ndTop{display:none}",
     /* today */
     "#ndToday{display:none;flex-direction:column;gap:24px}",
+    ".nd-sch{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 6px}",
+    ".nd-sch button{border:0;border-radius:99px;padding:5px 12px;font:600 13px inherit;font-family:inherit;background:rgba(6,64,60,.08);color:#06403C;cursor:pointer}",
+    ".nd-sch button[aria-pressed=true]{background:#06403C;color:#fff}",
+    ".nd-sch button:focus-visible{outline:2px solid #06403C;outline-offset:2px}",
     "html.nd-today #ndToday{display:flex}",
     "html.nd-today #studentsView,html.nd-today #cupView,html.nd-today #shopView,html.nd-today #hubView,html.nd-today #toolsView,html.nd-today #dashView{display:none!important}",
     ".nd-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:12px}",
@@ -198,6 +202,7 @@
   }
 
   /* ---------- Today ---------- */
+  var starCls = "";
   function showToday() { sel = "today"; document.documentElement.classList.add("nd-today"); paintToday(); paintNav(); try { window.scrollTo(0, 0); } catch (e) {} }
   function paintToday() {
     var box = $("ndToday"); if (!box) return;
@@ -230,12 +235,20 @@
     try { var owe = students.filter(function (s) { return typeof bkOwing === "function" && bkOwing(s).length; }); if (owe.length) todo.push({ k: "books", dot: "#E0A100", t: owe.length + " notebook" + (owe.length === 1 ? "" : "s") + " still owed", s: "Notebook submission" }); } catch (e) {}
     if (I2 && I2.attention) I2.attention.slice(0, 4).forEach(function (p) { todo.push({ k: "c:" + p.st.cls, dot: "#C43E24", t: (p.st.name || "").split(" ").slice(0, 2).join(" ") + " · " + p.st.cls, s: p.reasons.join(" · ") }); });
     h += '<section class="nd-box"><h2>Needs you</h2>' + (todo.length ? todo.map(function (x) { return '<button type="button" class="nd-todo" data-ndt="' + esc(x.k) + '"><i style="background:' + x.dot + '"></i><span><b>' + esc(x.t) + "</b><span>" + esc(x.s) + "</span></span></button>"; }).join("") : '<p class="nd-none">Nothing is waiting for you. Enjoy the day.</p>') + "</section>";
-    if (I2 && I2.top && I2.top.length) h += '<section class="nd-box" style="background:#D7F0EC;border-color:#D7F0EC"><h2 style="color:#06403C">Stars of the month</h2>' + I2.top.slice(0, 5).map(function (p, i) { return '<div class="nd-row" style="font-size:15px;color:#06403C"><span><b style="font-family:var(--f-display);margin-right:10px">' + (i + 1) + "</b>" + esc((p.st.name || "").split(" ").slice(0, 2).join(" ")) + " · " + esc(p.st.cls) + "</span><b>+" + p.posXP30 + " XP</b></div>"; }).join("") + "</section>";
+    if (I2 && I2.per) {
+      var sc = starCls || nowCls || (typeof cls !== "undefined" ? cls : ""), have = classes().filter(function (c) { return I2.per.some(function (p) { return p.st.cls === c; }); });
+      if (have.indexOf(sc) < 0) sc = have[0] || "";
+      var top = I2.per.filter(function (p) { return p.st.cls === sc && p.posXP30 > 0; }).sort(function (a, b) { return b.posXP30 - a.posXP30; }).slice(0, 5);
+      h += '<section class="nd-box nd-stars" style="background:#D7F0EC;border-color:#D7F0EC"><h2 style="color:#06403C">Stars of the month</h2>'
+        + '<div class="nd-sch" role="group" aria-label="Choose a class">' + have.map(function (c) { return '<button type="button" data-nds="' + esc(c) + '" aria-pressed="' + (c === sc) + '">' + esc(c) + "</button>"; }).join("") + "</div>"
+        + (top.length ? top.map(function (p, i) { return '<div class="nd-row" style="font-size:15px;color:#06403C"><span><b style="font-family:var(--f-display);margin-right:10px">' + (i + 1) + "</b>" + esc((p.st.name || "").split(" ").slice(0, 2).join(" ")) + "</span><b>+" + p.posXP30 + " XP</b></div>"; }).join("") : '<p class="nd-none" style="color:#06403C">No XP earned in ' + esc(sc) + " in the last 30 days.</p>") + "</section>";
+    }
     h += "</aside></div>";
     box.innerHTML = h;
     box.dataset.cls = nowCls;
   }
   function onToday(e) {
+    var st = e.target.closest("[data-nds]"); if (st) { starCls = st.dataset.nds; paintToday(); return; }
     var c = e.target.closest("[data-ndc]"); if (c) { sel = "c:" + c.dataset.ndc; openClass(c.dataset.ndc); paintNav(); return; }
     var b = e.target.closest("[data-ndt]"); if (!b) return;
     var k = b.dataset.ndt, nc = $("ndToday").dataset.cls;
