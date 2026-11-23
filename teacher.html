@@ -1385,7 +1385,7 @@ header.book .geo { max-height: 190px; }
 /* --- Student Island logo mark --- */
 header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !important; color: transparent !important; font-size: 0 !important; border: 0 !important; box-shadow: none !important; border-radius: 22% !important; }
 
-</style><link rel="stylesheet" href="island.css?v=1122n"><style>
+</style><link rel="stylesheet" href="island.css?v=1123a"><style>
 .cls-panel{margin:12px 0;padding:14px;border:2px solid var(--edge);border-radius:12px;background:var(--card);display:grid;gap:10px}
 .cls-panel h4{margin:0}.cls-panel p{margin:0;font-size:14px}
 .cls-panel label{display:grid;gap:4px;font-size:13px;font-weight:600}
@@ -1556,7 +1556,7 @@ header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !import
 window.__ready = new Promise(r => { window.__resolveClaude = r; });
 window.claude = { use: async n => (await window.__ready).use(n) };
 </script>
-<script src="hats.js?v=1122n"></script>
+<script src="hats.js?v=1123a"></script>
 <script>
 const POSITIVE = [
   { title: "Active Participation", xp: 10 },
@@ -2182,7 +2182,8 @@ function readShop(v) {
     certs: Array.isArray(v.certs) ? v.certs.filter(c => c && c.title) : [],
     lx: Object.fromEntries(Object.entries(v.lx && typeof v.lx === "object" ? v.lx : {}).filter(([k, x]) => /^[\w-]+$/.test(k) && x && typeof x === "object").map(([k, x]) => [k, { done: Number(x.done) || 0, perfect: Number(x.perfect) || 0 }])),
     rt: Object.fromEntries(Object.entries(v.rt && typeof v.rt === "object" ? v.rt : {}).filter(([k, x]) => /^[\w-]+$/.test(k) && typeof x === "number")),
-    books: Object.fromEntries(Object.entries(v.books && typeof v.books === "object" ? v.books : {}).filter(([d, x]) => /^\d{4}-\d{2}-\d{2}$/.test(d) && /^[ynlp]$/.test(x))),
+    books: Object.fromEntries(Object.entries(v.books && typeof v.books === "object" ? v.books : {}).filter(([d, x]) => /^\d{4}-\d{2}-\d{2}$/.test(d) && /^[ynlm]$/.test(x))),
+    wbc: Object.fromEntries(Object.entries(v.wbc && typeof v.wbc === "object" ? v.wbc : {}).filter(([d, x]) => /^\d{4}-\d{2}-\d{2}$/.test(d) && /^[ypn]$/.test(x))),
     hist: Array.isArray(v.hist) ? v.hist.filter(e => e && typeof e.xp === "number") : [],
     sp: Array.isArray(v.sp) ? v.sp.filter(e => e && shopItem(e.k)) : []
   };
@@ -2529,7 +2530,7 @@ document.addEventListener("keydown", e => {
 const healedCls = new Set();
 async function save(st) {
   const body = { name: st.name, cls: st.cls, enrollment: st.enrollment || "", xp: st.xp, log: st.log, createdAt: st.createdAt || Date.now(), bonusWeek: st.bonusWeek || "", counts: { ...(st.counts || {}) },
-    spent: st.spent || 0, carry: st.carry || 0, owned: st.owned || [], eq: eqOf(st), reqs: st.reqs || [], buys: st.buys || 0, lastBuy: st.lastBuy || "", hist: (st.hist || []).slice(-600), sp: (st.sp || []).slice(-200), note: String(st.note || "").slice(0, 1500), certs: (st.certs || []).slice(-100), books: { ...(st.books || {}) }, rt: { ...(st.rt || {}) }, lx: { ...(st.lx || {}) } };
+    spent: st.spent || 0, carry: st.carry || 0, owned: st.owned || [], eq: eqOf(st), reqs: st.reqs || [], buys: st.buys || 0, lastBuy: st.lastBuy || "", hist: (st.hist || []).slice(-600), sp: (st.sp || []).slice(-200), note: String(st.note || "").slice(0, 1500), certs: (st.certs || []).slice(-100), books: { ...(st.books || {}) }, wbc: { ...(st.wbc || {}) }, rt: { ...(st.rt || {}) }, lx: { ...(st.lx || {}) } };
   if (typeof st.avatar === "number") body.avatar = st.avatar;
   if (!db) return;
   try { await db.collection("students").doc(st.id).set(body); }
@@ -3398,7 +3399,7 @@ function renderTools() {
 function renderHub() {
   const el = $("hubView");
   const on = window.__featOn || (() => true);
-  const tabs = [["insights", "Insights"], ["att", "Attendance"], ["hw", "Homework"], ["marks", "Marks"], ["grades", "Grades /10"], ["books", "Notebook classwork"], ["seats", "Seat plan"], ["groups", "Group maker"]].filter(([k]) => k === "groups" ? on("groups") : on("hub_" + k));
+  const tabs = [["insights", "Insights"], ["att", "Attendance"], ["hw", "Homework"], ["marks", "Marks"], ["grades", "Grades /10"], ["wbc", "Notebook / Workbook classwork"], ["books", "Notebook submission"], ["seats", "Seat plan"], ["groups", "Group maker"]].filter(([k]) => k === "groups" ? on("groups") : k === "wbc" ? on("hub_books") : on("hub_" + k));
   if (!tabs.some(([k]) => k === hubTab)) hubTab = tabs.length ? tabs[0][0] : "none";
   const chips = hubTab === "insights" ? "" : `<div class="shop-tabs">${CLASSES.map(c => `<button class="shop-tab" data-act="hubCls" data-cls="${c}" aria-pressed="${c === cls}">${c} <small>${students.filter(s => s.cls === c).length}</small></button>`).join("")}</div>`;
   let body = "";
@@ -3408,6 +3409,7 @@ function renderHub() {
   else if (hubTab === "marks") body = hubMarks();
   else if (hubTab === "grades") body = hubGrades();
   else if (hubTab === "books") body = hubBooks();
+  else if (hubTab === "wbc") body = hubWbc();
   else if (hubTab === "seats") body = hubSeats();
   else if (hubTab === "groups") body = hubGroups();
   else body = tabs.length ? hubInsights() : "<p class=\"none\">Nothing here is switched on for you.</p>";
@@ -3474,13 +3476,13 @@ function grRows() {
   const list = clsStu(cls);
   const ws = (grData ? grData.works : []).filter(w => w.classes.includes(cls) && okD(dOf(w.created)));
   const cw = ws.filter(w => !w.graded), gw = ws.filter(w => w.graded);
-  const nbDays = [...new Set(list.flatMap(st => Object.keys(st.books || {})))].filter(okD).sort();   // each day notebook classwork was marked counts as one classwork
+  const nbDays = [...new Set(list.flatMap(st => Object.keys(st.wbc || {})))].filter(okD).sort();   // each day notebook / workbook classwork was marked counts as one classwork
   const rows = list.map(st => {
     const ev = (st.hist || []).concat(st.log || []).filter(e => e && e.title && okD((e.at || "").slice(0, 10)) && !e.reset);
     const part = ev.filter(e => e.xp > 0 && GR_PART.includes(e.title)).length;
     const pen = ev.filter(e => e.xp < 0 && GR_BEH.includes(e.title)).length;
     const subs = grData ? grData.subs.filter(x => x.sid === st.id) : [];
-    const done = cw.filter(w => subs.some(x => x.wid === w.id)).length + nbDays.filter(d => /^[yl]$/.test((st.books || {})[d] || "")).length;
+    const done = cw.filter(w => subs.some(x => x.wid === w.id)).length + nbDays.filter(d => (st.wbc || {})[d] === "y").length;
     const gm = gw.map(w => { const x = subs.find(y => y.wid === w.id); return x && x.n ? 10 * x.right / x.n : 0; });
     return { st, part, pen, done, g: gm.length ? gm.reduce((a, v) => a + v, 0) / gm.length : null };
   });
@@ -3522,7 +3524,7 @@ function hubGrades() {
 
 function grLoadLib() {
   if (window.ExcelJS) return Promise.resolve();
-  return new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1122n"; sc.onload = res; sc.onerror = () => rej(new Error("lib")); document.head.appendChild(sc); });
+  return new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1123a"; sc.onload = res; sc.onerror = () => rej(new Error("lib")); document.head.appendChild(sc); });
 }
 async function grXlsx(btn) {
   const keep = cls;
@@ -3609,18 +3611,32 @@ document.addEventListener("change", e => {
   else grCfg.perMiss = Math.max(0, +v || 0);
   render();
 });
-function bkOwing(st) { return Object.entries(st.books || {}).filter(([, v]) => v === "n").map(([d]) => d).sort(); }
+function bkOwing(st) { return Object.entries(st.books || {}).filter(([, v]) => v === "n" || v === "m").map(([d]) => d).sort(); }
 function hubBooks() {
   const list = clsStu(cls), isT = bkDate === todayStr(), val = st => (st.books || {})[bkDate] || "";
   const cnt = k => list.filter(s => val(s) === k).length, today = todayStr();
   const owing = list.filter(s => bkOwing(s).length);
   return `<section class="card"><div class="hub-bar"><button class="ghost small" data-act="bkDay" data-n="-1" aria-label="Previous day">‹</button><input type="date" id="bkDate" value="${bkDate}"><button class="ghost small" data-act="bkDay" data-n="1" aria-label="Next day">›</button>${isT ? "" : `<button class="ghost small" data-act="bkToday">Today</button>`}</div>
-    <h3>Notebook classwork · ${dayLabel(bkDate)} · ${cls}</h3>
-    <div class="rep-sum"><div class="g"><b>${cnt("y") + cnt("l")}</b><span>done</span></div><div style="color:var(--gold)"><b>${cnt("p")}</b><span>still working</span></div><div class="r"><b>${cnt("n")}</b><span>not done</span></div><div><b>${list.length - cnt("y") - cnt("l") - cnt("n") - cnt("p")}</b><span>not marked</span></div></div>
-    <p class="rep-note">Every day: mark each student's notebook classwork as <b>Done</b>, <b>Still working</b> (not finished yet, no message) or <b>Not done</b>. A student marked Not done sees a message in his account with 3 days to hand it in. Done counts in the Classwork mark in Grades /10.</p>
-    ${readOnly ? "" : `<button class="primary small" data-act="bkAll" style="justify-self:start">Mark everyone done</button>`}
-    <div class="hlist">${list.map(s => hubStudentRow(s, `<span class="seg"><button class="sg d" data-act="bkSet" data-id="${s.id}" data-v="y" aria-pressed="${val(s) === "y" || val(s) === "l"}">✓ Done</button><button class="sg l" data-act="bkSet" data-id="${s.id}" data-v="p" aria-pressed="${val(s) === "p"}">⏳ Still working</button><button class="sg a" data-act="bkSet" data-id="${s.id}" data-v="n" aria-pressed="${val(s) === "n"}">✗ Not done</button></span>`)).join("") || `<div class="none">No students in ${cls}.</div>`}</div></section>
-    <section class="card"><h3>Notebook classwork not done (${owing.length})</h3>${owing.length ? `<div class="hlist">${owing.map(s => hubStudentRow(s, `<span class="rep-note">${bkOwing(s).map(d => { const due = addDays(d, 3); return `${shortDay(d)} → due ${shortDay(due)}${due < today ? " (overdue)" : ""}`; }).join(" · ")}</span>${readOnly ? "" : `<button class="ghost small" data-act="bkLate" data-id="${s.id}">Handed in now</button>`}`)).join("")}</div>` : `<div class="none">Nobody owes a notebook.</div>`}</section>`;
+    <h3>Notebook submission · ${dayLabel(bkDate)} · ${cls}</h3>
+    <div class="rep-sum"><div class="g"><b>${cnt("y") + cnt("l")}</b><span>handed in</span></div><div style="color:var(--gold)"><b>${cnt("m")}</b><span>handed in, missing work</span></div><div class="r"><b>${cnt("n")}</b><span>not handed in</span></div><div><b>${list.length - cnt("y") - cnt("l") - cnt("n") - cnt("m")}</b><span>not marked</span></div></div>
+    <p class="rep-note">Mark each notebook you collect: <b>Handed in</b>, <b>Missing work</b> (handed in but not complete) or <b>Not handed in</b>. A student marked Not handed in or Missing work sees a message in his account with 3 days to fix it.</p>
+    ${readOnly ? "" : `<button class="primary small" data-act="bkAll" style="justify-self:start">Mark everyone handed in</button>`}
+    <div class="hlist">${list.map(s => hubStudentRow(s, `<span class="seg"><button class="sg d" data-act="bkSet" data-id="${s.id}" data-v="y" aria-pressed="${val(s) === "y" || val(s) === "l"}">✓ Handed in</button><button class="sg l" data-act="bkSet" data-id="${s.id}" data-v="m" aria-pressed="${val(s) === "m"}">⚠ Missing work</button><button class="sg a" data-act="bkSet" data-id="${s.id}" data-v="n" aria-pressed="${val(s) === "n"}">✗ Not handed in</button></span>`)).join("") || `<div class="none">No students in ${cls}.</div>`}</div></section>
+    <section class="card"><h3>Still owing a notebook (${owing.length})</h3>${owing.length ? `<div class="hlist">${owing.map(s => hubStudentRow(s, `<span class="rep-note">${bkOwing(s).map(d => { const due = addDays(d, 3); return `${shortDay(d)} → due ${shortDay(due)}${due < today ? " (overdue)" : ""}`; }).join(" · ")}</span>${readOnly ? "" : `<button class="ghost small" data-act="bkLate" data-id="${s.id}">Handed in now</button>`}`)).join("")}</div>` : `<div class="none">Nobody owes a notebook.</div>`}</section>`;
+}
+function hubWbc() {
+  const list = clsStu(cls), isT = bkDate === todayStr(), val = st => (st.wbc || {})[bkDate] || "", cnt = k => list.filter(s => val(s) === k).length;
+  return `<section class="card"><div class="hub-bar"><button class="ghost small" data-act="bkDay" data-n="-1" aria-label="Previous day">‹</button><input type="date" id="bkDate" value="${bkDate}"><button class="ghost small" data-act="bkDay" data-n="1" aria-label="Next day">›</button>${isT ? "" : `<button class="ghost small" data-act="bkToday">Today</button>`}</div>
+    <h3>Notebook / Workbook classwork · ${dayLabel(bkDate)} · ${cls}</h3>
+    <div class="rep-sum"><div class="g"><b>${cnt("y")}</b><span>done</span></div><div style="color:var(--gold)"><b>${cnt("p")}</b><span>still working</span></div><div class="r"><b>${cnt("n")}</b><span>not done</span></div><div><b>${list.length - cnt("y") - cnt("p") - cnt("n")}</b><span>not marked</span></div></div>
+    <p class="rep-note">During the lesson: who is solving the classwork in the notebook or workbook. <b>Done</b> counts in the Classwork mark in Grades /10 (finishing gives the full mark). Students see nothing here.</p>
+    ${readOnly ? "" : `<button class="primary small" data-act="wbAll" style="justify-self:start">Mark everyone done</button>`}
+    <div class="hlist">${list.map(s => hubStudentRow(s, `<span class="seg"><button class="sg d" data-act="wbSet" data-id="${s.id}" data-v="y" aria-pressed="${val(s) === "y"}">✓ Done</button><button class="sg l" data-act="wbSet" data-id="${s.id}" data-v="p" aria-pressed="${val(s) === "p"}">⏳ Still working</button><button class="sg a" data-act="wbSet" data-id="${s.id}" data-v="n" aria-pressed="${val(s) === "n"}">✗ Not done</button></span>`)).join("") || `<p class="none">No students in ${cls}.</p>`}</div></section>`;
+}
+function setWbc(id, v) {
+  const st = students.find(s => s.id === id); if (!st || readOnly) return;
+  const b = { ...(st.wbc || {}) }; if (b[bkDate] === v) delete b[bkDate]; else b[bkDate] = v;
+  st.wbc = b; render(); save(st);
 }
 function setBook(id, v) {
   const st = students.find(s => s.id === id); if (!st || readOnly) return;
@@ -4362,10 +4378,12 @@ document.addEventListener("click", e => {
     case "attSet": setAtt(id, b.dataset.s); break;
     case "attAll": attAllPresent(); break;
     case "bkSet": setBook(id, b.dataset.v); break;
+    case "wbSet": setWbc(id, b.dataset.v); break;
+    case "wbAll": if (!readOnly) { clsStu(cls).forEach(st => { if ((st.wbc || {})[bkDate] !== "y") { st.wbc = { ...(st.wbc || {}), [bkDate]: "y" }; save(st); } }); render(); } break;
     case "bkDay": bkDate = addDays(bkDate, Number(b.dataset.n)); render(); break;
     case "bkToday": bkDate = todayStr(); render(); break;
     case "bkAll": if (!readOnly) { clsStu(cls).forEach(st => { if ((st.books || {})[bkDate] !== "y") { const bb = { ...(st.books || {}), [bkDate]: "y" }; Object.keys(bb).forEach(d => { if (bb[d] === "n" && d < bkDate) bb[d] = "l"; }); st.books = bb; save(st); } }); render(); } break;
-    case "bkLate": { const st = students.find(x => x.id === id); if (st && !readOnly) { st.books = Object.fromEntries(Object.entries(st.books || {}).map(([d, x]) => [d, x === "n" ? "l" : x])); render(); save(st); } break; }
+    case "bkLate": { const st = students.find(x => x.id === id); if (st && !readOnly) { st.books = Object.fromEntries(Object.entries(st.books || {}).map(([d, x]) => [d, x === "n" || x === "m" ? "l" : x])); render(); save(st); } break; }
     case "attDay": attDate = addDays(attDate, Number(b.dataset.n)); render(); break;
     case "attToday": attDate = todayStr(); render(); break;
     case "hwAdd": addHw(); break;
@@ -4694,8 +4712,8 @@ document.getElementById("expBtn")?.addEventListener("click", async () => {
     <div class="acts noprint"><button class="ghost" id="lgPrint" type="button">Print this list</button><button class="ghost" id="lgClose" type="button">Close</button></div>
   </div>
 </div>
-<script type="module" src="teacher.js?v=1122n"></script>
-<script src="mylessons.js?v=1122n"></script>
+<script type="module" src="teacher.js?v=1123a"></script>
+<script src="mylessons.js?v=1123a"></script>
 
 <script>
 /* Post a certificate straight to Google Classroom.

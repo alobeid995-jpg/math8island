@@ -1,13 +1,13 @@
-import { shopClosedNow } from "./shopstatus.js?v=1122n";
-import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1122n";
-import { initWork } from "./stuwork.js?v=1122n";
-import { initMsgs } from "./stumsg.js?v=1122n";
-import { initLive } from "./livequiz.js?v=1122n";
-import { initChat } from "./chat.js?v=1122n";
-import { initFunpark } from "./funpark.js?v=1122n";
-import { startPresence, logEv } from "./presence.js?v=1122n";
-import { mountStudentTT } from "./timetable.js?v=1122n";
-import { achCard, initAch } from "./achieve.js?v=1122n";
+import { shopClosedNow } from "./shopstatus.js?v=1123a";
+import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1123a";
+import { initWork } from "./stuwork.js?v=1123a";
+import { initMsgs } from "./stumsg.js?v=1123a";
+import { initLive } from "./livequiz.js?v=1123a";
+import { initChat } from "./chat.js?v=1123a";
+import { initFunpark } from "./funpark.js?v=1123a";
+import { startPresence, logEv } from "./presence.js?v=1123a";
+import { mountStudentTT } from "./timetable.js?v=1123a";
+import { achCard, initAch } from "./achieve.js?v=1123a";
 
 const sub = (t, n) => t.split("{n}").join(n);
 let shopSt = null, lastClosed = false;
@@ -108,7 +108,9 @@ const bkAdd = (d, n) => { const t = new Date(d + "T00:00:00Z"); t.setUTCDate(t.g
 const bkShow = d => new Date(d + "T00:00:00Z").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
 function bookNotes(st) {
   const today = new Date(Date.now() + 3 * 3600e3).toISOString().slice(0, 10);
-  return Object.entries(st.books || {}).filter(([, v]) => v === "n").map(([d]) => d).sort().map(d => {
+  const miss = Object.entries(st.books || {}).filter(([, v]) => v === "m").map(([d]) => d).sort().map(d => { const due = bkAdd(d, 3), over = due < today;
+    return `<div class="bknote${over ? " over" : ""}" role="alert"><b>📒 Your notebook has missing work.</b><br>You handed in your notebook on ${bkShow(d)}, but some work is missing. Please complete it and show your teacher by <b>${bkShow(due)}</b>.</div>`; }).join("");
+  return miss + Object.entries(st.books || {}).filter(([, v]) => v === "n").map(([d]) => d).sort().map(d => {
     const due = bkAdd(d, 3), over = due < today;
     return `<div class="bknote${over ? " over" : ""}" role="alert"><b>📒 You have not handed in your notebook.</b><br>Your teacher collected notebooks on ${bkShow(d)} and yours was not handed in. ${over ? `The deadline was <b>${bkShow(due)}</b>. Please hand it in to your teacher as soon as you can.` : `You have 3 days to hand it in: the deadline is <b>${bkShow(due)}</b>.`}</div>`;
   }).join("");
