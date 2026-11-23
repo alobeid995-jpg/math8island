@@ -6,7 +6,7 @@ import { peopleSet, peopleDel, peopleGet, peopleCls } from "./sbdata.js?v=1123e"
 import { downloadBackup } from "./backupxl.js?v=1123e";
 import { openMail, sendRaw } from "./mailer.js?v=1123e";
 import { startUsage } from "./usage.js?v=1123e";
-import { liveLesson, mountTeacherTT } from "./timetable.js?v=1123e";
+import { liveLesson, mountTeacherTT, todayLessons } from "./timetable.js?v=1123e";
 import { openWork, gradeData } from "./teacherwork.js?v=1123e";
 import "./lessonxp.js?v=1123e";
 import { openProgress } from "./progress.js?v=1123e";
@@ -106,7 +106,7 @@ document.addEventListener("click", async ev => {
 window.__resolveClaude({ use: async n => n === "db" ? db : n === "user" ? { can: async () => true, isOwner: () => true, canEdit: () => true } : null });
 
 // Students may only spend what the shop price list allows, so the list lives in the database.
-liveScope(ADMIN); window.__owner = ADMIN; if (ADMIN) { mountTeacherTT(); window.__liveLesson = liveLesson; }   // only the owner can change prices
+liveScope(ADMIN); window.__owner = ADMIN; if (ADMIN) { mountTeacherTT(); window.__liveLesson = liveLesson; window.__todayTT = todayLessons; }   // only the owner can change prices
 {
   const pref = doc(fs, "shop", "prices"); let saved = {};
   try { const s = window.__pricesSnap || await getDoc(pref); if (s && s.exists()) saved = s.data().prices || {}; } catch {}

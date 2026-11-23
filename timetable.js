@@ -146,3 +146,8 @@ export function mountTeacherTT() {
   };
   tick(); setInterval(tick, 15000);
 }
+/* today's lessons for the new design's "Today" page */
+export function todayLessons(t = Date.now()) {
+  const n = nowBH(t);
+  return dayList(n.d).map(l => ({ cls: l.cls, s: fmt(l.s), e: fmt(l.e), state: n.m >= l.em ? "done" : n.m >= l.sm ? "now" : "next", left: n.m >= l.sm && n.m < l.em ? left(n, l.em) : 0 }));
+}
