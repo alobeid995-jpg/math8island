@@ -1,9 +1,10 @@
 // Classwork for the teacher: make a worksheet, send it to classes, collect and export the answers.
 // Worksheets live in <base>/work, the answer key in <base>/workkey (students never read it),
 // and each student's submission in <base>/subs/<worksheet>_<student>.
-import { getDocs, setDoc, updateDoc, deleteDoc, getDoc, bcol, bdoc } from "./fb.js?v=1122n";
-import { autoMail, sendTo } from "./mailer.js?v=1122n";
-import { LIVE_WS, isLive, setUploaded } from "./liveworks.js?v=1122n";
+import { getDocs, setDoc, updateDoc, deleteDoc, getDoc, bcol, bdoc, query, where } from "./fb.js?v=1123b";
+import { SCR, COLORS, layer } from "./screenpen.js?v=1123b";
+import { autoMail, sendTo } from "./mailer.js?v=1123b";
+import { LIVE_WS, isLive, setUploaded } from "./liveworks.js?v=1123b";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -49,6 +50,9 @@ function score(w, sub) {
 /* ---------- views ---------- */
 function render() {
   const b = $("wkBody");
+  if (view !== "watch" && view !== "watch1") scrStop();
+  if (view === "watch") return watchList(b);
+  if (view === "watch1") return watchOne(b);
   if (view === "list") {
     if (gmode) { const gw = works.filter(x => x.graded), thead = `<thead><tr><th>Worksheet</th><th>Classes</th><th>Handed in</th><th></th></tr></thead>`;
       b.innerHTML = `<h3>Graded worksheets</h3>
@@ -60,7 +64,7 @@ function render() {
       return; }
     b.innerHTML = `<h3>Classwork</h3>
       <p class="noprint">Make a worksheet, send it to one class or all of them. Students find it when they log in. Finishing it gives the full classwork mark, even with mistakes. Their answers and the time they handed in stay here as evidence.</p>
-      <div class="lg-bar"><button class="primary" type="button" data-wk="new">+ New worksheet</button><button class="ghost" type="button" data-wk="close">Close</button></div>
+      <div class="lg-bar"><button class="primary" type="button" data-wk="new">+ New worksheet</button><button class="ghost" type="button" data-wk="watch">👀 Watch &amp; help students</button><button class="ghost" type="button" data-wk="close">Close</button></div>
       ${(() => { const cl = CLASSES.concat(["8G", "8D"]).filter((c, i, x) => x.indexOf(c) === i).map(c => ({ c, n: students.filter(s => String(s.cls).toUpperCase() === c.toUpperCase() && missingOf(s).length).length, on: Object.keys(remindAt).some(k => remindAt[k] && k.toUpperCase() === c.toUpperCase()) })).filter(x => x.n || x.on);
         return cl.length ? `<div class="wk-miss-bar noprint"><b>Missing work</b> <small>Students see a reminder only after you press it.</small><div class="lg-bar">${cl.map(x => `<button class="${x.on ? "primary" : "ghost"} small" type="button" data-wk="remind" data-c="${esc(x.c)}">${x.on ? "✓ Reminding " + esc(x.c) + " (tap to stop)" : "📣 Show missing to " + esc(x.c) + " (" + x.n + " student" + (x.n === 1 ? "" : "s") + ")"}</button>${x.n ? `<button class="ghost small" type="button" data-wk="remindmail" data-c="${esc(x.c)}" title="Show the reminder on the site and also email each student what he is missing">✉ Remind + email ${esc(x.c)}</button>` : ""}`).join("")}</div></div>` : ""; })()}
       ${(() => {
@@ -165,7 +169,7 @@ document.addEventListener("change", e => {
 document.addEventListener("click", async e => {
   const b = e.target.closest("[data-wk]"); if (!b) return;
   const a = b.dataset.wk, w = works.find(x => x.id === b.dataset.id);
-  if (a === "close") { $("workModal").hidden = true; return; }
+  if (a === "close") { scrStop(); if (scr.sid && view === "watch1") scrHelp(false); $("workModal").hidden = true; return; }
   if (a === "newg") { draft = { title: "", classes: CLASSES.includes(cls) ? [cls] : [], test: false, tMin: 30, tWarn: 3, graded: true, questions: [{ q: "", type: "text", opts: "", key: "" }] }; view = "edit"; return render(); }
   if (a === "new") { draft = { title: "", classes: CLASSES.includes(cls) ? [cls] : [], test: false, tMin: 30, tWarn: 3, questions: [{ q: "", type: "text", opts: "", key: "" }] }; view = "edit"; return render(); }
   if (a === "remind") { const c = b.dataset.c, k = Object.keys(remindAt).find(x => x.toUpperCase() === c.toUpperCase()), at = { ...remindAt };
@@ -188,6 +192,14 @@ document.addEventListener("click", async e => {
   if (a === "allcls") { readDraft(); draft.classes = CLASSES.slice(); return render(); }
   if (a === "imp") { readDraft(); const f = $("wkImpFile"); f.value = ""; f.onchange = () => f.files[0] && importSheet(f.files[0]); f.click(); return; }
   if (a === "tpl") { readDraft(); return downloadTemplate(); }
+  if (a === "watch") { view = "watch"; return render(); }
+  if (a === "wone") { scr.sid = b.dataset.sid; scr.strokes = []; view = "watch1"; return render(); }
+  if (a === "wback") { await scrHelp(false); view = "watch"; return render(); }
+  if (a === "wlist") { view = "list"; return render(); }
+  if (a === "wpen") { scr.pen = !scr.pen; document.querySelectorAll("#wkBody .scr-cv").forEach(c => c.classList.toggle("pen", scr.pen)); b.textContent = scr.pen ? "✏️ Pen on" : "✏️ Pen off"; b.classList.toggle("primary", scr.pen); b.classList.toggle("ghost", !scr.pen); return; }
+  if (a === "wcol") { scr.color = b.dataset.c; document.querySelectorAll("[data-wk='wcol']").forEach(x => { x.style.outline = x === b ? "3px solid var(--ink,#17233b)" : ""; }); return; }
+  if (a === "wundo") { scr.strokes.pop(); scrPaint(); return scrHelp(true); }
+  if (a === "wclear") { scr.strokes = []; scrPaint(); return scrHelp(true); }
   if (a === "addq") { readDraft(); draft.questions.push({ q: "", type: "text", opts: "", key: "" }); render(); const t = document.querySelectorAll("[data-k='q']"); t[t.length - 1].focus(); return; }
   if (a === "delq") { readDraft(); draft.questions.splice(+b.dataset.i, 1); if (!draft.questions.length) draft.questions.push({ q: "", type: "text", opts: "", key: "" }); return render(); }
   if (a === "save") { b.disabled = true; await saveDraft(); b.disabled = false; return; }
@@ -222,8 +234,53 @@ export async function gradeData() {
     subs: lsubs.concat(subs.map(x => { const w = works.find(y => y.id === x.wid); const sc = w && x.answers ? score(w, x) : null; return { wid: x.wid, sid: x.sid, right: sc ? sc.right : 0, n: sc ? sc.n : 0 }; })) };
 }
 
+/* ---------- Watch & help: follow a student's worksheet live and draw on it ---------- */
+const scr = { sid: "", strokes: [], pen: true, color: COLORS[0], t: 0, layers: [], live: [] };
+function scrStop() { clearTimeout(scr.t); scr.t = 0; }
+const ago = t => { const s = Math.max(0, Math.round((Date.now() - (t || 0)) / 1000)); return s < 60 ? s + " s ago" : Math.round(s / 60) + " min ago"; };
+async function scrLoad() { try { const s = await getDocs(query(bcol("liveplayers"), where("sess", "==", SCR))); scr.live = s.docs.map(d => d.data()).filter(x => x.ans && Date.now() - (x.joined || 0) < 15 * 60e3); } catch { scr.live = []; } }
+async function watchList(b) {
+  scrStop(); await scrLoad(); if (view !== "watch") return;
+  const rows = scr.live.map(x => { const st = students.find(s => s.id === x.sid) || { name: x.name, cls: "" }, w = works.find(y => y.id === x.ans.wid), a = x.ans.a || [];
+    return { x, st, w, done: a.filter(v => String(v).trim()).length, n: (w && (w.questions || []).length) || a.length }; }).filter(r => r.w).sort((p, q) => (q.x.joined || 0) - (p.x.joined || 0));
+  b.innerHTML = `<h3>Watch &amp; help</h3><p class="noprint">Students who have a worksheet open now (updates every few seconds). Tap one to see his answers as he types and to draw on his worksheet. He sees a note that you are looking.</p>
+    <div class="lg-bar"><button class="ghost" type="button" data-wk="wlist">Back</button></div>
+    ${rows.length ? `<table class="lg-tbl"><thead><tr><th>Student</th><th>Worksheet</th><th>Answered</th><th>Active</th><th></th></tr></thead><tbody>${rows.map(r => `<tr><td><b>${esc(r.st.name)}</b><br><small>${esc(r.st.cls)}</small></td><td>${esc(r.w.title)}</td><td>${r.done} / ${r.n}</td><td>${Date.now() - (r.x.joined || 0) < 90e3 ? '<b style="color:#1f9d55">● now</b>' : esc(ago(r.x.joined))}</td><td><button class="primary small" type="button" data-wk="wone" data-sid="${esc(r.x.sid)}">Watch</button></td></tr>`).join("")}</tbody></table>`
+      : `<p class="none">Nobody has a worksheet open right now. When a student opens one, he appears here.</p>`}`;
+  scr.t = setTimeout(() => { if (view === "watch" && !$("workModal").hidden) render(); }, 4000);
+}
+function scrPaint() { scr.layers.forEach(l => l.paint(scr.strokes)); }
+let scrSaveT = 0;
+async function scrHelp(on) {
+  const x = scr.live.find(y => y.sid === scr.sid), st = students.find(s => s.id === scr.sid); if (!x || !st) return;
+  try { await setDoc(bdoc("live", SCR + "_" + scr.sid), { kind: "screen", cls: [st.cls], sid: scr.sid, wid: x.ans.wid, on, strokes: on ? scr.strokes.slice(-60) : [], at: Date.now() }); } catch {}
+}
+async function watchOne(b) {
+  scrStop(); await scrLoad(); if (view !== "watch1") return;
+  const x = scr.live.find(y => y.sid === scr.sid), st = students.find(s => s.id === scr.sid), w = x && works.find(y => y.id === x.ans.wid);
+  if (!x || !w) { b.innerHTML = `<h3>Watch &amp; help</h3><p class="none">This student closed the worksheet.</p><div class="lg-bar"><button class="ghost" type="button" data-wk="wback">Back</button></div>`; return; }
+  const key = keys.get(w.id) || [], qs = w.questions || [];
+  b.innerHTML = `<h3>${esc((st && st.name) || x.name)} · ${esc(w.title)}</h3>
+    <div class="lg-bar noprint" style="position:sticky;top:0;z-index:5;background:var(--card,#fff);padding:6px 0;align-items:center"><button class="${scr.pen ? "primary" : "ghost"} small" type="button" data-wk="wpen">${scr.pen ? "✏️ Pen on" : "✏️ Pen off"}</button>${COLORS.map(c => `<button type="button" data-wk="wcol" data-c="${c}" aria-label="Colour" style="width:30px;height:30px;border-radius:50%;border:2px solid #fff;background:${c};cursor:pointer;${c === scr.color ? "outline:3px solid var(--ink,#17233b)" : ""}"></button>`).join("")}<button class="ghost small" type="button" data-wk="wundo">Undo</button><button class="ghost small" type="button" data-wk="wclear">Clear</button><button class="ghost small" type="button" data-wk="wback">Stop helping</button></div>
+    <p class="rep-note" id="scrAct"></p>
+    <div class="wk-do">${qs.map((q, i) => `<div class="wk-item" data-i="${i}" style="padding:8px 10px;border-radius:12px;margin:6px 0"><p><b>${i + 1}.</b> ${esc(q.q).replace(/\n/g, "<br>")}${q.opts && q.opts.length ? ` <small>(${esc(q.opts.join(" · "))})</small>` : ""}</p><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span class="scr-ans" style="min-width:120px;padding:8px 12px;border:2px solid var(--line,#cdd5e3);border-radius:10px;font-weight:700;min-height:22px"></span>${key[i] ? `<small>Correct: <b>${esc(key[i])}</b></small>` : ""}</div></div>`).join("")}</div>`;
+  const items = [...b.querySelectorAll(".wk-item")];
+  scr.layers = items.map((el, i) => layer(el, i, { draw: true, color: () => scr.color, onStroke: s => { scr.strokes.push(s); if (scr.strokes.length > 60) scr.strokes.shift(); clearTimeout(scrSaveT); scrSaveT = setTimeout(() => scrHelp(true), 250); } }));
+  b.querySelectorAll(".scr-cv").forEach(c => c.classList.toggle("pen", scr.pen));
+  scrPaint(); scrHelp(true);
+  const show = () => {
+    const y = scr.live.find(z => z.sid === scr.sid); if (!y) return; const a = y.ans.a || [];
+    items.forEach((el, i) => { const v = String(a[i] || ""), sp = el.querySelector(".scr-ans"); sp.textContent = v || "…"; const ok = key[i] ? same(v, key[i]) : null;
+      sp.style.background = !v ? "" : ok === true ? "#e1f4ec" : ok === false ? "#fbe7e5" : ""; el.style.background = y.ans.f === i ? "var(--accent-soft,#e6ebff)" : ""; });
+    const s = $("scrAct"); if (s) s.textContent = (Date.now() - (y.joined || 0) < 90e3 ? "● Working now" : "Last active " + ago(y.joined)) + " · " + a.filter(v => String(v).trim()).length + " of " + qs.length + " answered. The blue box is the question he is on. Draw on any question: he sees it on his screen in a second or two.";
+  };
+  show();
+  let n = 0; const tick = async () => { if (view !== "watch1" || $("workModal").hidden) return; await scrLoad(); show(); if (++n % 20 === 0) scrHelp(true); scr.t = setTimeout(tick, 1500); };
+  scr.t = setTimeout(tick, 1500);
+}
+
 /* ---------- Import questions from Excel (.xlsx) or CSV ---------- */
-const loadXl = () => window.ExcelJS ? Promise.resolve() : new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1122n"; sc.onload = res; sc.onerror = () => rej(new Error("Could not load the Excel reader.")); document.head.appendChild(sc); });
+const loadXl = () => window.ExcelJS ? Promise.resolve() : new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1123b"; sc.onload = res; sc.onerror = () => rej(new Error("Could not load the Excel reader.")); document.head.appendChild(sc); });
 function csvRows(t) {
   const rows = []; let row = [], cur = "", q = false;
   t = t.replace(/^\ufeff/, "");

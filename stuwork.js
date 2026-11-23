@@ -1,8 +1,9 @@
 // "My classwork" on the student page: worksheets from the teacher, and (for the 9S boys) the lesson games.
-import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1122n";
-import { playerOf, catalog } from "./islandmap.js?v=1122n";
-import { logEv } from "./presence.js?v=1122n";
-import { LIVE_WS, isLive, liveScope, setUploaded, withBridge, reportsItself } from "./liveworks.js?v=1122n";
+import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1123b";
+import { playerOf, catalog } from "./islandmap.js?v=1123b";
+import { SCR, layer } from "./screenpen.js?v=1123b";
+import { logEv } from "./presence.js?v=1123b";
+import { LIVE_WS, isLive, liveScope, setUploaded, withBridge, reportsItself } from "./liveworks.js?v=1123b";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -161,6 +162,7 @@ function drawSheet(box, w) {
       : `<input name="q${i}" autocomplete="off" maxlength="300" placeholder="Your answer">`}</div>`).join("")}
     <p class="wk-note" id="wkNote"></p>
     <div class="sbtns"><button class="primary" type="submit" id="wkSend">Hand in</button><button class="ghost" type="button" data-wkact="back">Back</button></div></form></section>`;
+  watchMe(w, $("wkForm"));
   $("wkForm").onsubmit = async e => {
     e.preventDefault();
     const f = e.target, answers = (w.questions || []).map((q, i) => { const el = f.elements["q" + i]; return String((el && (el.value ?? "")) || "").trim(); });
@@ -172,6 +174,36 @@ function drawSheet(box, w) {
     try { await setDoc(doc(fs, ...base, "subs", w.id + "_" + P.sid), sub); mine.set(w.id, sub); logEv("Handed in: " + String(w.title || "worksheet").slice(0, 50)); openId = ""; toast("Handed in. Well done!"); draw(); }
     catch (er) { $("wkSend").disabled = false; $("wkNote").textContent = er && er.code === "permission-denied" ? "This worksheet is closed or was already handed in." : "Could not hand in. Check your internet and try again."; }
   };
+}
+/* Watch & help: while a worksheet is open, the teacher can follow the answers and draw on the questions. */
+let scrT = 0;
+function watchMe(w, form) {
+  clearTimeout(scrT);
+  const items = [...form.querySelectorAll(".wk-item")], L = items.map((el, i) => layer(el, i));
+  const id = SCR + "_" + P.sid, ansNow = () => (w.questions || []).map((q, i) => { const el = form.elements["q" + i]; return String((el && (el.value ?? "")) || "").slice(0, 300); });
+  let focus = -1, sent = "", pushT = 0, on = false;
+  const push = () => { const a = ansNow(), k = JSON.stringify([a, focus]); if (k === sent) return; sent = k;
+    setDoc(doc(fs, ...base, "liveplayers", id), { sess: SCR, sid: P.sid, name: String((me && me.name) || "").slice(0, 80), joined: Date.now(), ans: { wid: w.id, a, f: focus } }).catch(() => {}); };
+  const later = () => { clearTimeout(pushT); pushT = setTimeout(push, 700); };
+  form.addEventListener("input", later); form.addEventListener("change", later);
+  form.addEventListener("focusin", e => { const i = items.indexOf(e.target.closest(".wk-item")); if (i !== focus) { focus = i; later(); } });
+  push();
+  const banner = document.createElement("div"); banner.className = "scr-banner"; banner.hidden = true; banner.innerHTML = "<i></i><span>Your teacher is looking at your worksheet now.</span>";
+  form.before(banner);
+  let beat = 0;
+  const poll = async () => {
+    if (!document.body.contains(form)) return;
+    try {
+      const sn = await getDoc(doc(fs, ...base, "live", id)), d = sn.exists() ? sn.data() : null;
+      on = !!(d && d.on && d.wid === w.id && Date.now() - (d.at || 0) < 90e3);   // the teacher's page refreshes this every 30 s while it is open
+      const st = on ? (d.strokes || []) : [];
+      banner.hidden = !on; banner.querySelector("span").textContent = st.length ? "Your teacher is showing you something on your worksheet." : "Your teacher is looking at your worksheet now.";
+      L.forEach(l => l.paint(st));
+      if (++beat % 20 === 0) { sent = ""; push(); }   // still here: refresh once a minute so the teacher sees him as active
+    } catch {}
+    scrT = setTimeout(poll, on ? 1500 : 3000);
+  };
+  poll();
 }
 function openAG(file = "ag34.html", ttl = "Lesson 3.4") {
   const ov = document.createElement("div"); ov.className = "wk-play"; ov.id = "wkPlay";
