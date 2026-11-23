@@ -16,7 +16,11 @@
     var b = document.createElement("button"); b.id = "ndTry"; b.type = "button"; b.className = "ghost small"; b.textContent = "✨ Try the new design";
     b.onclick = function () { setOn(true); };
     var acct = document.querySelector("header.book .acct"); if (acct) acct.insertBefore(b, acct.firstChild); else document.body.appendChild(b);
+    var t = document.createElement("button"); t.id = "ndTry2"; t.type = "button"; t.className = "primary small"; t.textContent = "✨ Try the new design"; t.onclick = function () { setOn(true); };
+    var place = function () { var h = $("toolsView"); if (h && !h.hidden && !$("ndTry2")) { var p = h.querySelector(".shop-intro"); if (p) p.appendChild(t); } };
+    setInterval(place, 1000);
   }
+  try { var q = new URLSearchParams(location.search).get("nd"); if (q === "1" || q === "0") { localStorage.setItem(KEY, q); history.replaceState(null, "", location.pathname + location.hash); } } catch (e) {}   // mathkn.fun/teacher.html?nd=1 turns it on, ?nd=0 off
   if (!on()) { if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", offerButton); else offerButton(); return; }
 
   document.documentElement.classList.add("nd");
