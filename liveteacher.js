@@ -1,7 +1,7 @@
 // Teacher side: "Live worksheets". Each interactive worksheet is hidden until the teacher presses Start for a class.
 // State is one document, work/liveopen: { kind:"liveopen", open:{ <worksheet id>:{ "8B": startedAtMs } }, classes:[every class with something open] }.
-import { getDoc, getDocs, setDoc, deleteDoc, updateDoc, bcol, bdoc } from "./fb.js?v=1123l";
-import { LIVE_WS, isLive, setUploaded, withBridge } from "./liveworks.js?v=1123l";
+import { getDoc, getDocs, setDoc, deleteDoc, updateDoc, bcol, bdoc } from "./fb.js?v=1123m";
+import { LIVE_WS, isLive, setUploaded, withBridge } from "./liveworks.js?v=1123m";
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 let modal = null, open = {}, msg = "", busy = false, exp = "";
