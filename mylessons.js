@@ -275,7 +275,17 @@
         + ".ml-sp{width:2px;align-self:stretch;margin:6px 0;background:rgba(255,255,255,.22);border-radius:2px}.ml-cols{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center;padding:8px 0}.ml-pen .sw{width:30px;height:30px;border-radius:50%;border:3px solid #fff;padding:0;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.5)}.ml-pen .sw.sel{outline:3px solid #f59e0b;outline-offset:2px;transform:scale(1.12)}"
         + ".ml-sizes{display:flex;gap:4px;align-items:center;padding:8px 0}.ml-sz{width:36px;height:36px;border-radius:50%;border:2px solid #fff;background:#243a66;display:grid;place-items:center;cursor:pointer;padding:0}.ml-sz i{display:block;border-radius:50%;background:#fff}.ml-sz.sel{background:#f59e0b;border-color:#fff}.ml-sz.sel i{background:#13213f}"
         + ".ml-acts{display:flex;gap:6px;align-items:center;padding:8px 0}.ml-pen .ab{min-width:40px;height:40px;border-radius:12px;border:2px solid #fff;background:#243a66;color:#fff;font:800 17px/1 system-ui;cursor:pointer;padding:0 10px}.ml-pen .ab:active{transform:scale(.95)}.ml-pen .ab.dn{background:#16a34a}.ml-pen .ab:disabled{opacity:.4}"
-        + ".ml-ec{position:fixed;z-index:6;pointer-events:none;border:2px solid #111;border-radius:50%;background:rgba(255,255,255,.55);box-shadow:0 0 0 1px #fff;transform:translate(-50%,-50%);display:none}";
+        + ".ml-ec{position:fixed;z-index:6;pointer-events:none;border:2px solid #111;border-radius:50%;background:rgba(255,255,255,.55);box-shadow:0 0 0 1px #fff;transform:translate(-50%,-50%);display:none}"
+        /* new look: a slim frosted pill that leaves the slide free; it folds into a small round button above the wheel while you write */
+        + ".ml-pen{bottom:14px;flex-wrap:nowrap;align-items:center;gap:2px 8px;padding:5px 10px;border-radius:999px;background:rgba(15,23,42,.74);-webkit-backdrop-filter:blur(14px) saturate(1.4);backdrop-filter:blur(14px) saturate(1.4);border:1px solid rgba(255,255,255,.16);box-shadow:0 10px 30px rgba(0,0,0,.35);overflow-x:auto;scrollbar-width:none}"
+        + ".ml-tools{height:46px;padding:0 2px;gap:0}.ml-tl{width:24px;height:46px;transform:translateY(16px)}.ml-tl svg{width:24px;height:52px}.ml-tl:hover{transform:translateY(10px)}.ml-tl.sel{transform:translateY(1px)}"
+        + ".ml-sp{width:1px;margin:10px 2px;background:rgba(255,255,255,.18)}.ml-cols{gap:5px;padding:0;flex-wrap:nowrap}"
+        + ".ml-pen .sw{width:22px;height:22px;border:2px solid rgba(255,255,255,.85);box-shadow:none}.ml-pen .sw.sel{outline:2px solid #FFC83D;outline-offset:2px;transform:scale(1.15)}"
+        + ".ml-sizes{gap:3px;padding:0}.ml-sz{width:28px;height:28px;border:0;background:rgba(255,255,255,.1)}.ml-sz i{background:#e2e8f0}.ml-sz.sel{background:#FFC83D}.ml-sz.sel i{background:#0f172a}"
+        + ".ml-acts{gap:4px;padding:0}.ml-pen .ab{min-width:34px;height:34px;border:0;border-radius:10px;background:rgba(255,255,255,.12);font:700 14px/1 system-ui;padding:0 10px}.ml-pen .ab.dn{background:#22c55e;color:#052e16}"
+        + ".ml-pdot{position:absolute;z-index:5;left:13px;bottom:128px;width:52px;height:52px;border-radius:50%;padding:0;cursor:pointer;background:rgba(15,23,42,.8);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:3px solid #ef4444;box-shadow:0 6px 18px rgba(0,0,0,.35);display:grid;place-items:center;overflow:hidden}"
+        + ".ml-pdot[hidden]{display:none}.ml-pdot svg{width:20px;height:44px;transform:rotate(35deg) translateY(4px)}.ml-pdot:focus-visible{outline:3px solid #FFC83D;outline-offset:2px}"
+        + "@media (prefers-reduced-motion:no-preference){.ml-pen:not([hidden]){animation:mlPenIn .16s ease-out}.ml-pdot:not([hidden]){animation:mlDotIn .16s ease-out}}@keyframes mlPenIn{from{opacity:0;transform:translateX(-50%) translateY(8px)}}@keyframes mlDotIn{from{opacity:0;transform:scale(.7)}}";
       document.head.appendChild(st); }
     const cv = document.createElement("canvas"); cv.className = "ml-cv"; ov.insertBefore(cv, ov.querySelector(".ml-fab"));
     const bar = document.createElement("div"); bar.className = "ml-pen"; bar.hidden = true; bar.setAttribute("aria-label", "Pen tools");
@@ -295,8 +305,12 @@
     const toolsHTML = () => TOOLS.map(([k, n]) => `<button type="button" class="ml-tl${tool === k ? " sel" : ""}" data-t="${k}" aria-label="${n}" title="${n}">${ICON[k](col)}</button>`).join("");
     const sizesHTML = () => [0, 1, 2].map(i => `<button type="button" class="ml-sz${wi === i ? " sel" : ""}" data-w="${i}" aria-label="Size ${i + 1}"><i style="width:${[6, 12, 20][i]}px;height:${[6, 12, 20][i]}px"></i></button>`).join("");
     bar.innerHTML = `<div class="ml-tools" id="mlTools"></div><span class="ml-sp"></span><div class="ml-cols">${COLS.map((c, i) => `<button type="button" class="sw${c === col ? " sel" : ""}" data-c="${c}" style="background:${c}" aria-label="Colour ${i + 1}"></button>`).join("")}</div><span class="ml-sp"></span><div class="ml-sizes" id="mlSizes"></div><span class="ml-sp"></span>`
-      + `<div class="ml-acts"><button type="button" class="ab" data-a="undo" aria-label="Undo">↶</button><button type="button" class="ab" data-a="redo" aria-label="Redo">↷</button><button type="button" class="ab" data-a="clear">Clear</button><button type="button" class="ab dn" data-a="done">Done</button></div>`;
+      + `<div class="ml-acts"><button type="button" class="ab" data-a="undo" aria-label="Undo"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg></button><button type="button" class="ab" data-a="redo" aria-label="Redo"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 14 5-5-5-5"/><path d="M20 9H9a5 5 0 0 0 0 10h3"/></svg></button><button type="button" class="ab" data-a="clear">Clear</button><button type="button" class="ab dn" data-a="done">Done</button></div>`;
     ov.appendChild(bar);
+    const dot = document.createElement("button"); dot.type = "button"; dot.className = "ml-pdot"; dot.hidden = true; ov.appendChild(dot);
+    const paintDot = () => { const n = (TOOLS.find(x => x[0] === tool) || [0, "Pen"])[1]; dot.innerHTML = ICON[tool](col); dot.style.borderColor = tool === "er" ? "#f9a8d4" : col === "#ffffff" ? "#e2e8f0" : col; dot.setAttribute("aria-label", n + " selected. Tap to change the pen, colour or size."); dot.title = n; };
+    const fold = () => { if (bar.hidden) return; bar.hidden = true; paintDot(); dot.hidden = false; };
+    dot.addEventListener("click", e => { e.stopPropagation(); dot.hidden = true; bar.hidden = false; });
     const ec = document.createElement("div"); ec.className = "ml-ec"; ov.appendChild(ec);
     const drawBar = () => { bar.querySelector("#mlTools").innerHTML = toolsHTML(); bar.querySelector("#mlSizes").innerHTML = sizesHTML(); bar.querySelectorAll(".sw").forEach(x => x.classList.toggle("sel", x.dataset.c === col)); };
     drawBar();
@@ -319,7 +333,7 @@
     const fit = () => { const r = ov.getBoundingClientRect(); if (!r.width) return; dpr = Math.min(2, window.devicePixelRatio || 1); cv.width = base.width = Math.round(r.width * dpr); cv.height = base.height = Math.round(r.height * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); bx.setTransform(dpr, 0, 0, dpr, 0, 0); rebuild(); };
     const pos = e => { const r = cv.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
     const moveEc = e => { if (!on || tool !== "er") { ec.style.display = "none"; return; } const d = widthOf("er", wi); ec.style.cssText = `display:block;width:${d}px;height:${d}px;left:${e.clientX}px;top:${e.clientY}px`; };
-    cv.addEventListener("pointerdown", e => { if (!on) return; e.preventDefault(); try { cv.setPointerCapture(e.pointerId); } catch {}
+    cv.addEventListener("pointerdown", e => { if (!on) return; e.preventDefault(); fold(); try { cv.setPointerCapture(e.pointerId); } catch {}
       const w = widthOf(tool, wi) * (tool === "pen" && e.pointerType === "pen" && e.pressure ? .6 + e.pressure * .8 : 1);
       cur = { t: tool, c: col, w, p: [pos(e)] }; redo = []; moveEc(e); sched(); });
     cv.addEventListener("pointermove", e => { moveEc(e); if (!cur) return; e.preventDefault(); const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e], last = cur.p[cur.p.length - 1];
@@ -327,7 +341,7 @@
     const up = () => { if (!cur) return; strokes.push(cur); paintStroke(bx, cur); cur = null; show(); updBtns(); };
     cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up); cv.addEventListener("pointerleave", () => { ec.style.display = "none"; });
     const updBtns = () => { const u = bar.querySelector('[data-a="undo"]'), r = bar.querySelector('[data-a="redo"]'); if (u) u.disabled = !strokes.length; if (r) r.disabled = !redo.length; };
-    const setOn = v => { on = v; cv.classList.toggle("on", v); bar.hidden = !v; if (!v) ec.style.display = "none"; const b = ov.querySelector('[data-mlx="pen"]'); if (b) b.classList.toggle("on", v); updBtns(); };
+    const setOn = v => { on = v; cv.classList.toggle("on", v); bar.hidden = !v; dot.hidden = true; if (!v) ec.style.display = "none"; const b = ov.querySelector('[data-mlx="pen"]'); if (b) b.classList.toggle("on", v); updBtns(); };
     bar.addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; e.stopPropagation();
       if (b.dataset.c) { col = b.dataset.c; if (tool === "er") tool = "pen"; drawBar(); }
       else if (b.dataset.w) { wi = +b.dataset.w; drawBar(); }

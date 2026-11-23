@@ -24,7 +24,7 @@
 <div class="card" id="tbl" hidden></div>
 <div class="card" id="logc" hidden><div id="log"></div></div>
 <script type="module">
-import { fs, collection, rawGetDocs as getDocs, query, where, whenUser, profileOf } from "./fb.js?v=1123e";
+import { fs, collection, rawGetDocs as getDocs, query, where, whenUser, profileOf } from "./fb.js?v=1123f";
 import { getCountFromServer, orderBy, limit, startAfter, documentId } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
