@@ -1,6 +1,6 @@
 // Students progress inside the teacher page: pick a class, then a lesson, then see each student's games and every mistake.
-import { getDocs, bcol, bdoc, updateDoc, onSnapshot, query, where } from "./fb.js?v=1122n";
-import { LIVE_WS, isLive } from "./liveworks.js?v=1122n";
+import { getDocs, bcol, bdoc, updateDoc, onSnapshot, query, where } from "./fb.js?v=1123c";
+import { LIVE_WS, isLive } from "./liveworks.js?v=1123c";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -215,7 +215,7 @@ function workView() {
     <p class="pg-lesson"><b>${esc(w.title || "Worksheet")}</b> · ${w.graded ? "Graded worksheet" : "Classwork"} · ${done} of ${rows.length} handed in${avg === null ? "" : ` · class average ${avg}%`}</p>
     <table class="lg-tbl"><thead><tr><th>Student</th><th>Status</th><th>Handed in</th><th>Mark</th></tr></thead><tbody>${rows.sort((a, b) => (!!b.sub - !!a.sub) || a.k.name.localeCompare(b.k.name)).map(r => `<tr><td><b>${esc(r.k.name)}</b></td><td>${r.sub ? "Handed in" : "<b style='color:var(--bad)'>MISSING</b>"}</td><td>${r.sub ? esc(when(r.sub.at)) : ""}</td><td>${r.mk ? `<b class="pg-pc ${pc(Math.round(100 * r.mk.right / r.mk.n))}">${r.mk.right} / ${r.mk.n}</b>` : r.sub ? "Not marked" : ""}</td></tr>`).join("")}</tbody></table>`;
 }
-const stuPicker = () => `<div class="lg-bar noprint" style="margin:14px 0 0"><button class="primary" type="button" data-pg="live" data-c="${esc(selCls)}">Live now: see answers as they happen</button></div><h4 style="margin:18px 0 6px">Everything one student did</h4><p class="noprint">Classwork, worksheets, live worksheets, live quizzes and games in one page.</p>
+const stuPicker = () => `<div class="lg-bar noprint" style="margin:14px 0 0"><button class="primary" type="button" data-pg="live" data-c="${esc(selCls)}">Live now: see answers as they happen</button><button class="primary" type="button" onclick="window.__openWatch && window.__openWatch()">👀 Watch &amp; help: see his screen and draw on it</button></div><h4 style="margin:18px 0 6px">Everything one student did</h4><p class="noprint">Classwork, worksheets, live worksheets, live quizzes and games in one page.</p>
   <div class="pg-chk">${inCls(selCls).map(s => `<button type="button" class="ghost small" data-pg="stu" data-sid="${esc(s.id)}">${esc(s.name)}</button>`).join(" ")}</div>`;
 function stuView() {
   const s = students.find(x => x.id === stuSid); if (!s) { stuSid = ""; return render(); }
@@ -252,7 +252,7 @@ let xlQ = "";   // "" = current quarter on first use, "ALL" = every date
 const xlBar = scope => `<div class="lg-bar noprint" style="margin:14px 0 0;flex-wrap:wrap;gap:8px"><label>Period <select id="pgQ">${QUARTERS.map(q => `<option value="${q.k}" ${(xlQ || quarterNow().k) === q.k ? "selected" : ""}>${q.k} (${q.from.split("-").reverse().join("/")} – ${q.to.split("-").reverse().join("/")})</option>`).join("")}<option value="ALL" ${xlQ === "ALL" ? "selected" : ""}>All dates</option></select></label>
   <button class="primary" type="button" data-pg="xl" data-scope="${scope}">${scope === "all" ? "Download Excel: all classes" : "Download Excel: " + esc(selCls)}</button></div>`;
 document.addEventListener("change", e => { if (e.target && e.target.id === "pgQ") xlQ = e.target.value; });
-const loadXl = () => window.ExcelJS ? Promise.resolve() : new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1122n"; sc.onload = res; sc.onerror = () => rej(new Error("Could not load the Excel library")); document.head.appendChild(sc); });
+const loadXl = () => window.ExcelJS ? Promise.resolve() : new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1123c"; sc.onload = res; sc.onerror = () => rej(new Error("Could not load the Excel library")); document.head.appendChild(sc); });
 async function xlExport(scope, btn) {
   const q = xlQ === "ALL" ? null : QUARTERS.find(x => x.k === (xlQ || quarterNow().k));
   const t0 = q ? Date.parse(q.from + "T00:00:00+03:00") : 0, t1 = q ? Date.parse(q.to + "T23:59:59.999+03:00") : Infinity, inP = t => !q || (t >= t0 && t <= t1);
