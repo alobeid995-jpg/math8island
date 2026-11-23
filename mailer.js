@@ -1,7 +1,7 @@
 // Email students (school address = student ID + @hawarschool.com) through the teacher's own Google Apps Script.
 // Settings live in the teacher's own folder (settings/email), so students can never read the link or the token.
-import { getDoc, getDocs, setDoc, bcol, bdoc } from "./fb.js?v=1123g";
-import { sendMail } from "./sbdata.js?v=1123g";
+import { getDoc, getDocs, setDoc, bcol, bdoc } from "./fb.js?v=1123i";
+import { sendMail } from "./sbdata.js?v=1123i";
 
 const SITE = "https://mathkn.fun";
 const $ = id => document.getElementById(id);
