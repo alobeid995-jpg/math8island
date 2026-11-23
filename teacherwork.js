@@ -1,10 +1,10 @@
 // Classwork for the teacher: make a worksheet, send it to classes, collect and export the answers.
 // Worksheets live in <base>/work, the answer key in <base>/workkey (students never read it),
 // and each student's submission in <base>/subs/<worksheet>_<student>.
-import { getDocs, setDoc, updateDoc, deleteDoc, getDoc, bcol, bdoc, query, where } from "./fb.js?v=1123c";
-import { SCR, COLORS, layer } from "./screenpen.js?v=1123c";
-import { autoMail, sendTo } from "./mailer.js?v=1123c";
-import { LIVE_WS, isLive, setUploaded } from "./liveworks.js?v=1123c";
+import { getDocs, setDoc, updateDoc, deleteDoc, getDoc, bcol, bdoc, query, where } from "./fb.js?v=1123d";
+import { SCR, COLORS, layer, rt, token } from "./screenpen.js?v=1123d";
+import { autoMail, sendTo } from "./mailer.js?v=1123d";
+import { LIVE_WS, isLive, setUploaded } from "./liveworks.js?v=1123d";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -169,7 +169,7 @@ document.addEventListener("change", e => {
 document.addEventListener("click", async e => {
   const b = e.target.closest("[data-wk]"); if (!b) return;
   const a = b.dataset.wk, w = works.find(x => x.id === b.dataset.id);
-  if (a === "close") { scrStop(); if (scr.sid && view === "watch1") scrHelp(false); $("workModal").hidden = true; return; }
+  if (a === "close") { scrStop(); if (scr.sid && view === "watch1") { scrHelp(false); scrClose(); } $("workModal").hidden = true; return; }
   if (a === "newg") { draft = { title: "", classes: CLASSES.includes(cls) ? [cls] : [], test: false, tMin: 30, tWarn: 3, graded: true, questions: [{ q: "", type: "text", opts: "", key: "" }] }; view = "edit"; return render(); }
   if (a === "new") { draft = { title: "", classes: CLASSES.includes(cls) ? [cls] : [], test: false, tMin: 30, tWarn: 3, questions: [{ q: "", type: "text", opts: "", key: "" }] }; view = "edit"; return render(); }
   if (a === "remind") { const c = b.dataset.c, k = Object.keys(remindAt).find(x => x.toUpperCase() === c.toUpperCase()), at = { ...remindAt };
@@ -193,13 +193,13 @@ document.addEventListener("click", async e => {
   if (a === "imp") { readDraft(); const f = $("wkImpFile"); f.value = ""; f.onchange = () => f.files[0] && importSheet(f.files[0]); f.click(); return; }
   if (a === "tpl") { readDraft(); return downloadTemplate(); }
   if (a === "watch") { view = "watch"; return render(); }
-  if (a === "wone") { scr.sid = b.dataset.sid; scr.strokes = []; view = "watch1"; return render(); }
-  if (a === "wback") { await scrHelp(false); view = "watch"; return render(); }
+  if (a === "wone") { scr.sid = b.dataset.sid; scr.strokes = []; scrOpen(); view = "watch1"; return render(); }
+  if (a === "wback") { await scrHelp(false); scrClose(); view = "watch"; return render(); }
   if (a === "wlist") { view = "list"; return render(); }
   if (a === "wpen") { scr.pen = !scr.pen; document.querySelectorAll("#wkBody .scr-cv").forEach(c => c.classList.toggle("pen", scr.pen)); b.textContent = scr.pen ? "✏️ Pen on" : "✏️ Pen off"; b.classList.toggle("primary", scr.pen); b.classList.toggle("ghost", !scr.pen); return; }
   if (a === "wcol") { scr.color = b.dataset.c; document.querySelectorAll("[data-wk='wcol']").forEach(x => { x.style.outline = x === b ? "3px solid var(--ink,#17233b)" : ""; }); return; }
-  if (a === "wundo") { scr.strokes.pop(); scrPaint(); return scrHelp(true); }
-  if (a === "wclear") { scr.strokes = []; scrPaint(); return scrHelp(true); }
+  if (a === "wundo") { scr.strokes.pop(); scrPaint(); scrSendAll(); return scrHelp(true); }
+  if (a === "wclear") { scr.strokes = []; scrPaint(); scrSendAll(); return scrHelp(true); }
   if (a === "addq") { readDraft(); draft.questions.push({ q: "", type: "text", opts: "", key: "" }); render(); const t = document.querySelectorAll("[data-k='q']"); t[t.length - 1].focus(); return; }
   if (a === "delq") { readDraft(); draft.questions.splice(+b.dataset.i, 1); if (!draft.questions.length) draft.questions.push({ q: "", type: "text", opts: "", key: "" }); return render(); }
   if (a === "save") { b.disabled = true; await saveDraft(); b.disabled = false; return; }
@@ -236,10 +236,19 @@ export async function gradeData() {
 }
 
 /* ---------- Watch & help: follow a student's worksheet live and draw on it ---------- */
-const scr = { sid: "", strokes: [], pen: true, color: COLORS[0], t: 0, layers: [], live: [] };
+const scr = { sid: "", strokes: [], pen: true, color: COLORS[0], t: 0, layers: [], live: [], tok: "", ch: null, show: null, mvT: 0 };
 function scrStop() { clearTimeout(scr.t); scr.t = 0; }
+function scrClose() { if (scr.ch) { scr.ch.close(); scr.ch = null; } scr.tok = ""; scr.show = null; }
+function scrOpen() {
+  scrClose(); scr.tok = token();
+  scr.ch = rt(scr.tok, (ev, p) => { if (ev !== "s") return; const y = scr.live.find(z => z.sid === scr.sid); if (!y) return; y.ans = { ...y.ans, ...p }; y.joined = Date.now(); if (scr.show) scr.show(); });
+  setTimeout(() => scr.ch && scr.ch.send("hi", {}), 1500);
+}
+const scrSendAll = () => { if (scr.ch) scr.ch.send("d", { strokes: scr.strokes.slice(-60) }); };
+const scrMove = cur => { if (!scr.ch || scr.mvT) return; scr.mvT = setTimeout(() => { scr.mvT = 0; scr.ch && scr.ch.send("m", { s: cur }); }, 40); };
 const ago = t => { const s = Math.max(0, Math.round((Date.now() - (t || 0)) / 1000)); return s < 60 ? s + " s ago" : Math.round(s / 60) + " min ago"; };
-async function scrLoad() { try { const s = await getDocs(query(bcol("liveplayers"), where("sess", "==", SCR))); scr.live = s.docs.map(d => d.data()).filter(x => x.ans && Date.now() - (x.joined || 0) < 15 * 60e3); } catch { scr.live = []; } }
+async function scrLoad() { try { const s = await getDocs(query(bcol("liveplayers"), where("sess", "==", SCR))), prev = new Map(scr.live.map(x => [x.sid, x]));
+  scr.live = s.docs.map(d => d.data()).filter(x => x.ans && Date.now() - (x.joined || 0) < 15 * 60e3).map(x => { const o = prev.get(x.sid); return o && (o.joined || 0) > (x.joined || 0) ? o : x; }); } catch {} }   // keep what came faster over the live channel
 async function watchList(b) {
   scrStop(); await scrLoad(); if (view !== "watch") return;
   const rows = scr.live.map(x => { const st = students.find(s => s.id === x.sid) || { name: x.name, cls: "" }, w = works.find(y => y.id === x.ans.wid), a = x.ans.a || [];
@@ -254,7 +263,7 @@ function scrPaint() { scr.layers.forEach(l => l.paint(scr.strokes)); }
 let scrSaveT = 0;
 async function scrHelp(on) {
   const x = scr.live.find(y => y.sid === scr.sid), st = students.find(s => s.id === scr.sid); if (!x || !st) return;
-  try { await setDoc(bdoc("live", SCR + "_" + scr.sid), { kind: "screen", cls: [st.cls], sid: scr.sid, wid: x.ans.wid || x.ans.g, on, strokes: on ? scr.strokes.slice(-60) : [], at: Date.now() }); } catch {}
+  try { await setDoc(bdoc("live", SCR + "_" + scr.sid), { kind: "screen", cls: [st.cls], sid: scr.sid, wid: x.ans.wid || x.ans.g, on, strokes: on ? scr.strokes.slice(-60) : [], at: Date.now(), ...(on && scr.tok ? { rt: scr.tok } : {}) }); } catch {}
 }
 function watch9s(b, x, st) {
   b.innerHTML = `<h3>${esc((st && st.name) || x.name)} · 9S Island</h3>
@@ -262,7 +271,7 @@ function watch9s(b, x, st) {
     <p class="rep-note" id="scrAct"></p>
     <div id="scrWrap" style="position:relative;overflow:hidden;border:2px solid var(--line,#cdd5e3);border-radius:12px;background:#fff;margin:0 auto"><iframe id="scrFr" src="island9s.html#view" title="Student screen" style="border:0;position:absolute;left:0;top:0;transform-origin:0 0;pointer-events:none"></iframe></div>`;
   const wrap = $("scrWrap"), fr = $("scrFr");
-  scr.layers = [layer(wrap, -1, { draw: true, color: () => scr.color, onStroke: s => { scr.strokes.push(s); if (scr.strokes.length > 60) scr.strokes.shift(); clearTimeout(scrSaveT); scrSaveT = setTimeout(() => scrHelp(true), 250); } })];
+  scr.layers = [layer(wrap, -1, { draw: true, color: () => scr.color, onMove: scrMove, onStroke: s => { scr.strokes.push(s); if (scr.strokes.length > 60) scr.strokes.shift(); scrSendAll(); clearTimeout(scrSaveT); scrSaveT = setTimeout(() => scrHelp(true), 250); } })];
   wrap.querySelectorAll(".scr-cv").forEach(c => c.classList.toggle("pen", scr.pen));
   let last = "";
   const fit = a => { const W = Math.max(320, +a.w || 800), H = Math.max(400, +a.vh || 1000), avail = Math.min(b.clientWidth - 4, 1100), k = Math.min(1, avail / W, (innerHeight * 0.72) / H);
@@ -273,7 +282,7 @@ function watch9s(b, x, st) {
     scrPaint();
     const s = $("scrAct"); if (s) s.textContent = (Date.now() - (y.joined || 0) < 90e3 ? "● Playing now" : "Last active " + ago(y.joined)) + ". This is his screen (it refreshes every second or two). Draw on it: he sees it on his tablet.";
   };
-  fr.addEventListener("load", () => { last = ""; show(); });
+  scr.show = show; fr.addEventListener("load", () => { last = ""; show(); });
   scrHelp(true); show();
   let n = 0; const tick = async () => { if (view !== "watch1" || $("workModal").hidden) return; await scrLoad(); show(); if (++n % 20 === 0) scrHelp(true); scr.t = setTimeout(tick, 1500); };
   scr.t = setTimeout(tick, 1500);
@@ -289,7 +298,7 @@ async function watchOne(b) {
     <p class="rep-note" id="scrAct"></p>
     <div class="wk-do">${qs.map((q, i) => `<div class="wk-item" data-i="${i}" style="padding:8px 10px;border-radius:12px;margin:6px 0"><p><b>${i + 1}.</b> ${esc(q.q).replace(/\n/g, "<br>")}${q.opts && q.opts.length ? ` <small>(${esc(q.opts.join(" · "))})</small>` : ""}</p><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span class="scr-ans" style="min-width:120px;padding:8px 12px;border:2px solid var(--line,#cdd5e3);border-radius:10px;font-weight:700;min-height:22px"></span>${key[i] ? `<small>Correct: <b>${esc(key[i])}</b></small>` : ""}</div></div>`).join("")}</div>`;
   const items = [...b.querySelectorAll(".wk-item")];
-  scr.layers = items.map((el, i) => layer(el, i, { draw: true, color: () => scr.color, onStroke: s => { scr.strokes.push(s); if (scr.strokes.length > 60) scr.strokes.shift(); clearTimeout(scrSaveT); scrSaveT = setTimeout(() => scrHelp(true), 250); } }));
+  scr.layers = items.map((el, i) => layer(el, i, { draw: true, color: () => scr.color, onMove: scrMove, onStroke: s => { scr.strokes.push(s); if (scr.strokes.length > 60) scr.strokes.shift(); scrSendAll(); clearTimeout(scrSaveT); scrSaveT = setTimeout(() => scrHelp(true), 250); } }));
   b.querySelectorAll(".scr-cv").forEach(c => c.classList.toggle("pen", scr.pen));
   scrPaint(); scrHelp(true);
   const show = () => {
@@ -298,13 +307,13 @@ async function watchOne(b) {
       sp.style.background = !v ? "" : ok === true ? "#e1f4ec" : ok === false ? "#fbe7e5" : ""; el.style.background = y.ans.f === i ? "var(--accent-soft,#e6ebff)" : ""; });
     const s = $("scrAct"); if (s) s.textContent = (Date.now() - (y.joined || 0) < 90e3 ? "● Working now" : "Last active " + ago(y.joined)) + " · " + a.filter(v => String(v).trim()).length + " of " + qs.length + " answered. The blue box is the question he is on. Draw on any question: he sees it on his screen in a second or two.";
   };
-  show();
+  scr.show = show; show();
   let n = 0; const tick = async () => { if (view !== "watch1" || $("workModal").hidden) return; await scrLoad(); show(); if (++n % 20 === 0) scrHelp(true); scr.t = setTimeout(tick, 1500); };
   scr.t = setTimeout(tick, 1500);
 }
 
 /* ---------- Import questions from Excel (.xlsx) or CSV ---------- */
-const loadXl = () => window.ExcelJS ? Promise.resolve() : new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1123c"; sc.onload = res; sc.onerror = () => rej(new Error("Could not load the Excel reader.")); document.head.appendChild(sc); });
+const loadXl = () => window.ExcelJS ? Promise.resolve() : new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1123d"; sc.onload = res; sc.onerror = () => rej(new Error("Could not load the Excel reader.")); document.head.appendChild(sc); });
 function csvRows(t) {
   const rows = []; let row = [], cur = "", q = false;
   t = t.replace(/^\ufeff/, "");

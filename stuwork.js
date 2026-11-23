@@ -1,9 +1,9 @@
 // "My classwork" on the student page: worksheets from the teacher, and (for the 9S boys) the lesson games.
-import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1123c";
-import { playerOf, catalog } from "./islandmap.js?v=1123c";
-import { SCR, layer } from "./screenpen.js?v=1123c";
-import { logEv } from "./presence.js?v=1123c";
-import { LIVE_WS, isLive, liveScope, setUploaded, withBridge, reportsItself } from "./liveworks.js?v=1123c";
+import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1123d";
+import { playerOf, catalog } from "./islandmap.js?v=1123d";
+import { SCR, layer, rt } from "./screenpen.js?v=1123d";
+import { logEv } from "./presence.js?v=1123d";
+import { LIVE_WS, isLive, liveScope, setUploaded, withBridge, reportsItself } from "./liveworks.js?v=1123d";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -181,24 +181,28 @@ function watchMe(w, form) {
   clearTimeout(scrT);
   const items = [...form.querySelectorAll(".wk-item")], L = items.map((el, i) => layer(el, i));
   const id = SCR + "_" + P.sid, ansNow = () => (w.questions || []).map((q, i) => { const el = form.elements["q" + i]; return String((el && (el.value ?? "")) || "").slice(0, 300); });
-  let focus = -1, sent = "", pushT = 0, on = false;
+  let focus = -1, sent = "", pushT = 0, on = false, ch = null, chTok = "", rtAt = 0, rtStrokes = [], fastT = 0;
+  const fast = () => { if (!ch) return; clearTimeout(fastT); fastT = setTimeout(() => ch && ch.send("s", { a: ansNow(), f: focus }), 120); };
+  const onRt = (ev, p) => { rtAt = Date.now(); if (ev === "d") { rtStrokes = p.strokes || []; L.forEach(l => l.paint(rtStrokes)); } else if (ev === "m") L.forEach(l => l.paint(rtStrokes, p.s)); else if (ev === "hi") fast(); };
   const push = () => { const a = ansNow(), k = JSON.stringify([a, focus]); if (k === sent) return; sent = k;
     setDoc(doc(fs, ...base, "liveplayers", id), { sess: SCR, sid: P.sid, name: String((me && me.name) || "").slice(0, 80), joined: Date.now(), ans: { wid: w.id, a, f: focus } }).catch(() => {}); };
   const later = () => { clearTimeout(pushT); pushT = setTimeout(push, 700); };
-  form.addEventListener("input", later); form.addEventListener("change", later);
-  form.addEventListener("focusin", e => { const i = items.indexOf(e.target.closest(".wk-item")); if (i !== focus) { focus = i; later(); } });
+  form.addEventListener("input", () => { later(); fast(); }); form.addEventListener("change", () => { later(); fast(); });
+  form.addEventListener("focusin", e => { const i = items.indexOf(e.target.closest(".wk-item")); if (i !== focus) { focus = i; later(); fast(); } });
   push();
   const banner = document.createElement("div"); banner.className = "scr-banner"; banner.hidden = true; banner.innerHTML = "<i></i><span>Your teacher is looking at your worksheet now.</span>";
   form.before(banner);
   let beat = 0;
   const poll = async () => {
-    if (!document.body.contains(form)) return;
+    if (!document.body.contains(form)) { if (ch) ch.close(); return; }
     try {
       const sn = await getDoc(doc(fs, ...base, "live", id)), d = sn.exists() ? sn.data() : null;
       on = !!(d && d.on && d.wid === w.id && Date.now() - (d.at || 0) < 90e3);   // the teacher's page refreshes this every 30 s while it is open
       const st = on ? (d.strokes || []) : [];
       banner.hidden = !on; banner.querySelector("span").textContent = st.length ? "Your teacher is showing you something on your worksheet." : "Your teacher is looking at your worksheet now.";
-      L.forEach(l => l.paint(st));
+      if (on && d.rt && d.rt !== chTok) { if (ch) ch.close(); chTok = d.rt; rtStrokes = st; ch = rt(d.rt, onRt); setTimeout(fast, 800); }
+      if (!on && ch) { ch.close(); ch = null; chTok = ""; }
+      if (Date.now() - rtAt > 5000) { rtStrokes = st; L.forEach(l => l.paint(st)); }
       if (++beat % 20 === 0) { sent = ""; push(); }   // still here: refresh once a minute so the teacher sees him as active
     } catch {}
     scrT = setTimeout(poll, on ? 1500 : 3000);
