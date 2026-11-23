@@ -1,10 +1,10 @@
 // Classwork for the teacher: make a worksheet, send it to classes, collect and export the answers.
 // Worksheets live in <base>/work, the answer key in <base>/workkey (students never read it),
 // and each student's submission in <base>/subs/<worksheet>_<student>.
-import { getDocs, setDoc, updateDoc, deleteDoc, getDoc, bcol, bdoc, query, where } from "./fb.js?v=1123m";
-import { SCR, COLORS, layer, rt, token } from "./screenpen.js?v=1123m";
-import { autoMail, sendTo } from "./mailer.js?v=1123m";
-import { LIVE_WS, isLive, setUploaded } from "./liveworks.js?v=1123m";
+import { getDocs, setDoc, updateDoc, deleteDoc, getDoc, bcol, bdoc, query, where } from "./fb.js?v=1123n";
+import { SCR, COLORS, layer, rt, token } from "./screenpen.js?v=1123n";
+import { autoMail, sendTo } from "./mailer.js?v=1123n";
+import { LIVE_WS, isLive, setUploaded } from "./liveworks.js?v=1123n";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -339,7 +339,7 @@ async function watchOne(b) {
 }
 
 /* ---------- Import questions from Excel (.xlsx) or CSV ---------- */
-const loadXl = () => window.ExcelJS ? Promise.resolve() : new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1123m"; sc.onload = res; sc.onerror = () => rej(new Error("Could not load the Excel reader.")); document.head.appendChild(sc); });
+const loadXl = () => window.ExcelJS ? Promise.resolve() : new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1123n"; sc.onload = res; sc.onerror = () => rej(new Error("Could not load the Excel reader.")); document.head.appendChild(sc); });
 function csvRows(t) {
   const rows = []; let row = [], cur = "", q = false;
   t = t.replace(/^\ufeff/, "");

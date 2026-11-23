@@ -1,6 +1,6 @@
 // Students progress inside the teacher page: pick a class, then a lesson, then see each student's games and every mistake.
-import { getDocs, bcol, bdoc, updateDoc, onSnapshot, query, where } from "./fb.js?v=1123m";
-import { LIVE_WS, isLive } from "./liveworks.js?v=1123m";
+import { getDocs, bcol, bdoc, updateDoc, onSnapshot, query, where } from "./fb.js?v=1123n";
+import { LIVE_WS, isLive } from "./liveworks.js?v=1123n";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -252,7 +252,7 @@ let xlQ = "";   // "" = current quarter on first use, "ALL" = every date
 const xlBar = scope => `<div class="lg-bar noprint" style="margin:14px 0 0;flex-wrap:wrap;gap:8px"><label>Period <select id="pgQ">${QUARTERS.map(q => `<option value="${q.k}" ${(xlQ || quarterNow().k) === q.k ? "selected" : ""}>${q.k} (${q.from.split("-").reverse().join("/")} – ${q.to.split("-").reverse().join("/")})</option>`).join("")}<option value="ALL" ${xlQ === "ALL" ? "selected" : ""}>All dates</option></select></label>
   <button class="primary" type="button" data-pg="xl" data-scope="${scope}">${scope === "all" ? "Download Excel: all classes" : "Download Excel: " + esc(selCls)}</button></div>`;
 document.addEventListener("change", e => { if (e.target && e.target.id === "pgQ") xlQ = e.target.value; });
-const loadXl = () => window.ExcelJS ? Promise.resolve() : new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1123m"; sc.onload = res; sc.onerror = () => rej(new Error("Could not load the Excel library")); document.head.appendChild(sc); });
+const loadXl = () => window.ExcelJS ? Promise.resolve() : new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1123n"; sc.onload = res; sc.onerror = () => rej(new Error("Could not load the Excel library")); document.head.appendChild(sc); });
 async function xlExport(scope, btn) {
   const q = xlQ === "ALL" ? null : QUARTERS.find(x => x.k === (xlQ || quarterNow().k));
   const t0 = q ? Date.parse(q.from + "T00:00:00+03:00") : 0, t1 = q ? Date.parse(q.to + "T23:59:59.999+03:00") : Infinity, inP = t => !q || (t >= t0 && t <= t1);
