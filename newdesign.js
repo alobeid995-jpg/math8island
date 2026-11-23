@@ -39,6 +39,16 @@
     "html.nd button.ghost{border-radius:14px!important}",
     "html.nd .shop-tab{border-radius:99px!important}",
     "html.nd .shop-tab[aria-pressed=true]{background:#0c2a5e!important;color:#fff!important;border-color:#0c2a5e!important}",
+    /* hub: the menu already lists these pages, so no second row of tabs; the class picker is one neat bar */
+    "html.nd #hubView .hub-tabs,html.nd #hubView .shop-intro p,html.nd #hubView .hub-t-old{display:none!important}",
+    "html.nd #hubView .hub-t-nd{display:inline}",
+    "html.nd .hub-cls{display:inline-flex!important;width:fit-content!important;max-width:100%;box-sizing:border-box;flex-wrap:wrap;align-items:center;gap:2px!important;padding:4px!important;margin:4px 0 18px!important;background:#fff;border:1px solid #d6e2f6;border-radius:14px;box-shadow:0 1px 2px rgba(12,42,94,.06)}",
+    "html.nd .hub-cls::before{content:'Class';font-size:13px;font-weight:700;color:#5a6b8a;padding:0 10px 0 8px}",
+    "html.nd .hub-cls .shop-tab{border:0!important;background:transparent!important;box-shadow:none!important;border-radius:10px!important;padding:7px 14px!important;font-weight:600;color:#0c2a5e!important;min-height:0}",
+    "html.nd .hub-cls .shop-tab:hover{background:#eaf2ff!important}",
+    "html.nd .hub-cls .shop-tab[aria-pressed=true]{background:#1f5bbd!important;color:#fff!important}",
+    "html.nd .hub-cls .shop-tab small{font-size:11px;opacity:.6;margin-left:3px}",
+    "html.nd .hub-cls .shop-tab[aria-pressed=true] small{opacity:.85}",
     /* sidebar */
     "#ndNav{position:fixed;left:0;top:0;bottom:0;width:248px;z-index:900;background:#0c2a5e;color:#eaf2ff;display:flex;flex-direction:column;gap:18px;padding:22px 14px 16px;box-sizing:border-box;overflow-y:auto;font-family:var(--f-body)}",
     "#ndNav .nd-brand{display:flex;align-items:center;gap:10px;padding:0 8px;font-family:var(--f-display);font-weight:700;font-size:16px}",

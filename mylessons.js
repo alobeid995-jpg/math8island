@@ -4,7 +4,7 @@
 (function () {
   "use strict";
   // To add a lesson: put its .html file next to this one and add a line here.
-  const MINE = () => (window.__owner ? LESSONS : []);   // the built-in lessons belong to the owner only; other teachers see only their own
+  const MINE = () => (window.__owner ? LESSONS : []).filter(l => !hidden.includes(l.id));   // the built-in lessons belong to the owner only; other teachers see only their own
   const LESSONS = [
     { id: "l42d1", title: "Lesson 4.2: Solving simultaneous equations graphically", sub: "Day 1", file: "lesson42d1.html" },
   ];
@@ -84,17 +84,20 @@
     if (/drive\.google\.com$/.test(x.hostname) && q) return `https://drive.google.com/file/d/${q}/preview`;
     return x.href;
   }
-  let custom = [], cmsg = "";
+  let custom = [], hidden = [], cmsg = "";
   const store = () => window.__mlStore;
-  async function loadCustom() { try { custom = store() ? await store().load() : []; } catch { custom = []; cmsg = "Could not load your saved lessons."; } }
-  async function saveCustom(ok) { cmsg = "Saving…"; renderList(); try { await store().save(custom); cmsg = ok || "Saved."; } catch { cmsg = "Could not save. Check your connection."; } renderList(); }
+  async function loadCustom() { try { const d = store() ? await store().load() : null; custom = d ? (Array.isArray(d) ? d : d.items) : []; hidden = d && d.hidden ? d.hidden : []; } catch { custom = []; cmsg = "Could not load your saved lessons."; } }
+  async function saveCustom(ok) { cmsg = "Saving…"; renderList(); try { await store().save(custom, hidden); cmsg = ok || "Saved."; } catch { cmsg = "Could not save. Check your connection."; } renderList(); }
   function renderList() {
     const el = $$("mlList"); if (!el) return;
-    const row = (l, mine, i) => `<div style="display:flex;gap:6px;align-items:stretch;margin:8px 0"><button type="button" class="ghost" data-ml-open="${E(l.id)}" style="flex:1;text-align:left;padding:12px 14px"><b>${E(l.title)}</b><br><small>${E(l.sub || "")}</small></button>${mine ? `<button type="button" class="ghost small" data-ml-up="${i}" aria-label="Move up">▲</button><button type="button" class="ghost small" data-ml-down="${i}" aria-label="Move down">▼</button><button type="button" class="ghost small" data-ml-del="${i}" aria-label="Remove ${E(l.title)}">Remove</button>` : ""}</div>`;
+    const row = (l, mine, i) => `<div style="display:flex;gap:6px;align-items:stretch;margin:8px 0"><button type="button" class="ghost" data-ml-open="${E(l.id)}" style="flex:1;text-align:left;padding:12px 14px"><b>${E(l.title)}</b><br><small>${E(l.sub || "")}</small></button>${mine ? `<button type="button" class="ghost small" data-ml-up="${i}" aria-label="Move up">▲</button><button type="button" class="ghost small" data-ml-down="${i}" aria-label="Move down">▼</button><button type="button" class="ghost small" data-ml-del="${i}" aria-label="Delete ${E(l.title)}">Delete</button>` : `<button type="button" class="ghost small" data-ml-hide="${E(l.id)}" aria-label="Delete ${E(l.title)}">Delete</button>`}</div>`;
     el.innerHTML = `<h3>My lessons</h3><p style="margin:4px 0 10px">Tap a lesson to open it full screen. Inside it you get a small class panel (students, XP) and a random picker, so you never have to leave.</p>`
       + (MINE().length || custom.length ? MINE().map(l => row(l, false)).join("") + custom.map((l, i) => row(l, true, i)).join("") : `<p class="none">No lessons yet. Add one below.</p>`)
-      + `<h4 style="margin:16px 0 4px">Add a lesson from a link</h4><p style="margin:0 0 6px"><small>Put your slides on Google Drive or Google Slides and share them as "Anyone with the link can view". Then paste the link here.</small></p>
+      + `<h4 style="margin:16px 0 4px">Upload an HTML lesson</h4><p style="margin:0 0 6px"><small>Pick the lesson's .html file. It is saved in your account, only you see it, and it opens full screen with the pen, timer and class panel.</small></p>
+      <div style="display:grid;gap:6px"><input id="mlUpTitle" maxlength="80" placeholder="Lesson name (empty = the name inside the file)" autocomplete="off"><div class="sbtns" style="justify-content:flex-start"><button class="primary" type="button" data-ml="upload">Upload HTML lesson</button><input type="file" id="mlUpFile" accept=".html,.htm,text/html" hidden></div></div>
+      <h4 style="margin:16px 0 4px">Add a lesson from a link</h4><p style="margin:0 0 6px"><small>Put your slides on Google Drive or Google Slides and share them as "Anyone with the link can view". Then paste the link here.</small></p>
       <div style="display:grid;gap:6px"><input id="mlNewTitle" maxlength="80" placeholder="Lesson name, for example 4.3 Day 1" autocomplete="off"><input id="mlNewUrl" inputmode="url" placeholder="Paste the Drive or Slides link" autocomplete="off"><div class="sbtns" style="justify-content:flex-start"><button class="primary" type="button" data-ml="add">Add lesson</button></div></div>`
+      + (window.__owner && hidden.length ? `<p style="margin:12px 0 0"><button type="button" class="ghost small" data-ml="unhide">Bring back ${hidden.length} deleted built-in lesson${hidden.length === 1 ? "" : "s"}</button></p>` : "")
       + `<p role="status" style="min-height:1.3em;font-weight:700">${E(cmsg)}</p><div class="sbtns"><button class="ghost" type="button" data-ml="close">Close</button></div>`;
   }
   window.openMyLessons = async function () {
@@ -106,7 +109,11 @@
       document.body.appendChild(m);
       m.addEventListener("click", async e => {
         if (e.target === m || e.target.closest("[data-ml=close]")) { m.hidden = true; return; }
-        const b = e.target.closest("[data-ml-open]"); if (b) { const l = MINE().concat(custom).find(x => x.id === b.dataset.mlOpen); m.hidden = true; openLesson(l); return; }
+        const b = e.target.closest("[data-ml-open]"); if (b) { const l = MINE().concat(custom).find(x => x.id === b.dataset.mlOpen); if (l && l.doc) { cmsg = "Opening…"; renderList(); let html = ""; try { html = await store().getHtml(l.doc); } catch {} if (!html) { cmsg = "Could not open it. Check your connection."; return renderList(); } cmsg = ""; m.hidden = true; openLesson(Object.assign({}, l, { html })); return; } m.hidden = true; openLesson(l); return; }
+        if (e.target.closest("[data-ml=upload]")) { $$("mlUpFile").click(); return; }
+        if (e.target.closest("[data-ml=unhide]")) { hidden = []; await saveCustom("They are back in the list."); return; }
+        const hd = e.target.closest("[data-ml-hide]");
+        if (hd) { const l = LESSONS.find(x => x.id === hd.dataset.mlHide); if (!l || !confirm('Delete "' + l.title + '" from your lessons?')) return; hidden.push(l.id); await saveCustom("Deleted."); return; }
         if (e.target.closest("[data-ml=add]")) {
           const title = ($$("mlNewTitle").value || "").trim(), url = embedUrl($$("mlNewUrl").value);
           if (!title) { cmsg = "Type the lesson name."; return renderList(); }
@@ -115,7 +122,21 @@
         }
         const up = e.target.closest("[data-ml-up]"), dn = e.target.closest("[data-ml-down]"), del = e.target.closest("[data-ml-del]");
         if (up || dn) { const i = +(up || dn).dataset[up ? "mlUp" : "mlDown"], k = up ? i - 1 : i + 1; if (k < 0 || k >= custom.length) return; [custom[i], custom[k]] = [custom[k], custom[i]]; await saveCustom("Moved."); return; }
-        if (del) { const i = +del.dataset.mlDel; if (!confirm('Remove "' + custom[i].title + '" from the list? The file on Drive stays where it is.')) return; custom.splice(i, 1); await saveCustom("Removed."); }
+        if (del) { const i = +del.dataset.mlDel, l = custom[i]; if (!confirm('Delete "' + l.title + '"?' + (l.doc ? " The uploaded file is deleted too." : " The file on Drive stays where it is."))) return;
+          custom.splice(i, 1); await saveCustom("Deleted."); if (l.doc) { try { await store().delHtml(l.doc); } catch {} } }
+      });
+      m.addEventListener("change", async e => {
+        if (e.target.id !== "mlUpFile") return;
+        const f = e.target.files && e.target.files[0]; e.target.value = ""; if (!f) return;
+        if (!/\.html?$/i.test(f.name)) { cmsg = "Pick an .html file."; return renderList(); }
+        if (f.size > 3e6) { cmsg = "That file is too big (over 3 MB). Make the pictures smaller, or ask Claude to shrink it."; return renderList(); }
+        cmsg = "Uploading…"; renderList();
+        try {
+          const html = await f.text(), inside = ((html.match(/<title[^>]*>([^<]*)<\/title>/i) || [])[1] || "").trim();
+          const title = (($$("mlUpTitle") && $$("mlUpTitle").value) || "").trim() || inside || f.name.replace(/\.html?$/i, ""), id = "u" + Date.now().toString(36);
+          await store().putHtml(id, title.slice(0, 80), html);
+          custom.push({ id, title: title.slice(0, 80), sub: "Uploaded HTML", doc: id, added: Date.now() }); await saveCustom('Uploaded "' + title.slice(0, 80) + '". Tap it to open.');
+        } catch { cmsg = "Could not upload. Check your connection and try again."; renderList(); }
       });
     }
     cmsg = ""; renderList(); m.hidden = false; await loadCustom(); renderList();
@@ -144,7 +165,7 @@
     if (!l) return; css();
     close(true);
     ov = document.createElement("div"); ov.className = "ml-ov"; ov.id = "mlOv";
-    ov.innerHTML = `<iframe src="${E(l.url || l.file)}" title="${E(l.title)}" allow="fullscreen; autoplay" allowfullscreen></iframe>
+    ov.innerHTML = `<iframe ${l.html ? "" : `src="${E(l.url || l.file)}"`} title="${E(l.title)}" allow="fullscreen; autoplay" allowfullscreen></iframe>
       ${l.url ? `<a class="ml-fab o" href="${E(/^https?:/i.test(l.orig || "") ? l.orig : l.url)}" target="_blank" rel="noopener" aria-label="Open in a new tab" title="Open in a new tab">↗</a>` : ""}
       <button class="ml-fab x" type="button" data-mlx="close" aria-label="Close the lesson" title="Close the lesson">✕</button>
       <button class="ml-fab t" type="button" data-mlx="timer" aria-label="Timer" title="Timer">⏱</button>
@@ -153,6 +174,7 @@
       <button class="ml-stu" type="button" data-mlx="panel" aria-label="Students" title="Students">${STU}</button>
       <div class="ml-pill" id="mlPill" hidden></div>
       <aside class="ml-p" id="mlPanel" hidden aria-label="Class panel"></aside>`;
+    if (l.html) { const base = '<base href="' + location.href.replace(/[^/]*$/, "") + '">'; ov.querySelector("iframe").srcdoc = /<head[^>]*>/i.test(l.html) ? l.html.replace(/<head[^>]*>/i, m0 => m0 + base) : base + l.html; }
     document.body.appendChild(ov); document.body.classList.add("wk-noscroll");
     panel = ov.querySelector("#mlPanel"); sel = auto() || (typeof cls !== "undefined" ? cls : classes()[0]) || ""; lastAuto = auto() || ""; openSid = ""; note = ""; current = null; rc = sel; wcView = false; wcSel = new Set(inClass(sel).map(x => x.id)); fNote = ""; fwOpen = false;
     setupFloat(); setupPen(); setupTimer(); ov.addEventListener("click", onClick); ov.addEventListener("input", e => { if (e.target.id === "mlWcAmt") wcAmt = e.target.value; if (e.target.id === "mlWcWhy") wcWhy = e.target.value; });

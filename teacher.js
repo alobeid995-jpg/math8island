@@ -1,25 +1,25 @@
-import { liveScope } from "./liveworks.js?v=1123i";
+import { liveScope } from "./liveworks.js?v=1123k";
 import { onSnapshot, changeEmail, auth, fs, firebaseConfig, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, collection, query, where, writeBatch, setBase, bcol, bdoc, signOut, whenUser, profileOf, emailFor, pinKey,
-  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1123i";
-import { db } from "./fbdb.js?v=1123i";
-import { peopleSet, peopleDel, peopleGet, peopleCls } from "./sbdata.js?v=1123i";
-import { downloadBackup } from "./backupxl.js?v=1123i";
-import { openMail, sendRaw } from "./mailer.js?v=1123i";
-import { startUsage } from "./usage.js?v=1123i";
-import { liveLesson, mountTeacherTT, todayLessons } from "./timetable.js?v=1123i";
-import { openWork, gradeData } from "./teacherwork.js?v=1123i";
-import "./lessonxp.js?v=1123i";
-import { openProgress } from "./progress.js?v=1123i";
-import { openMaterial } from "./material.js?v=1123i";
-import { openLiveWs } from "./liveteacher.js?v=1123i";
-import { openFunpark } from "./fpteacher.js?v=1123i";
-import { openCoconut } from "./coconut.js?v=1123i";
-import { hasFeature, hideCss } from "./features.js?v=1123i";
-import { xpAllowed } from "./ownerpin.js?v=1123i";
+  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1123k";
+import { db } from "./fbdb.js?v=1123k";
+import { peopleSet, peopleDel, peopleGet, peopleCls } from "./sbdata.js?v=1123k";
+import { downloadBackup } from "./backupxl.js?v=1123k";
+import { openMail, sendRaw } from "./mailer.js?v=1123k";
+import { startUsage } from "./usage.js?v=1123k";
+import { liveLesson, mountTeacherTT, todayLessons } from "./timetable.js?v=1123k";
+import { openWork, gradeData } from "./teacherwork.js?v=1123k";
+import "./lessonxp.js?v=1123k";
+import { openProgress } from "./progress.js?v=1123k";
+import { openMaterial } from "./material.js?v=1123k";
+import { openLiveWs } from "./liveteacher.js?v=1123k";
+import { openFunpark } from "./fpteacher.js?v=1123k";
+import { openCoconut } from "./coconut.js?v=1123k";
+import { hasFeature, hideCss } from "./features.js?v=1123k";
+import { xpAllowed } from "./ownerpin.js?v=1123k";
 window.xpGate = n => xpAllowed(n); window.wkGradeData = gradeData; window.mailSend = sendRaw;
-import { initChat } from "./chat.js?v=1123i";
-import { openLive } from "./live.js?v=1123i";
-import { openInbox } from "./inbox.js?v=1123i";
+import { initChat } from "./chat.js?v=1123k";
+import { openLive } from "./live.js?v=1123k";
+import { openInbox } from "./inbox.js?v=1123k";
 
 const $ = id => document.getElementById(id);
 const esc2 = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -142,8 +142,12 @@ $("workBtn").onclick = () => openWork();
 { const mb = document.createElement("button"); mb.className = "ghost small"; mb.id = "matBtn"; mb.type = "button"; mb.textContent = "My material"; mb.onclick = () => openMaterial(); $("outBtn").before(mb); }
 /* My lessons: lessons added from a Google Drive / Slides link are saved in the teacher's own folder (work/mylessons) */
 window.__mlStore = {
-  load: async () => { const sn = await getDoc(bdoc("work", "mylessons")); return sn.exists() && Array.isArray(sn.data().items) ? sn.data().items : []; },
-  save: items => setDoc(bdoc("work", "mylessons"), { kind: "mylessons", items, updated: Date.now() }),
+  load: async () => { const sn = await getDoc(bdoc("work", "mylessons")); const d = sn.exists() ? sn.data() : {}; return { items: Array.isArray(d.items) ? d.items : [], hidden: Array.isArray(d.hidden) ? d.hidden : [] }; },
+  save: (items, hidden) => setDoc(bdoc("work", "mylessons"), { kind: "mylessons", items, hidden: hidden || [], updated: Date.now() }),
+  // uploaded HTML lessons: one document each in the teacher's own "lessons" folder (only teachers can read it)
+  putHtml: (id, title, html) => setDoc(bdoc("lessons", id), { kind: "lesson", title, html, created: Date.now() }),
+  getHtml: async id => { const sn = await getDoc(bdoc("lessons", id)); return sn.exists() ? sn.data().html || "" : ""; },
+  delHtml: id => deleteDoc(bdoc("lessons", id)),
 };
 /* ---------- features: what the owner has switched on for this teacher (shop/features) ---------- */
 {

@@ -3,7 +3,7 @@
 // Firebase still does sign-in: its token is the key to this database (the rules there decide who may see what).
 const URL_ = "https://xsbcdapkzynfoouobhav.supabase.co";
 const KEY = "sb_publishable_V7TGwwZ1J6CNMypJn8wyig_uHQJRGui";   // public key: safe in the browser, the rules (RLS) do the protecting
-const COLS_A = ["plays", "subs", "work", "workkey", "live", "liveplayers", "msgs", "gmsgs", "groups"];
+const COLS_A = ["plays", "subs", "work", "workkey", "live", "liveplayers", "msgs", "gmsgs", "groups", "lessons"];
 const COLS_B = ["students", "logins", "users", "shop", "pinver", "ownersec", "settings", "meta", "cup", "seats", "parents", "att", "hw", "tests", "sotw"];
 export const COLS = new Set([...COLS_A, ...COLS_B]);
 const B_SET = new Set(COLS_B);
