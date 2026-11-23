@@ -1,6 +1,6 @@
 // Supabase side of the site. Firebase still does sign-in; the data for the collections listed in SB_COLS lives here.
 // The pilot only covers "presence" and "usage". Every call can fail without hurting the page: callers fall back to Firestore.
-import { auth } from "./fb.js?v=1123n";
+import { auth } from "./fb.js?v=1123o";
 
 const URL_ = "https://xsbcdapkzynfoouobhav.supabase.co";
 const KEY = "sb_publishable_V7TGwwZ1J6CNMypJn8wyig_uHQJRGui";   // public key: safe in the browser, the rules (RLS) do the protecting
