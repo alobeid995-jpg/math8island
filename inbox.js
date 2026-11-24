@@ -1,8 +1,8 @@
 // Teacher side: announcements (shown to chosen classes) and messages with students.
 // Announcements are documents in <base>/work (kind "announcement"), which students already read for their class.
 // Messages are documents in <base>/msgs; a student reads and writes only his own thread (see the rules block).
-import { getDocs, setDoc, updateDoc, deleteDoc, bcol, bdoc } from "./fb.js?v=1123o";
-import { autoMail } from "./mailer.js?v=1123o";
+import { getDocs, setDoc, updateDoc, deleteDoc, bcol, bdoc } from "./fb.js?v=1123p";
+import { autoMail } from "./mailer.js?v=1123p";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

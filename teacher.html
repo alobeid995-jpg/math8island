@@ -1385,7 +1385,7 @@ header.book .geo { max-height: 190px; }
 /* --- Student Island logo mark --- */
 header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !important; color: transparent !important; font-size: 0 !important; border: 0 !important; box-shadow: none !important; border-radius: 22% !important; }
 
-</style><link rel="stylesheet" href="island.css?v=1123o"><style>
+</style><link rel="stylesheet" href="island.css?v=1123p"><style>
 .cls-panel{margin:12px 0;padding:14px;border:2px solid var(--edge);border-radius:12px;background:var(--card);display:grid;gap:10px}
 .cls-panel h4{margin:0}.cls-panel p{margin:0;font-size:14px}
 .cls-panel label{display:grid;gap:4px;font-size:13px;font-weight:600}
@@ -1535,7 +1535,7 @@ header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !import
 <div class="modal" id="emailModal" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="emailTitle">
     <h3 id="emailTitle">Weekly parent update</h3>
-    <p>Edit if needed, then copy and paste into Gmail.</p>
+    <p>Edit if needed, then send it from here, or copy it and paste it into Gmail.</p>
     <div class="mail-to"><label class="fld" for="emailTo"><span>Parents' emails (To)</span><span class="to-row"><input id="emailTo" type="text" readonly aria-label="Parents' emails"><button class="primary small" id="copyTo" type="button">Copy emails</button></span></label></div>
     <textarea id="emailText" aria-label="Email text"></textarea>
     <div class="acts">
@@ -1556,7 +1556,7 @@ header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !import
 window.__ready = new Promise(r => { window.__resolveClaude = r; });
 window.claude = { use: async n => (await window.__ready).use(n) };
 </script>
-<script src="hats.js?v=1123o"></script>
+<script src="hats.js?v=1123p"></script>
 <script>
 const POSITIVE = [
   { title: "Active Participation", xp: 10 },
@@ -3437,7 +3437,7 @@ function hubAtt() {
   return `<section class="card"><div class="hub-bar"><button class="ghost small" data-act="attDay" data-n="-1" aria-label="Previous day">‹</button><input type="date" id="attDate" value="${attDate}"><button class="ghost small" data-act="attDay" data-n="1" aria-label="Next day">›</button>${isT ? "" : `<button class="ghost small" data-act="attToday">Today</button>`}</div>
     <h3>${dayLabel(attDate)} · ${cls}</h3>
     <div class="rep-sum"><div class="g"><b>${cnt("p")}</b><span>present</span></div><div><b>${cnt("l")}</b><span>late</span></div><div class="r"><b>${cnt("a")}</b><span>absent</span></div><div class="s"><b>${cnt("s")}</b><span>absent, in school</span></div><div><b>${list.length - cnt("p") - cnt("l") - cnt("a") - cnt("s")}</b><span>not marked</span></div></div>
-    ${readOnly ? "" : `<button class="primary small" data-act="attAll" style="justify-self:start">Mark everyone present</button>`}
+    ${readOnly ? "" : `<div class="sbtns" style="justify-content:flex-start;margin:0"><button class="primary small" data-act="attAll">Mark everyone present</button><button class="ghost small" type="button" data-nm="late">✉ Email late students</button></div>`}
     <div class="hlist">${list.map(s => hubStudentRow(s, `<span class="seg">${[["p", "Present"], ["l", "Late"], ["a", "Absent"], ["s", "Absent, in school"]].map(([k, l]) => `<button class="sg ${k}" data-act="attSet" data-id="${s.id}" data-s="${k}" aria-pressed="${m[s.id] === k}" ${readOnly ? "disabled" : ""}>${l}</button>`).join("")}</span>`)).join("")}</div></section>`;
 }
 function hubHw() {
@@ -3525,7 +3525,7 @@ function hubGrades() {
 
 function grLoadLib() {
   if (window.ExcelJS) return Promise.resolve();
-  return new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1123o"; sc.onload = res; sc.onerror = () => rej(new Error("lib")); document.head.appendChild(sc); });
+  return new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1123p"; sc.onload = res; sc.onerror = () => rej(new Error("lib")); document.head.appendChild(sc); });
 }
 async function grXlsx(btn) {
   const keep = cls;
@@ -3621,7 +3621,7 @@ function hubBooks() {
     <h3>Notebook submission · ${dayLabel(bkDate)} · ${cls}</h3>
     <div class="rep-sum"><div class="g"><b>${cnt("y") + cnt("l")}</b><span>handed in</span></div><div style="color:var(--gold)"><b>${cnt("m")}</b><span>handed in, missing work</span></div><div class="r"><b>${cnt("n")}</b><span>not handed in</span></div><div><b>${list.length - cnt("y") - cnt("l") - cnt("n") - cnt("m")}</b><span>not marked</span></div></div>
     <p class="rep-note">Mark each notebook you collect: <b>Handed in</b>, <b>Missing work</b> (handed in but not complete) or <b>Not handed in</b>. A student marked Not handed in or Missing work sees a message in his account with 3 days to fix it.</p>
-    ${readOnly ? "" : `<button class="primary small" data-act="bkAll" style="justify-self:start">Mark everyone handed in</button>`}
+    ${readOnly ? "" : `<div class="sbtns" style="justify-content:flex-start;margin:0"><button class="primary small" data-act="bkAll">Mark everyone handed in</button><button class="ghost small" type="button" data-nm="books">✉ Email not handed in / missing work</button></div>`}
     <div class="hlist">${list.map(s => hubStudentRow(s, `<span class="seg"><button class="sg d" data-act="bkSet" data-id="${s.id}" data-v="y" aria-pressed="${val(s) === "y" || val(s) === "l"}">✓ Handed in</button><button class="sg l" data-act="bkSet" data-id="${s.id}" data-v="m" aria-pressed="${val(s) === "m"}">⚠ Missing work</button><button class="sg a" data-act="bkSet" data-id="${s.id}" data-v="n" aria-pressed="${val(s) === "n"}">✗ Not handed in</button></span>`)).join("") || `<div class="none">No students in ${cls}.</div>`}</div></section>
     <section class="card"><h3>Still owing a notebook (${owing.length})</h3>${owing.length ? `<div class="hlist">${owing.map(s => hubStudentRow(s, `<span class="rep-note">${bkOwing(s).map(d => { const due = addDays(d, 3); return `${shortDay(d)} → due ${shortDay(due)}${due < today ? " (overdue)" : ""}`; }).join(" · ")}</span>${readOnly ? "" : `<button class="ghost small" data-act="bkLate" data-id="${s.id}">Handed in now</button>`}`)).join("")}</div>` : `<div class="none">Nobody owes a notebook.</div>`}</section>`;
 }
@@ -3631,7 +3631,7 @@ function hubWbc() {
     <h3>Notebook / Workbook classwork · ${dayLabel(bkDate)} · ${cls}</h3>
     <div class="rep-sum"><div class="g"><b>${cnt("y")}</b><span>done</span></div><div style="color:var(--gold)"><b>${cnt("p")}</b><span>still working</span></div><div class="r"><b>${cnt("n")}</b><span>not done</span></div><div><b>${list.length - cnt("y") - cnt("p") - cnt("n")}</b><span>not marked</span></div></div>
     <p class="rep-note">During the lesson: who is solving the classwork in the notebook or workbook. <b>Done</b> counts in the Classwork mark in Grades /10 (finishing gives the full mark). Students see nothing here.</p>
-    ${readOnly ? "" : `<button class="primary small" data-act="wbAll" style="justify-self:start">Mark everyone done</button>`}
+    ${readOnly ? "" : `<div class="sbtns" style="justify-content:flex-start;margin:0"><button class="primary small" data-act="wbAll">Mark everyone done</button><button class="ghost small" type="button" data-nm="wbc">✉ Email the ones not done</button></div>`}
     <div class="hlist">${list.map(s => hubStudentRow(s, `<span class="seg"><button class="sg d" data-act="wbSet" data-id="${s.id}" data-v="y" aria-pressed="${val(s) === "y"}">✓ Done</button><button class="sg l" data-act="wbSet" data-id="${s.id}" data-v="p" aria-pressed="${val(s) === "p"}">⏳ Still working</button><button class="sg a" data-act="wbSet" data-id="${s.id}" data-v="n" aria-pressed="${val(s) === "n"}">✗ Not done</button></span>`)).join("") || `<p class="none">No students in ${cls}.</p>`}</div></section>`;
 }
 function setWbc(id, v) {
@@ -4046,6 +4046,7 @@ function openEmail(id) {
   { const em = parentEmails(st); $("emailTo").value = em.join(", "); $("emailTo").placeholder = "No parent email saved for this student"; $("copyTo").disabled = !em.length; }
   $("emailTitle").textContent = "Weekly update · " + st.name;
   $("emailText").value = buildEmail(st);
+  if (window.__weeklyFill) window.__weeklyFill(st);
   $("emailModal").hidden = false;
   $("copyBtn").focus();
 }
@@ -4713,9 +4714,10 @@ document.getElementById("expBtn")?.addEventListener("click", async () => {
     <div class="acts noprint"><button class="ghost" id="lgPrint" type="button">Print this list</button><button class="ghost" id="lgClose" type="button">Close</button></div>
   </div>
 </div>
-<script type="module" src="teacher.js?v=1123o"></script>
-<script src="mylessons.js?v=1123o"></script>
-<script src="newdesign.js?v=1123o"></script>
+<script type="module" src="teacher.js?v=1123p"></script>
+<script src="mylessons.js?v=1123p"></script>
+<script src="notify.js?v=1123p"></script>
+<script src="newdesign.js?v=1123p"></script>
 
 <script>
 /* Post a certificate straight to Google Classroom.
