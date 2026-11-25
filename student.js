@@ -1,13 +1,13 @@
-import { shopClosedNow } from "./shopstatus.js?v=1123q";
-import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1123q";
-import { initWork } from "./stuwork.js?v=1123q";
-import { initMsgs } from "./stumsg.js?v=1123q";
-import { initLive } from "./livequiz.js?v=1123q";
-import { initChat } from "./chat.js?v=1123q";
-import { initFunpark } from "./funpark.js?v=1123q";
-import { startPresence, logEv } from "./presence.js?v=1123q";
-import { mountStudentTT } from "./timetable.js?v=1123q";
-import { achCard, initAch } from "./achieve.js?v=1123q";
+import { shopClosedNow } from "./shopstatus.js?v=1123r";
+import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1123r";
+import { initWork } from "./stuwork.js?v=1123r";
+import { initMsgs } from "./stumsg.js?v=1123r";
+import { initLive } from "./livequiz.js?v=1123r";
+import { initChat } from "./chat.js?v=1123r";
+import { initFunpark } from "./funpark.js?v=1123r";
+import { startPresence, logEv } from "./presence.js?v=1123r";
+import { mountStudentTT } from "./timetable.js?v=1123r";
+import { achCard, initAch } from "./achieve.js?v=1123r";
 
 const sub = (t, n) => t.split("{n}").join(n);
 let shopSt = null, lastClosed = false;
@@ -17,7 +17,7 @@ const newSeeds = () => { seeds = Array.from({ length: 18 }, () => (Math.random()
 const THEMES = [["ocean", "Ocean", ["#0c2a5e", "#1f5bbd", "#3d8bf0", "#f6b91c"]],["sunset", "Sunset", ["#7a1f0b", "#d9480f", "#f97316", "#fde047"]],["forest", "Forest", ["#0b3b26", "#15803d", "#34d399", "#facc15"]],["galaxy", "Galaxy", ["#1e1b4b", "#6d28d9", "#8b5cf6", "#f472b6"]],["candy", "Candy", ["#831843", "#db2777", "#f472b6", "#fbbf24"]],["graphite", "Graphite", ["#1f2937", "#475569", "#64748b", "#f59e0b"]]];
 const lsT = { get: () => { try { return localStorage.getItem("mi_theme") || ""; } catch { return ""; } }, set: v => { try { localStorage.setItem("mi_theme", v); } catch {} } };
 const validT = id => THEMES.some(t => t[0] === id);
-const PTS = ["nebula", "samurai", "crimson", "horizon"];
+const PTS = ["nebula", "samurai", "crimson", "horizon", "aurora", "reef"];
 function applyPT(st) { const id = st && st.owned && st.eq ? String(st.eq.theme || "").replace(/^th-/, "") : ""; const ok = PTS.includes(id) && st.owned.includes("th-" + id); if (ok) document.documentElement.dataset.pt = id; else delete document.documentElement.dataset.pt; try { if (ok) localStorage.setItem("mi_pt", id); else localStorage.removeItem("mi_pt"); } catch {} }
 function applyTheme(id) { if (id && id !== "ocean" && validT(id)) document.documentElement.dataset.mt = id; else delete document.documentElement.dataset.mt; }
 let themeOpen = false;
@@ -123,7 +123,7 @@ function render() {
   if (!me) { app.innerHTML = `<div class="empty"><h2>Your record was not found</h2>Ask your teacher to check your login.${window.__loadErr ? `<br><small>(${esc(window.__loadErr)})</small>` : ""}</div>`; return; }
   const st = me, lv = level(st.xp), into = Math.max(0, st.xp - (lv - 1) * LEVEL_XP), pct = Math.min(100, into / LEVEL_XP * 100);
   const picker = pickerOpen ? `<section class="picker"><b>Pick a new look</b>
-      <div class="pk-grid">${seeds.map(s => `<button class="pk" type="button" data-act="setAv" data-seed="${s}" aria-label="Use this avatar">${avatarHTML({ id: st.id, avatar: s, eq: st.eq, cls: st.cls }, "")}</button>`).join("")}</div>
+      <div class="pk-grid">${seeds.map(s => `<button class="pk" type="button" data-act="setAv" data-seed="${s}" aria-label="Use this avatar">${avatarHTML({ id: st.id, avatar: s, eq: { ...eqOf(st), skin: "" }, cls: st.cls }, "")}</button>`).join("")}</div>
       <div class="pk-acts"><button class="ghost" data-act="moreAv" type="button">Show more</button><button class="ghost" data-act="closeAv" type="button">Close</button></div></section>` : "";
   GIRL = isGirlCls(st.cls);
   const items = shopList(shopCat);
@@ -173,7 +173,7 @@ document.addEventListener("click", e => {
   else if (a === "openAv") { newSeeds(); pickerOpen = true; render(); }
   else if (a === "moreAv") { newSeeds(); render(); }
   else if (a === "closeAv") { pickerOpen = false; render(); }
-  else if (a === "setAv") { pickerOpen = false; render(); save({ avatar: Number(b.dataset.seed) }, "New avatar saved"); logEv("Changed his avatar"); }
+  else if (a === "setAv") { pickerOpen = false; render(); const eq0 = eqOf(me); save(eq0.skin ? { avatar: Number(b.dataset.seed), eq: { ...eq0, skin: "" } } : { avatar: Number(b.dataset.seed) }, eq0.skin ? "New look saved. Your shop avatar is still yours: wear it again from the shop." : "New avatar saved"); logEv("Changed his avatar"); }
 });
 $("outBtn").onclick = async () => { await signOut(auth); location.href = "index.html"; };
 function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toast._t); toast._t = setTimeout(() => (t.hidden = true), 2600); }

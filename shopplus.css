@@ -1,0 +1,55 @@
+/* Student Island · shop additions (November 2026): every boys' frame gets its own pattern and jewel, four new frames, four new name colours. */
+.avw.fr.f-chalk, .avw.fr.f-pencil, .avw.fr.f-blue, .avw.fr.f-board, .avw.fr.f-gold, .avw.fr.f-diamond, .avw.fr.f-fire, .avw.fr.f-void,
+.avw.fr.f-tide, .avw.fr.f-storm, .avw.fr.f-g-sakura, .avw.fr.f-g-opal { background-blend-mode: normal; }
+
+/* Silver Knight: riveted steel ring, shield jewel */
+.avw.fr.f-chalk { background: repeating-conic-gradient(from 0deg, rgba(40,52,74,.75) 0 2.2deg, rgba(255,255,255,.9) 2.2deg 3.4deg, transparent 3.4deg 30deg), conic-gradient(from var(--ang), var(--r1), var(--r2), var(--r3), var(--r4), var(--r5), var(--r2), var(--r1)); }
+.avw.fr.f-chalk::before { width: 20%; border-radius: 0; transform: translate(-50%, -52%); clip-path: polygon(50% 100%, 6% 70%, 6% 8%, 50% 0, 94% 8%, 94% 70%); background: linear-gradient(160deg, #ffffff 0 18%, #90caf9 40%, #1e3a6e 100%); border: 0; }
+/* Bronze Sunburst: rays all around, round sun jewel */
+.avw.fr.f-pencil { background: repeating-conic-gradient(from 0deg, rgba(255,246,200,.85) 0 4deg, rgba(143,79,8,.35) 4deg 7.5deg, transparent 7.5deg 15deg), conic-gradient(from var(--ang), var(--r1), var(--r2), var(--r3), var(--r4), var(--r5), var(--r2), var(--r1)); }
+.avw.fr.f-pencil::before { border-radius: 50%; transform: translate(-50%, -48%); background: radial-gradient(circle at 35% 30%, #fff8d6 0 15%, #ffb300 45%, #e65100 100%); box-shadow: 0 0 0 2px rgba(255,214,120,.55), 0 0 10px 2px #ffb300; }
+/* Sapphire Crown: cut facets, crown jewel */
+.avw.fr.f-blue { background: repeating-conic-gradient(from 0deg, rgba(255,255,255,.42) 0 9deg, rgba(10,24,90,.32) 9deg 18deg), conic-gradient(from var(--ang), var(--r1), var(--r2), var(--r3), var(--r4), var(--r5), var(--r2), var(--r1)); outline: 1.5px solid rgba(160,190,255,.7); outline-offset: 1px; }
+.avw.fr.f-blue::before { width: 26%; aspect-ratio: 1.3; border-radius: 0; transform: translate(-50%, -62%); clip-path: polygon(0 100%, 0 30%, 22% 62%, 50% 0, 78% 62%, 100% 30%, 100% 100%); background: linear-gradient(180deg, #fff3b0, #f5b301 60%, #a86b00); border: 0; box-shadow: none; }
+/* Emerald Vine: leaves around the ring, leaf jewel */
+.avw.fr.f-board { background: repeating-conic-gradient(from 6deg, rgba(10,80,45,.85) 0 5deg, rgba(160,240,190,.75) 5deg 7deg, transparent 7deg 20deg), conic-gradient(from var(--ang), var(--r1), var(--r2), var(--r3), var(--r4), var(--r5), var(--r2), var(--r1)); }
+.avw.fr.f-board::before { width: 22%; border-radius: 0 80% 0 80%; transform: translate(-50%, -55%) rotate(-45deg); background: linear-gradient(135deg, #c8ffd9, #2e9d5a 55%, #0d4f2c); border: 1px solid rgba(0,60,30,.7); box-shadow: 0 0 8px #52d28f; }
+/* Imperial Gold: engraved bands, double ring, ruby crown */
+.avw.fr.f-gold { background: repeating-conic-gradient(from 0deg, rgba(120,70,0,.55) 0 1.2deg, transparent 1.2deg 6deg), conic-gradient(from var(--ang), var(--r1), var(--r2), var(--r3), var(--r4), var(--r5), var(--r2), var(--r1)); outline: 2px solid rgba(255,214,90,.85); outline-offset: 1.5px; }
+.avw.fr.f-gold::before { width: 26%; aspect-ratio: 1.3; border-radius: 0; transform: translate(-50%, -62%); clip-path: polygon(0 100%, 0 25%, 20% 55%, 35% 10%, 50% 45%, 65% 10%, 80% 55%, 100% 25%, 100% 100%); background: linear-gradient(180deg, #ff8a80, #d50000 55%, #7f0000); border: 0; box-shadow: none; }
+/* Diamond Prism: rainbow sparkles, big diamond */
+.avw.fr.f-diamond { background: repeating-conic-gradient(from 0deg, rgba(255,255,255,.95) 0 1.4deg, transparent 1.4deg 22.5deg), conic-gradient(from var(--ang), #ffd1f1, #c9e7ff, #d7ffe0, #fff6b8, #e5d4ff, #ffd1f1); outline: 1.5px solid rgba(255,255,255,.9); outline-offset: 1.5px; }
+.avw.fr.f-diamond::before { width: 24%; aspect-ratio: 1.1; border-radius: 0; transform: translate(-50%, -58%); clip-path: polygon(20% 0, 80% 0, 100% 32%, 50% 100%, 0 32%); background: linear-gradient(135deg, #ffffff 0 16%, #6fd8ff 40%, #ff7ad0 72%, #7c6bff); border: 0; box-shadow: none; filter: drop-shadow(0 0 3px #8fe3ff); }
+/* Inferno Ring: flame tongues, flame jewel (keeps its fire glow) */
+.avw.fr.f-fire { background: repeating-conic-gradient(from 0deg, rgba(255,235,59,.85) 0 3deg, rgba(255,120,0,.6) 3deg 8deg, transparent 8deg 18deg), conic-gradient(from var(--ang), var(--r1), var(--r2), var(--r3), var(--r4), var(--r5), var(--r2), var(--r1)); outline: 2px solid rgba(255,120,20,.6); outline-offset: 1px; }
+.avw.fr.f-fire::before { width: 20%; aspect-ratio: .8; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; transform: translate(-50%, -62%); clip-path: polygon(50% 0, 70% 30%, 88% 22%, 100% 62%, 78% 100%, 22% 100%, 0 62%, 14% 26%, 32% 34%); background: linear-gradient(180deg, #fff59d, #ff9800 50%, #d50000); border: 0; }
+/* Cosmic Void: a ring of stars, star jewel */
+.avw.fr.f-void { background: radial-gradient(circle at 50% 3%, #fff 0 1.2px, transparent 1.8px), radial-gradient(circle at 85% 20%, #fff 0 1px, transparent 1.6px), radial-gradient(circle at 97% 55%, #fff 0 1.2px, transparent 1.8px), radial-gradient(circle at 80% 88%, #fff 0 1px, transparent 1.6px), radial-gradient(circle at 40% 98%, #fff 0 1.2px, transparent 1.8px), radial-gradient(circle at 8% 70%, #fff 0 1px, transparent 1.6px), radial-gradient(circle at 6% 30%, #fff 0 1.2px, transparent 1.8px), conic-gradient(from var(--ang), var(--r1), var(--r2), var(--r3), var(--r4), var(--r5), var(--r2), var(--r1)); outline: 1.5px solid rgba(61,240,255,.6); outline-offset: 1.5px; }
+.avw.fr.f-void::before { width: 26%; border-radius: 0; transform: translate(-50%, -55%); clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); background: linear-gradient(135deg, #e0fbff, #3df0ff 45%, #7b2cff); border: 0; box-shadow: none; }
+
+/* new: Tidal Wave */
+.f-tide { --fb: linear-gradient(135deg,#b2f5ff,#0277bd); --r1: #b2f5ff; --r2: #0288d1; --r3: #e0fbff; --r4: #01396b; --r5: #4dd0e1; --gem: #80deea; --gl: rgba(30,170,230,.9); --spd: 6s; }
+.avw.fr.f-tide { background: repeating-conic-gradient(from 0deg, rgba(255,255,255,.85) 0 3deg, rgba(1,57,107,.45) 3deg 6deg, transparent 6deg 24deg), conic-gradient(from var(--ang), var(--r1), var(--r2), var(--r3), var(--r4), var(--r5), var(--r2), var(--r1)); outline: 1.5px solid rgba(178,245,255,.8); outline-offset: 1.5px; }
+.avw.fr.f-tide::before { width: 22%; aspect-ratio: .85; border-radius: 50% 50% 50% 50% / 62% 62% 38% 38%; transform: translate(-50%, -58%); clip-path: none; background: radial-gradient(circle at 35% 35%, #ffffff 0 14%, #4dd0e1 45%, #01579b 100%); border: 1px solid rgba(0,40,80,.7); }
+/* new: Thunder Storm */
+.f-storm { --fb: linear-gradient(135deg,#fff59d,#37474f); --r1: #263238; --r2: #607d8b; --r3: #fff176; --r4: #102027; --r5: #90a4ae; --gem: #ffeb3b; --gl: rgba(255,235,59,.85); --spd: 3.5s; }
+.avw.fr.f-storm { background: repeating-conic-gradient(from 0deg, transparent 0 14deg, rgba(255,241,118,.95) 14deg 15.5deg, transparent 15.5deg 40deg), conic-gradient(from var(--ang), var(--r1), var(--r2), var(--r3), var(--r4), var(--r5), var(--r2), var(--r1)); outline: 2px solid rgba(255,235,59,.55); outline-offset: 1px; }
+.avw.fr.f-storm::before { width: 18%; aspect-ratio: .7; border-radius: 0; transform: translate(-50%, -60%); clip-path: polygon(55% 0, 15% 55%, 45% 55%, 30% 100%, 85% 40%, 55% 40%, 75% 0); background: linear-gradient(180deg, #fffde7, #ffeb3b 50%, #f57f17); border: 0; }
+/* new (girls): Sakura Bloom */
+.f-g-sakura { --fb: linear-gradient(135deg,#ffe4ee,#f06292); --r1: #ffe4ee; --r2: #f48fb1; --r3: #ffffff; --r4: #c2185b; --r5: #ffc1d9; --gem: #ff8fb8; --gl: rgba(244,143,177,.9); --spd: 10s; }
+.avw.fr.f-g-sakura { background: repeating-conic-gradient(from 0deg, rgba(255,255,255,.95) 0 4deg, rgba(255,193,217,.9) 4deg 8deg, transparent 8deg 30deg), conic-gradient(from var(--ang), var(--r1), var(--r2), var(--r3), var(--r4), var(--r5), var(--r2), var(--r1)); }
+.avw.fr.f-g-sakura::before { width: 24%; border-radius: 0; transform: translate(-50%, -55%); clip-path: polygon(50% 0, 62% 30%, 95% 32%, 70% 55%, 80% 92%, 50% 72%, 20% 92%, 30% 55%, 5% 32%, 38% 30%); background: radial-gradient(circle at 50% 50%, #fff59d 0 14%, #ffc1d9 30%, #f06292 100%); border: 0; box-shadow: none; }
+/* new (girls): Opal Moon */
+.f-g-opal { --fb: linear-gradient(135deg,#e8f4ff,#d1b3ff,#ffd6f0); --r1: #f1f8ff; --r2: #c3b1ff; --r3: #ffffff; --r4: #7e6bd6; --r5: #ffd6f0; --gem: #e3f2ff; --gl: rgba(200,180,255,.9); --spd: 8s; }
+.avw.fr.f-g-opal { background: radial-gradient(circle at 50% 3%, #fff 0 1.3px, transparent 2px), radial-gradient(circle at 92% 40%, #fff 0 1.2px, transparent 1.9px), radial-gradient(circle at 10% 62%, #fff 0 1.2px, transparent 1.9px), conic-gradient(from var(--ang), var(--r1), var(--r2), var(--r3), var(--r4), var(--r5), var(--r2), var(--r1)); outline: 1.5px solid rgba(255,255,255,.85); outline-offset: 1.5px; }
+.avw.fr.f-g-opal::before { width: 24%; border-radius: 50%; transform: translate(-50%, -55%); clip-path: none; background: radial-gradient(circle at 30% 50%, transparent 0 38%, #f3ecff 40%, #c3b1ff 100%); border: 0; box-shadow: 0 0 8px #d1b3ff; -webkit-mask: radial-gradient(circle at 70% 40%, transparent 0 42%, #000 44%); mask: radial-gradient(circle at 70% 40%, transparent 0 42%, #000 44%); }
+
+/* new name colours */
+.c-ocean, .c-lava, .c-g-cotton, .c-g-sunset { -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
+.c-ocean { background-image: linear-gradient(90deg, #00bcd4, #1e88e5, #26c6da); }
+.c-lava { background-image: linear-gradient(90deg, #ff6f00, #e53935, #ffb300); }
+.c-g-cotton { background-image: linear-gradient(90deg, #ff8fc8, #a7c7ff, #ff8fc8); }
+.c-g-sunset { background-image: linear-gradient(90deg, #ff9a62, #ff5c8a, #a66bff); }
+
+/* a name with a frame sits on a light plate: keep the letters dark unless a name colour is worn */
+.nmx.fn .nt:not([class*="c-"]) { color: var(--ink, #0f2a57); -webkit-text-fill-color: currentColor; }

@@ -572,6 +572,7 @@ button, .srow { touch-action: manipulation; -webkit-tap-highlight-color: transpa
 .ft-sec{stroke:var(--bad);stroke-width:1.8;stroke-linecap:round}
 .ft-pin{fill:var(--bad);stroke:#fff;stroke-width:1.2}
 #ftWrap.ring #ftBadge{animation:ftRing .5s ease-in-out 10}
+html:not(.ft-all) body > #ftWrap:not(.ft-on):not(.ring){display:none!important}
 @keyframes ftRing{0%,100%{transform:rotate(0)}25%{transform:rotate(-12deg)}75%{transform:rotate(12deg)}}
 #ftPanel{position:fixed;width:300px;max-width:calc(100vw - 20px);padding:16px 18px 18px;border-radius:26px;background:#141b2b;color:#fff;box-shadow:0 18px 48px rgba(10,18,40,.45);font-family:var(--f-body)}
 .ft-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
@@ -1385,7 +1386,7 @@ header.book .geo { max-height: 190px; }
 /* --- Student Island logo mark --- */
 header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !important; color: transparent !important; font-size: 0 !important; border: 0 !important; box-shadow: none !important; border-radius: 22% !important; }
 
-</style><link rel="stylesheet" href="island.css?v=1123q"><style>
+</style><link rel="stylesheet" href="island.css?v=1123r"><style>
 .cls-panel{margin:12px 0;padding:14px;border:2px solid var(--edge);border-radius:12px;background:var(--card);display:grid;gap:10px}
 .cls-panel h4{margin:0}.cls-panel p{margin:0;font-size:14px}
 .cls-panel label{display:grid;gap:4px;font-size:13px;font-weight:600}
@@ -1401,7 +1402,7 @@ header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !import
 .sig-card b{display:block;font-weight:400;font-size:15px;letter-spacing:.02em}.sig-card span{display:block;font-size:15px;direction:rtl;opacity:.7}
 @keyframes sigin{from{opacity:0;transform:translate(-50%,8px)}}
 @media (prefers-reduced-motion:reduce){.sig-card{animation:none}}
-.hub-t-nd{display:none}</style><style id="handcss">.hand{position:relative;display:inline-block;font-family:"Caveat","Segoe Script","Bradley Hand",cursive;font-weight:600;font-size:30px;line-height:1;letter-spacing:.01em;transform:rotate(-5deg);transform-origin:left bottom;white-space:nowrap;padding-bottom:6px}.hand::after{content:"";position:absolute;left:2%;right:-8%;bottom:0;height:6px;border-bottom:2.5px solid currentColor;border-radius:0 0 85% 25%/0 0 100% 70%;opacity:.8}.title-row{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap}.title-row h1{margin:0}.brand .hand{margin-left:10px;font-size:27px;color:#ffd27a}@media(max-width:640px){.hand{font-size:24px}.brand .hand{font-size:22px;margin-left:6px}}</style><style id="mgmtcss">.acct #workBtn,.acct #inboxBtn,.acct #matBtn,.acct #liveBtn,.acct #funBtn,.acct #ccBtn,.acct #loginsBtn,.acct #impBtn,.acct #islandBtn,.acct #devBtn{display:none!important}</style><style id="appcss">@media(max-width:700px){.srow{grid-template-columns:1.1em 40px minmax(0,1fr) auto .7em!important;gap:7px!important;padding:10px 8px!important}.srow .xp{font-size:14px!important;padding:2px 7px!important;min-width:0!important;border-radius:8px!important}.srow .xp small{font-size:8px!important;letter-spacing:0!important}.srow .lvbar{min-width:28px!important}.srow .lvrow{gap:5px!important}.srow .lvpill{padding:2px 7px!important;font-size:11px!important}.srow .lvtxt{font-size:10px!important}.srow .chev{font-size:16px}.srow .avw,.srow .av{max-width:40px;max-height:40px}}html.app header.book{min-height:0!important;height:auto!important;padding:12px 16px!important;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}html.app header.book .scene,html.app header.book .geo,html.app header.book .pi-badge,html.app header.book .deco,html.app header.book .heroes,html.app header.book .eyebrow,html.app header.book .formula{display:none!important}html.app header.book h1{font-size:22px;margin:0}html.app header.book .hand{font-size:20px}html.app header.book .book-title{flex:1 1 auto}html.app header.book .sync,html.app header.book .acct{position:static!important;inset:auto!important;margin:0!important;transform:none!important}html.app header.book .book-title{flex:1 1 100%!important}html.app .view{display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:3px;white-space:nowrap;font-size:12.5px!important;padding:8px 2px!important;min-height:58px}html.app .view svg{flex:none;margin:0!important}html.app .ruler{display:none}html.app header.book::before,html.app header.book::after{display:none!important}html.app header.book .book-title{max-width:none!important}html.app .views{position:fixed!important;top:auto!important;left:0;right:0;bottom:0;z-index:9;width:auto;margin:0;border-radius:18px 18px 0 0;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));box-shadow:0 -4px 18px rgba(20,40,80,.18);justify-self:stretch}html.app body{padding-bottom:100px}html.app body:has(.modal:not([hidden])) .views{display:none!important}</style><style id="navcss">.views{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;grid-auto-flow:column}.views{flex-wrap:nowrap!important;max-width:100%;box-sizing:border-box}.views .view{flex:1 1 0!important;min-width:0!important;padding-left:4px!important;padding-right:4px!important;gap:4px!important;white-space:nowrap;justify-content:center;font-size:clamp(11px,2.8vw,14px)!important}.views .view svg{flex:none}@media(max-width:420px){.views .view{font-size:11px!important}.views .view svg{width:16px;height:16px}}</style><style id="modalhide">body:has(.modal:not([hidden])) .views{display:none!important}body:has(.modal:not([hidden])) #chDock{display:none!important}</style></head><body>
+.hub-t-nd{display:none}</style><style id="handcss">.hand{position:relative;display:inline-block;font-family:"Caveat","Segoe Script","Bradley Hand",cursive;font-weight:600;font-size:30px;line-height:1;letter-spacing:.01em;transform:rotate(-5deg);transform-origin:left bottom;white-space:nowrap;padding-bottom:6px}.hand::after{content:"";position:absolute;left:2%;right:-8%;bottom:0;height:6px;border-bottom:2.5px solid currentColor;border-radius:0 0 85% 25%/0 0 100% 70%;opacity:.8}.title-row{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap}.title-row h1{margin:0}.brand .hand{margin-left:10px;font-size:27px;color:#ffd27a}@media(max-width:640px){.hand{font-size:24px}.brand .hand{font-size:22px;margin-left:6px}}</style><style id="mgmtcss">.acct #workBtn,.acct #inboxBtn,.acct #matBtn,.acct #liveBtn,.acct #funBtn,.acct #ccBtn,.acct #loginsBtn,.acct #impBtn,.acct #islandBtn,.acct #devBtn{display:none!important}</style><style id="appcss">@media(max-width:700px){.srow{grid-template-columns:1.1em 40px minmax(0,1fr) auto .7em!important;gap:7px!important;padding:10px 8px!important}.srow .xp{font-size:14px!important;padding:2px 7px!important;min-width:0!important;border-radius:8px!important}.srow .xp small{font-size:8px!important;letter-spacing:0!important}.srow .lvbar{min-width:28px!important}.srow .lvrow{gap:5px!important}.srow .lvpill{padding:2px 7px!important;font-size:11px!important}.srow .lvtxt{font-size:10px!important}.srow .chev{font-size:16px}.srow .avw,.srow .av{max-width:40px;max-height:40px}}html.app header.book{min-height:0!important;height:auto!important;padding:12px 16px!important;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}html.app header.book .scene,html.app header.book .geo,html.app header.book .pi-badge,html.app header.book .deco,html.app header.book .heroes,html.app header.book .eyebrow,html.app header.book .formula{display:none!important}html.app header.book h1{font-size:22px;margin:0}html.app header.book .hand{font-size:20px}html.app header.book .book-title{flex:1 1 auto}html.app header.book .sync,html.app header.book .acct{position:static!important;inset:auto!important;margin:0!important;transform:none!important}html.app header.book .book-title{flex:1 1 100%!important}html.app .view{display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:3px;white-space:nowrap;font-size:12.5px!important;padding:8px 2px!important;min-height:58px}html.app .view svg{flex:none;margin:0!important}html.app .ruler{display:none}html.app header.book::before,html.app header.book::after{display:none!important}html.app header.book .book-title{max-width:none!important}html.app .views{position:fixed!important;top:auto!important;left:0;right:0;bottom:0;z-index:9;width:auto;margin:0;border-radius:18px 18px 0 0;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));box-shadow:0 -4px 18px rgba(20,40,80,.18);justify-self:stretch}html.app body{padding-bottom:100px}html.app body:has(.modal:not([hidden])) .views{display:none!important}</style><style id="navcss">.views{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;grid-auto-flow:column}.views{flex-wrap:nowrap!important;max-width:100%;box-sizing:border-box}.views .view{flex:1 1 0!important;min-width:0!important;padding-left:4px!important;padding-right:4px!important;gap:4px!important;white-space:nowrap;justify-content:center;font-size:clamp(11px,2.8vw,14px)!important}.views .view svg{flex:none}@media(max-width:420px){.views .view{font-size:11px!important}.views .view svg{width:16px;height:16px}}</style><style id="modalhide">body:has(.modal:not([hidden])) .views{display:none!important}body:has(.modal:not([hidden])) #chDock{display:none!important}</style><link rel="stylesheet" href="shopplus.css?v=1123r"></head><body>
 <title>Student Island · Teacher</title>
 <link rel="icon" href="favicon.ico" sizes="48x48"><link rel="icon" type="image/svg+xml" href="logo.svg" sizes="any"><link rel="icon" type="image/png" sizes="96x96" href="fav-96.png"><link rel="icon" type="image/png" sizes="192x192" href="fav-192.png"><link rel="apple-touch-icon" href="logo-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1556,7 +1557,7 @@ header.book .pi-badge { background: url(logo.svg) center/cover no-repeat !import
 window.__ready = new Promise(r => { window.__resolveClaude = r; });
 window.claude = { use: async n => (await window.__ready).use(n) };
 </script>
-<script src="hats.js?v=1123q"></script>
+<script src="hats.js?v=1123r"></script>
 <script>
 const POSITIVE = [
   { title: "Active Participation", xp: 10 },
@@ -3367,6 +3368,7 @@ function ftOpen(on) {
 }
 function ftPaint() {
   const w = $("ftWrap"); if (!w) return;
+  w.classList.toggle("ft-on", !!tm.run);
   const left = Math.max(0, tm.left), t = fmtT(left), frac = tm.total ? Math.min(1, left / tm.total) : 0, low = left <= 10 && (tm.run || left === 0) && tm.total > 0;
   $("ftDig").textContent = t; $("ftBig").textContent = t;
   $("ftOf").textContent = "of " + (tm.total % 60 ? fmtT(tm.total) : (tm.total / 60) + " min");
@@ -3525,7 +3527,7 @@ function hubGrades() {
 
 function grLoadLib() {
   if (window.ExcelJS) return Promise.resolve();
-  return new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1123q"; sc.onload = res; sc.onerror = () => rej(new Error("lib")); document.head.appendChild(sc); });
+  return new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "exceljs.min.js?v=1123r"; sc.onload = res; sc.onerror = () => rej(new Error("lib")); document.head.appendChild(sc); });
 }
 async function grXlsx(btn) {
   const keep = cls;
@@ -3670,7 +3672,9 @@ function resetCard() {
   </section>`;
 }
 function hubTools() {
-  return `<section class="card"><h3>Manage</h3><p class="rep-note">Everything you use to run your classes, in one place.</p><div id="hubMgmt" class="mg-wrap"></div></section>` + resetCard();
+  const ftAll = (() => { try { return localStorage.getItem("si_ftall") === "1"; } catch { return false; } })();
+  return `<section class="card"><h3>Lesson timer</h3><label style="display:flex;gap:10px;align-items:center;font-weight:600"><input type="checkbox" id="ftAllChk" ${ftAll ? "checked" : ""}> Show the timer on every page</label><p class="rep-note">When this is off, the timer shows only inside My lessons (and on any page while it is counting down).</p></section>
+    <section class="card"><h3>Manage</h3><p class="rep-note">Everything you use to run your classes, in one place.</p><div id="hubMgmt" class="mg-wrap"></div></section>` + resetCard();
 }
 function hubGroups() {
   return `<section class="card" data-feat="groups"><h3>Group maker · ${cls}</h3><div class="hub-bar"><label class="mx">Students per group <select id="grpSize">${[2, 3, 4, 5, 6].map(n => `<option ${((grp && grp.size) || 4) === n ? "selected" : ""}>${n}</option>`).join("")}</select></label><button class="primary" data-act="grpMake">${grp && grp.cls === cls ? "Shuffle again" : "Make groups"}</button>${grp && grp.cls === cls ? `<button class="ghost small" data-act="grpCopy">Copy</button>` : ""}</div>
@@ -4714,10 +4718,13 @@ document.getElementById("expBtn")?.addEventListener("click", async () => {
     <div class="acts noprint"><button class="ghost" id="lgPrint" type="button">Print this list</button><button class="ghost" id="lgClose" type="button">Close</button></div>
   </div>
 </div>
-<script type="module" src="teacher.js?v=1123q"></script>
-<script src="mylessons.js?v=1123q"></script>
-<script src="notify.js?v=1123q"></script>
-<script src="newdesign.js?v=1123q"></script>
+<script src="shopplus.js?v=1123r"></script>
+<script type="module" src="teacher.js?v=1123r"></script>
+<script src="mylessons.js?v=1123r"></script>
+<script src="notify.js?v=1123r"></script>
+<script>try{if(localStorage.getItem("si_ftall")==="1")document.documentElement.classList.add("ft-all")}catch(e){}
+document.addEventListener("change",function(e){if(e.target&&e.target.id==="ftAllChk"){var on=e.target.checked;try{localStorage.setItem("si_ftall",on?"1":"0")}catch(x){}document.documentElement.classList.toggle("ft-all",on)}});</script>
+<script src="newdesign.js?v=1123r"></script>
 
 <script>
 /* Post a certificate straight to Google Classroom.

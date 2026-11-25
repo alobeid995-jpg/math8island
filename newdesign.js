@@ -52,7 +52,9 @@
     /* ---------- class page (stage 2) ---------- */
     "html.nd #studentsView{display:flex;flex-direction:column;gap:18px}",
     "html.nd #studentsView>#tabs,html.nd #studentsView>#statsSec,html.nd #studentsView>.classbar,html.nd #soundGate{display:none!important}",
-    "html.nd #ndClass{order:0}html.nd #ndCStats{order:1}html.nd #studentsView>.toolbar{order:2}html.nd #studentsView>#grid{order:3}html.nd #studentsView>#topStrip{order:4}",
+    "html.nd #ndClass{order:0}html.nd #studentsView>#topStrip{order:1}html.nd #studentsView>.toolbar{order:2}html.nd #studentsView>#grid{order:3}html.nd #ndCStats{order:4}",
+    "html.nd #cupView .cup-grid{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))!important}",
+    ".nd-cc .t small{white-space:nowrap}",
     ".nd-chead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}",
     ".nd-chead p{margin:0;color:#5a6b8a;font-weight:600;font-size:15px}.nd-chead h1{margin:2px 0 0;font-family:var(--f-display);font-size:46px;font-weight:800;line-height:1;color:#0c2a5e}",
     ".nd-cacts{display:flex;gap:10px;flex-wrap:wrap}",
@@ -309,7 +311,7 @@
     if (I2 && I2.clsRows) {
       h += '<section aria-label="My classes" style="display:flex;flex-direction:column;gap:12px"><div class="nd-row" style="font-size:15px"><h2 style="margin:0;font-family:var(--f-display);font-size:20px;color:#0c2a5e">My classes</h2></div><div class="nd-cls">'
         + I2.clsRows.map(function (r) { var a = r.att, col = a === null ? "transparent" : a >= 85 ? "#3d8bf0" : a >= 75 ? "#E0A100" : "#C43E24";
-          return '<button type="button" class="nd-cc" data-ndc="' + esc(r.c) + '"><span class="t"><span><b>' + esc(r.c) + "</b><small>" + r.n + ' students</small></span><span class="xp">' + r.avg + ' XP avg</span></span>'
+          return '<button type="button" class="nd-cc" data-ndc="' + esc(r.c) + '"><span class="t"><span><b>' + esc(r.c) + "</b><small>" + r.n + (r.n === 1 ? " student" : " students") + '</small></span></span>'
             + '<span class="nd-row"><span>Attendance · 30 days</span><b>' + (a === null ? "not recorded" : a + "%") + '</b></span><span class="nd-bar"><i style="width:' + (a || 0) + "%;background:" + col + '"></i></span>'
             + '<span class="nd-pn"><span style="background:#DFF3EC;color:#0B5F45">+' + r.pos + ' positive</span><span style="background:#FBE6E1;color:#9A2F1A">' + r.neg + " deductions</span></span></button>"; }).join("") + "</div></section>";
     }
