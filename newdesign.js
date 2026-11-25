@@ -1,27 +1,12 @@
 /* Student Island · new design (stage 1).
    A new look and a new menu on top of the same page: every tool is still the one you know, only reached and drawn differently.
-   Off by default. "Try the new design" turns it on for this device (localStorage si_nd = "1"); "Back to the old design" turns it off.
+   This is the only design of the teacher page now: it always runs.
    Classic script: it uses the page's own globals (students, CLASSES, cls, hubTab, render, insights, TNAME). */
 (function () {
   "use strict";
-  var KEY = "si_nd";
-  var on = function () { try { return localStorage.getItem(KEY) === "1"; } catch (e) { return false; } };
-  var setOn = function (v) { try { localStorage.setItem(KEY, v ? "1" : "0"); } catch (e) {} location.reload(); };
   var $ = function (id) { return document.getElementById(id); };
   var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); };
-
-  /* ---------- the way in from the old design ---------- */
-  function offerButton() {
-    if ($("ndTry")) return;
-    var b = document.createElement("button"); b.id = "ndTry"; b.type = "button"; b.className = "ghost small"; b.textContent = "✨ Try the new design";
-    b.onclick = function () { setOn(true); };
-    var acct = document.querySelector("header.book .acct"); if (acct) acct.insertBefore(b, acct.firstChild); else document.body.appendChild(b);
-    var t = document.createElement("button"); t.id = "ndTry2"; t.type = "button"; t.className = "primary small"; t.textContent = "✨ Try the new design"; t.onclick = function () { setOn(true); };
-    var place = function () { var h = $("toolsView"); if (h && !h.hidden && !$("ndTry2")) { var p = h.querySelector(".shop-intro"); if (p) p.appendChild(t); } };
-    setInterval(place, 1000);
-  }
-  try { var q = new URLSearchParams(location.search).get("nd"); if (q === "1" || q === "0") { localStorage.setItem(KEY, q); history.replaceState(null, "", location.pathname + location.hash); } } catch (e) {}   // mathkn.fun/teacher.html?nd=1 turns it on, ?nd=0 off
-  if (!on()) { if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", offerButton); else offerButton(); return; }
+  try { localStorage.removeItem("si_nd"); } catch (e) {}
 
   document.documentElement.classList.add("nd");
   var fonts = document.createElement("link"); fonts.rel = "stylesheet"; fonts.href = "https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Figtree:wght@400;500;600;700;800&display=swap"; document.head.appendChild(fonts);
@@ -30,7 +15,7 @@
   css.textContent = [
     ":root.nd.nd{--paper:#f2f7ff;--grid:#f2f7ff;--card:#FFFFFF;--ink:#0c2a5e;--muted:#5a6b8a;--line:#d6e2f6;--edge:#d6e2f6;--accent:#1f5bbd;--accent-soft:#dbe9ff;--good:#0B7A5A;--good-soft:#DFF3EC;--bad:#C43E24;--bad-soft:#FBE6E1;--gold:#B7791F;--gold-soft:#fff1c9;--f-display:Unbounded,'Segoe UI',system-ui,sans-serif;--f-body:Figtree,'Segoe UI',system-ui,sans-serif;--shadow:0 1px 2px rgba(15,42,58,.05),0 6px 20px rgba(15,42,58,.06);color-scheme:light}",
     "html.nd body{background:#f2f7ff!important;background-image:none!important;font-family:var(--f-body)!important;color:#0c2a5e}",
-    "html.nd header.book,html.nd .ruler,html.nd nav.views,html.nd #ndTry{display:none!important}",
+    "html.nd header.book,html.nd .ruler,html.nd nav.views{display:none!important}",
     "html.nd .wrap{margin-left:248px!important;max-width:none!important;padding:28px 36px 60px!important;box-sizing:border-box}",
     "html.nd .card,html.nd .stat,html.nd .sitem,html.nd .grp,html.nd .ins-c,html.nd .cb-btn,html.nd .empty{border:1px solid #d6e2f6!important;border-radius:20px!important;box-shadow:var(--shadow)!important;background:#fff}",
     "html.nd h1,html.nd h2,html.nd h3{font-family:var(--f-display);letter-spacing:-.01em}",
@@ -134,8 +119,6 @@
     "#ndNav .nd-sub small{margin-left:auto;color:#8aa3cc;font-weight:600}",
     "#ndNav svg{flex:none}",
     "#ndNav .nd-brand img{width:36px;height:36px;border-radius:22%;flex:none}",
-    "#ndNav .nd-old{justify-content:center;border:1.5px solid #3d6fc4;font-size:14px}",
-    "#ndNav .nd-old:hover{background:#17499c}",
     "#ndTop img{width:32px;height:32px;border-radius:22%}",
     "#ndNav .nd-badge{margin-left:auto;background:#f6b91c;color:#0c2a5e;border-radius:99px;font-size:12px;font-weight:800;padding:1px 8px}",
     "#ndNav .nd-me{margin-top:auto;display:flex;align-items:center;gap:10px;padding:12px;border-radius:14px;background:#17499c}",
@@ -257,8 +240,7 @@
         { k: "s:imp", label: "Import old data", go: function () { press("impBtn"); } },
         { k: "s:bk", label: "Backup (Excel)", go: function () { press("backupBtn"); } },
         { k: "s:dev", label: "Developer", go: function () { press("devBtn"); } },
-        { k: "s:me", label: "My email & password", go: function () { press("emailBtn"); } },
-        { k: "s:old", label: "Back to the old design", go: function () { setOn(false); } }] }
+        { k: "s:me", label: "My email & password", go: function () { press("emailBtn"); } }] }
     ];
   };
   var openGroup = "classes";
@@ -271,11 +253,9 @@
         return '<div class="nd-g' + (openGroup === g.k || groupOn ? " open" : "") + '"><button type="button" class="' + (sel === g.k ? "on" : "") + '" data-nd="' + g.k + '" aria-expanded="' + (g.sub ? String(openGroup === g.k || groupOn) : "") + '">' + svg(g.k) + esc(g.label) + "</button>"
           + (g.sub ? '<div class="nd-sub">' + g.sub.map(function (s) { return '<button type="button" class="' + (sel === s.k ? "on" : "") + '" data-nd="' + esc(s.k) + '">' + esc(s.label) + (s.n != null ? "<small>" + s.n + "</small>" : "") + "</button>"; }).join("") + "</div>" : "") + "</div>";
       }).join("")
-      + '<button type="button" class="nd-old" data-ndold="1">↩ Back to the old design</button>'
       + '<div class="nd-me"><span class="nd-av">' + esc(ini || "T") + '</span><span><b>' + esc(name) + "</b><span>Mathematics</span></span></div>";
   }
   function onNav(e) {
-    if (e.target.closest("[data-ndold]")) { setOn(false); return; }
     var b = e.target.closest("[data-nd]"); if (!b) return;
     var k = b.dataset.nd, menu = MENU(), item = null, grp = null;
     menu.forEach(function (g) { if (g.k === k) { item = g; grp = g; } (g.sub || []).forEach(function (s) { if (s.k === k) { item = s; grp = g; } }); });
@@ -288,11 +268,11 @@
   }
 
   /* ---------- Today ---------- */
-  var starCls = "", tI = null, tAt = 0;
+  var starCls = "", tI = null, tAt = 0, tKey = "";
   function showToday() { sel = "today"; closeDrawer(); document.documentElement.classList.add("nd-today"); paintToday(); paintNav(); try { window.scrollTo(0, 0); } catch (e) {} }
   function paintToday() {
     var box = $("ndToday"); if (!box) return;
-    var I2 = tI; if (!tI || Date.now() - tAt > 20000) { try { I2 = tI = insights(); tAt = Date.now(); } catch (e) {} }
+    var tk = (function () { try { return CLASSES.join(",") + "|" + students.length; } catch (e) { return ""; } })(); var I2 = tI; if (!tI || tk !== tKey || Date.now() - tAt > 20000) { try { I2 = tI = insights(); tAt = Date.now(); tKey = tk; } catch (e) {} }
     var name = (typeof TNAME !== "undefined" && TNAME) || "";
     var now = new Date(Date.now() + 3 * 3600e3), hr = now.getUTCHours(), hello = hr < 12 ? "Good morning" : hr < 17 ? "Good afternoon" : "Good evening";
     var dateStr = new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
@@ -352,7 +332,7 @@
 
 
   /* ---------- class page (stage 2): header, numbers, cards with quick XP, a search and the open student on the right ---------- */
-  var findQ = "", needIds = new Set(), needAt = 0;
+  var findQ = "", needIds = new Set(), needAt = 0, needKey = "";
   function paintClass() {
     var sv = $("studentsView"); if (!sv || sv.hidden || document.documentElement.classList.contains("nd-today")) { closeDrawer(); return; }
     var c = (typeof cls !== "undefined" && cls) || "", list = [];
@@ -380,7 +360,7 @@
     // cards: quick XP buttons, a red dot for "needs you", a close button on the open student
     var ro = typeof readOnly !== "undefined" && readOnly, need = new Set();
     // "needs you" looks through every student's history, so it is worked out at most once a minute, not on every redraw
-    if (!needAt || Date.now() - needAt > 60000) { needIds = new Set(); try { insights().attention.forEach(function (p) { needIds.add(p.st.id); }); } catch (e) {} needAt = Date.now(); }
+    var nk = (function () { try { return CLASSES.join(",") + "|" + students.length; } catch (e) { return ""; } })(); if (!needAt || nk !== needKey || Date.now() - needAt > 60000) { needKey = nk; needIds = new Set(); try { insights().attention.forEach(function (p) { needIds.add(p.st.id); }); } catch (e) {} needAt = Date.now(); }
     need = needIds;
     var P = typeof POSITIVE !== "undefined" ? POSITIVE : [], N = typeof NEGATIVE !== "undefined" ? NEGATIVE : [];
     var qb = function (k, i, id) { var b = (k === "qpos" ? P : N)[i]; return b ? '<button type="button" class="' + (k === "qneg" ? "m" : "") + '" data-act="' + k + '" data-id="' + esc(id) + '" data-i="' + i + '" title="' + esc(b.title) + " (" + (b.xp > 0 ? "+" : "") + b.xp + ')" aria-label="' + esc(b.title) + '">' + (b.xp > 0 ? "+" : "−") + Math.abs(b.xp) + "</button>" : ""; };
