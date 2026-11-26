@@ -1,7 +1,7 @@
 // Connects the 9S Island games page to Student Island: who is playing, and where the answers go.
-import { auth, fs, doc, getDoc, setDoc, collection, getDocs, query, where, whenUser, profileOf, signOut } from "./fb.js?v=1123w";
+import { auth, fs, doc, getDoc, setDoc, collection, getDocs, query, where, whenUser, profileOf, signOut } from "./fb.js?v=1123x";
 
-import { playerOf } from "./islandmap.js?v=1123w";
+import { playerOf } from "./islandmap.js?v=1123x";
 
 const u = await whenUser();
 const p = u && await profileOf(u.uid);
@@ -42,7 +42,7 @@ document.getElementById("miBack").onclick = () => { location.href = mode === "te
 
 /* ---------- Watch & help: the teacher sees this game screen as it is now and can draw on it ---------- */
 if (mode === "student" && P.sid) {
-  const { SCR, layer, rt } = await import("./screenpen.js?v=1123w");
+  const { SCR, layer, rt } = await import("./screenpen.js?v=1123x");
   const id = SCR + "_" + P.sid, scr = document.getElementById("screen");
   const host = document.createElement("div"); host.style.cssText = "position:fixed;inset:0;pointer-events:none;z-index:9999"; document.body.appendChild(host);
   const L = layer(host, -1);

@@ -121,7 +121,9 @@
     "#ndNav .nd-brand img{width:36px;height:36px;border-radius:22%;flex:none}",
     "#ndTop img{width:32px;height:32px;border-radius:22%}",
     "#ndNav .nd-badge{margin-left:auto;background:#f6b91c;color:#0c2a5e;border-radius:99px;font-size:12px;font-weight:800;padding:1px 8px}",
-    "#ndNav .nd-me{margin-top:auto;display:flex;align-items:center;gap:10px;padding:12px;border-radius:14px;background:#17499c}",
+    "#ndNav .nd-me{margin-top:auto;display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:12px;border-radius:14px;background:#17499c}",
+    "#ndNav .nd-me .nd-out{all:unset;box-sizing:border-box;cursor:pointer;width:100%;justify-content:center;display:flex;align-items:center;gap:6px;padding:8px 10px;border-radius:10px;font:700 13px var(--f-body);color:#fff;background:rgba(255,255,255,.12)}",
+    "#ndNav .nd-me .nd-out:hover{background:rgba(255,255,255,.22)}#ndNav .nd-me .nd-out:focus-visible{outline:3px solid #f6b91c}",
     "#ndNav .nd-me b{display:block;font-size:14px;color:#fff}#ndNav .nd-me span{font-size:12px;color:#9fb3d6}#ndNav .nd-me .nd-av{color:#0c2a5e;font-size:13px}",
     "#ndNav .nd-av{width:36px;height:36px;border-radius:50%;background:#f6b91c;color:#0c2a5e;display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:13px;flex:none}",
     "#ndTop{display:none}",
@@ -239,11 +241,12 @@
         { k: "s:tools", label: "Tools and XP reset", go: function () { showView("tools"); } },
         window.__owner ? { k: "s:school", label: "School students", go: function () { if (window.openSchool) window.openSchool(); } } : null,
         window.__owner ? { k: "s:join", label: "Teacher requests" + (window.__joinN ? " (" + window.__joinN + ")" : ""), go: function () { if (window.openJoin) window.openJoin(); } } : null,
-        window.__shareOn ? null : { k: "s:log", label: "Student logins", go: function () { press("loginsBtn"); } },
-        window.__shareOn ? null : { k: "s:imp", label: "Import old data", go: function () { press("impBtn"); } },
+        { k: "s:log", label: "Student logins", go: function () { press("loginsBtn"); } },
+        { k: "s:imp", label: "Import old data", go: function () { press("impBtn"); } },
         { k: "s:bk", label: "Backup (Excel)", go: function () { press("backupBtn"); } },
         { k: "s:dev", label: "Developer", go: function () { press("devBtn"); } },
-        { k: "s:me", label: "My email & password", go: function () { press("emailBtn"); } }] }
+        { k: "s:me", label: "My email & password", go: function () { press("emailBtn"); } },
+        { k: "s:out", label: "Log out", go: function () { press("outBtn"); } }] }
     ];
   };
   var openGroup = "classes";
@@ -256,15 +259,16 @@
         return '<div class="nd-g' + (openGroup === g.k || groupOn ? " open" : "") + '"><button type="button" class="' + (sel === g.k ? "on" : "") + '" data-nd="' + g.k + '" aria-expanded="' + (g.sub ? String(openGroup === g.k || groupOn) : "") + '">' + svg(g.k) + esc(g.label) + "</button>"
           + (g.sub ? '<div class="nd-sub">' + g.sub.map(function (s) { return '<button type="button" class="' + (sel === s.k ? "on" : "") + '" data-nd="' + esc(s.k) + '">' + esc(s.label) + (s.n != null ? "<small>" + s.n + "</small>" : "") + "</button>"; }).join("") + "</div>" : "") + "</div>";
       }).join("")
-      + '<div class="nd-me"><span class="nd-av">' + esc(ini || "T") + '</span><span><b>' + esc(name) + "</b><span>Mathematics</span></span></div>";
+      + '<div class="nd-me"><span class="nd-av">' + esc(ini || "T") + '</span><span><b>' + esc(name) + "</b><span>" + esc(window.__subject || "Mathematics") + '</span></span><button type="button" class="nd-out" data-ndout="1" title="Log out" aria-label="Log out"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 16l-4-4 4-4"/><path d="M6 12h10"/></svg>Log out</button></div>';
   }
   function onNav(e) {
+    if (e.target.closest("[data-ndout]")) { press("outBtn"); return; }
     var b = e.target.closest("[data-nd]"); if (!b) return;
     var k = b.dataset.nd, menu = MENU(), item = null, grp = null;
     menu.forEach(function (g) { if (g.k === k) { item = g; grp = g; } (g.sub || []).forEach(function (s) { if (s.k === k) { item = s; grp = g; } }); });
     if (!item) return;
     if (item.sub) { openGroup = openGroup === item.k ? "" : item.k; paintNav(); return; }
-    var modalItem = /^(t:|a:cw|a:gw|a:pg|m:|s:log|s:imp|s:bk|s:dev|s:me|s:school|s:join)/.test(k);
+    var modalItem = /^(t:|a:cw|a:gw|a:pg|m:|s:log|s:imp|s:bk|s:dev|s:me|s:school|s:join|s:out)/.test(k);
     if (!modalItem) sel = k;
     openGroup = grp.k; document.documentElement.classList.remove("nd-menu");
     item.go(); paintNav();

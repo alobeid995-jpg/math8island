@@ -1,27 +1,27 @@
-import { liveScope } from "./liveworks.js?v=1123w";
+import { liveScope } from "./liveworks.js?v=1123x";
 import { onSnapshot, changeEmail, auth, fs, firebaseConfig, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, collection, query, where, writeBatch, setBase, bcol, bdoc, signOut, whenUser, profileOf, emailFor, pinKey,
-  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1123w";
-import { db } from "./fbdb.js?v=1123w";
-import { peopleSet, peopleDel, peopleGet, peopleCls } from "./sbdata.js?v=1123w";
-import { downloadBackup } from "./backupxl.js?v=1123w";
-import { openMail, sendRaw } from "./mailer.js?v=1123w";
-import { startUsage } from "./usage.js?v=1123w";
-import { liveLesson, mountTeacherTT, todayLessons } from "./timetable.js?v=1123w";
-import { openWork, gradeData } from "./teacherwork.js?v=1123w";
-import "./lessonxp.js?v=1123w";
-import { openProgress } from "./progress.js?v=1123w";
-import { openMaterial } from "./material.js?v=1123w";
-import { openLiveWs } from "./liveteacher.js?v=1123w";
-import { openFunpark } from "./fpteacher.js?v=1123w";
-import { openCoconut } from "./coconut.js?v=1123w";
-import { hasFeature, hideCss } from "./features.js?v=1123w";
-import { xpAllowed } from "./ownerpin.js?v=1123w";
+  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1123x";
+import { db } from "./fbdb.js?v=1123x";
+import { peopleSet, peopleDel, peopleGet, peopleCls } from "./sbdata.js?v=1123x";
+import { downloadBackup } from "./backupxl.js?v=1123x";
+import { openMail, sendRaw } from "./mailer.js?v=1123x";
+import { startUsage } from "./usage.js?v=1123x";
+import { liveLesson, mountTeacherTT, todayLessons } from "./timetable.js?v=1123x";
+import { openWork, gradeData } from "./teacherwork.js?v=1123x";
+import "./lessonxp.js?v=1123x";
+import { openProgress } from "./progress.js?v=1123x";
+import { openMaterial } from "./material.js?v=1123x";
+import { openLiveWs } from "./liveteacher.js?v=1123x";
+import { openFunpark } from "./fpteacher.js?v=1123x";
+import { openCoconut } from "./coconut.js?v=1123x";
+import { hasFeature, hideCss } from "./features.js?v=1123x";
+import { xpAllowed } from "./ownerpin.js?v=1123x";
 window.xpGate = n => xpAllowed(n); window.wkGradeData = gradeData; window.mailSend = sendRaw;
-import { initChat } from "./chat.js?v=1123w";
-import { openLive } from "./live.js?v=1123w";
-import { openInbox } from "./inbox.js?v=1123w";
-import "./school.js?v=1123w";
-import { firstSetup, watchJoin, initShare } from "./teacherjoin.js?v=1123w";
+import { initChat } from "./chat.js?v=1123x";
+import { openLive } from "./live.js?v=1123x";
+import { openInbox } from "./inbox.js?v=1123x";
+import "./school.js?v=1123x";
+import { firstSetup, watchJoin, initShare } from "./teacherjoin.js?v=1123x";
 
 const $ = id => document.getElementById(id);
 const esc2 = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -32,6 +32,7 @@ if (!p || p.role !== "teacher") { location.href = "index.html"; throw new Error(
 
 // The owner sees the original top-level data. Every other teacher gets a private folder of his own.
 const ADMIN = p.admin === true;
+window.__subject = p.subject || "Mathematics";
 startUsage(u, p);
 setBase(ADMIN ? [] : ["teachers", u.uid]);
 // Supabase keeps a small list of who is who (role, teacher, class) for its security rules. Moving a student to another class updates it right away;

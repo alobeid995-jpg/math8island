@@ -173,11 +173,6 @@ export async function shareXp(sid, adds, dels) {
   await call("rpc/share_xp", { method: "POST", body: JSON.stringify({ sid: String(sid), adds: adds || [], dels: dels || [] }) });
 }
 
-// the shared account of each of this teacher's students (total XP from all subjects, wallet, avatar, shop items)
-export async function sharedInfo(sids) {
-  return await call("rpc/shared_info", { method: "POST", body: JSON.stringify({ sids: (sids || []).map(String) }) });
-}
-
 // counts per collection folder, read straight from the database (owner page uses it to compare with Firestore)
 export async function countDocs() {
   const out = {};

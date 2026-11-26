@@ -1,9 +1,9 @@
 // "My classwork" on the student page: worksheets from the teacher, and (for the 9S boys) the lesson games.
-import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1123w";
-import { playerOf, catalog } from "./islandmap.js?v=1123w";
-import { SCR, layer, rt } from "./screenpen.js?v=1123w";
-import { logEv } from "./presence.js?v=1123w";
-import { LIVE_WS, isLive, liveScope, setUploaded, withBridge, reportsItself, WATCH_JS } from "./liveworks.js?v=1123w";
+import { fs, doc, getDoc, setDoc, collection, getDocs, query, where } from "./fb.js?v=1123x";
+import { playerOf, catalog } from "./islandmap.js?v=1123x";
+import { SCR, layer, rt } from "./screenpen.js?v=1123x";
+import { logEv } from "./presence.js?v=1123x";
+import { LIVE_WS, isLive, liveScope, setUploaded, withBridge, reportsItself, WATCH_JS } from "./liveworks.js?v=1123x";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -260,7 +260,7 @@ function openUp(w) {
   let saved = false;
   const save = async (r, wr, m) => {
     if (saved) return; saved = true; const t = Date.now();
-    try { await setDoc(doc(fs, ...base, "plays", `${P.sid}_${w.id}-ws_${t}`), { s: "ag", g: w.id + "-ws", l: 1, r, w: wr, v: 2, t, u: t, m: (m || []).slice(-20), sid: P.sid, name: (me && me.name) || "" }); agPlays.add(w.id + "-ws"); logEv("Finished: " + String(w.title).slice(0, 50)); toast("Saved. Well done!"); }
+    try { await setDoc(doc(fs, ...base, "plays", `${P.sid}_${w.id}-ws_${t}`), { s: "ag", g: w.id + "-ws", l: 1, r, w: wr, t, u: t, m: (m || []).slice(-20), sid: P.sid, name: (me && me.name) || "" }); agPlays.add(w.id + "-ws"); logEv("Finished: " + String(w.title).slice(0, 50)); toast("Saved. Well done!"); }
     catch { saved = false; toast("Could not save. Check your internet and try again."); }
   };
   const onMsg = e => { if (e.source !== fr.contentWindow || !e.data || typeof e.data !== "object") return; if (e.data.mi === "done") save(+e.data.r || 0, +e.data.w || 0, e.data.m); if (e.data.mi === "close") { removeEventListener("message", onMsg); closeGame(); } };
