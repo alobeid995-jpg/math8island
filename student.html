@@ -211,6 +211,7 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .ent { display: flex; justify-content: space-between; gap: 8px; padding: 4px 8px; border-radius: 6px; }
 .ent.pos { background: var(--good-soft); }
 .ent.neg { background: var(--bad-soft); }
+.ent .subj { display: inline-block; margin-right: 4px; padding: 0 7px; border-radius: 999px; background: rgba(31,91,189,.12); color: #1f5bbd; font-size: 11px; font-weight: 700; vertical-align: 1px; }
 .ent span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ent span:last-child { font-family: var(--f-num); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .ent.pos span:last-child { color: var(--good); }
@@ -1298,7 +1299,7 @@ body.wk-noscroll{overflow:hidden}
 .topbar .mk { background: url(logo.svg) center/cover no-repeat !important; border: 0 !important; box-shadow: none !important; border-radius: 22% !important; } .topbar .mk::before { content: none !important; }
 
 </style>
-<link rel="stylesheet" href="island.css?v=1123v"><style>
+<link rel="stylesheet" href="island.css?v=1123w"><style>
 .sig{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;padding:0;margin:0;border:0;background:none;color:inherit;opacity:.32;cursor:default;-webkit-tap-highlight-color:transparent;transition:opacity .2s}
 .sig:hover,.sig:focus-visible{opacity:.8}
 .sig svg{width:24px;height:24px}
@@ -1308,14 +1309,14 @@ body.wk-noscroll{overflow:hidden}
 .sig-card b{display:block;font-weight:400;font-size:15px;letter-spacing:.02em}.sig-card span{display:block;font-size:15px;direction:rtl;opacity:.7}
 @keyframes sigin{from{opacity:0;transform:translate(-50%,8px)}}
 @media (prefers-reduced-motion:reduce){.sig-card{animation:none}}
-</style><link rel="stylesheet" href="shopplus.css?v=1123v"></head><body>
+</style><link rel="stylesheet" href="shopplus.css?v=1123w"></head><body>
 <div class="wrap">
   <div class="topbar"><div><span class="mk" aria-hidden="true"></span><div><div class="eyebrow">Student Island</div><h1>My XP</h1></div></div><button class="ghost small" id="outBtn" type="button">Log out</button></div>
   <div id="work"></div>
   <div id="app"></div>
 </div>
 <div class="toast" id="toast" hidden></div>
-<script src="hats.js?v=1123v"></script>
+<script src="hats.js?v=1123w"></script>
 <script>
 function isSotw(){return false}
 const $ = id => document.getElementById(id);
@@ -1960,7 +1961,7 @@ function applyPrices(m) { if (!m) return; SHOP.forEach(i => { const v = Number(m
 })();
 </script>
 
-<script src="shopplus.js?v=1123v"></script>
-<script src="stunew.js?v=1123v"></script>
-<script type="module" src="student.js?v=1123v"></script>
+<script src="shopplus.js?v=1123w"></script>
+<script src="stunew.js?v=1123w"></script>
+<script type="module" src="student.js?v=1123w"></script>
 </body></html>

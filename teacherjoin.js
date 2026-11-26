@@ -2,8 +2,8 @@
 // - The owner sees the requests (Settings > Teacher requests), can change the classes, then approves or declines.
 // - An approved teacher, on his first visit, gets his classes and their students from the school list (pupils).
 //   ESU students are hidden for the subjects they do not attend; any teacher can hide or bring back any student, in his own list only.
-import { fs, collection, getDocs, doc, getDoc, setDoc, updateDoc, bdoc } from "./fb.js?v=1123v";
-import { setMany } from "./sbdata.js?v=1123v";
+import { fs, collection, getDocs, doc, getDoc, setDoc, updateDoc, bdoc } from "./fb.js?v=1123w";
+import { setMany, shareXp } from "./sbdata.js?v=1123w";
 
 const $ = id => document.getElementById(id);
 const E = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -142,3 +142,27 @@ document.addEventListener("click", async e => {
   h.disabled = true; await window.__hideStu(h.dataset.ndhide, true);
 });
 css();
+
+// ---------- shared XP (stage 3) ----------
+// A teacher who joined through the school list keeps his own log (private: only he sees it), and every entry is also
+// sent to the student's shared account, where it adds to the XP and the wallet and shows to the student with the subject.
+// An entry is marked "sh" once the database has it, so nothing is sent twice; taking an entry back (Undo) takes it back there too.
+export function initShare() {
+  window.__shareOn = true;
+  const busy = new Set(), again = new Set();
+  const pending = st => [...(st.hist || []), ...(st.log || [])].filter(e => e && !e.sh && e.at && typeof e.xp === "number" && e.xp !== 0 && !e.reset && !e.bonus && e.title !== "Weekly bonus");
+  window.__shareSeen = () => {};
+  window.__share = async st => {
+    if (!st || !st.enrollment) return;
+    if (busy.has(st.id)) { again.add(st.id); return; }
+    const adds = pending(st); if (!adds.length) return;
+    busy.add(st.id);
+    try {
+      await shareXp(st.enrollment, adds.map(e => ({ title: String(e.title || ""), xp: e.xp, at: e.at })), []);
+      adds.forEach(e => { e.sh = 1; });
+      busy.delete(st.id); await window.save(st);
+    } catch (e) { console.warn("shared XP not sent yet", e); busy.delete(st.id); setTimeout(() => window.__share(st), 30000); return; }
+    if (again.delete(st.id)) window.__share(st);
+  };
+  window.__shareDel = (st, at) => { if (st && st.enrollment && at) shareXp(st.enrollment, [], [at]).catch(e => console.warn("shared XP undo", e)); };
+}

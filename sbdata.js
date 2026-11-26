@@ -168,6 +168,11 @@ export async function requestTeacher(r) {
   await call("rpc/request_teacher", { method: "POST", body: JSON.stringify({ fn: r.fn, ln: r.ln, em: r.em, subj: r.subj, classes: r.classes }) });
 }
 
+// XP a teacher gives in his subject goes to the student's shared account too (the database checks it is his student)
+export async function shareXp(sid, adds, dels) {
+  await call("rpc/share_xp", { method: "POST", body: JSON.stringify({ sid: String(sid), adds: adds || [], dels: dels || [] }) });
+}
+
 // counts per collection folder, read straight from the database (owner page uses it to compare with Firestore)
 export async function countDocs() {
   const out = {};

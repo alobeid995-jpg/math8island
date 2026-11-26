@@ -1,13 +1,13 @@
-import { shopClosedNow } from "./shopstatus.js?v=1123v";
-import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1123v";
-import { initWork } from "./stuwork.js?v=1123v";
-import { initMsgs } from "./stumsg.js?v=1123v";
-import { initLive } from "./livequiz.js?v=1123v";
-import { initChat } from "./chat.js?v=1123v";
-import { initFunpark } from "./funpark.js?v=1123v";
-import { startPresence, logEv } from "./presence.js?v=1123v";
-import { mountStudentTT } from "./timetable.js?v=1123v";
-import { achCard, initAch } from "./achieve.js?v=1123v";
+import { shopClosedNow } from "./shopstatus.js?v=1123w";
+import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1123w";
+import { initWork } from "./stuwork.js?v=1123w";
+import { initMsgs } from "./stumsg.js?v=1123w";
+import { initLive } from "./livequiz.js?v=1123w";
+import { initChat } from "./chat.js?v=1123w";
+import { initFunpark } from "./funpark.js?v=1123w";
+import { startPresence, logEv } from "./presence.js?v=1123w";
+import { mountStudentTT } from "./timetable.js?v=1123w";
+import { achCard, initAch } from "./achieve.js?v=1123w";
 
 const sub = (t, n) => t.split("{n}").join(n);
 let shopSt = null, lastClosed = false;
@@ -23,8 +23,11 @@ function applyTheme(id) { if (id && id !== "ocean" && validT(id)) document.docum
 let themeOpen = false;
 function fromDoc(snap) {
   const v = snap.data() || {};
-  return { id: snap.id, name: String(v.name || "Student"), cls: String(v.cls || ""), xp: Number(v.xp) || 0,
-    log: Array.isArray(v.log) ? v.log : [], theme: typeof v.theme === "string" ? v.theme : "", avatar: typeof v.avatar === "number" ? v.avatar : undefined, ...readShop(v) };
+  // XP from other subjects (their teachers add it to "xx" and list it in "ext") counts in the total and the wallet
+  const ext = Array.isArray(v.ext) ? v.ext : [], own = Array.isArray(v.log) ? v.log : [];
+  const log = ext.length ? own.map(e => ({ ...e, subj: e.subj || "Maths" })).concat(ext).sort((a, b) => String(a.at || "").localeCompare(String(b.at || ""))) : own;
+  return { id: snap.id, name: String(v.name || "Student"), cls: String(v.cls || ""), xp: (Number(v.xp) || 0) + (Number(v.xx) || 0),
+    log, theme: typeof v.theme === "string" ? v.theme : "", avatar: typeof v.avatar === "number" ? v.avatar : undefined, ...readShop(v) };
 }
 
 async function start() {
@@ -148,7 +151,7 @@ function render() {
       <div class="shop-grid">${items.map(it => card(st, it)).join("")}</div>`}
     </section>
     <section class="card"><h3>My latest XP</h3>
-      ${recent.length ? `<div class="log">${recent.map(e => `<div class="ent ${e.xp >= 0 ? "pos" : "neg"}"><span>${esc(e.title || "")}</span><span>${e.xp > 0 ? "+" : ""}${e.xp}</span></div>`).join("")}</div>` : `<div class="none">No XP yet. Earn some in class!</div>`}
+      ${recent.length ? `<div class="log">${recent.map(e => `<div class="ent ${e.xp >= 0 ? "pos" : "neg"}"><span>${e.subj ? `<small class="subj">${esc(e.subj)}</small> ` : ""}${esc(e.title || "")}</span><span>${e.xp > 0 ? "+" : ""}${e.xp}</span></div>`).join("")}</div>` : `<div class="none">No XP yet. Earn some in class!</div>`}
     </section>`;
 }
 

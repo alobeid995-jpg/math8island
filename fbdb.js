@@ -1,6 +1,6 @@
 // Gives the teacher page the same "db" calls the Claude version used, but backed by Firebase.
-import { fs, bdoc, bcol, getDoc, setDoc, updateDoc, deleteDoc, getDocs, onSnapshot, runTransaction } from "./fb.js?v=1123v";
-import { dataOn, locate, lease } from "./sbdata.js?v=1123v";
+import { fs, bdoc, bcol, getDoc, setDoc, updateDoc, deleteDoc, getDocs, onSnapshot, runTransaction } from "./fb.js?v=1123w";
+import { dataOn, locate, lease } from "./sbdata.js?v=1123w";
 
 const mapErr = e => { const err = new Error(e && e.message || "db error"); err.code = e && e.code === "permission-denied" ? "invalid_argument" : (e && e.code) || "unknown"; return err; };
 const guard = p => p.catch(e => { throw mapErr(e); });
@@ -10,7 +10,7 @@ function wrapDoc(ref) {
   return {
     id: ref.id, path: ref.path,
     get: () => guard(getDoc(ref).then(snapWrap)),
-    set: d => guard(setDoc(ref, d)),
+    set: (d, o) => guard(setDoc(ref, d, o)),
     update: d => guard(updateDoc(ref, d)),
     delete: () => guard(deleteDoc(ref)),
     // One open screen at a time hands out the weekly bonus: a short "lease" kept on the doc.
