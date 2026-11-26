@@ -4,7 +4,8 @@ import { getDoc, getDocs, setDoc, deleteDoc, updateDoc, bcol, bdoc } from "./fb.
 import { LIVE_WS, isLive, setUploaded, withBridge } from "./liveworks.js?v=1123w";
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-let modal = null, open = {}, msg = "", busy = false, exp = "";
+let modal = null, open = {}, xp = {}, msg = "", busy = false, exp = "";
+const XPD = id => ({ d: 100, p: 100, ...(xp[id] || {}) });
 const cl = () => [...new Set([...(typeof CLASSES !== "undefined" ? CLASSES : []), "8G", "8D"])];
 const isOn = (id, c) => isLive(LIVE_WS.find(w => w.id === id), open, c);
 const when = t => new Date(t).toLocaleString("en-GB", { weekday: "short", hour: "2-digit", minute: "2-digit" });
@@ -23,6 +24,14 @@ function ui() {
     + ".lw-chev{width:18px;height:18px;transition:transform .15s;color:var(--muted,#5d6a82)}.lw-item.open .lw-chev{transform:rotate(180deg)}"
     + ".lw-in{padding:2px 14px 14px;border-top:1px solid var(--line,#d7deea)}.lw-in .lw-btn{padding:5px 12px;font-size:13.5px;border-width:1.5px}.lw-in .lw-row{gap:6px}";
   document.head.appendChild(st);
+  modal.addEventListener("change", async e => {
+    const i = e.target.closest("[data-xp]"); if (!i || busy) return;
+    const id = i.dataset.id, k = i.dataset.xp, v = Math.max(0, Math.min(1000, Math.round(+i.value || 0)));
+    xp = { ...xp, [id]: { ...XPD(id), [k]: v } }; i.value = v;
+    try { const classes = [...new Set(Object.values(open).flatMap(m => Object.keys(m || {})))]; await setDoc(bdoc("work", "liveopen"), { kind: "liveopen", open, classes, xp, created: Date.now() }); msg = "XP saved."; }
+    catch { msg = "Could not save the XP. Check your connection."; }
+    paint();
+  });
   modal.addEventListener("click", async e => {
     if (e.target === modal) { modal.hidden = true; return; }
     const b = e.target.closest("[data-lw]"); if (!b || busy) return;
@@ -40,7 +49,7 @@ function ui() {
     busy = true; msg = ""; paint();
     try {
       const classes = [...new Set(Object.values(o).flatMap(m => Object.keys(m)))];
-      await setDoc(bdoc("work", "liveopen"), { kind: "liveopen", open: o, classes, created: now });
+      await setDoc(bdoc("work", "liveopen"), { kind: "liveopen", open: o, classes, xp, created: now });
       const w0 = LIVE_WS.find(x => x.id === id); if (w0 && w0.up) { const want = [...new Set([...(w0.classes || []), ...Object.keys(o[id] || {})])]; if (want.length !== (w0.classes || []).length) { await updateDoc(bdoc("work", id), { classes: want }); w0.classes = want; } }
       open = o; msg = a === "tog" ? (o[id] && o[id][c] ? `Started for ${c}. They can see it now.` : `Stopped for ${c}. It is hidden again.`) : a === "all" ? "Started for every class." : "Stopped for every class.";
     } catch { msg = "Could not save. Check your connection and try again."; }
@@ -60,6 +69,9 @@ function paint() {
           <svg class="lw-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
         ${x ? `<div class="lw-in"><div class="lw-row">${classes.map(c => `<button type="button" class="lw-btn${isOn(w.id, c) ? " on" : ""}" data-lw="tog" data-id="${esc(w.id)}" data-c="${esc(c)}" ${busy ? "disabled" : ""}>${isOn(w.id, c) ? "● " + esc(c) + " · Stop" : "Start " + esc(c)}</button>`).join("")}</div>
         <div class="lw-row"><button type="button" class="lw-btn" data-lw="all" data-id="${esc(w.id)}" ${busy ? "disabled" : ""}>Start for all</button><button type="button" class="lw-btn" data-lw="none" data-id="${esc(w.id)}" ${busy || !on.length ? "disabled" : ""}>Stop for all</button></div>
+        <div class="lw-row" style="align-items:center;margin-top:8px"><b style="font-size:13px">XP for this worksheet:</b>
+          <label style="font-size:13px">Mark done <input type="number" min="0" max="1000" step="10" value="${XPD(w.id).d}" data-xp="d" data-id="${esc(w.id)}" style="width:70px;padding:4px 6px"></label>
+          <label style="font-size:13px">100% correct <input type="number" min="0" max="1000" step="10" value="${XPD(w.id).p}" data-xp="p" data-id="${esc(w.id)}" style="width:70px;padding:4px 6px"></label></div>
         ${w.up ? `<div class="lw-row"><button type="button" class="lw-btn" data-lw="preview" data-id="${esc(w.id)}">Preview</button><button type="button" class="lw-btn" data-lw="delup" data-id="${esc(w.id)}" ${busy ? "disabled" : ""}>Delete</button></div>` : ""}
         <div class="lw-st">${on.length ? "Open now: " + on.map(c => esc(c) + (open[w.id] && open[w.id][c] ? " (since " + when(open[w.id][c]) + ")" : "")).join(", ") : "Hidden from every class."}</div></div>` : ""}</div>`;
     }).join("") + `</div>` : `<p class="none">No interactive worksheets are added yet.</p>`)
@@ -91,6 +103,6 @@ async function preview(id) {
 }
 export async function openLiveWs() {
   ui(); modal.hidden = false; msg = ""; await refresh();
-  try { const s = await getDoc(bdoc("work", "liveopen")); open = (s.exists() && s.data().open) || {}; } catch { open = {}; msg = "Could not read the current state."; }
+  try { const s = await getDoc(bdoc("work", "liveopen")); open = (s.exists() && s.data().open) || {}; xp = (s.exists() && s.data().xp) || {}; } catch { open = {}; msg = "Could not read the current state."; }
   paint();
 }

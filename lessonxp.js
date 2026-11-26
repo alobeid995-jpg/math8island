@@ -15,6 +15,11 @@ const LES = {
 // for any class that has it, without having to be listed above.
 LIVE_WS.forEach(w => { if (!LES[w.id] && !w.noWs) LES[w.id] = { cls: /./, name: w.title.toLowerCase(), parts: [w.id + "-examples", ...(w.games || []).map(g => w.id + "-" + g[0]), w.id + "-ws"], ws: w.id + "-ws" }; });
 const DONE_XP = 100, PERFECT_XP = 100;
+let XPS = {};   // per worksheet, set by the teacher in Live worksheets: { <id>: { d: XP for finishing, p: XP for 100% correct } }
+const xpOf = key => ({ d: DONE_XP, p: PERFECT_XP, ...(XPS[key] || {}) });
+function syncUploaded() {   // worksheets the teacher uploaded as HTML: only a worksheet part
+  LIVE_WS.forEach(w => { if (w.up && !LES[w.id]) LES[w.id] = { cls: /./, name: String(w.title).toLowerCase(), parts: [w.id + "-ws"], ws: w.id + "-ws" }; });
+}
 let running = false;
 const busy = new Set();
 
@@ -22,6 +27,8 @@ async function run() {
   if (running) return; running = true;
   try {
     if (typeof students === "undefined" || !students.length || readOnly) return;
+    try { const lo = await getDoc(bdoc("work", "liveopen")); XPS = (lo.exists() && lo.data().xp) || {}; } catch {}
+    syncUploaded();
     const kinds = new Set(["ag", "el"]);
     const snap = await getDocs(query(bcol("plays"), where("s", "in", [...kinds])));
     const bySid = new Map();
@@ -33,15 +40,15 @@ async function run() {
         const have = new Set(pl.map(p => p.g)), rec = (st.lx || {})[key] || {};
         const finished = c.parts.every(g => have.has(g));
         const perfect = finished && pl.some(p => p.g === c.ws && (+p.w || 0) === 0 && (+p.r || 0) > 0 && (!LIVE_WS.some(w => w.id === key) || p.v === 2));   // graph42 plays before the fix cannot prove a perfect worksheet
-        const wantDone = finished && !rec.done, wantPerfect = perfect && !rec.perfect;
+        const X = xpOf(key), wantDone = finished && !rec.done && X.d > 0, wantPerfect = perfect && !rec.perfect && X.p > 0;
         if (!wantDone && !wantPerfect) continue;
         const tag = st.id + key; if (busy.has(tag)) continue; busy.add(tag);
         try {
           // look again at the saved record right before paying, in case another screen just did it
           const fresh = await getDoc(bdoc("students", st.id)); const fv = fresh.exists() ? fresh.data() : null; if (!fv) continue;
           const frec = ((fv.lx || {})[key]) || {}, now = Date.now(), entries = [], nrec = { ...frec };
-          if (finished && !frec.done) { entries.push({ title: "Finished the " + c.name + " work", xp: DONE_XP }); nrec.done = now; }
-          if (perfect && !frec.perfect) { entries.push({ title: "100% correct: " + c.name, xp: PERFECT_XP }); nrec.perfect = now; }
+          const X2 = xpOf(key); if (finished && !frec.done && X2.d > 0) { entries.push({ title: "Finished the " + c.name + " work", xp: X2.d }); nrec.done = now; }
+          if (perfect && !frec.perfect && X2.p > 0) { entries.push({ title: "100% correct: " + c.name, xp: X2.p }); nrec.perfect = now; }
           if (!entries.length) continue;
           const cur = students.find(x => x.id === st.id) || st, add = entries.reduce((a, e) => a + e.xp, 0);
           cur.xp += add;
