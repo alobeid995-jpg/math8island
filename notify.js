@@ -11,7 +11,7 @@
   const okId = v => /^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(String(v || "").trim());
   const stuMail = st => okId(st.enrollment) ? String(st.enrollment).trim().toLowerCase() + "@hawarschool.com" : "";
   const parMail = st => { try { return parentEmails(st); } catch (e) { return []; } };
-  const girl = st => { try { return isGirlCls(st.cls); } catch (e) { return false; } };
+  const girl = st => { try { return (typeof isGirlSt === "function" ? isGirlSt(st) : isGirlCls(st.cls)); } catch (e) { return false; } };
   const sig = () => { try { return sigOf(); } catch (e) { return "Your Maths teacher"; } };
   const first = n => String(n || "").split(/\s+/)[0];
   const niceDay = d => { try { return new Date(d + "T12:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }); } catch (e) { return d; } };

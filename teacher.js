@@ -1,27 +1,27 @@
-import { liveScope } from "./liveworks.js?v=1123x";
+import { liveScope } from "./liveworks.js?v=1123y";
 import { onSnapshot, changeEmail, auth, fs, firebaseConfig, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, collection, query, where, writeBatch, setBase, bcol, bdoc, signOut, whenUser, profileOf, emailFor, pinKey,
-  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1123x";
-import { db } from "./fbdb.js?v=1123x";
-import { peopleSet, peopleDel, peopleGet, peopleCls } from "./sbdata.js?v=1123x";
-import { downloadBackup } from "./backupxl.js?v=1123x";
-import { openMail, sendRaw } from "./mailer.js?v=1123x";
-import { startUsage } from "./usage.js?v=1123x";
-import { liveLesson, mountTeacherTT, todayLessons } from "./timetable.js?v=1123x";
-import { openWork, gradeData } from "./teacherwork.js?v=1123x";
-import "./lessonxp.js?v=1123x";
-import { openProgress } from "./progress.js?v=1123x";
-import { openMaterial } from "./material.js?v=1123x";
-import { openLiveWs } from "./liveteacher.js?v=1123x";
-import { openFunpark } from "./fpteacher.js?v=1123x";
-import { openCoconut } from "./coconut.js?v=1123x";
-import { hasFeature, hideCss } from "./features.js?v=1123x";
-import { xpAllowed } from "./ownerpin.js?v=1123x";
+  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1123y";
+import { db } from "./fbdb.js?v=1123y";
+import { peopleSet, peopleDel, peopleGet, peopleCls } from "./sbdata.js?v=1123y";
+import { downloadBackup } from "./backupxl.js?v=1123y";
+import { openMail, sendRaw } from "./mailer.js?v=1123y";
+import { startUsage } from "./usage.js?v=1123y";
+import { liveLesson, mountTeacherTT, todayLessons } from "./timetable.js?v=1123y";
+import { openWork, gradeData } from "./teacherwork.js?v=1123y";
+import "./lessonxp.js?v=1123y";
+import { openProgress } from "./progress.js?v=1123y";
+import { openMaterial } from "./material.js?v=1123y";
+import { openLiveWs } from "./liveteacher.js?v=1123y";
+import { openFunpark } from "./fpteacher.js?v=1123y";
+import { openCoconut } from "./coconut.js?v=1123y";
+import { hasFeature, hideCss } from "./features.js?v=1123y";
+import { xpAllowed } from "./ownerpin.js?v=1123y";
 window.xpGate = n => xpAllowed(n); window.wkGradeData = gradeData; window.mailSend = sendRaw;
-import { initChat } from "./chat.js?v=1123x";
-import { openLive } from "./live.js?v=1123x";
-import { openInbox } from "./inbox.js?v=1123x";
-import "./school.js?v=1123x";
-import { firstSetup, watchJoin, initShare } from "./teacherjoin.js?v=1123x";
+import { initChat } from "./chat.js?v=1123y";
+import { openLive } from "./live.js?v=1123y";
+import { openInbox } from "./inbox.js?v=1123y";
+import "./school.js?v=1123y";
+import { firstSetup, watchJoin, initShare } from "./teacherjoin.js?v=1123y";
 
 const $ = id => document.getElementById(id);
 const esc2 = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -70,7 +70,8 @@ const DEFAULT_CLASSES = ["8B", "8Y", "8M", "8S"];
 {
   let list = [];
   // meta, students and prices are fetched together instead of one after another
-  const [mS, sS, pS] = await Promise.all([getDoc(bdoc("meta", "classes")).catch(() => null), getDocs(bcol("students")).catch(() => null), getDoc(doc(fs, "shop", "prices")).catch(() => null)]);
+  const [mS, sS, pS, gS] = await Promise.all([getDoc(bdoc("meta", "classes")).catch(() => null), getDocs(bcol("students")).catch(() => null), getDoc(doc(fs, "shop", "prices")).catch(() => null), getDoc(doc(fs, "shop", "girls")).catch(() => null)]);
+  window.__girlIds = new Set(gS && gS.exists() && Array.isArray(gS.data().ids) ? gS.data().ids.map(String) : []);   // who gets the girls' shop (school IDs)
   if (mS && mS.exists()) list = (mS.data().list || []).slice(); else if (ADMIN) list = DEFAULT_CLASSES.slice();
   if (sS) sS.docs.forEach(d => { const c = d.data().cls; if (c && !list.includes(c)) list.push(c); });   // never hide a class that has students
   window.__pricesSnap = pS;

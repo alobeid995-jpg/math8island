@@ -1,13 +1,13 @@
-import { shopClosedNow } from "./shopstatus.js?v=1123x";
-import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1123x";
-import { initWork } from "./stuwork.js?v=1123x";
-import { initMsgs } from "./stumsg.js?v=1123x";
-import { initLive } from "./livequiz.js?v=1123x";
-import { initChat } from "./chat.js?v=1123x";
-import { initFunpark } from "./funpark.js?v=1123x";
-import { startPresence, logEv } from "./presence.js?v=1123x";
-import { mountStudentTT } from "./timetable.js?v=1123x";
-import { achCard, initAch } from "./achieve.js?v=1123x";
+import { shopClosedNow } from "./shopstatus.js?v=1123y";
+import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1123y";
+import { initWork } from "./stuwork.js?v=1123y";
+import { initMsgs } from "./stumsg.js?v=1123y";
+import { initLive } from "./livequiz.js?v=1123y";
+import { initChat } from "./chat.js?v=1123y";
+import { initFunpark } from "./funpark.js?v=1123y";
+import { startPresence, logEv } from "./presence.js?v=1123y";
+import { mountStudentTT } from "./timetable.js?v=1123y";
+import { achCard, initAch } from "./achieve.js?v=1123y";
 
 const sub = (t, n) => t.split("{n}").join(n);
 let shopSt = null, lastClosed = false;
@@ -26,7 +26,7 @@ function fromDoc(snap) {
   // XP from other subjects (their teachers add it to "xx" and list it in "ext") counts in the total and the wallet
   const ext = Array.isArray(v.ext) ? v.ext : [], own = Array.isArray(v.log) ? v.log : [];
   const log = ext.length ? own.map(e => ({ ...e, subj: e.subj || "Maths" })).concat(ext).sort((a, b) => String(a.at || "").localeCompare(String(b.at || ""))) : own;
-  return { id: snap.id, name: String(v.name || "Student"), cls: String(v.cls || ""), xp: (Number(v.xp) || 0) + (Number(v.xx) || 0),
+  return { id: snap.id, name: String(v.name || "Student"), cls: String(v.cls || ""), enrollment: String(v.enrollment || ""), xp: (Number(v.xp) || 0) + (Number(v.xx) || 0),
     log, theme: typeof v.theme === "string" ? v.theme : "", avatar: typeof v.avatar === "number" ? v.avatar : undefined, ...readShop(v) };
 }
 
@@ -43,6 +43,7 @@ async function start() {
   if (lg && lg.first === true) { await choosePin(u, lref, String(lg.pin || "")); }
   onSnapshot(doc(fs, "shop", "status"), s => { shopSt = s.exists() ? s.data() : null; render(); }, () => {});   // the owner can shut the shop
   setInterval(() => { const c = !!shopClosedNow(shopSt); if (c !== lastClosed) render(); }, 30000);
+  onSnapshot(doc(fs, "shop", "girls"), s => { window.__girlIds = new Set(s.exists() && Array.isArray(s.data().ids) ? s.data().ids.map(String) : []); render(); }, () => {});   // who gets the girls' shop
   onSnapshot(doc(fs, "shop", "prices"), s => { if (s.exists()) { applyPrices(s.data().prices); render(); } }, () => {});   // prices the owner sets
   onSnapshot(ref, snap => { loaded = true; me = snap.exists() ? fromDoc(snap) : null; if (me) applyTheme(validT(me.theme) ? me.theme : lsT.get()); render(); },
     e => { loaded = true; me = null; window.__loadErr = (e && e.code) || "error"; render(); });
@@ -128,7 +129,7 @@ function render() {
   const picker = pickerOpen ? `<section class="picker"><b>Pick a new look</b>
       <div class="pk-grid">${seeds.map(s => `<button class="pk" type="button" data-act="setAv" data-seed="${s}" aria-label="Use this avatar">${avatarHTML({ id: st.id, avatar: s, eq: { ...eqOf(st), skin: "" }, cls: st.cls }, "")}</button>`).join("")}</div>
       <div class="pk-acts"><button class="ghost" data-act="moreAv" type="button">Show more</button><button class="ghost" data-act="closeAv" type="button">Close</button></div></section>` : "";
-  GIRL = isGirlCls(st.cls);
+  GIRL = (typeof isGirlSt === "function" ? isGirlSt(st) : isGirlCls(st.cls));
   const items = shopList(shopCat);
   const closed = !!shopClosedNow(shopSt); lastClosed = closed;
   const recent = st.log.slice(-8).reverse();

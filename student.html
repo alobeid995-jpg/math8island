@@ -1299,7 +1299,7 @@ body.wk-noscroll{overflow:hidden}
 .topbar .mk { background: url(logo.svg) center/cover no-repeat !important; border: 0 !important; box-shadow: none !important; border-radius: 22% !important; } .topbar .mk::before { content: none !important; }
 
 </style>
-<link rel="stylesheet" href="island.css?v=1123x"><style>
+<link rel="stylesheet" href="island.css?v=1123y"><style>
 .sig{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;padding:0;margin:0;border:0;background:none;color:inherit;opacity:.32;cursor:default;-webkit-tap-highlight-color:transparent;transition:opacity .2s}
 .sig:hover,.sig:focus-visible{opacity:.8}
 .sig svg{width:24px;height:24px}
@@ -1309,14 +1309,14 @@ body.wk-noscroll{overflow:hidden}
 .sig-card b{display:block;font-weight:400;font-size:15px;letter-spacing:.02em}.sig-card span{display:block;font-size:15px;direction:rtl;opacity:.7}
 @keyframes sigin{from{opacity:0;transform:translate(-50%,8px)}}
 @media (prefers-reduced-motion:reduce){.sig-card{animation:none}}
-</style><link rel="stylesheet" href="shopplus.css?v=1123x"></head><body>
+</style><link rel="stylesheet" href="shopplus.css?v=1123y"></head><body>
 <div class="wrap">
   <div class="topbar"><div><span class="mk" aria-hidden="true"></span><div><div class="eyebrow">Student Island</div><h1>My XP</h1></div></div><button class="ghost small" id="outBtn" type="button">Log out</button></div>
   <div id="work"></div>
   <div id="app"></div>
 </div>
 <div class="toast" id="toast" hidden></div>
-<script src="hats.js?v=1123x"></script>
+<script src="hats.js?v=1123y"></script>
 <script>
 function isSotw(){return false}
 const $ = id => document.getElementById(id);
@@ -1620,6 +1620,7 @@ const avatarCache = new Map();
 function eqOf(st) { const e = (st && st.eq) || {}; return { frame: e.frame || "", color: e.color || "", title: e.title || "", top: e.top || "", skin: e.skin || "", hat: e.hat || "", theme: e.theme || "" }; }
 /* ---------- Girls' shop (class 8G only): soft, rounded characters ---------- */
 const isGirlCls = c => /^\d{1,2}\s*[GIRL]\s*\d{0,2}$/i.test(String(c || "").trim());
+const isGirlSt = st => { const ids = window.__girlIds, e = String((st && st.enrollment) || "").trim(); return ids && ids.size && e ? ids.has(e) : isGirlCls(st && st.cls); };   // the girls' list (by school ID) decides; otherwise the class name
 let GIRL = false;
 const GOL = "#5b3347";
 const gp = (d, f, x = "") => `<path d="${d}" fill="${f}" stroke="${GOL}" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round" ${x}/>`;
@@ -1728,7 +1729,7 @@ function avatarHTML(st, cls, over) {
   const seed = avatarSeed(st), e0 = over ? { ...eqOf(st), ...over } : eqOf(st);
   const wid = e0.top && shopItem(e0.top) ? e0.top : "", skid = e0.skin && shopItem(e0.skin) ? e0.skin : "";
   const hat = e0.hat && shopItem(e0.hat) ? e0.hat : "";
-  const gl = isGirlCls(st.cls), key = (gl ? "g" : "") + (skid ? "s" + skid + "|" + wid : seed + "|" + wid) + (hat ? "|" + hat : "");
+  const gl = isGirlSt(st), key = (gl ? "g" : "") + (skid ? "s" + skid + "|" + wid : seed + "|" + wid) + (hat ? "|" + hat : "");
   if (!avatarCache.has(key)) {
     let svg = skid ? enemyFig(skid, wid) : gl ? girlBase(seed, wid) : avatarSVG(seed, wid);
     if (hat && typeof hatSVG === "function") svg = svg.replace(/<\/svg>\s*$/, hatSVG(hat, skid ? "e" : gl ? "g" : "b", HAT_FIT[skid || (gl ? "girl" : "")]) + "</svg>");   // hat sits on top of the head (accessory slot)
@@ -1961,7 +1962,7 @@ function applyPrices(m) { if (!m) return; SHOP.forEach(i => { const v = Number(m
 })();
 </script>
 
-<script src="shopplus.js?v=1123x"></script>
-<script src="stunew.js?v=1123x"></script>
-<script type="module" src="student.js?v=1123x"></script>
+<script src="shopplus.js?v=1123y"></script>
+<script src="stunew.js?v=1123y"></script>
+<script type="module" src="student.js?v=1123y"></script>
 </body></html>

@@ -79,7 +79,7 @@ function certSVG(c) {
   const st = c.st; if (!st) return "";
   const G = "#b8860b", G2 = "#e0b43c", INK = "#17233b", SER = "Georgia, 'Times New Roman', serif";
   const e0 = eqOf(st), seed = avatarSeed(st), wid = e0.top && shopItem(e0.top) ? e0.top : "", skid = e0.skin && shopItem(e0.skin) ? e0.skin : "";   // the same picture the student sees: equipped skin and top included
-  const av = (skid ? enemyFig(skid, wid) : isGirlCls(st.cls) ? girlBase(seed, wid) : avatarSVG(seed, wid)).replace(/^<svg[^>]*>/, "").replace(/<\/svg>$/, "");
+  const av = (skid ? enemyFig(skid, wid) : (typeof isGirlSt === "function" ? isGirlSt(st) : isGirlCls(st.cls)) ? girlBase(seed, wid) : avatarSVG(seed, wid)).replace(/^<svg[^>]*>/, "").replace(/<\/svg>$/, "");
   const fit = (t, base, maxW, min, k) => { const w = t.length * base * k; return w <= maxW ? { fs: base, tl: 0 } : (t.length * min * k <= maxW ? { fs: Math.floor(maxW / (t.length * k)), tl: 0 } : { fs: min, tl: maxW }); };
   const tla = f => f.tl ? ` textLength="${f.tl}" lengthAdjust="spacingAndGlyphs"` : "";
   const name = st.name, nF = fit(name, 62, 760, 26, .6), nfs = nF.fs;
