@@ -201,7 +201,8 @@
   var count = function (c) { try { return students.filter(function (s) { return s.cls === c; }).length; } catch (e) { return 0; } };
 
   var sel = "today";
-  var MENU = function () {
+  var MENU = function () { return MENU0().map(function (g) { return g.sub ? Object.assign({}, g, { sub: g.sub.filter(Boolean) }) : g; }); };
+  var MENU0 = function () {
     return [
       { k: "today", label: "Today", go: function () { showToday(); } },
       { k: "classes", label: "Classes", sub: classes().map(function (c) { return { k: "c:" + c, label: c, n: count(c), go: function () { openClass(c); } }; }).concat([
@@ -236,6 +237,7 @@
         { k: "m:chat", label: "Chat", go: function () { press("chDock"); } }] },
       { k: "settings", label: "Settings", sub: [
         { k: "s:tools", label: "Tools and XP reset", go: function () { showView("tools"); } },
+        window.__owner ? { k: "s:school", label: "School students", go: function () { if (window.openSchool) window.openSchool(); } } : null,
         { k: "s:log", label: "Student logins", go: function () { press("loginsBtn"); } },
         { k: "s:imp", label: "Import old data", go: function () { press("impBtn"); } },
         { k: "s:bk", label: "Backup (Excel)", go: function () { press("backupBtn"); } },
@@ -261,7 +263,7 @@
     menu.forEach(function (g) { if (g.k === k) { item = g; grp = g; } (g.sub || []).forEach(function (s) { if (s.k === k) { item = s; grp = g; } }); });
     if (!item) return;
     if (item.sub) { openGroup = openGroup === item.k ? "" : item.k; paintNav(); return; }
-    var modalItem = /^(t:|a:cw|a:gw|a:pg|m:|s:log|s:imp|s:bk|s:dev|s:me)/.test(k);
+    var modalItem = /^(t:|a:cw|a:gw|a:pg|m:|s:log|s:imp|s:bk|s:dev|s:me|s:school)/.test(k);
     if (!modalItem) sel = k;
     openGroup = grp.k; document.documentElement.classList.remove("nd-menu");
     item.go(); paintNav();

@@ -20,6 +20,7 @@ window.xpGate = n => xpAllowed(n); window.wkGradeData = gradeData; window.mailSe
 import { initChat } from "./chat.js?v=1123s";
 import { openLive } from "./live.js?v=1123s";
 import { openInbox } from "./inbox.js?v=1123s";
+import "./school.js?v=1123s";
 
 const $ = id => document.getElementById(id);
 const esc2 = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
