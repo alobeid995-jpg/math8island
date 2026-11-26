@@ -163,6 +163,11 @@ export async function claimTeacher(code, nm) {
   await call("rpc/claim_teacher", { method: "POST", body: JSON.stringify(usersOnSb() ? { code, nm: nm || "" } : { code }) });
 }
 
+// a teacher asks to join: the database makes a "pending" profile that only the owner can approve
+export async function requestTeacher(r) {
+  await call("rpc/request_teacher", { method: "POST", body: JSON.stringify({ fn: r.fn, ln: r.ln, em: r.em, subj: r.subj, classes: r.classes }) });
+}
+
 // counts per collection folder, read straight from the database (owner page uses it to compare with Firestore)
 export async function countDocs() {
   const out = {};

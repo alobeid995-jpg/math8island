@@ -1,26 +1,27 @@
-import { liveScope } from "./liveworks.js?v=1123s";
+import { liveScope } from "./liveworks.js?v=1123u";
 import { onSnapshot, changeEmail, auth, fs, firebaseConfig, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, collection, query, where, writeBatch, setBase, bcol, bdoc, signOut, whenUser, profileOf, emailFor, pinKey,
-  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1123s";
-import { db } from "./fbdb.js?v=1123s";
-import { peopleSet, peopleDel, peopleGet, peopleCls } from "./sbdata.js?v=1123s";
-import { downloadBackup } from "./backupxl.js?v=1123s";
-import { openMail, sendRaw } from "./mailer.js?v=1123s";
-import { startUsage } from "./usage.js?v=1123s";
-import { liveLesson, mountTeacherTT, todayLessons } from "./timetable.js?v=1123s";
-import { openWork, gradeData } from "./teacherwork.js?v=1123s";
-import "./lessonxp.js?v=1123s";
-import { openProgress } from "./progress.js?v=1123s";
-import { openMaterial } from "./material.js?v=1123s";
-import { openLiveWs } from "./liveteacher.js?v=1123s";
-import { openFunpark } from "./fpteacher.js?v=1123s";
-import { openCoconut } from "./coconut.js?v=1123s";
-import { hasFeature, hideCss } from "./features.js?v=1123s";
-import { xpAllowed } from "./ownerpin.js?v=1123s";
+  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1123u";
+import { db } from "./fbdb.js?v=1123u";
+import { peopleSet, peopleDel, peopleGet, peopleCls } from "./sbdata.js?v=1123u";
+import { downloadBackup } from "./backupxl.js?v=1123u";
+import { openMail, sendRaw } from "./mailer.js?v=1123u";
+import { startUsage } from "./usage.js?v=1123u";
+import { liveLesson, mountTeacherTT, todayLessons } from "./timetable.js?v=1123u";
+import { openWork, gradeData } from "./teacherwork.js?v=1123u";
+import "./lessonxp.js?v=1123u";
+import { openProgress } from "./progress.js?v=1123u";
+import { openMaterial } from "./material.js?v=1123u";
+import { openLiveWs } from "./liveteacher.js?v=1123u";
+import { openFunpark } from "./fpteacher.js?v=1123u";
+import { openCoconut } from "./coconut.js?v=1123u";
+import { hasFeature, hideCss } from "./features.js?v=1123u";
+import { xpAllowed } from "./ownerpin.js?v=1123u";
 window.xpGate = n => xpAllowed(n); window.wkGradeData = gradeData; window.mailSend = sendRaw;
-import { initChat } from "./chat.js?v=1123s";
-import { openLive } from "./live.js?v=1123s";
-import { openInbox } from "./inbox.js?v=1123s";
-import "./school.js?v=1123s";
+import { initChat } from "./chat.js?v=1123u";
+import { openLive } from "./live.js?v=1123u";
+import { openInbox } from "./inbox.js?v=1123u";
+import "./school.js?v=1123u";
+import { firstSetup, watchJoin } from "./teacherjoin.js?v=1123u";
 
 const $ = id => document.getElementById(id);
 const esc2 = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -55,6 +56,10 @@ if (!ADMIN) {
   cls = CLASSES.includes(cls) ? cls : (CLASSES[0] || "");
   try { render(); } catch {}
 }
+
+// A teacher approved through "Teacher requests" gets his classes and their students from the school list on his first visit.
+if (!ADMIN) { try { await firstSetup(u.uid, p); } catch (e) { console.warn("first setup", e); } }
+if (ADMIN) watchJoin();
 
 /* ---------- this teacher's classes ---------- */
 // The owner starts with his four Grade 8 classes. Every other teacher starts empty and adds his own.

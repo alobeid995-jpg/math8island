@@ -238,6 +238,7 @@
       { k: "settings", label: "Settings", sub: [
         { k: "s:tools", label: "Tools and XP reset", go: function () { showView("tools"); } },
         window.__owner ? { k: "s:school", label: "School students", go: function () { if (window.openSchool) window.openSchool(); } } : null,
+        window.__owner ? { k: "s:join", label: "Teacher requests" + (window.__joinN ? " (" + window.__joinN + ")" : ""), go: function () { if (window.openJoin) window.openJoin(); } } : null,
         { k: "s:log", label: "Student logins", go: function () { press("loginsBtn"); } },
         { k: "s:imp", label: "Import old data", go: function () { press("impBtn"); } },
         { k: "s:bk", label: "Backup (Excel)", go: function () { press("backupBtn"); } },
@@ -263,7 +264,7 @@
     menu.forEach(function (g) { if (g.k === k) { item = g; grp = g; } (g.sub || []).forEach(function (s) { if (s.k === k) { item = s; grp = g; } }); });
     if (!item) return;
     if (item.sub) { openGroup = openGroup === item.k ? "" : item.k; paintNav(); return; }
-    var modalItem = /^(t:|a:cw|a:gw|a:pg|m:|s:log|s:imp|s:bk|s:dev|s:me|s:school)/.test(k);
+    var modalItem = /^(t:|a:cw|a:gw|a:pg|m:|s:log|s:imp|s:bk|s:dev|s:me|s:school|s:join)/.test(k);
     if (!modalItem) sel = k;
     openGroup = grp.k; document.documentElement.classList.remove("nd-menu");
     item.go(); paintNav();
@@ -339,11 +340,12 @@
     var sv = $("studentsView"); if (!sv || sv.hidden || document.documentElement.classList.contains("nd-today")) { closeDrawer(); return; }
     var c = (typeof cls !== "undefined" && cls) || "", list = [];
     try { list = students.filter(function (x) { return x.cls === c; }); } catch (e) {}
-    var head = $("ndClass"); if (!head) { head = document.createElement("div"); head.id = "ndClass"; head.className = "nd-chead"; head.addEventListener("click", function (e) { if (e.target.closest("[data-ndca]")) hub("att", c); }); sv.insertBefore(head, sv.firstChild); }
+    var head = $("ndClass"); if (!head) { head = document.createElement("div"); head.id = "ndClass"; head.className = "nd-chead"; head.addEventListener("click", function (e) { if (e.target.closest("[data-ndca]")) hub("att", cls); if (e.target.closest("[data-ndhid]") && window.__openHidden) window.__openHidden(cls); }); sv.insertBefore(head, sv.firstChild); }
     var g = (c.match(/^(\d+)/) || [])[1];
     head.innerHTML = '<div><p>' + (g ? "Grade " + g + " · " : "") + list.length + " student" + (list.length === 1 ? "" : "s") + '</p><h1>' + esc(c) + "</h1></div>"
       + '<div class="nd-cacts"><button type="button" class="nd-btn" data-act="pkOpen">🎲 Pick a student</button><button type="button" class="nd-btn" data-ndca="1">✓ Attendance</button>'
-      + ((typeof readOnly !== "undefined" && readOnly) ? "" : '<button type="button" class="nd-btn p" data-act="wcOpen">＋ Give XP to many</button>') + "</div>";
+      + ((typeof readOnly !== "undefined" && readOnly) ? "" : '<button type="button" class="nd-btn p" data-act="wcOpen">＋ Give XP to many</button>')
+      + (function () { var n = (window.__hiddenStu || []).filter(function (x) { return x.cls === c; }).length; return n ? '<button type="button" class="nd-btn" data-ndhid="1">Hidden (' + n + ")</button>" : ""; })() + "</div>";
     var stt = $("ndCStats"); if (!stt) { stt = document.createElement("div"); stt.id = "ndCStats"; stt.className = "nd-cstats"; head.after(stt); }
     var avg = list.length ? Math.round(list.reduce(function (a, x) { return a + (x.xp || 0); }, 0) / list.length) : 0, lv = 1;
     try { lv = level(avg); } catch (e) {}
@@ -376,7 +378,7 @@
     });
     // the open student's options show in a panel on the right (moved out of the card so it can sit on the side)
     var dr = $("ndDrawer"); if (!dr) { dr = document.createElement("aside"); dr.id = "ndDrawer"; dr.setAttribute("aria-label", "Student"); dr.hidden = true; document.body.appendChild(dr); }
-    if (openPanel) { var y = dr.scrollTop; dr.innerHTML = '<button type="button" class="nd-x" data-act="toggle" data-id="' + esc(openSid) + '" aria-label="Close">✕</button>'; dr.appendChild(openPanel); dr.hidden = false; document.body.classList.add("nd-drawer"); if (dr.dataset.sid === openSid) dr.scrollTop = y; dr.dataset.sid = openSid; }
+    if (openPanel) { var y = dr.scrollTop; dr.innerHTML = '<button type="button" class="nd-x" data-act="toggle" data-id="' + esc(openSid) + '" aria-label="Close">✕</button>'; dr.appendChild(openPanel); if (!ro) { var hb = document.createElement("button"); hb.type = "button"; hb.className = "nd-hide"; hb.dataset.ndhide = openSid; hb.textContent = "Hide from my class list"; dr.appendChild(hb); } dr.hidden = false; document.body.classList.add("nd-drawer"); if (dr.dataset.sid === openSid) dr.scrollTop = y; dr.dataset.sid = openSid; }
     else closeDrawer();
     filterCards();
   }
