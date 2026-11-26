@@ -4626,6 +4626,7 @@ render();
       const v = d.data() || {};
       return { id: d.id, name: String(v.name || "Unnamed"), cls: CLASSES.includes(v.cls) ? v.cls : (v.cls || CLASSES[0] || ""), enrollment: v.enrollment, xp: (Number(v.xp) || 0) + (Number(v.xx) || 0), xx: Number(v.xx) || 0, log: Array.isArray(v.log) ? v.log : [], createdAt: v.createdAt, bonusWeek: v.bonusWeek || "", avatar: typeof v.avatar === "number" ? v.avatar : undefined, counts: readCounts(v, Array.isArray(v.log) ? v.log : []), ...readShop(v) };
     });
+    if (window.__sharedFix) students.forEach(window.__sharedFix);
     if (window.__shareSeen) window.__shareSeen(students);
     // A student record with no class saved: write the class the teacher sees, so the student page shows it and class-only work targets him correctly.
     snap.docs.forEach(d => { const v = d.data() || {}; if (!v.cls && !readOnly && !healedCls.has(d.id)) { healedCls.add(d.id); const st = students.find(x => x.id === d.id); if (st && st.cls) save(st); } });

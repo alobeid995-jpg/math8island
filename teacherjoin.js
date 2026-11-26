@@ -2,8 +2,8 @@
 // - The owner sees the requests (Settings > Teacher requests), can change the classes, then approves or declines.
 // - An approved teacher, on his first visit, gets his classes and their students from the school list (pupils).
 //   ESU students are hidden for the subjects they do not attend; any teacher can hide or bring back any student, in his own list only.
-import { fs, collection, getDocs, doc, getDoc, setDoc, updateDoc, bdoc } from "./fb.js?v=1123w";
-import { setMany, shareXp } from "./sbdata.js?v=1123w";
+import { fs, collection, getDocs, doc, getDoc, setDoc, updateDoc, bdoc, bcol } from "./fb.js?v=1123w";
+import { setMany, shareXp, sharedInfo } from "./sbdata.js?v=1123w";
 
 const $ = id => document.getElementById(id);
 const E = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -18,20 +18,26 @@ export function hiddenFor(subject, prog) {
 }
 const sidOf = id => "p" + String(id).replace(/[^A-Za-z0-9]/g, "");
 
-// ---------- an approved teacher's first visit ----------
+// ---------- an approved teacher's classes (checked on every visit) ----------
+// A class is filled from the school list when it is new for this teacher, or still has no students
+// (for example the owner ticked it after approval, or the school list was uploaded later).
+// A class that already has students is never refilled, so a student the teacher removed does not come back.
 export async function firstSetup(uid, p) {
   if (!Array.isArray(p.classes) || !p.classes.length) return false;
-  try { const s = await getDoc(bdoc("settings", "setup")); if (s.exists()) return false; } catch (e) { return false; }
   const want = new Set(p.classes), subject = String(p.subject || "");
-  const pupils = (await getDocs(collection(fs, "pupils"))).docs.map(d => d.data() || {}).filter(x => want.has(x.cls));
+  const [pupS, mineS, metaS] = await Promise.all([getDocs(collection(fs, "pupils")), getDocs(bcol("students")), getDoc(bdoc("meta", "classes")).catch(() => null)]);
+  const mine = mineS.docs.map(d => ({ id: d.id, cls: (d.data() || {}).cls }));
+  const have = new Set(mine.map(x => x.id)), full = new Set(mine.map(x => x.cls));
+  const pupils = pupS.docs.map(d => d.data() || {}).filter(x => want.has(x.cls) && !full.has(x.cls) && !have.has(sidOf(x.id)));
   const now = Date.now();
-  await setMany(pupils.map(x => ({ path: "teachers/" + uid + "/students/" + sidOf(x.id), data: {
+  if (pupils.length) await setMany(pupils.map(x => ({ path: "teachers/" + uid + "/students/" + sidOf(x.id), data: {
     name: x.name, cls: x.cls, enrollment: x.id, prog: x.prog || "", hidden: hiddenFor(subject, x.prog || ""), xp: 0, log: [], hist: [], createdAt: now, bonusWeek: typeof weekKey === "function" ? weekKey() : "" } })), true);
-  const list = ALL.filter(c => want.has(c));
-  await setDoc(bdoc("meta", "classes"), { list });
+  const cur = metaS && metaS.exists() && Array.isArray(metaS.data().list) ? metaS.data().list : [];
+  const list = [...cur, ...ALL.filter(c => want.has(c) && !cur.includes(c))];
+  if (list.length !== cur.length || !metaS || !metaS.exists()) await setDoc(bdoc("meta", "classes"), { list });
   try { const pr = await getDoc(bdoc("settings", "profile")); if (!pr.exists() || !pr.data().name) await setDoc(bdoc("settings", "profile"), { name: String(p.name || "").slice(0, 40) }); } catch (e) {}
-  await setDoc(bdoc("settings", "setup"), { done: now, subject, classes: list, students: pupils.length });
-  return true;
+  if (pupils.length) await setDoc(bdoc("settings", "setup"), { done: now, subject, classes: list, students: mine.length + pupils.length });
+  return pupils.length > 0;
 }
 
 // ---------- shared look for the two windows ----------
@@ -69,7 +75,9 @@ function modal(id, title) {
 }
 
 // ---------- owner: requests ----------
-let users = [], tjMsg = "", tjBad = false;
+let users = [], tjMsg = "", tjBad = false, pupN = null, editUid = "";
+async function loadPupN() { try { pupN = {}; (await getDocs(collection(fs, "pupils"))).docs.forEach(d => { const c = (d.data() || {}).cls; if (c) pupN[c] = (pupN[c] || 0) + 1; }); } catch (e) { pupN = null; } }
+const chips = sel => `<div class="tj-chips" aria-label="Classes">${ALL.map(c => `<label><input type="checkbox" value="${c}"${(sel || []).includes(c) ? " checked" : ""}><span>${c}${pupN ? `<small style="display:block;font-size:10px;font-weight:600;opacity:.75">${pupN[c] || 0}</small>` : ""}</span></label>`).join("")}</div>`;
 async function loadUsers() {
   users = (await getDocs(collection(fs, "users"))).docs.map(d => ({ uid: d.id, ...(d.data() || {}) })).filter(x => x.role === "pending" || x.role === "declined" || (x.role === "teacher" && x.subject) || (x.role === "paused" && x.subject));
   window.__joinN = users.filter(x => x.role === "pending").length;
@@ -83,11 +91,13 @@ function paintJoin(b) {
     <h3 style="margin:14px 0 4px">Waiting for you (${pend.length})</h3>
     ${pend.length ? pend.map(x => `<div class="tj-card" data-uid="${E(x.uid)}"><h3>${E(x.name || "No name")}</h3>
       <p class="who">${E(x.email || "")} · ${E(x.subject || "No subject")} · asked ${E(when(x.asked))}</p>
-      <div class="tj-chips" aria-label="Classes">${ALL.map(c => `<label><input type="checkbox" value="${c}"${(x.classes || []).includes(c) ? " checked" : ""}><span>${c}</span></label>`).join("")}</div>
+      ${chips(x.classes)}
       <div class="tj-acts"><button class="primary" type="button" data-tj="ok">Approve</button><button class="ghost" type="button" data-tj="no">Decline</button></div></div>`).join("")
       : '<p class="tj-none">No requests right now.</p>'}
-    ${done.length ? `<h3 style="margin:18px 0 4px">Teachers who joined this way</h3><div class="tj-card">${done.map(x => `<div class="tj-row"><span><b>${E(x.name || "")}</b> · ${E(x.subject || "")}<br><small>${E((x.classes || []).join(", "))}</small></span>
-      <span>${x.role === "declined" ? `<span class="tj-tag">Declined</span> <button class="ghost small" type="button" data-tj="re" data-uid="${E(x.uid)}">Approve after all</button>` : x.role === "paused" ? '<span class="tj-tag">Paused</span>' : '<span class="tj-tag" style="background:#dff3ec;color:#0b5f45">Active</span>'}</span></div>`).join("")}</div>` : ""}`;
+    ${done.length ? `<h3 style="margin:18px 0 4px">Teachers who joined this way</h3><div class="tj-card">${done.map(x => `<div class="tj-row" data-uid="${E(x.uid)}" style="flex-wrap:wrap"><span><b>${E(x.name || "")}</b> · ${E(x.subject || "")}<br><small>${E((x.classes || []).join(", "))}</small></span>
+      <span>${x.role === "declined" ? `<span class="tj-tag">Declined</span> <button class="ghost small" type="button" data-tj="re" data-uid="${E(x.uid)}">Approve after all</button>` : (x.role === "paused" ? '<span class="tj-tag">Paused</span>' : '<span class="tj-tag" style="background:#dff3ec;color:#0b5f45">Active</span>') + ` <button class="ghost small" type="button" data-tj="ed" data-uid="${E(x.uid)}">Change classes</button>`}</span>
+      ${editUid === x.uid ? `<div style="flex-basis:100%">${chips(x.classes)}<div class="tj-acts"><button class="primary small" type="button" data-tj="cs">Save classes</button><button class="ghost small" type="button" data-tj="cx">Cancel</button></div></div>` : ""}</div>`).join("")}</div>` : ""}
+    ${pupN ? '<p class="tj-none" style="font-size:13px">The small number under each class is how many students the school list has for it. A class with 0 needs the school list first (Settings &gt; School students).</p>' : ""}`;
 }
 export async function openJoin() {
   if (!window.__owner) return;
@@ -98,6 +108,18 @@ export async function openJoin() {
       const a = e.target.closest("[data-tj]"); if (!a) return;
       const card = a.closest("[data-uid]"), uid = (card || a).dataset.uid, x = users.find(y => y.uid === uid); if (!x) return;
       let patch;
+      if (a.dataset.tj === "ed") { editUid = uid; tjMsg = ""; return paintJoin(b); }
+      if (a.dataset.tj === "cx") { editUid = ""; return paintJoin(b); }
+      if (a.dataset.tj === "cs") {
+        const cl = [...card.querySelectorAll("input:checked")].map(i => i.value);
+        if (!cl.length) { tjMsg = "Tick at least one class first."; tjBad = true; return paintJoin(b); }
+        patch = { classes: ALL.filter(c => cl.includes(c)) };
+        a.disabled = true;
+        try { await updateDoc(doc(fs, "users", uid), patch); Object.assign(x, patch); editUid = "";
+          tjMsg = "✓ " + (x.name || "Teacher") + " now has " + patch.classes.join(", ") + ". New classes appear the next time she opens the site."; tjBad = false; }
+        catch (er) { tjMsg = "Could not save (" + (er.code || er.message) + "). Try again."; tjBad = true; }
+        return paintJoin(b);
+      }
       if (a.dataset.tj === "no") { if (!confirm("Decline " + (x.name || "this request") + "?")) return; patch = { role: "declined" }; }
       else {
         const cl = a.dataset.tj === "re" ? (x.classes || []) : [...card.querySelectorAll("input:checked")].map(i => i.value);
@@ -111,7 +133,7 @@ export async function openJoin() {
       paintJoin(b); try { window.render(); } catch (er) {}
     });
   }
-  try { await loadUsers(); } catch (e) { b.innerHTML = "<p>Could not load the requests (" + E(e.code || e.message) + ").</p>"; return; }
+  try { await Promise.all([loadUsers(), loadPupN()]); } catch (e) { b.innerHTML = "<p>Could not load the requests (" + E(e.code || e.message) + ").</p>"; return; }
   paintJoin(b);
 }
 window.openJoin = openJoin;
@@ -165,4 +187,41 @@ export function initShare() {
     if (again.delete(st.id)) window.__share(st);
   };
   window.__shareDel = (st, at) => { if (st && st.enrollment && at) shareXp(st.enrollment, [], [at]).catch(e => console.warn("shared XP undo", e)); };
+
+  // What every teacher sees is the student's shared account: total XP from all subjects, wallet, avatar and shop items.
+  // This teacher's own entries that are not sent yet are added on top, so a tap shows at once.
+  // (xx = the part of the total that is not this teacher's own XP; saving keeps only his own XP in his folder.)
+  const shared = new Map();
+  const fix = st => {
+    const s = st && shared.get(String(st.enrollment || "")); if (!s) return st;
+    const own = (Number(st.xp) || 0) - (Number(st.xx) || 0), wait = pending(st).reduce((a, e) => a + e.xp, 0), shown = s.xp + wait;
+    st.xx = shown - own; st.xp = shown; st.spent = s.spent; st.carry = s.carry; st.owned = s.owned.slice();
+    st.eq = { ...(st.eq || {}), ...s.eq }; if (typeof s.avatar === "number") st.avatar = s.avatar;
+    return st;
+  };
+  window.__sharedFix = fix;
+  const list = () => (typeof students !== "undefined" ? students : []);
+  const pull = async () => {
+    const ids = [...new Set(list().map(x => String(x.enrollment || "")).filter(Boolean))]; if (!ids.length) return;
+    for (let i = 0; i < ids.length; i += 200) {
+      const rows = (await sharedInfo(ids.slice(i, i + 200))) || [];
+      rows.forEach(r => { const e = r.eq && typeof r.eq === "object" ? r.eq : {};
+        shared.set(String(r.sid), { xp: Number(r.xp) || 0, spent: Math.max(0, Number(r.spent) || 0), carry: Math.max(0, Number(r.carry) || 0),
+          owned: Array.isArray(r.owned) ? r.owned.filter(x => typeof x === "string") : [], avatar: typeof r.avatar === "number" ? r.avatar : undefined,
+          eq: Object.fromEntries(["frame", "color", "title", "top", "skin", "hat", "theme"].map(k => [k, String(e[k] || "")])) }); });
+    }
+    list().forEach(fix); try { window.render(); } catch (e) {}
+  };
+  // entries just sent are already in the total: count them there until the next pull, so the number does not dip
+  const sent0 = window.__share;
+  window.__share = async st => { const before = new Set(pending(st || {}).map(e => e.at)); await sent0(st);
+    const s = st && shared.get(String(st.enrollment || "")); if (!s) return;
+    const gone = [...before].filter(at => !pending(st).some(e => e.at === at)); if (!gone.length) return;
+    s.xp += [...(st.hist || []), ...(st.log || [])].filter(e => e && gone.includes(e.at) && e.sh).reduce((a, e) => a + e.xp, 0); };
+  let first = true;
+  const tick = () => { if (document.visibilityState === "visible" || first) pull().then(() => { first = false; }, e => console.warn("shared XP view", e)); };
+  setTimeout(tick, 1500); setInterval(tick, 60000);
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") tick(); });
+  // students already have their logins (made by Mr. Khalid), so this teacher does not make logins or import old data
+  const st = document.createElement("style"); st.textContent = "#loginsBtn,#impBtn{display:none!important}"; document.head.appendChild(st);
 }

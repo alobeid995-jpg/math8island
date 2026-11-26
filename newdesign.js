@@ -239,8 +239,8 @@
         { k: "s:tools", label: "Tools and XP reset", go: function () { showView("tools"); } },
         window.__owner ? { k: "s:school", label: "School students", go: function () { if (window.openSchool) window.openSchool(); } } : null,
         window.__owner ? { k: "s:join", label: "Teacher requests" + (window.__joinN ? " (" + window.__joinN + ")" : ""), go: function () { if (window.openJoin) window.openJoin(); } } : null,
-        { k: "s:log", label: "Student logins", go: function () { press("loginsBtn"); } },
-        { k: "s:imp", label: "Import old data", go: function () { press("impBtn"); } },
+        window.__shareOn ? null : { k: "s:log", label: "Student logins", go: function () { press("loginsBtn"); } },
+        window.__shareOn ? null : { k: "s:imp", label: "Import old data", go: function () { press("impBtn"); } },
         { k: "s:bk", label: "Backup (Excel)", go: function () { press("backupBtn"); } },
         { k: "s:dev", label: "Developer", go: function () { press("devBtn"); } },
         { k: "s:me", label: "My email & password", go: function () { press("emailBtn"); } }] }
