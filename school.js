@@ -1,9 +1,9 @@
 // School students (owner only): the one list of all Middle School boys that every teacher will share.
 // Stage 1: upload the school list (Excel/CSV: Student ID, Name, Class, Program), see how it matches your own students, then save.
 // The list lives in "pupils" (one document per student, id = school ID). Your own students are matched by ID (or by name, after you confirm).
-import { fs, collection, getDocs } from "./fb.js?v=1123y";
-import { setMany } from "./sbdata.js?v=1123y";
-import { readFile } from "./live.js?v=1123y";
+import { fs, collection, getDocs } from "./fb.js?v=1124a";
+import { setMany } from "./sbdata.js?v=1124a";
+import { readFile } from "./live.js?v=1124a";
 
 const $ = id => document.getElementById(id);
 const E = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

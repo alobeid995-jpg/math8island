@@ -79,11 +79,12 @@ td.n{text-align:right;font-variant-numeric:tabular-nums}th.n{text-align:right}
 </div>
 <div class="drawer" id="dr"><div class="bk" data-close="1"></div><div class="pn" id="pn"></div></div>
 <script type="module">
-import { fs, doc, getDoc, setDoc, updateDoc, collection, getDocs, onSnapshot, query, where, whenUser, profileOf } from "./fb.js?v=1123y";
-import { CATS, FEATURES, byKey, hasFeature } from "./features.js?v=1123y";
-import { startUsage } from "./usage.js?v=1123y";
-import { sbOn, sbWatch } from "./sb.js?v=1123y";
-import { loadPin, hasPin, askPin, savePin, checkPin } from "./ownerpin.js?v=1123y";
+import { fs, doc, getDoc, setDoc, updateDoc, collection, getDocs, onSnapshot, query, where, whenUser, profileOf, firebaseConfig, initializeApp, getAuth, createUserWithEmailAndPassword, signOut, emailFor } from "./fb.js?v=1124a";
+import { peopleSet } from "./sbdata.js?v=1124a";
+import { CATS, FEATURES, byKey, hasFeature } from "./features.js?v=1124a";
+import { startUsage } from "./usage.js?v=1124a";
+import { sbOn, sbWatch } from "./sb.js?v=1124a";
+import { loadPin, hasPin, askPin, savePin, checkPin } from "./ownerpin.js?v=1124a";
 const $ = id => document.getElementById(id), out = $("out");
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const ONLINE = 6 * 60 * 1000, DAY = 24 * 60 * 60 * 1000;
@@ -148,6 +149,9 @@ async function load() {
       let rows = []; try { rows = (await getDocs(collection(fs, "teachers", t.uid, "students"))).docs; } catch {}
       add(t.uid, (t.name || "Teacher " + t.uid.slice(0, 6)) + (t.admin === true ? " ⚠ OWNER-LEVEL (sees your main data)" : ""), t.role, rows, false);
     }
+    // a student logs in once: a teacher who shares him (same school ID) counts that login too
+    const enrL = new Set(students.filter(s => s.hasLogin && s.enr).map(s => String(s.enr).trim()));
+    students.forEach(s => { if (!s.hasLogin && s.enr && enrL.has(String(s.enr).trim())) { s.hasLogin = true; s.sharedLogin = true; } });
     teachers.forEach(g => { g.logins = students.filter(s => s.tid === (g.me ? "" : g.uid) && s.hasLogin).length; });
     out.className = ""; build(); watch();
   } catch (e) { out.className = "msg bad"; out.textContent = "Could not load: " + (e.code || e.message) + ". Check that the new rules are published."; }
@@ -288,7 +292,8 @@ function paintStudents() {
 function paintTeachers() {
   $("pane").innerHTML = `<div class="card"><div class="tbl"><table><thead><tr><th>Teacher</th><th>Status</th><th class="n">Students</th><th class="n">Logins</th><th class="n">Online</th><th class="n">Active 24 h</th><th></th></tr></thead><tbody>${teachers.map(g => {
     const mine = students.filter(s => s.tid === (g.me ? "" : g.uid)), on = mine.filter(s => statusOf(s) === "on").length, day = mine.filter(s => ["on", "day"].includes(statusOf(s))).length;
-    const act = g.me ? "" : g.role === "paused" ? `<button class="btn" data-uid="${esc(g.uid)}" data-to="teacher" type="button">Restore access</button>` : `<button class="btn warn" data-uid="${esc(g.uid)}" data-to="paused" type="button">Pause access</button>`;
+    const need = mine.filter(s => !s.hasLogin).length;
+    const act = (g.me || g.role === "paused" || !need ? "" : `<button class="btn" data-mklog="${esc(g.uid)}" type="button">Create logins (${need})</button> `) + (g.me ? "" : g.role === "paused" ? `<button class="btn" data-uid="${esc(g.uid)}" data-to="teacher" type="button">Restore access</button>` : `<button class="btn warn" data-uid="${esc(g.uid)}" data-to="paused" type="button">Pause access</button>`);
     return `<tr><td class="nm">${esc(g.title)}<small>${esc([...new Set(mine.map(s => s.cls))].sort().join(", ") || "no classes yet")}</small></td><td>${g.me ? '<span class="pill day">Owner</span>' : g.role === "paused" ? '<span class="pill nolog">Paused</span>' : '<span class="pill on">Active</span>'}</td><td class="n">${g.n}</td><td class="n">${g.logins}</td><td class="n">${on}</td><td class="n">${day}</td><td style="text-align:right">${act}</td></tr>`; }).join("")}</tbody></table></div></div>` + shopCard() + featCard();
   const fc = $("featCard"); if (fc) fc.onclick = featClick;
   const sc = $("shopCard"); if (sc) sc.onclick = shopClick;
@@ -387,8 +392,36 @@ async function openStudent(k) {
   } catch { if ($("more")) $("more").innerHTML = ""; }
 }
 
+/* ---------- the owner makes logins for another teacher's students (one login per student: those who already have one are skipped) ---------- */
+async function makeLoginsFor(tid, btn) {
+  const g = teachers.find(x => x.uid === tid); if (!g) return;
+  const todo = students.filter(s => s.tid === tid && !s.hasLogin);
+  if (!todo.length) { alert("Everyone already has a login."); return; }
+  const pin = (prompt(`Starting PIN for ${todo.length} students of ${g.title} (6 digits). Each student chooses his own PIN at his first login.`) || "").trim();
+  if (!pin) return;
+  if (!/^\d{6}$/.test(pin)) { alert("The PIN must be 6 digits."); return; }
+  btn.disabled = true;
+  const sapp = initializeApp(firebaseConfig, "creator" + Date.now()), sauth = getAuth(sapp);
+  let ok = 0, skip = 0; const bad = [];
+  for (const s of todo) {
+    btn.textContent = `Creating ${ok + skip + bad.length + 1} of ${todo.length}…`;
+    const username = String(s.enr || s.id).trim();
+    try {
+      const c = await createUserWithEmailAndPassword(sauth, emailFor(username, 0), pin);
+      await setDoc(doc(fs, "users", c.user.uid), { role: "student", sid: s.id, tid });
+      await peopleSet([{ uid: c.user.uid, role: "student", sid: s.id, tid, cls: s.cls }]);
+      await setDoc(doc(fs, "teachers", tid, "logins", s.id), { username, pin, name: String(s.name || ""), cls: s.cls, first: true });
+      await signOut(sauth); ok++;
+    } catch (e) { if (e.code === "auth/email-already-in-use") skip++; else bad.push(`${s.name}: ${e.code || e.message}`); }
+  }
+  alert(`Created ${ok} login${ok === 1 ? "" : "s"} for ${g.title}. Starting PIN: ${pin}.` + (skip ? `\n${skip} already had a login with their school ID, so they keep using it.` : "") + (bad.length ? `\nProblems:\n${bad.join("\n")}` : "") + "\nThe teacher sees the list under Settings > Student logins.");
+  await load();
+}
+
 document.addEventListener("click", async ev => {
   const t = ev.target;
+  const mk = t.closest("button[data-mklog]");
+  if (mk) { makeLoginsFor(mk.dataset.mklog, mk); return; }
   const b = t.closest("button[data-uid]");
   if (b) {
     const to = b.dataset.to;

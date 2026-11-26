@@ -1,13 +1,13 @@
-import { shopClosedNow } from "./shopstatus.js?v=1123y";
-import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1123y";
-import { initWork } from "./stuwork.js?v=1123y";
-import { initMsgs } from "./stumsg.js?v=1123y";
-import { initLive } from "./livequiz.js?v=1123y";
-import { initChat } from "./chat.js?v=1123y";
-import { initFunpark } from "./funpark.js?v=1123y";
-import { startPresence, logEv } from "./presence.js?v=1123y";
-import { mountStudentTT } from "./timetable.js?v=1123y";
-import { achCard, initAch } from "./achieve.js?v=1123y";
+import { shopClosedNow } from "./shopstatus.js?v=1124a";
+import { auth, fs, doc, getDoc, onSnapshot, updateDoc, signOut, updatePassword, whenUser, profileOf } from "./fb.js?v=1124a";
+import { initWork } from "./stuwork.js?v=1124a";
+import { initMsgs } from "./stumsg.js?v=1124a";
+import { initLive } from "./livequiz.js?v=1124a";
+import { initChat } from "./chat.js?v=1124a";
+import { initFunpark } from "./funpark.js?v=1124a";
+import { startPresence, logEv } from "./presence.js?v=1124a";
+import { mountStudentTT } from "./timetable.js?v=1124a";
+import { achCard, initAch } from "./achieve.js?v=1124a";
 
 const sub = (t, n) => t.split("{n}").join(n);
 let shopSt = null, lastClosed = false;
@@ -25,7 +25,7 @@ function fromDoc(snap) {
   const v = snap.data() || {};
   // XP from other subjects (their teachers add it to "xx" and list it in "ext") counts in the total and the wallet
   const ext = Array.isArray(v.ext) ? v.ext : [], own = Array.isArray(v.log) ? v.log : [];
-  const log = ext.length ? own.map(e => ({ ...e, subj: e.subj || "Maths" })).concat(ext).sort((a, b) => String(a.at || "").localeCompare(String(b.at || ""))) : own;
+  const log = ext.length ? own.map(e => ({ ...e, subj: e.subj || v.subj || "Maths" })).concat(ext).sort((a, b) => String(a.at || "").localeCompare(String(b.at || ""))) : own;
   return { id: snap.id, name: String(v.name || "Student"), cls: String(v.cls || ""), enrollment: String(v.enrollment || ""), xp: (Number(v.xp) || 0) + (Number(v.xx) || 0),
     log, theme: typeof v.theme === "string" ? v.theme : "", avatar: typeof v.avatar === "number" ? v.avatar : undefined, ...readShop(v) };
 }

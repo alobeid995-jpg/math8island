@@ -2,8 +2,8 @@
 // - The owner sees the requests (Settings > Teacher requests), can change the classes, then approves or declines.
 // - An approved teacher, on his first visit, gets his classes and their students from the school list (pupils).
 //   ESU students are hidden for the subjects they do not attend; any teacher can hide or bring back any student, in his own list only.
-import { fs, collection, getDocs, doc, getDoc, setDoc, updateDoc, bdoc } from "./fb.js?v=1123y";
-import { setMany, shareXp } from "./sbdata.js?v=1123y";
+import { fs, collection, getDocs, doc, getDoc, setDoc, updateDoc, bdoc } from "./fb.js?v=1124a";
+import { setMany, shareXp } from "./sbdata.js?v=1124a";
 
 const $ = id => document.getElementById(id);
 const E = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -26,7 +26,7 @@ export async function firstSetup(uid, p) {
   const pupils = (await getDocs(collection(fs, "pupils"))).docs.map(d => d.data() || {}).filter(x => want.has(x.cls));
   const now = Date.now();
   await setMany(pupils.map(x => ({ path: "teachers/" + uid + "/students/" + sidOf(x.id), data: {
-    name: x.name, cls: x.cls, enrollment: x.id, prog: x.prog || "", hidden: hiddenFor(subject, x.prog || ""), xp: 0, log: [], hist: [], createdAt: now, bonusWeek: typeof weekKey === "function" ? weekKey() : "" } })), true);
+    name: x.name, cls: x.cls, enrollment: x.id, prog: x.prog || "", subj: subject, hidden: hiddenFor(subject, x.prog || ""), xp: 0, log: [], hist: [], createdAt: now, bonusWeek: typeof weekKey === "function" ? weekKey() : "" } })), true);
   const list = ALL.filter(c => want.has(c));
   await setDoc(bdoc("meta", "classes"), { list });
   try { const pr = await getDoc(bdoc("settings", "profile")); if (!pr.exists() || !pr.data().name) await setDoc(bdoc("settings", "profile"), { name: String(p.name || "").slice(0, 40) }); } catch (e) {}

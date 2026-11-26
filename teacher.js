@@ -1,27 +1,27 @@
-import { liveScope } from "./liveworks.js?v=1123y";
+import { liveScope } from "./liveworks.js?v=1124a";
 import { onSnapshot, changeEmail, auth, fs, firebaseConfig, doc, getDoc, setDoc, updateDoc, deleteDoc, getDocs, collection, query, where, writeBatch, setBase, bcol, bdoc, signOut, whenUser, profileOf, emailFor, pinKey,
-  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1123y";
-import { db } from "./fbdb.js?v=1123y";
-import { peopleSet, peopleDel, peopleGet, peopleCls } from "./sbdata.js?v=1123y";
-import { downloadBackup } from "./backupxl.js?v=1123y";
-import { openMail, sendRaw } from "./mailer.js?v=1123y";
-import { startUsage } from "./usage.js?v=1123y";
-import { liveLesson, mountTeacherTT, todayLessons } from "./timetable.js?v=1123y";
-import { openWork, gradeData } from "./teacherwork.js?v=1123y";
-import "./lessonxp.js?v=1123y";
-import { openProgress } from "./progress.js?v=1123y";
-import { openMaterial } from "./material.js?v=1123y";
-import { openLiveWs } from "./liveteacher.js?v=1123y";
-import { openFunpark } from "./fpteacher.js?v=1123y";
-import { openCoconut } from "./coconut.js?v=1123y";
-import { hasFeature, hideCss } from "./features.js?v=1123y";
-import { xpAllowed } from "./ownerpin.js?v=1123y";
+  initializeApp, getAuth, createUserWithEmailAndPassword } from "./fb.js?v=1124a";
+import { db } from "./fbdb.js?v=1124a";
+import { peopleSet, peopleDel, peopleGet, peopleCls } from "./sbdata.js?v=1124a";
+import { downloadBackup } from "./backupxl.js?v=1124a";
+import { openMail, sendRaw } from "./mailer.js?v=1124a";
+import { startUsage } from "./usage.js?v=1124a";
+import { liveLesson, mountTeacherTT, todayLessons } from "./timetable.js?v=1124a";
+import { openWork, gradeData } from "./teacherwork.js?v=1124a";
+import "./lessonxp.js?v=1124a";
+import { openProgress } from "./progress.js?v=1124a";
+import { openMaterial } from "./material.js?v=1124a";
+import { openLiveWs } from "./liveteacher.js?v=1124a";
+import { openFunpark } from "./fpteacher.js?v=1124a";
+import { openCoconut } from "./coconut.js?v=1124a";
+import { hasFeature, hideCss } from "./features.js?v=1124a";
+import { xpAllowed } from "./ownerpin.js?v=1124a";
 window.xpGate = n => xpAllowed(n); window.wkGradeData = gradeData; window.mailSend = sendRaw;
-import { initChat } from "./chat.js?v=1123y";
-import { openLive } from "./live.js?v=1123y";
-import { openInbox } from "./inbox.js?v=1123y";
-import "./school.js?v=1123y";
-import { firstSetup, watchJoin, initShare } from "./teacherjoin.js?v=1123y";
+import { initChat } from "./chat.js?v=1124a";
+import { openLive } from "./live.js?v=1124a";
+import { openInbox } from "./inbox.js?v=1124a";
+import "./school.js?v=1124a";
+import { firstSetup, watchJoin, initShare } from "./teacherjoin.js?v=1124a";
 
 const $ = id => document.getElementById(id);
 const esc2 = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -341,14 +341,14 @@ async function makeLogins() {
         let ver = 0, c = null;
         for (let k = 0; k < 8 && !c; k++) {
           try { c = await createUserWithEmailAndPassword(sauth, emailFor(username, ver), pin); }
-          catch (e) { if (e.code === "auth/email-already-in-use" && k < 7) ver++; else throw e; }
+          catch (e) { if (e.code === "auth/email-already-in-use" && k < 7 && !window.__shareOn) ver++; else throw e; }   // a shared student keeps the one login he has
         }
         await setDoc(doc(fs, "users", c.user.uid), ADMIN ? { role: "student", sid: d.id } : { role: "student", sid: d.id, tid: u.uid });
         await peopleSet([{ uid: c.user.uid, role: "student", sid: d.id, tid: ADMIN ? "" : u.uid, cls: cl }]);
         if (ver) await setDoc(doc(fs, "pinver", pinKey(username)), { v: ver, tid: u.uid });
         await setDoc(bdoc("logins", d.id), ver ? { username, pin, name: String(v.name || ""), cls: cl, first: true, ver, uid: c.user.uid } : { username, pin, name: String(v.name || ""), cls: cl, first: true });
         await signOut(sauth); ok++;
-      } catch (e) { bad.push(`${v.name || d.id}: ` + (e.code === "auth/email-already-in-use" ? `the ID ${username} already has a login (maybe from another teacher). Check the ID.` : (e.code || e.message))); }
+      } catch (e) { bad.push(`${v.name || d.id}: ` + (e.code === "auth/email-already-in-use" ? (window.__shareOn ? `already has a login with another teacher; he uses that one` : `the ID ${username} already has a login (maybe from another teacher). Check the ID.`) : (e.code || e.message))); }
     }
     msg(`Created ${ok} login${ok === 1 ? "" : "s"}.` + (bad.length ? `\nProblems:\n${bad.join("\n")}` : ""));
     await listLogins();
