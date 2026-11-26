@@ -2,8 +2,8 @@
 // - The owner sees the requests (Settings > Teacher requests), can change the classes, then approves or declines.
 // - An approved teacher, on his first visit, gets his classes and their students from the school list (pupils).
 //   ESU students are hidden for the subjects they do not attend; any teacher can hide or bring back any student, in his own list only.
-import { fs, collection, getDocs, doc, getDoc, setDoc, updateDoc, bdoc } from "./fb.js?v=1123u";
-import { setMany } from "./sbdata.js?v=1123u";
+import { fs, collection, getDocs, doc, getDoc, setDoc, updateDoc, bdoc } from "./fb.js?v=1123v";
+import { setMany } from "./sbdata.js?v=1123v";
 
 const $ = id => document.getElementById(id);
 const E = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
